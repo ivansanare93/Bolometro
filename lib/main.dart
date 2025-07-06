@@ -1,21 +1,55 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
-void main() {
-  runApp(BolosApp());
+import 'theme/app_theme.dart';
+import 'providers/theme_provider.dart';
+import 'providers/language_provider.dart';
+
+import 'models/partida.dart';
+import 'models/sesion.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+import 'screens/home_screen.dart';
+import 'screens/registro_sesion_screen.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+
+  Hive.registerAdapter(PartidaAdapter());
+  Hive.registerAdapter(SesionAdapter());
+  await Hive.openBox<Sesion>('sesiones');
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
+      ],
+      child: const BolosApp(),
+    ),
+  );
 }
 
 class BolosApp extends StatelessWidget {
   const BolosApp({super.key});
+
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final languageProvider = Provider.of<LanguageProvider>(context);
+
     return MaterialApp(
-      title: 'Registro de Bolos',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        useMaterial3: true,
-      ),
-      home: const HomeScreen(), //pantalla inicial
+      title: 'Bolómetro',
+      theme: AppTheme.azul,
+      darkTheme: AppTheme.oscuro,
+      themeMode: themeProvider.themeMode,
+      locale: languageProvider.locale,
+      supportedLocales: const [Locale('es'), Locale('en')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      home: const HomeScreen(),
+      routes: {'/registro': (_) => const RegistroSesionScreen()},
     );
   }
 }
