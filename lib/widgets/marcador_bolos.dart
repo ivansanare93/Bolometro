@@ -1,95 +1,127 @@
 import 'package:flutter/material.dart';
-import '../utils/registro_tiros_utils.dart';
 
-class MarcadorBolos extends StatelessWidget {
-  final List<List<dynamic>> frames;
+class MarcadorBolos extends StatefulWidget {
+  final List<List<String>> frames;
   final List<int?> puntuaciones;
   final int? frameActivo;
+  final void Function(int frame, int tiro, String valor)? onChanged;
+  final bool autoFocusEnabled;
+  final bool autoAdvanceFocus;
 
   const MarcadorBolos({
+    super.key,
     required this.frames,
     required this.puntuaciones,
     this.frameActivo,
-    super.key,
+    this.onChanged,
+    this.autoFocusEnabled = false,
+    this.autoAdvanceFocus = false,
   });
 
   @override
+  State<MarcadorBolos> createState() => _MarcadorBolosState();
+}
+
+class _MarcadorBolosState extends State<MarcadorBolos> {
+  late List<List<TextEditingController>> _controllers;
+  late List<List<FocusNode>> _focusNodes;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers = List.generate(
+      10,
+      (i) => List.generate(3, (j) => TextEditingController(text: widget.frames[i][j])),
+    );
+    _focusNodes = List.generate(
+      10,
+      (i) => List.generate(3, (j) => FocusNode()),
+    );
+  }
+
+  @override
+  void dispose() {
+    for (final frameControllers in _controllers) {
+      for (final c in frameControllers) {
+        c.dispose();
+      }
+    }
+    for (final frameFocus in _focusNodes) {
+      for (final f in frameFocus) {
+        f.dispose();
+      }
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: List.generate(10, (i) {
-        final tiros = i < frames.length
-            ? frames[i].map((e) => e.toString()).toList()
-            : <String>[];
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: List.generate(10, (index) {
+          final frame = widget.frames[index];
+          final puntaje = index < widget.puntuaciones.length ? widget.puntuaciones[index] : null;
+          final esActivo = index == widget.frameActivo;
+          final esUltimo = index == 9;
 
-        final punt = i < puntuaciones.length ? puntuaciones[i] : null;
-        final tipo = tipoDeFrame(tiros, esUltimo: i == 9);
-        final estaActivo = frameActivo == i;
-
-        Color bgColor;
-        switch (tipo) {
-          case TipoFrame.strike:
-          case TipoFrame.spare:
-          case TipoFrame.abierto:
-            bgColor = Colors.blue.shade100;
-            break;
-          case TipoFrame.incompleto:
-            bgColor = Colors.grey.shade200;
-            break;
-          case TipoFrame.invalido:
-            bgColor = Colors.red.shade100;
-            break;
-        }
-
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          width: 72,
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: estaActivo ? Colors.blueAccent : Colors.blue.shade300,
-              width: estaActivo ? 2.5 : 1,
-            ),
-            boxShadow: estaActivo
-                ? [
-                    BoxShadow(
-                      color: Colors.blueAccent.withOpacity(0.4),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : [],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'F${i + 1}',
-                style: const TextStyle(fontWeight: FontWeight.bold),
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: esActivo ? Colors.blue.shade50 : Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: esActivo ? Colors.blue : Colors.grey.shade400,
+                width: 2,
               ),
-              const SizedBox(height: 4),
-              Text(tiros.join(' '), style: const TextStyle(fontSize: 16)),
-              const SizedBox(height: 4),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: Text(
-                  punt?.toString() ?? '–',
-                  key: ValueKey(punt),
+            ),
+            child: Column(
+              children: [
+                Text('Frame ${index + 1}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (int tiro = 0; tiro < (esUltimo ? 3 : 2); tiro++)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        child: SizedBox(
+                          width: 36,
+                          child: TextField(
+                            controller: _controllers[index][tiro],
+                            focusNode: _focusNodes[index][tiro],
+                            autofocus: widget.autoFocusEnabled && index == 0 && tiro == 0,
+                            textAlign: TextAlign.center,
+                            onChanged: (v) {
+                              widget.onChanged?.call(index, tiro, v);
+                              if (widget.autoAdvanceFocus && v.trim().isNotEmpty) {
+                                if (tiro == 0 && (!esUltimo || frame[0] != 'X')) {
+                                  FocusScope.of(context).requestFocus(_focusNodes[index][1]);
+                                } else if (tiro == 1 && esUltimo) {
+                                  FocusScope.of(context).requestFocus(_focusNodes[index][2]);
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  puntaje?.toString() ?? '',
                   style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: punt != null ? Colors.black : Colors.grey,
+                    fontSize: 16,
+                    color: puntaje == null ? Colors.grey : Colors.black,
+                    fontWeight: puntaje == null ? FontWeight.normal : FontWeight.bold,
                   ),
                 ),
-              ),
-            ],
-          ),
-        );
-      }),
+              ],
+            ),
+          );
+        }),
+      ),
     );
   }
 }

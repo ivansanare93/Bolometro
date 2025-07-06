@@ -109,7 +109,6 @@ TipoFrame tipoDeFrame(List<String> frame, {bool esUltimo = false}) {
   return TipoFrame.incompleto;
 }
 
-
 int tiroToInt(String tiro, [String? anterior]) {
   if (tiro == 'X') return 10;
   if (tiro == '/') {
@@ -197,52 +196,87 @@ int calcularPuntuacionPartida(List<List<String>> frames) {
   return score;
 }
 
-int calcularPuntuacionMaximaPosible(List<List<String>> frames) {
-  final todosVacios = frames.every((f) => f.every((t) => t.trim().isEmpty));
-  if (todosVacios) return 300;
+List<int?> calcularPuntuacionPorFrame(
+  List<List<String>> frames, {
+  bool permitirNulos = false,
+}) {
+  List<int?> puntuaciones = List.filled(10, null);
+  int acumulado = 0;
 
-  int total = 0;
-  int tiradasRestantes = 0;
-
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < frames.length && i < 10; i++) {
     final frame = frames[i];
+    final esUltimo = i == 9;
+    final tipo = tipoDeFrame(frame, esUltimo: esUltimo);
 
-    if (frame.every((t) => t.trim().isEmpty)) {
-      tiradasRestantes += i == 9 ? 3 : 2;
-      continue;
+    String t0 = frame.length > 0 ? frame[0] : '';
+    String t1 = frame.length > 1 ? frame[1] : '';
+    String? t2 = frame.length > 2 ? frame[2] : null;
+
+    int? puntosDelFrame;
+
+    switch (tipo) {
+      case TipoFrame.strike:
+        if (esUltimo) {
+          if (t1.isNotEmpty && t2 != null && t2.isNotEmpty) {
+            puntosDelFrame =
+                tiroToInt(t0) + tiroToInt(t1, t0) + tiroToInt(t2, t1);
+          } else if (!permitirNulos) {
+            puntosDelFrame = 0;
+          }
+        } else {
+          final bonus = obtenerProximosTiros(frames, i, 2);
+          if (bonus.length >= 2) {
+            puntosDelFrame =
+                10 + tiroToInt(bonus[0]) + tiroToInt(bonus[1], bonus[0]);
+          } else if (!permitirNulos) {
+            puntosDelFrame = 0;
+          }
+        }
+        break;
+
+      case TipoFrame.spare:
+        if (esUltimo) {
+          if (t2 != null && t2.isNotEmpty) {
+            puntosDelFrame =
+                tiroToInt(t0) + tiroToInt(t1, t0) + tiroToInt(t2, t1);
+          } else if (!permitirNulos) {
+            puntosDelFrame = 0;
+          }
+        } else {
+          final bonus = obtenerProximosTiros(frames, i, 1);
+          if (bonus.isNotEmpty) {
+            puntosDelFrame = 10 + tiroToInt(bonus[0]);
+          } else if (!permitirNulos) {
+            puntosDelFrame = 0;
+          }
+        }
+        break;
+
+      case TipoFrame.abierto:
+        if (t0.isNotEmpty && t1.isNotEmpty) {
+          puntosDelFrame = tiroToInt(t0) + tiroToInt(t1);
+        } else if (!permitirNulos) {
+          puntosDelFrame = 0;
+        }
+        break;
+
+      case TipoFrame.incompleto:
+      case TipoFrame.invalido:
+        if (!permitirNulos) {
+          puntosDelFrame = 0;
+        }
+        break;
     }
 
-    // Sumar lo que ya tienes
-    total += _puntajeFrameActual(frame, i);
-
-    // Calcular tiradas restantes
-    if (i == 9) {
-      final lanzados = frame.where((t) => t.trim().isNotEmpty).length;
-      tiradasRestantes += 3 - lanzados;
-    } else {
-      final lanzados = frame.where((t) => t.trim().isNotEmpty).length;
-      tiradasRestantes += 2 - lanzados;
+    if (puntosDelFrame != null) {
+      acumulado += puntosDelFrame;
+      puntuaciones[i] = acumulado;
+    } else if (!permitirNulos) {
+      puntuaciones[i] = acumulado;
     }
   }
 
-  return total + (tiradasRestantes * 10);
-}
-
-int _puntajeFrameActual(List<String> frame, int index) {
-  int suma = 0;
-
-  for (int i = 0; i < frame.length; i++) {
-    final t = frame[i].toUpperCase();
-    if (t == 'X') {
-      suma += 10;
-    } else if (t == '/') {
-      suma += 10 - _valorTiro(frame[0]);
-    } else {
-      suma += _valorTiro(t);
-    }
-  }
-
-  return suma;
+  return puntuaciones;
 }
 
 bool esBuenaRacha(List<List<String>> frames) {
@@ -268,62 +302,64 @@ int _valorTiro(String tiro) {
   return int.tryParse(tiro) ?? 0;
 }
 
-List<int?> calcularPuntuacionPorFrame(List<List<String>> frames) {
-  List<int?> puntuaciones = List.filled(10, null);
-  int acumulado = 0;
+int valorNumerico(String tiro) {
+  tiro = tiro.toUpperCase().trim();
+  if (tiro == 'X') return 10;
+  if (tiro == '/')
+    return 10; // se interpreta como spare, se ajusta en la suma real
+  if (tiro == '-') return 0;
+  return int.tryParse(tiro) ?? 0;
+}
 
-  for (int i = 0; i < frames.length && i < 10; i++) {
+int calcularPuntuacionMaximaPosible(List<List<String>> frames) {
+  int total = 0;
+  int framesCompletos = 0;
+
+  for (int i = 0; i < 10; i++) {
     final frame = frames[i];
     final esUltimo = i == 9;
     final tipo = tipoDeFrame(frame, esUltimo: esUltimo);
 
-    String t0 = frame.length > 0 ? frame[0] : '';
-    String t1 = frame.length > 1 ? frame[1] : '';
-    String? t2 = frame.length > 2 ? frame[2] : null;
-
-    int? puntosDelFrame;
-
     switch (tipo) {
       case TipoFrame.strike:
-        if (esUltimo) {
-          if (t1.isNotEmpty && t2 != null && t2.isNotEmpty) {
-            puntosDelFrame = tiroToInt(t0) + tiroToInt(t1, t0) + tiroToInt(t2, t1);
-          }
+        total += 10;
+        final bonus = obtenerProximosTiros(frames, i, 2);
+        if (bonus.length >= 2) {
+          total += tiroToInt(bonus[0]) + tiroToInt(bonus[1], bonus[0]);
         } else {
-          final bonus = obtenerProximosTiros(frames, i, 2);
-          if (bonus.length >= 2) {
-            puntosDelFrame = 10 + tiroToInt(bonus[0]) + tiroToInt(bonus[1], bonus[0]);
-          }
+          total += 20; // máximo bonus posible
         }
+        framesCompletos++;
         break;
 
       case TipoFrame.spare:
-        if (esUltimo) {
-          if (t2 != null && t2.isNotEmpty) {
-            puntosDelFrame = tiroToInt(t0) + tiroToInt(t1, t0) + tiroToInt(t2, t1);
-          }
+        total += 10;
+        final bonus = obtenerProximosTiros(frames, i, 1);
+        if (bonus.isNotEmpty) {
+          total += tiroToInt(bonus[0]);
         } else {
-          final bonus = obtenerProximosTiros(frames, i, 1);
-          if (bonus.isNotEmpty) {
-            puntosDelFrame = 10 + tiroToInt(bonus[0]);
-          }
+          total += 10;
         }
+        framesCompletos++;
         break;
 
       case TipoFrame.abierto:
-        puntosDelFrame = tiroToInt(t0) + tiroToInt(t1);
+        if (frame.length >= 2) {
+          total += tiroToInt(frame[0]) + tiroToInt(frame[1]);
+        }
+        framesCompletos++;
         break;
 
       case TipoFrame.incompleto:
       case TipoFrame.invalido:
+        // Aún no jugado, contamos el máximo posible
         break;
-    }
-
-    if (puntosDelFrame != null) {
-      acumulado += puntosDelFrame;
-      puntuaciones[i] = acumulado;
     }
   }
 
-  return puntuaciones;
+  // Si quedan frames sin jugar, asumimos que son strikes (30 puntos por frame)
+  final framesRestantes = 10 - framesCompletos;
+  total += framesRestantes * 30;
+
+  return total.clamp(0, 300);
 }

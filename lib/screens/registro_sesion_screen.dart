@@ -75,37 +75,28 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
   }
 
   Future<void> _mostrarDialogoNuevaPartida() async {
-    final _formKeyDialog = GlobalKey<FormState>();
     List<List<String>> framesText = List.generate(10, (_) => ['', '', '']);
     String? notas;
 
-    await showGeneralDialog(
+    await showDialog(
       context: context,
-      barrierDismissible: true,
-      barrierLabel: 'Añadir partida',
-      transitionDuration: const Duration(milliseconds: 300),
-      pageBuilder: (_, __, ___) => Center(
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 600),
-            margin: const EdgeInsets.symmetric(horizontal: 24),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).dialogBackgroundColor,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: StatefulBuilder(
-              builder: (context, setStateDialog) {
-                return Form(
-                  key: _formKeyDialog,
+      builder: (context) => Dialog(
+        insetPadding: const EdgeInsets.all(24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: StatefulBuilder(
+          builder: (context, setStateDialog) {
+            final frames = interpretarFrames(framesText);
+            final puntuacionActual = calcularPuntuacionPartida(frames);
+            final puntuacionMaxima = calcularPuntuacionMaximaPosible(frames);
+            final buenaRacha = esBuenaRacha(frames);
+
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.85,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -122,222 +113,34 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Introduce los tiros por frame',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ),
-                      const Divider(height: 24),
-
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.45,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: List.generate(10, (i) {
-                              final mostrarT3 =
-                                  i == 9 && mostrarTercerTiro(framesText);
-
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 6,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          '🎳 Frame ${i + 1}',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: TextFormField(
-                                            decoration: const InputDecoration(
-                                              labelText: 'T1',
-                                              isDense: true,
-                                            ),
-                                            onChanged: (value) {
-                                              framesText[i][0] = value
-                                                  .trim()
-                                                  .toUpperCase();
-                                              setStateDialog(() {});
-                                            },
-                                            validator: (value) {
-                                              final v =
-                                                  value?.trim().toUpperCase() ??
-                                                  '';
-                                              if (v == '/')
-                                                return 'No se puede usar "/" como primer tiro';
-                                              return esEntradaValida(v)
-                                                  ? null
-                                                  : 'Tiro inválido';
-                                            },
-                                          ),
-                                        ),
-
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: TextFormField(
-                                            decoration: const InputDecoration(
-                                              labelText: 'T2',
-                                              isDense: true,
-                                            ),
-                                            onChanged: (value) {
-                                              framesText[i][1] = value
-                                                  .trim()
-                                                  .toUpperCase();
-
-                                              // Detectar "0" seguido de "X"
-                                              final t1 = framesText[i][0];
-                                              final t2 = value
-                                                  .trim()
-                                                  .toUpperCase();
-                                              if (t1 == '0' && t2 == 'X') {
-                                                WidgetsBinding.instance
-                                                    .addPostFrameCallback((_) {
-                                                      ScaffoldMessenger.of(
-                                                        context,
-                                                      ).showSnackBar(
-                                                        const SnackBar(
-                                                          content: Text(
-                                                            "Un 0 seguido de 'X' se interpreta como '/' (spare).",
-                                                          ),
-                                                          duration: Duration(
-                                                            seconds: 2,
-                                                          ),
-                                                        ),
-                                                      );
-                                                    });
-                                                framesText[i][1] = '/';
-                                              }
-
-                                              setStateDialog(() {});
-                                            },
-                                            validator: (value) {
-                                              final t1 = framesText[i][0];
-                                              var t2 =
-                                                  value?.trim().toUpperCase() ??
-                                                  '';
-                                              if (t1 == '0' && t2 == 'X')
-                                                return null;
-                                              if (!esEntradaValida(t2))
-                                                return 'Tiro inválido';
-                                              if (!sumaValida(t1, t2, i))
-                                                return 'Suma > 10';
-                                              return null;
-                                            },
-                                          ),
-                                        ),
-
-                                        if (mostrarT3) ...[
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: TextFormField(
-                                              decoration: const InputDecoration(
-                                                labelText: 'T3',
-                                                isDense: true,
-                                              ),
-                                              onChanged: (value) {
-                                                framesText[i][2] = value
-                                                    .trim()
-                                                    .toUpperCase();
-                                                setStateDialog(() {});
-                                              },
-                                              validator: (value) {
-                                                final v =
-                                                    value
-                                                        ?.trim()
-                                                        .toUpperCase() ??
-                                                    '';
-                                                return v.isNotEmpty &&
-                                                        !esEntradaValida(v)
-                                                    ? 'Tiro inválido'
-                                                    : null;
-                                              },
-                                            ),
-                                          ),
-                                        ],
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }),
-                          ),
-                        ),
-                      ),
                       const SizedBox(height: 16),
-
-                      Builder(
-                        builder: (context) {
-                          final frames = interpretarFrames(framesText);
-                          final puntuacionActual = calcularPuntuacionPorFrame(
-                            frames,
-                          );
-                          final puntuacionMaxima =
-                              calcularPuntuacionMaximaPosible(frames);
-                          final buenaRacha = esBuenaRacha(frames);
-
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Marcador visual por frames
-                              SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: MarcadorBolos(
-                                  frames: framesText,
-                                  puntuaciones: calcularPuntuacionPorFrame(
-                                    framesText,
-                                  ),
-                                  frameActivo: framesText.indexWhere(
-                                    (f) =>
-                                        tipoDeFrame(
-                                          f,
-                                          esUltimo: framesText.indexOf(f) == 9,
-                                        ) ==
-                                        TipoFrame.incompleto,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                '💯 Máximo posible: $puntuacionMaxima',
-                                style: const TextStyle(color: Colors.grey),
-                              ),
-                              if (buenaRacha)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 4),
-                                  child: Row(
-                                    children: const [
-                                      Icon(
-                                        Icons.whatshot,
-                                        color: Colors.orange,
-                                      ),
-                                      SizedBox(width: 6),
-                                      Text(
-                                        '¡Vas en racha!',
-                                        style: TextStyle(color: Colors.orange),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                            ],
-                          );
+                      MarcadorBolos(
+                        frames: framesText,
+                        puntuaciones: calcularPuntuacionPorFrame(framesText, permitirNulos: true),
+                        frameActivo: framesText.indexWhere(
+                          (f) => tipoDeFrame(f, esUltimo: framesText.indexOf(f) == 9) == TipoFrame.incompleto,
+                        ),
+                        onChanged: (frame, tiro, valor) {
+                          setStateDialog(() {
+                            framesText[frame][tiro] = valor;
+                          });
                         },
                       ),
-
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
+                      Text('Puntuación actual: $puntuacionActual'),
+                      Text('Máximo posible: $puntuacionMaxima', style: const TextStyle(color: Colors.grey)),
+                      if (buenaRacha)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 4),
+                          child: Row(
+                            children: [
+                              Icon(Icons.whatshot, color: Colors.orange),
+                              SizedBox(width: 6),
+                              Text('¡Vas en racha!', style: TextStyle(color: Colors.orange)),
+                            ],
+                          ),
+                        ),
+                      const SizedBox(height: 16),
                       TextFormField(
                         decoration: const InputDecoration(
                           labelText: 'Notas (opcional)',
@@ -346,9 +149,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
                         maxLines: 2,
                         onChanged: (value) => notas = value,
                       ),
-
                       const SizedBox(height: 16),
-
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -361,60 +162,39 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
                             icon: const Icon(Icons.check),
                             label: const Text('Añadir'),
                             onPressed: () {
-                              if (_formKeyDialog.currentState!.validate()) {
-                                final frames = interpretarFrames(framesText);
-
-                                if (frames.every(
-                                  (f) => f.every((t) => t.trim().isEmpty),
-                                )) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Debes ingresar al menos un tiro válido.',
-                                      ),
-                                    ),
-                                  );
-                                  return;
-                                }
-
-                                final total = calcularPuntuacionPartida(frames);
-
-                                final nuevaPartida = Partida(
-                                  fecha: DateTime.now(),
-                                  lugar: _lugar,
-                                  tipo: _tipo,
-                                  frames: frames,
-                                  notas: notas,
-                                  total: total,
+                              final frames = interpretarFrames(framesText);
+                              final tieneTiros = frames.any((f) => f.any((t) => t.isNotEmpty));
+                              if (!tieneTiros) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Debes ingresar al menos un tiro válido.'),
+                                  ),
                                 );
-
-                                setState(() => _partidas.add(nuevaPartida));
-                                Navigator.pop(context);
+                                return;
                               }
+                              final total = calcularPuntuacionPartida(frames);
+                              final nuevaPartida = Partida(
+                                fecha: DateTime.now(),
+                                lugar: _lugar,
+                                tipo: _tipo,
+                                frames: frames,
+                                notas: notas,
+                                total: total,
+                              );
+                              setState(() => _partidas.add(nuevaPartida));
+                              Navigator.pop(context);
                             },
                           ),
                         ],
                       ),
                     ],
                   ),
-                );
-              },
-            ),
-          ),
+                ),
+              ),
+            );
+          },
         ),
       ),
-      transitionBuilder: (context, animation, _, child) {
-        return FadeTransition(
-          opacity: animation,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 0.1),
-              end: Offset.zero,
-            ).animate(animation),
-            child: child,
-          ),
-        );
-      },
     );
   }
 
@@ -444,39 +224,27 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
               ),
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Lugar'),
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Campo obligatorio' : null,
+                validator: (value) => value == null || value.isEmpty ? 'Campo obligatorio' : null,
                 onChanged: (value) => _lugar = value,
               ),
               DropdownButtonFormField<String>(
                 value: _tipo,
                 items: ['Entrenamiento', 'Competición']
-                    .map(
-                      (tipo) =>
-                          DropdownMenuItem(value: tipo, child: Text(tipo)),
-                    )
+                    .map((tipo) => DropdownMenuItem(value: tipo, child: Text(tipo)))
                     .toList(),
-                onChanged: (value) =>
-                    setState(() => _tipo = value ?? 'Entrenamiento'),
+                onChanged: (value) => setState(() => _tipo = value ?? 'Entrenamiento'),
                 decoration: const InputDecoration(labelText: 'Tipo'),
               ),
               TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Notas (opcional)',
-                ),
+                decoration: const InputDecoration(labelText: 'Notas (opcional)'),
                 onChanged: (value) => _notas = value,
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Partidas añadidas:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+              const Text('Partidas añadidas:', style: TextStyle(fontWeight: FontWeight.bold)),
               ..._partidas.map(
                 (p) => ListTile(
                   title: Text('Puntaje: ${p.total}'),
-                  subtitle: Text(
-                    'Frames: ${p.frames.length} | ${p.fecha.toLocal().toString().split(" ")[0]}',
-                  ),
+                  subtitle: Text('Frames: ${p.frames.length} | ${p.fecha.toLocal().toString().split(" ")[0]}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

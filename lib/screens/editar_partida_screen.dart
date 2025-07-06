@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/partida.dart';
 import '../utils/registro_tiros_utils.dart';
+import '../widgets/marcador_bolos.dart';
 import 'home_screen.dart';
 
 class EditarPartidaScreen extends StatefulWidget {
@@ -25,141 +26,87 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
   @override
   void initState() {
     super.initState();
-    framesText = widget.partida.frames
-        .map((f) => List<String>.from(f)..length = 3)
-        .toList();
+    framesText = widget.partida.frames.map((f) => List<String>.from(f)..length = 3).toList();
     notas = widget.partida.notas;
   }
 
   void _guardar() {
-    if (_formKey.currentState!.validate()) {
-      final nuevosFrames = interpretarFrames(framesText);
-      final nuevoTotal = calcularPuntuacionPartida(nuevosFrames);
+    final nuevosFrames = interpretarFrames(framesText);
+    final nuevoTotal = calcularPuntuacionPartida(nuevosFrames);
 
-      if (nuevoTotal == 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('La partida no tiene puntuación válida.'),
-          ),
-        );
-        return;
-      }
-
-      final partidaActualizada = widget.partida.copyWith(
-        frames: nuevosFrames,
-        notas: notas,
-        total: nuevoTotal,
+    if (nuevoTotal == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('La partida no tiene puntuación válida.')),
       );
-
-      widget.onGuardar(partidaActualizada);
-      Navigator.pop(context);
+      return;
     }
+
+    final partidaActualizada = widget.partida.copyWith(
+      frames: nuevosFrames,
+      notas: notas,
+      total: nuevoTotal,
+    );
+
+    widget.onGuardar(partidaActualizada);
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final frames = interpretarFrames(framesText);
+    final puntuacionActual = calcularPuntuacionPartida(frames);
+    final puntuacionMaxima = calcularPuntuacionMaximaPosible(frames);
+    final buenaRacha = esBuenaRacha(frames);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Editar Partida')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              ...List.generate(10, (i) {
-                final mostrarT3 = i == 9 && mostrarTercerTiro(framesText);
-                return Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            MarcadorBolos(
+              frames: framesText,
+              puntuaciones: calcularPuntuacionPorFrame(framesText),
+              frameActivo: framesText.indexWhere(
+                (f) => tipoDeFrame(f, esUltimo: framesText.indexOf(f) == 9) == TipoFrame.incompleto,
+              ),
+              onChanged: (frame, tiro, valor) {
+                setState(() {
+                  framesText[frame][tiro] = valor;
+                });
+              },
+              autoFocusEnabled: true,
+              autoAdvanceFocus: true,
+            ),
+            const SizedBox(height: 16),
+            Text('Puntuación actual: $puntuacionActual'),
+            Text('Máximo posible: $puntuacionMaxima', style: const TextStyle(color: Colors.grey)),
+            if (buenaRacha)
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Row(
                   children: [
-                    Expanded(
-                      child: TextFormField(
-                        initialValue: framesText[i][0],
-                        decoration: InputDecoration(
-                          labelText: 'F${i + 1} - T1',
-                        ),
-                        onChanged: (v) {
-                          framesText[i][0] = v;
-                          if (i == 9) setState(() {});
-                        },
-                        validator: (value) {
-                          final v = value?.trim().toUpperCase() ?? '';
-                          if (v == '/')
-                            return 'No se puede usar "/" como primer tiro';
-                          return esEntradaValida(v) ? null : 'Inválido';
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextFormField(
-                        initialValue: framesText[i][1],
-                        decoration: const InputDecoration(labelText: 'T2'),
-                        onChanged: (v) {
-                          final t1 = framesText[i][0];
-                          final t2 = v.trim().toUpperCase();
-
-                          if (t1 == '0' && t2 == 'X') {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    "Un 0 seguido de 'X' se interpreta como '/' (spare).",
-                                  ),
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                            });
-                            framesText[i][1] = '/';
-                          } else {
-                            framesText[i][1] = t2;
-                          }
-
-                          if (i == 9) setState(() {});
-                        },
-                        validator: (value) {
-                          final t1 = framesText[i][0];
-                          final t2 = framesText[i][1];
-
-                          if (t1.toUpperCase() == 'X' && (t2.isEmpty))
-                            return null;
-
-                          if (!esEntradaValida(t2)) return 'Inválido';
-                          if (!sumaValida(t1, t2, i)) return 'Suma > 10';
-                          return null;
-                        },
-                      ),
-                    ),
-
-                    if (mostrarT3) ...[
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: TextFormField(
-                          initialValue: framesText[i][2],
-                          decoration: const InputDecoration(labelText: 'T3'),
-                          onChanged: (v) => framesText[i][2] = v,
-                          validator: (v) {
-                            if (v == null || v.isEmpty) return null;
-                            return esEntradaValida(v) ? null : 'Inválido';
-                          },
-                        ),
-                      ),
-                    ],
+                    Icon(Icons.whatshot, color: Colors.orange),
+                    SizedBox(width: 6),
+                    Text('¡Vas en racha!', style: TextStyle(color: Colors.orange)),
                   ],
-                );
-              }),
-              const SizedBox(height: 16),
-              TextFormField(
-                initialValue: notas,
-                decoration: const InputDecoration(labelText: 'Notas'),
-                onChanged: (v) => notas = v,
+                ),
               ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: _guardar,
-                icon: const Icon(Icons.save),
-                label: const Text('Guardar cambios'),
-              ),
-            ],
-          ),
+            const SizedBox(height: 16),
+            TextFormField(
+              initialValue: notas,
+              decoration: const InputDecoration(labelText: 'Notas (opcional)'),
+              onChanged: (v) => notas = v,
+              maxLines: 2,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _guardar,
+              icon: const Icon(Icons.save),
+              label: const Text('Guardar cambios'),
+            ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
