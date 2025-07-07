@@ -77,6 +77,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
   Future<void> _mostrarDialogoNuevaPartida() async {
     List<List<String>> framesText = List.generate(10, (_) => ['', '', '']);
     String? notas;
+    Map<int, Set<int>> erroresPorTiro = {};
 
     await showDialog(
       context: context,
@@ -89,6 +90,31 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
             final puntuacionActual = calcularPuntuacionPartida(frames);
             final puntuacionMaxima = calcularPuntuacionMaximaPosible(frames);
             final buenaRacha = esBuenaRacha(frames);
+
+            Map<int, Set<int>> obtenerErroresPorTiro(
+              List<List<String>> frames,
+            ) {
+              final errores = <int, Set<int>>{};
+
+              for (int i = 0; i < frames.length; i++) {
+                final frame = frames[i];
+                final erroresFrame = validarFrame(frame, index: i);
+
+                for (final error in erroresFrame) {
+                  if (error.contains('Tiro 1')) {
+                    errores[i] = (errores[i] ?? {})..add(0);
+                  } else if (error.contains('Tiro 2')) {
+                    errores[i] = (errores[i] ?? {})..add(1);
+                  } else if (error.contains('Tiro 3')) {
+                    errores[i] = (errores[i] ?? {})..add(2);
+                  } else {
+                    errores[i] = {0, 1, 2};
+                  }
+                }
+              }
+
+              return errores;
+            }
 
             return Padding(
               padding: const EdgeInsets.all(16),
@@ -116,19 +142,36 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
                       const SizedBox(height: 16),
                       MarcadorBolos(
                         frames: framesText,
-                        puntuaciones: calcularPuntuacionPorFrame(framesText, permitirNulos: true),
-                        frameActivo: framesText.indexWhere(
-                          (f) => tipoDeFrame(f, esUltimo: framesText.indexOf(f) == 9) == TipoFrame.incompleto,
+                        puntuaciones: calcularPuntuacionPorFrame(
+                          framesText,
+                          permitirNulos: true,
                         ),
+                        frameActivo: framesText.indexWhere(
+                          (f) =>
+                              tipoDeFrame(
+                                f,
+                                esUltimo: framesText.indexOf(f) == 9,
+                              ) ==
+                              TipoFrame.incompleto,
+                        ),
+                        autoAdvanceFocus: true,
+                        autoFocusEnabled: true,
+                        erroresPorTiro: erroresPorTiro,
                         onChanged: (frame, tiro, valor) {
                           setStateDialog(() {
-                            framesText[frame][tiro] = valor;
+                            framesText[frame][tiro] = valor
+                                .trim()
+                                .toUpperCase();
+                            erroresPorTiro = obtenerErroresPorTiro(framesText);
                           });
                         },
                       ),
                       const SizedBox(height: 16),
                       Text('Puntuación actual: $puntuacionActual'),
-                      Text('Máximo posible: $puntuacionMaxima', style: const TextStyle(color: Colors.grey)),
+                      Text(
+                        'Máximo posible: $puntuacionMaxima',
+                        style: const TextStyle(color: Colors.grey),
+                      ),
                       if (buenaRacha)
                         const Padding(
                           padding: EdgeInsets.only(top: 4),
@@ -136,7 +179,10 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
                             children: [
                               Icon(Icons.whatshot, color: Colors.orange),
                               SizedBox(width: 6),
-                              Text('¡Vas en racha!', style: TextStyle(color: Colors.orange)),
+                              Text(
+                                '¡Vas en racha!',
+                                style: TextStyle(color: Colors.orange),
+                              ),
                             ],
                           ),
                         ),
@@ -163,15 +209,46 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
                             label: const Text('Añadir'),
                             onPressed: () {
                               final frames = interpretarFrames(framesText);
-                              final tieneTiros = frames.any((f) => f.any((t) => t.isNotEmpty));
+                              final tieneTiros = frames.any(
+                                (f) => f.any((t) => t.isNotEmpty),
+                              );
+
+                              final errores = validarPartida(framesText);
                               if (!tieneTiros) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Debes ingresar al menos un tiro válido.'),
+                                    content: Text(
+                                      'Debes ingresar al menos un tiro válido.',
+                                    ),
                                   ),
                                 );
                                 return;
                               }
+
+                              if (errores.isNotEmpty) {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => AlertDialog(
+                                    title: const Text('Errores en la partida'),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: errores
+                                          .map((e) => Text('• $e'))
+                                          .toList(),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        child: const Text('Entendido'),
+                                        onPressed: () => Navigator.pop(context),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                return;
+                              }
+
                               final total = calcularPuntuacionPartida(frames);
                               final nuevaPartida = Partida(
                                 fecha: DateTime.now(),
@@ -224,27 +301,39 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
               ),
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Lugar'),
-                validator: (value) => value == null || value.isEmpty ? 'Campo obligatorio' : null,
+                validator: (value) =>
+                    value == null || value.isEmpty ? 'Campo obligatorio' : null,
                 onChanged: (value) => _lugar = value,
               ),
               DropdownButtonFormField<String>(
                 value: _tipo,
                 items: ['Entrenamiento', 'Competición']
-                    .map((tipo) => DropdownMenuItem(value: tipo, child: Text(tipo)))
+                    .map(
+                      (tipo) =>
+                          DropdownMenuItem(value: tipo, child: Text(tipo)),
+                    )
                     .toList(),
-                onChanged: (value) => setState(() => _tipo = value ?? 'Entrenamiento'),
+                onChanged: (value) =>
+                    setState(() => _tipo = value ?? 'Entrenamiento'),
                 decoration: const InputDecoration(labelText: 'Tipo'),
               ),
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Notas (opcional)'),
+                decoration: const InputDecoration(
+                  labelText: 'Notas (opcional)',
+                ),
                 onChanged: (value) => _notas = value,
               ),
               const SizedBox(height: 16),
-              const Text('Partidas añadidas:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                'Partidas añadidas:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               ..._partidas.map(
                 (p) => ListTile(
                   title: Text('Puntaje: ${p.total}'),
-                  subtitle: Text('Frames: ${p.frames.length} | ${p.fecha.toLocal().toString().split(" ")[0]}'),
+                  subtitle: Text(
+                    'Frames: ${p.frames.length} | ${p.fecha.toLocal().toString().split(" ")[0]}',
+                  ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

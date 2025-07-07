@@ -22,16 +22,66 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
   final _formKey = GlobalKey<FormState>();
   late List<List<String>> framesText;
   late String? notas;
+  Map<int, Set<int>> erroresPorTiro = {};
 
   @override
   void initState() {
     super.initState();
-    framesText = widget.partida.frames.map((f) => List<String>.from(f)..length = 3).toList();
+    framesText = widget.partida.frames
+        .map((f) => List<String>.from(f)..length = 3)
+        .toList();
     notas = widget.partida.notas;
+    erroresPorTiro = _obtenerErroresPorTiro(framesText);
+  }
+
+  Map<int, Set<int>> _obtenerErroresPorTiro(List<List<String>> frames) {
+    final errores = <int, Set<int>>{};
+
+    for (int i = 0; i < frames.length; i++) {
+      final frame = frames[i];
+      final erroresFrame = validarFrame(frame, index: i);
+
+      for (final error in erroresFrame) {
+        if (error.contains('Tiro 1')) {
+          errores[i] = (errores[i] ?? {})..add(0);
+        } else if (error.contains('Tiro 2')) {
+          errores[i] = (errores[i] ?? {})..add(1);
+        } else if (error.contains('Tiro 3')) {
+          errores[i] = (errores[i] ?? {})..add(2);
+        } else {
+          errores[i] = {0, 1, 2};
+        }
+      }
+    }
+
+    return errores;
   }
 
   void _guardar() {
     final nuevosFrames = interpretarFrames(framesText);
+    final errores = validarPartida(framesText);
+
+    if (errores.isNotEmpty) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Errores en la partida'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: errores.map((e) => Text('• $e')).toList(),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Entendido'),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     final nuevoTotal = calcularPuntuacionPartida(nuevosFrames);
 
     if (nuevoTotal == 0) {
@@ -69,11 +119,15 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
               frames: framesText,
               puntuaciones: calcularPuntuacionPorFrame(framesText),
               frameActivo: framesText.indexWhere(
-                (f) => tipoDeFrame(f, esUltimo: framesText.indexOf(f) == 9) == TipoFrame.incompleto,
+                (f) =>
+                    tipoDeFrame(f, esUltimo: framesText.indexOf(f) == 9) ==
+                    TipoFrame.incompleto,
               ),
+              erroresPorTiro: erroresPorTiro,
               onChanged: (frame, tiro, valor) {
                 setState(() {
-                  framesText[frame][tiro] = valor;
+                  framesText[frame][tiro] = valor.trim().toUpperCase();
+                  erroresPorTiro = _obtenerErroresPorTiro(framesText);
                 });
               },
               autoFocusEnabled: true,
@@ -81,7 +135,10 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
             ),
             const SizedBox(height: 16),
             Text('Puntuación actual: $puntuacionActual'),
-            Text('Máximo posible: $puntuacionMaxima', style: const TextStyle(color: Colors.grey)),
+            Text(
+              'Máximo posible: $puntuacionMaxima',
+              style: const TextStyle(color: Colors.grey),
+            ),
             if (buenaRacha)
               const Padding(
                 padding: EdgeInsets.only(top: 4),
@@ -89,7 +146,10 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
                   children: [
                     Icon(Icons.whatshot, color: Colors.orange),
                     SizedBox(width: 6),
-                    Text('¡Vas en racha!', style: TextStyle(color: Colors.orange)),
+                    Text(
+                      '¡Vas en racha!',
+                      style: TextStyle(color: Colors.orange),
+                    ),
                   ],
                 ),
               ),

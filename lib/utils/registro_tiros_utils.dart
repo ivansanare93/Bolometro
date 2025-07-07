@@ -363,3 +363,97 @@ int calcularPuntuacionMaximaPosible(List<List<String>> frames) {
 
   return total.clamp(0, 300);
 }
+List<String> validarFrame(List<String> frame, {required int index}) {
+  final errores = <String>[];
+  final esUltimo = index == 9;
+
+  // Limpiar y normalizar los tiros
+  final tiros = frame.map((t) => t.trim().toUpperCase()).toList();
+
+  // Función auxiliar para convertir símbolos a número
+  int valorNumerico(String s) {
+    if (s == 'X') return 10;
+    if (s == '-') return 0;
+    final n = int.tryParse(s);
+    return n != null ? n.clamp(0, 9) : -1; // -1 = inválido
+  }
+
+  // -----------------------------
+  // 1. Validar caracteres permitidos
+  final caracteresValidos = {'X', '/', '-', '', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+  for (int i = 0; i < tiros.length; i++) {
+    if (!caracteresValidos.contains(tiros[i])) {
+      errores.add('Tiro ${i + 1} del frame ${index + 1} tiene un valor inválido.');
+    }
+  }
+
+  // -----------------------------
+  // 2. '/' como primer tiro no es válido
+  if (tiros[0] == '/') {
+    errores.add('No se puede usar "/" como primer tiro del frame ${index + 1}.');
+  }
+
+  // -----------------------------
+  // 3. Solo un 'X' o '/' por frame (excepto frame 10)
+  if (!esUltimo) {
+    final xCount = tiros.where((t) => t == 'X').length;
+    final slashCount = tiros.where((t) => t == '/').length;
+    if (xCount > 1) {
+      errores.add('Demasiados "X" en el frame ${index + 1}.');
+    }
+    if (slashCount > 1) {
+      errores.add('Demasiados "/" en el frame ${index + 1}.');
+    }
+  }
+
+  // -----------------------------
+  // 4. Suma del frame no puede pasar de 10 (frames 1–9, sin strike/spare)
+  if (!esUltimo && tiros[0] != 'X') {
+    final v1 = valorNumerico(tiros[0]);
+    final v2 = tiros[1] == '/' ? (10 - v1) : valorNumerico(tiros[1]);
+
+    if (v1 < 0 || v2 < 0) {
+      errores.add('Tiros inválidos en el frame ${index + 1}.');
+    } else if (v1 + v2 > 10) {
+      errores.add('La suma de pins supera 10 en el frame ${index + 1}.');
+    }
+  }
+
+  // -----------------------------
+  // 5. Frame 10: Validaciones especiales
+  if (esUltimo) {
+    final t0 = tiros[0];
+    final t1 = tiros[1];
+    final t2 = tiros[2];
+
+    final v0 = valorNumerico(t0);
+    final v1 = t1 == '/' ? (10 - v0) : valorNumerico(t1);
+    final tieneStrikeOspare = t0 == 'X' || t1 == '/';
+
+    if (t0.isNotEmpty && t1.isNotEmpty && !tieneStrikeOspare && t2.isNotEmpty) {
+      errores.add('No se permite un tercer tiro en el frame 10 sin strike o spare.');
+    }
+
+    if (t0 != 'X' && t1 == '/') {
+      if (v0 < 0 || v0 > 9) {
+        errores.add('Combinación inválida en el frame 10 ("/" sin primer tiro numérico válido).');
+      }
+    }
+
+    if (t1 == '/' && t0 == 'X') {
+      errores.add('"/" no puede seguir a una "X" directamente en el frame 10.');
+    }
+  }
+
+  return errores;
+}
+List<String> validarPartida(List<List<String>> frames) {
+  final erroresTotales = <String>[];
+
+  for (int i = 0; i < frames.length; i++) {
+    final erroresDelFrame = validarFrame(frames[i], index: i);
+    erroresTotales.addAll(erroresDelFrame);
+  }
+
+  return erroresTotales;
+}
