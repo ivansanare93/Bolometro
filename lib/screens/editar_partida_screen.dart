@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/partida.dart';
 import '../utils/registro_tiros_utils.dart';
 import '../widgets/marcador_bolos.dart';
-import 'home_screen.dart';
 import '../utils/teclado_tiros_adaptativo.dart';
+import 'home_screen.dart';
 
 class EditarPartidaScreen extends StatefulWidget {
   final Partida partida;
@@ -19,16 +19,18 @@ class EditarPartidaScreen extends StatefulWidget {
   State<EditarPartidaScreen> createState() => _EditarPartidaScreenState();
 }
 
-class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
+class _EditarPartidaScreenState extends State<EditarPartidaScreen>
+    with SingleTickerProviderStateMixin {
   late List<List<String>> framesText;
   late String? notas;
   late String _tipo;
   Map<int, Set<int>> erroresPorTiro = {};
   final marcadorKey = GlobalKey<MarcadorBolosState>();
   final ValueNotifier<Set<String>> teclasDeshabilitadas = ValueNotifier({});
+  final ValueNotifier<bool> mostrarTeclado = ValueNotifier(false);
 
-  int? frameSeleccionado;
-  int? tiroSeleccionado;
+  late AnimationController _animController;
+  late Animation<double> _animacionTeclado;
 
   @override
   void initState() {
@@ -42,6 +44,23 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
         : 'Entrenamiento';
     erroresPorTiro = _obtenerErroresPorTiro(framesText);
 
+    _animController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _animacionTeclado = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeInOut,
+    );
+
+    mostrarTeclado.addListener(() {
+      if (mostrarTeclado.value) {
+        _animController.forward();
+      } else {
+        _animController.reverse();
+      }
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final f = marcadorKey.currentState;
       if (f != null && f.frameActivoGetter >= 0 && f.tiroActivoGetter >= 0) {
@@ -50,17 +69,22 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
           tiro: f.tiroActivoGetter,
           frames: framesText,
         );
+        mostrarTeclado.value = true;
       }
     });
   }
 
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
   Map<int, Set<int>> _obtenerErroresPorTiro(List<List<String>> frames) {
     final errores = <int, Set<int>>{};
-
     for (int i = 0; i < frames.length; i++) {
       final frame = frames[i];
       final erroresFrame = validarFrame(frame, index: i);
-
       for (final error in erroresFrame) {
         final mensaje = error.mensaje;
         if (mensaje.contains('Tiro 1')) {
@@ -74,7 +98,6 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
         }
       }
     }
-
     return errores;
   }
 
@@ -135,6 +158,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
         tiro: f.tiroActivoGetter,
         frames: framesText,
       );
+      mostrarTeclado.value = true;
     }
   }
 
@@ -171,29 +195,46 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
               erroresPorTiro: erroresPorTiro,
               onChanged: (frame, tiro, valor) {
                 setState(() {
-                  frameSeleccionado = frame;
-                  tiroSeleccionado = tiro;
                   framesText[frame][tiro] = valor.trim().toUpperCase();
                   erroresPorTiro = _obtenerErroresPorTiro(framesText);
                 });
                 _actualizarTeclasDeshabilitadas();
               },
+              onCampoActivoCambio: (frame, tiro) {
+                mostrarTeclado.value = true;
+              },
               autoFocusEnabled: true,
               autoAdvanceFocus: true,
             ),
             const SizedBox(height: 16),
-            TecladoTiros(
-              onKeyPress: (valor) {
-                if (valor == '⌫') {
-                  marcadorKey.currentState?.borrarValor();
-                } else if (valor == '→') {
-                  marcadorKey.currentState?.siguiente();
-                } else {
-                  marcadorKey.currentState?.insertarValor(valor);
-                }
-                _actualizarTeclasDeshabilitadas();
-              },
-              deshabilitadosNotifier: teclasDeshabilitadas,
+            AnimatedBuilder(
+              animation: _animController,
+              builder: (context, child) => Opacity(
+                opacity: _animController.value,
+                child: SizeTransition(
+                  sizeFactor: _animacionTeclado,
+                  axisAlignment: -1.0,
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: mostrarTeclado,
+                    builder: (context, visible, _) {
+                      if (!visible) return const SizedBox.shrink();
+                      return TecladoTiros(
+                        onKeyPress: (valor) {
+                          if (valor == '⌫') {
+                            marcadorKey.currentState?.borrarValor();
+                          } else if (valor == '→') {
+                            marcadorKey.currentState?.siguiente();
+                          } else {
+                            marcadorKey.currentState?.insertarValor(valor);
+                          }
+                          _actualizarTeclasDeshabilitadas();
+                        },
+                        deshabilitadosNotifier: teclasDeshabilitadas,
+                      );
+                    },
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             Text(
@@ -232,6 +273,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
               ),
               onTap: () {
                 marcadorKey.currentState?.desactivarCampoActivo();
+                mostrarTeclado.value = false;
                 setState(() {});
               },
               onChanged: (v) => notas = v,

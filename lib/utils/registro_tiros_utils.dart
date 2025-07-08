@@ -39,8 +39,13 @@ bool mostrarTercerTiro(List<List<String>> frames) {
   if (frames.length < 10) return false;
 
   final f10 = frames[9];
-  final t0 = f10.length > 0 ? f10[0].trim().toUpperCase() : '';
-  final t1 = f10.length > 1 ? f10[1].trim().toUpperCase() : '';
+  if (f10.length < 2) return false;
+
+  final t0 = f10[0].trim().toUpperCase();
+  final t1 = f10[1].trim().toUpperCase();
+
+  // Ambos tiros deben estar presentes para tomar la decisión
+  if (t0.isEmpty || t1.isEmpty) return false;
 
   return t0 == 'X' || t1 == '/';
 }
@@ -392,7 +397,6 @@ List<FrameError> validarFrame(List<String> frame, {required int index}) {
     '/',
     '-',
     '',
-    '0',
     '1',
     '2',
     '3',
@@ -426,16 +430,16 @@ List<FrameError> validarFrame(List<String> frame, {required int index}) {
     );
   }
 
+  final slashCount = tiros.where((t) => t == '/').length;
+  if (slashCount > 1) {
+    errores.add(FrameError('Demasiados "/" en el frame ${index + 1}.'));
+  }
+
   if (!esUltimo) {
     final xCount = tiros.where((t) => t == 'X').length;
-    final slashCount = tiros.where((t) => t == '/').length;
 
     if (xCount > 1) {
       errores.add(FrameError('Demasiados "X" en el frame ${index + 1}.'));
-    }
-
-    if (slashCount > 1) {
-      errores.add(FrameError('Demasiados "/" en el frame ${index + 1}.'));
     }
 
     if (tiros[1] == 'X') {
@@ -480,6 +484,8 @@ List<FrameError> validarFrame(List<String> frame, {required int index}) {
 
     final v0 = valorNumerico(t0);
     final v1 = t1 == '/' ? (10 - v0) : valorNumerico(t1);
+    final v2 = valorNumerico(t2);
+
     final tieneStrikeOspare = t0 == 'X' || t1 == '/';
 
     if (t0.isNotEmpty && t1.isNotEmpty && !tieneStrikeOspare && t2.isNotEmpty) {
@@ -504,6 +510,30 @@ List<FrameError> validarFrame(List<String> frame, {required int index}) {
       errores.add(
         FrameError(
           '"/" no puede seguir a una "X" directamente en el frame 10.',
+        ),
+      );
+    }
+
+    if (t2.isNotEmpty && !tieneStrikeOspare) {
+      errores.add(
+        FrameError(
+          'No se permite un tercer tiro en el frame 10 si no hay strike o spare.',
+        ),
+      );
+    }
+
+    if (t0 != 'X' && t1 != '/' && t2.isNotEmpty) {
+      errores.add(
+        FrameError(
+          'No se permite un tercer tiro en el frame 10 sin strike ni spare.',
+        ),
+      );
+    }
+
+    if (t2 == '/' && t1 == 'X') {
+      errores.add(
+        FrameError(
+          '"/" no es válido como tercer tiro después de "X" en el segundo tiro del frame 10.',
         ),
       );
     }

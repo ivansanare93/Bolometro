@@ -16,37 +16,60 @@ class TecladoTiros extends StatelessWidget {
     required List<List<String>> frames,
   }) {
     final deshabilitadas = <String>{};
+    final esUltimo = frame == 9;
     final t1 = frames[frame][0];
     final t2 = frames[frame][1];
-    final esUltimo = frame == 9;
-
     final numeros = List.generate(10, (i) => '$i');
 
-    if (tiro == 0) {
-      // Primer tiro: no se permite spare
-      deshabilitadas.add('/');
-    } else if (tiro == 1) {
-      deshabilitadas.add('X'); // Nunca puede haber strike en segundo tiro
+    if (esUltimo) {
+      if (tiro == 0) {
+        deshabilitadas.add('/'); // primer tiro nunca puede ser spare
+      } else if (tiro == 1) {
+        deshabilitadas.add(
+          'X',
+        ); // segundo tiro nunca puede ser strike (salvo si el primero fue X)
 
-      if (t1 == 'X') {
-        // Strike en el primer tiro: segundo tiro no se usa
-        deshabilitadas.addAll(numeros);
-        deshabilitadas.add('/');
-      } else if (t1.isNotEmpty && t1 != '-') {
-        final primerValor = int.tryParse(t1);
-        if (primerValor != null) {
-          for (var n in numeros) {
-            final segundoValor = int.parse(n);
-            if (primerValor + segundoValor >= 10) {
-              deshabilitadas.add(n); // suma 10: debería usarse '/'
+        if (t1 == 'X') {
+          // Strike en el primero → todo permitido menos '/'
+          deshabilitadas.clear();
+          deshabilitadas.add('/');
+        } else if (t1.isNotEmpty && t1 != '-') {
+          final primerValor = int.tryParse(t1);
+          if (primerValor != null) {
+            for (var n in numeros) {
+              final segundoValor = int.parse(n);
+              if (primerValor + segundoValor > 10) {
+                deshabilitadas.add(n);
+              }
             }
           }
         }
+      } else if (tiro == 2) {
+        // Tercer tiro solo si hubo X o / antes
+        if (!(t1 == 'X' || t2 == '/' || t2 == 'X')) {
+          deshabilitadas.addAll(numeros + ['X', '/']);
+        }
       }
-    } else if (tiro == 2 && esUltimo) {
-      // Solo se permite tercer tiro en el 10 si hay strike o spare antes
-      if (!(t1 == 'X' || t2 == '/' || t2 == 'X')) {
-        deshabilitadas.addAll(numeros + ['X', '/']);
+    } else {
+      // Frames 1–9
+      if (tiro == 0) {
+        deshabilitadas.add('/');
+      } else if (tiro == 1) {
+        deshabilitadas.add('X');
+        if (t1 == 'X') {
+          deshabilitadas.addAll(numeros);
+          deshabilitadas.add('/');
+        } else if (t1.isNotEmpty && t1 != '-') {
+          final primerValor = int.tryParse(t1);
+          if (primerValor != null) {
+            for (var n in numeros) {
+              final segundoValor = int.parse(n);
+              if (primerValor + segundoValor > 10) {
+                deshabilitadas.add(n);
+              }
+            }
+          }
+        }
       }
     }
 
@@ -59,23 +82,23 @@ class TecladoTiros extends StatelessWidget {
       ['1', '2', '3'],
       ['4', '5', '6'],
       ['7', '8', '9'],
-      ['-', '0', '/'],
-      ['X', '⌫', '→'],
+      ['-', '/', 'X'],
+      ['⌫', '→', ''],
     ];
 
     return ValueListenableBuilder<Set<String>>(
       valueListenable: deshabilitadosNotifier,
       builder: (context, deshabilitados, _) {
         return Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceVariant,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
                 color: Colors.black12,
-                blurRadius: 6,
-                offset: const Offset(0, 2),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -85,12 +108,15 @@ class TecladoTiros extends StatelessWidget {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: fila.map((valor) {
+                  if (valor.isEmpty) {
+                    return const SizedBox(width: 64, height: 64);
+                  }
                   final deshabilitado = deshabilitados.contains(valor);
                   return Padding(
-                    padding: const EdgeInsets.all(4.0),
+                    padding: const EdgeInsets.all(6.0),
                     child: AnimatedScale(
                       scale: 1.0,
-                      duration: const Duration(milliseconds: 100),
+                      duration: const Duration(milliseconds: 120),
                       child: ElevatedButton(
                         onPressed: deshabilitado
                             ? null
@@ -98,20 +124,23 @@ class TecladoTiros extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: deshabilitado
                               ? Colors.grey.shade300
-                              : Theme.of(context).colorScheme.primary,
+                              : Theme.of(context).colorScheme.primaryContainer,
                           foregroundColor: deshabilitado
-                              ? Colors.grey
-                              : Theme.of(context).colorScheme.onPrimary,
-                          minimumSize: const Size(56, 56),
+                              ? Colors.grey.shade600
+                              : Theme.of(
+                                  context,
+                                ).colorScheme.onPrimaryContainer,
+                          minimumSize: const Size(64, 64),
+                          elevation: deshabilitado ? 0 : 4,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(18),
                           ),
                         ),
                         child: Text(
                           valor,
                           style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/partida.dart';
 import '../models/sesion.dart';
 import '../screens/registro_sesion_screen.dart';
+import '../screens/editar_partida_screen.dart';
 import 'package:hive/hive.dart';
 import 'home_screen.dart';
 
@@ -9,10 +10,12 @@ class RegistroCompletoSesionScreen extends StatefulWidget {
   const RegistroCompletoSesionScreen({super.key});
 
   @override
-  State<RegistroCompletoSesionScreen> createState() => _RegistroCompletoSesionScreenState();
+  State<RegistroCompletoSesionScreen> createState() =>
+      _RegistroCompletoSesionScreenState();
 }
 
-class _RegistroCompletoSesionScreenState extends State<RegistroCompletoSesionScreen> {
+class _RegistroCompletoSesionScreenState
+    extends State<RegistroCompletoSesionScreen> {
   String _lugar = '';
   String _tipo = 'Entrenamiento';
   final List<Partida> _partidas = [];
@@ -30,10 +33,29 @@ class _RegistroCompletoSesionScreenState extends State<RegistroCompletoSesionScr
     );
   }
 
+  void editarPartida(int index) async {
+    final partidaOriginal = _partidas[index];
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EditarPartidaScreen(
+          partida: partidaOriginal,
+          onGuardar: (partidaActualizada) {
+            setState(() {
+              _partidas[index] = partidaActualizada;
+            });
+          },
+        ),
+      ),
+    );
+  }
+
   Future<void> _guardarSesion() async {
     if (_partidas.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Añade al menos una partida para guardar la sesión.')),
+        const SnackBar(
+          content: Text('Añade al menos una partida para guardar la sesión.'),
+        ),
       );
       return;
     }
@@ -45,15 +67,14 @@ class _RegistroCompletoSesionScreenState extends State<RegistroCompletoSesionScr
       partidas: _partidas,
     );
 
-    // TODO: guardar en Hive
-final box = Hive.box<Sesion>('sesiones');
-await box.add(nuevaSesion);
+    final box = Hive.box<Sesion>('sesiones');
+    await box.add(nuevaSesion);
 
-ScaffoldMessenger.of(context).showSnackBar(
-  const SnackBar(content: Text('Sesión guardada correctamente')),
-);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Sesión guardada correctamente')),
+    );
 
-Navigator.pop(context);
+    Navigator.pop(context);
   }
 
   @override
@@ -66,7 +87,10 @@ Navigator.pop(context);
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextFormField(
-              decoration: const InputDecoration(labelText: 'Lugar', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                labelText: 'Lugar',
+                border: OutlineInputBorder(),
+              ),
               onChanged: (v) => _lugar = v,
             ),
             const SizedBox(height: 16),
@@ -74,15 +98,21 @@ Navigator.pop(context);
               value: _tipo,
               decoration: const InputDecoration(labelText: 'Tipo de sesión'),
               items: ['Entrenamiento', 'Competición']
-                  .map((tipo) => DropdownMenuItem(value: tipo, child: Text(tipo)))
+                  .map(
+                    (tipo) => DropdownMenuItem(value: tipo, child: Text(tipo)),
+                  )
                   .toList(),
-              onChanged: (value) => setState(() => _tipo = value ?? 'Entrenamiento'),
+              onChanged: (value) =>
+                  setState(() => _tipo = value ?? 'Entrenamiento'),
             ),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Partidas: ${_partidas.length}', style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Partidas: ${_partidas.length}',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 ElevatedButton.icon(
                   onPressed: anadirPartida,
                   icon: const Icon(Icons.add),
@@ -98,10 +128,19 @@ Navigator.pop(context);
                   final p = _partidas[index];
                   return ListTile(
                     title: Text('Partida ${index + 1} - ${p.total} puntos'),
-                    //subtitle: Text(p.lugar.isNotEmpty ? p.lugar : 'Sin lugar'),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () => setState(() => _partidas.removeAt(index)),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () => editarPartida(index),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () =>
+                              setState(() => _partidas.removeAt(index)),
+                        ),
+                      ],
                     ),
                   );
                 },
@@ -116,7 +155,7 @@ Navigator.pop(context);
           ],
         ),
       ),
-            floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.pushAndRemoveUntil(
             context,

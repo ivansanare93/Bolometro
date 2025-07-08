@@ -34,11 +34,13 @@ class MarcadorBolosState extends State<MarcadorBolos> {
   late List<List<TextEditingController>> _controllers;
   late List<List<FocusNode>> _focusNodes;
   late ScrollController _scrollController;
+  final ValueNotifier<bool> hayCampoActivoNotifier = ValueNotifier(false);
 
   void setTiroActivo(int frame, int tiro) {
     setState(() {
       frameActivo = frame;
       tiroActivo = tiro;
+      hayCampoActivoNotifier.value = true;
     });
     widget.onCampoActivoCambio?.call(frame, tiro);
     _scrollAlFrameActivo();
@@ -55,6 +57,7 @@ class MarcadorBolosState extends State<MarcadorBolos> {
     setState(() {
       frameActivo = -1;
       tiroActivo = -1;
+      hayCampoActivoNotifier.value = false;
     });
   }
 
@@ -63,6 +66,7 @@ class MarcadorBolosState extends State<MarcadorBolos> {
     super.initState();
     frameActivo = widget.frameActivo ?? 0;
     tiroActivo = 0;
+    hayCampoActivoNotifier.value = false;
     _controllers = List.generate(
       10,
       (i) => List.generate(
@@ -95,6 +99,7 @@ class MarcadorBolosState extends State<MarcadorBolos> {
       setState(() {
         frameActivo = primerFrame;
         tiroActivo = errores[primerFrame]?.first ?? 0;
+        hayCampoActivoNotifier.value = true;
       });
       widget.onCampoActivoCambio?.call(frameActivo, tiroActivo);
       _scrollAlFrameActivo();
@@ -123,6 +128,7 @@ class MarcadorBolosState extends State<MarcadorBolos> {
       }
 
       widget.onCampoActivoCambio?.call(frameActivo, tiroActivo);
+      hayCampoActivoNotifier.value = true;
       _scrollAlFrameActivo();
     });
   }
@@ -132,6 +138,7 @@ class MarcadorBolosState extends State<MarcadorBolos> {
       _controllers[frameActivo][tiroActivo].text = '';
       widget.onChanged?.call(frameActivo, tiroActivo, '');
       widget.onCampoActivoCambio?.call(frameActivo, tiroActivo);
+      hayCampoActivoNotifier.value = true;
     });
   }
 
@@ -153,6 +160,7 @@ class MarcadorBolosState extends State<MarcadorBolos> {
         }
       }
       widget.onCampoActivoCambio?.call(frameActivo, tiroActivo);
+      hayCampoActivoNotifier.value = true;
       _scrollAlFrameActivo();
     });
   }
@@ -170,6 +178,7 @@ class MarcadorBolosState extends State<MarcadorBolos> {
       }
     }
     _scrollController.dispose();
+    hayCampoActivoNotifier.dispose();
     super.dispose();
   }
 
@@ -289,6 +298,7 @@ class MarcadorBolosState extends State<MarcadorBolos> {
                                 setState(() {
                                   frameActivo = index;
                                   tiroActivo = tiro;
+                                  hayCampoActivoNotifier.value = true;
                                 });
                                 widget.onChanged?.call(
                                   index,

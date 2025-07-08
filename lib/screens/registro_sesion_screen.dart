@@ -14,21 +14,49 @@ class RegistroSesionScreen extends StatefulWidget {
   State<RegistroSesionScreen> createState() => _RegistroSesionScreenState();
 }
 
-class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
+class _RegistroSesionScreenState extends State<RegistroSesionScreen>
+    with SingleTickerProviderStateMixin {
   final marcadorKey = GlobalKey<MarcadorBolosState>();
+  final ValueNotifier<Set<String>> teclasDeshabilitadas = ValueNotifier({});
+  final ValueNotifier<bool> mostrarTeclado = ValueNotifier(false);
 
   late List<List<String>> framesText;
   String _tipo = 'Entrenamiento';
   String _lugar = '';
   String? notas;
   Map<int, Set<int>> erroresPorTiro = {};
-  final ValueNotifier<Set<String>> teclasDeshabilitadas = ValueNotifier({});
+
+  late AnimationController _animController;
+  late Animation<double> _animacionTeclado;
 
   @override
   void initState() {
     super.initState();
     framesText = List.generate(10, (_) => List.filled(3, ''));
     erroresPorTiro = _obtenerErroresPorTiro(framesText);
+
+    _animController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _animacionTeclado = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeInOut,
+    );
+
+    mostrarTeclado.addListener(() {
+      if (mostrarTeclado.value) {
+        _animController.forward();
+      } else {
+        _animController.reverse();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
   }
 
   Map<int, Set<int>> _obtenerErroresPorTiro(List<List<String>> frames) {
@@ -103,6 +131,18 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
     Navigator.pop(context);
   }
 
+  void _actualizarTeclasDeshabilitadas() {
+    final f = marcadorKey.currentState;
+    if (f != null && f.frameActivoGetter >= 0 && f.tiroActivoGetter >= 0) {
+      teclasDeshabilitadas.value = TecladoTiros.calcularTeclasDeshabilitadas(
+        frame: f.frameActivoGetter,
+        tiro: f.tiroActivoGetter,
+        frames: framesText,
+      );
+      mostrarTeclado.value = true;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final frames = interpretarFrames(framesText);
@@ -145,44 +185,43 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
                   framesText[frame][tiro] = valor.trim().toUpperCase();
                   erroresPorTiro = _obtenerErroresPorTiro(framesText);
                 });
-                final f = marcadorKey.currentState;
-                if (f != null &&
-                    f.frameActivoGetter >= 0 &&
-                    f.tiroActivoGetter >= 0) {
-                  teclasDeshabilitadas.value =
-                      TecladoTiros.calcularTeclasDeshabilitadas(
-                        frame: f.frameActivoGetter,
-                        tiro: f.tiroActivoGetter,
-                        frames: framesText,
-                      );
-                }
+                _actualizarTeclasDeshabilitadas();
+              },
+              onCampoActivoCambio: (frame, tiro) {
+                mostrarTeclado.value = true;
               },
               autoFocusEnabled: true,
               autoAdvanceFocus: true,
             ),
             const SizedBox(height: 16),
-            TecladoTiros(
-              onKeyPress: (valor) {
-                if (valor == '⌫') {
-                  marcadorKey.currentState?.borrarValor();
-                } else if (valor == '→') {
-                  marcadorKey.currentState?.siguiente();
-                } else {
-                  marcadorKey.currentState?.insertarValor(valor);
-                }
-                final f = marcadorKey.currentState;
-                if (f != null &&
-                    f.frameActivoGetter >= 0 &&
-                    f.tiroActivoGetter >= 0) {
-                  teclasDeshabilitadas.value =
-                      TecladoTiros.calcularTeclasDeshabilitadas(
-                        frame: f.frameActivoGetter,
-                        tiro: f.tiroActivoGetter,
-                        frames: framesText,
+            AnimatedBuilder(
+              animation: _animController,
+              builder: (context, child) => Opacity(
+                opacity: _animController.value,
+                child: SizeTransition(
+                  sizeFactor: _animacionTeclado,
+                  axisAlignment: -1.0,
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: mostrarTeclado,
+                    builder: (context, visible, _) {
+                      if (!visible) return const SizedBox.shrink();
+                      return TecladoTiros(
+                        onKeyPress: (valor) {
+                          if (valor == '⌫') {
+                            marcadorKey.currentState?.borrarValor();
+                          } else if (valor == '→') {
+                            marcadorKey.currentState?.siguiente();
+                          } else {
+                            marcadorKey.currentState?.insertarValor(valor);
+                          }
+                          _actualizarTeclasDeshabilitadas();
+                        },
+                        deshabilitadosNotifier: teclasDeshabilitadas,
                       );
-                }
-              },
-              deshabilitadosNotifier: teclasDeshabilitadas,
+                    },
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             Card(
@@ -253,6 +292,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
               ),
               onTap: () {
                 marcadorKey.currentState?.desactivarCampoActivo();
+                mostrarTeclado.value = false;
                 setState(() {});
               },
               onChanged: (v) => notas = v,
