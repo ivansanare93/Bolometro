@@ -3,7 +3,9 @@ import '../models/partida.dart';
 import '../utils/registro_tiros_utils.dart';
 import '../widgets/marcador_bolos.dart';
 import '../utils/teclado_tiros_adaptativo.dart';
-import 'home_screen.dart';
+import '../widgets/selector_tipo_partida.dart';
+import '../widgets/resumen_puntuacion.dart';
+import '../widgets/notas_field.dart';
 
 class RegistroSesionScreen extends StatefulWidget {
   final void Function(Partida nuevaPartida) onGuardar;
@@ -22,7 +24,6 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
 
   late List<List<String>> framesText;
   String _tipo = 'Entrenamiento';
-  String _lugar = '';
   String? notas;
   Map<int, Set<int>> erroresPorTiro = {};
 
@@ -120,7 +121,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
 
     final nuevaPartida = Partida(
       fecha: DateTime.now(),
-      lugar: _lugar.trim(),
+      lugar: '', // Se podría pedir como campo si lo necesitas
       tipo: _tipo.trim(),
       frames: nuevosFrames,
       notas: notas?.trim().isEmpty == true ? null : notas?.trim(),
@@ -157,15 +158,8 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
+            SelectorTipoPartida(
               value: _tipo,
-              decoration: const InputDecoration(labelText: 'Tipo de partida'),
-              items: ['Entrenamiento', 'Competición']
-                  .map(
-                    (tipo) => DropdownMenuItem(value: tipo, child: Text(tipo)),
-                  )
-                  .toList(),
               onChanged: (value) =>
                   setState(() => _tipo = value ?? 'Entrenamiento'),
             ),
@@ -224,79 +218,22 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
               ),
             ),
             const SizedBox(height: 16),
-            Card(
-              elevation: 2,
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 16,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Text('🎯', style: TextStyle(fontSize: 22)),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Puntuación actual: $puntuacionActual',
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        const Text('🚀', style: TextStyle(fontSize: 22)),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Máximo posible: $puntuacionMaxima',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                fontStyle: FontStyle.italic,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+            ResumenPuntuacion(
+              puntuacionActual: puntuacionActual,
+              puntuacionMaxima: puntuacionMaxima,
+              buenaRacha: buenaRacha,
             ),
-            if (buenaRacha)
-              Row(
-                children: [
-                  Icon(
-                    Icons.whatshot,
-                    color: Theme.of(context).colorScheme.tertiary,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '¡Vas en racha!',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.tertiary,
-                    ),
-                  ),
-                ],
-              ),
             const SizedBox(height: 16),
-            TextFormField(
-              decoration: const InputDecoration(
-                labelText: 'Notas (opcional)',
-                border: OutlineInputBorder(),
-              ),
-              onTap: () {
-                marcadorKey.currentState?.desactivarCampoActivo();
-                mostrarTeclado.value = false;
-                setState(() {});
-              },
+            NotasField(
+              initialValue: notas,
               onChanged: (v) => notas = v,
-              maxLines: 2,
+              onFocusChange: (focused) {
+                if (focused) {
+                  marcadorKey.currentState?.desactivarCampoActivo();
+                  mostrarTeclado.value = false;
+                  setState(() {});
+                }
+              },
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -306,17 +243,6 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
-            (route) => false,
-          );
-        },
-        tooltip: 'Inicio',
-        child: const Icon(Icons.home),
       ),
     );
   }

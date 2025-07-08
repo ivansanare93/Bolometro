@@ -3,6 +3,9 @@ import '../models/partida.dart';
 import '../utils/registro_tiros_utils.dart';
 import '../widgets/marcador_bolos.dart';
 import '../utils/teclado_tiros_adaptativo.dart';
+import '../widgets/resumen_puntuacion.dart';
+import '../widgets/selector_tipo_partida.dart';
+import '../widgets/notas_field.dart';
 import 'home_screen.dart';
 
 class EditarPartidaScreen extends StatefulWidget {
@@ -176,21 +179,23 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            DropdownButtonFormField<String>(
+            /// --- Modularizamos el selector de tipo ---
+            SelectorTipoPartida(
               value: _tipo,
-              decoration: const InputDecoration(labelText: 'Tipo de partida'),
-              items: ['Entrenamiento', 'Competición']
-                  .map((tipo) => DropdownMenuItem(value: tipo, child: Text(tipo)))
-                  .toList(),
-              onChanged: (value) => setState(() => _tipo = value ?? 'Entrenamiento'),
+              onChanged: (value) =>
+                  setState(() => _tipo = value ?? 'Entrenamiento'),
             ),
             const SizedBox(height: 16),
+
+            /// --- El marcador ---
             MarcadorBolos(
               key: marcadorKey,
               frames: framesText,
               puntuaciones: calcularPuntuacionPorFrame(framesText),
               frameActivo: framesText.indexWhere(
-                (f) => tipoDeFrame(f, esUltimo: framesText.indexOf(f) == 9) == TipoFrame.incompleto,
+                (f) =>
+                    tipoDeFrame(f, esUltimo: framesText.indexOf(f) == 9) ==
+                    TipoFrame.incompleto,
               ),
               erroresPorTiro: erroresPorTiro,
               onChanged: (frame, tiro, valor) {
@@ -207,6 +212,8 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
               autoAdvanceFocus: true,
             ),
             const SizedBox(height: 16),
+
+            /// --- Teclado animado ---
             AnimatedBuilder(
               animation: _animController,
               builder: (context, child) => Opacity(
@@ -237,53 +244,40 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
               ),
             ),
             const SizedBox(height: 16),
-            Text(
-              'Puntuación actual: $puntuacionActual',
-              style: Theme.of(context).textTheme.bodyLarge,
+
+            /// --- Resumen modular (puntuación, máximo, racha) ---
+            ResumenPuntuacion(
+              puntuacionActual: puntuacionActual,
+              puntuacionMaxima: puntuacionMaxima,
+              buenaRacha: buenaRacha,
             ),
-            Text(
-              'Máximo posible: $puntuacionMaxima',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            if (buenaRacha)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.whatshot,
-                      color: Theme.of(context).colorScheme.tertiary,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '¡Vas en racha!',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.tertiary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+
             const SizedBox(height: 16),
-            TextFormField(
+
+            /// --- Campo de notas modular ---
+            NotasField(
               initialValue: notas,
-              decoration: const InputDecoration(
-                labelText: 'Notas (opcional)',
-                border: OutlineInputBorder(),
-              ),
+              onChanged: (v) => notas = v,
               onTap: () {
                 marcadorKey.currentState?.desactivarCampoActivo();
                 mostrarTeclado.value = false;
                 setState(() {});
               },
-              onChanged: (v) => notas = v,
-              maxLines: 2,
             ),
+
             const SizedBox(height: 24),
+
+            /// --- Guardar partida ---
             ElevatedButton.icon(
               onPressed: _guardar,
               icon: const Icon(Icons.save),
               label: const Text('Guardar cambios'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
             ),
           ],
         ),

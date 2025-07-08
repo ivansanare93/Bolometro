@@ -5,6 +5,8 @@ import '../screens/registro_sesion_screen.dart';
 import '../screens/editar_partida_screen.dart';
 import 'package:hive/hive.dart';
 import 'home_screen.dart';
+import '../widgets/lista_partidas.dart';
+import '../widgets/selector_tipo_partida.dart';
 
 class RegistroCompletoSesionScreen extends StatefulWidget {
   const RegistroCompletoSesionScreen({super.key});
@@ -48,6 +50,10 @@ class _RegistroCompletoSesionScreenState
         ),
       ),
     );
+  }
+
+  void borrarPartida(int index) {
+    setState(() => _partidas.removeAt(index));
   }
 
   Future<void> _guardarSesion() async {
@@ -94,14 +100,8 @@ class _RegistroCompletoSesionScreenState
               onChanged: (v) => _lugar = v,
             ),
             const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
+            SelectorTipoPartida(
               value: _tipo,
-              decoration: const InputDecoration(labelText: 'Tipo de sesión'),
-              items: ['Entrenamiento', 'Competición']
-                  .map(
-                    (tipo) => DropdownMenuItem(value: tipo, child: Text(tipo)),
-                  )
-                  .toList(),
               onChanged: (value) =>
                   setState(() => _tipo = value ?? 'Entrenamiento'),
             ),
@@ -122,28 +122,10 @@ class _RegistroCompletoSesionScreenState
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: ListView.builder(
-                itemCount: _partidas.length,
-                itemBuilder: (_, index) {
-                  final p = _partidas[index];
-                  return ListTile(
-                    title: Text('Partida ${index + 1} - ${p.total} puntos'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () => editarPartida(index),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () =>
-                              setState(() => _partidas.removeAt(index)),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+              child: ListaPartidas(
+                partidas: _partidas,
+                onEditar: editarPartida,
+                onBorrar: borrarPartida,
               ),
             ),
             const SizedBox(height: 16),
@@ -154,17 +136,6 @@ class _RegistroCompletoSesionScreenState
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
-            (route) => false,
-          );
-        },
-        tooltip: 'Inicio',
-        child: const Icon(Icons.home),
       ),
     );
   }
