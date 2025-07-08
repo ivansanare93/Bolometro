@@ -3,6 +3,7 @@ import '../models/partida.dart';
 import '../utils/registro_tiros_utils.dart';
 import '../widgets/marcador_bolos.dart';
 import 'home_screen.dart';
+import '../utils/teclado_tiros_adaptativo.dart';
 
 class EditarPartidaScreen extends StatefulWidget {
   final Partida partida;
@@ -19,10 +20,15 @@ class EditarPartidaScreen extends StatefulWidget {
 }
 
 class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
-  final _formKey = GlobalKey<FormState>();
   late List<List<String>> framesText;
   late String? notas;
+  late String _tipo;
   Map<int, Set<int>> erroresPorTiro = {};
+  final marcadorKey = GlobalKey<MarcadorBolosState>();
+  final ValueNotifier<Set<String>> teclasDeshabilitadas = ValueNotifier({});
+
+  int? frameSeleccionado;
+  int? tiroSeleccionado;
 
   @override
   void initState() {
@@ -31,7 +37,21 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
         .map((f) => List<String>.from(f)..length = 3)
         .toList();
     notas = widget.partida.notas;
+    _tipo = widget.partida.tipo?.isNotEmpty == true
+        ? widget.partida.tipo!
+        : 'Entrenamiento';
     erroresPorTiro = _obtenerErroresPorTiro(framesText);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final f = marcadorKey.currentState;
+      if (f != null && f.frameActivoGetter >= 0 && f.tiroActivoGetter >= 0) {
+        teclasDeshabilitadas.value = TecladoTiros.calcularTeclasDeshabilitadas(
+          frame: f.frameActivoGetter,
+          tiro: f.tiroActivoGetter,
+          frames: framesText,
+        );
+      }
+    });
   }
 
   Map<int, Set<int>> _obtenerErroresPorTiro(List<List<String>> frames) {
@@ -42,14 +62,15 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
       final erroresFrame = validarFrame(frame, index: i);
 
       for (final error in erroresFrame) {
-        if (error.contains('Tiro 1')) {
+        final mensaje = error.mensaje;
+        if (mensaje.contains('Tiro 1')) {
           errores[i] = (errores[i] ?? {})..add(0);
-        } else if (error.contains('Tiro 2')) {
+        } else if (mensaje.contains('Tiro 2')) {
           errores[i] = (errores[i] ?? {})..add(1);
-        } else if (error.contains('Tiro 3')) {
+        } else if (mensaje.contains('Tiro 3')) {
           errores[i] = (errores[i] ?? {})..add(2);
         } else {
-          errores[i] = {0, 1, 2};
+          errores[i] = (errores[i] ?? {})..addAll({0, 1, 2});
         }
       }
     }
@@ -62,6 +83,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
     final errores = validarPartida(framesText);
 
     if (errores.isNotEmpty) {
+      marcadorKey.currentState?.enfocarPrimerError();
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -86,7 +108,10 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
 
     if (nuevoTotal == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('La partida no tiene puntuación válida.')),
+        SnackBar(
+          content: const Text('La partida no tiene puntuación válida.'),
+          backgroundColor: Theme.of(context).colorScheme.errorContainer,
+        ),
       );
       return;
     }
@@ -95,10 +120,22 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
       frames: nuevosFrames,
       notas: notas,
       total: nuevoTotal,
+      tipo: _tipo,
     );
 
     widget.onGuardar(partidaActualizada);
     Navigator.pop(context);
+  }
+
+  void _actualizarTeclasDeshabilitadas() {
+    final f = marcadorKey.currentState;
+    if (f != null && f.frameActivoGetter >= 0 && f.tiroActivoGetter >= 0) {
+      teclasDeshabilitadas.value = TecladoTiros.calcularTeclasDeshabilitadas(
+        frame: f.frameActivoGetter,
+        tiro: f.tiroActivoGetter,
+        frames: framesText,
+      );
+    }
   }
 
   @override
@@ -115,40 +152,73 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            DropdownButtonFormField<String>(
+              value: _tipo,
+              decoration: const InputDecoration(labelText: 'Tipo de partida'),
+              items: ['Entrenamiento', 'Competición']
+                  .map((tipo) => DropdownMenuItem(value: tipo, child: Text(tipo)))
+                  .toList(),
+              onChanged: (value) => setState(() => _tipo = value ?? 'Entrenamiento'),
+            ),
+            const SizedBox(height: 16),
             MarcadorBolos(
+              key: marcadorKey,
               frames: framesText,
               puntuaciones: calcularPuntuacionPorFrame(framesText),
               frameActivo: framesText.indexWhere(
-                (f) =>
-                    tipoDeFrame(f, esUltimo: framesText.indexOf(f) == 9) ==
-                    TipoFrame.incompleto,
+                (f) => tipoDeFrame(f, esUltimo: framesText.indexOf(f) == 9) == TipoFrame.incompleto,
               ),
               erroresPorTiro: erroresPorTiro,
               onChanged: (frame, tiro, valor) {
                 setState(() {
+                  frameSeleccionado = frame;
+                  tiroSeleccionado = tiro;
                   framesText[frame][tiro] = valor.trim().toUpperCase();
                   erroresPorTiro = _obtenerErroresPorTiro(framesText);
                 });
+                _actualizarTeclasDeshabilitadas();
               },
               autoFocusEnabled: true,
               autoAdvanceFocus: true,
             ),
             const SizedBox(height: 16),
-            Text('Puntuación actual: $puntuacionActual'),
+            TecladoTiros(
+              onKeyPress: (valor) {
+                if (valor == '⌫') {
+                  marcadorKey.currentState?.borrarValor();
+                } else if (valor == '→') {
+                  marcadorKey.currentState?.siguiente();
+                } else {
+                  marcadorKey.currentState?.insertarValor(valor);
+                }
+                _actualizarTeclasDeshabilitadas();
+              },
+              deshabilitadosNotifier: teclasDeshabilitadas,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Puntuación actual: $puntuacionActual',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
             Text(
               'Máximo posible: $puntuacionMaxima',
-              style: const TextStyle(color: Colors.grey),
+              style: Theme.of(context).textTheme.bodySmall,
             ),
             if (buenaRacha)
-              const Padding(
-                padding: EdgeInsets.only(top: 4),
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
                 child: Row(
                   children: [
-                    Icon(Icons.whatshot, color: Colors.orange),
-                    SizedBox(width: 6),
+                    Icon(
+                      Icons.whatshot,
+                      color: Theme.of(context).colorScheme.tertiary,
+                    ),
+                    const SizedBox(width: 6),
                     Text(
                       '¡Vas en racha!',
-                      style: TextStyle(color: Colors.orange),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
                     ),
                   ],
                 ),
@@ -156,7 +226,14 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen> {
             const SizedBox(height: 16),
             TextFormField(
               initialValue: notas,
-              decoration: const InputDecoration(labelText: 'Notas (opcional)'),
+              decoration: const InputDecoration(
+                labelText: 'Notas (opcional)',
+                border: OutlineInputBorder(),
+              ),
+              onTap: () {
+                marcadorKey.currentState?.desactivarCampoActivo();
+                setState(() {});
+              },
               onChanged: (v) => notas = v,
               maxLines: 2,
             ),

@@ -36,11 +36,13 @@ bool sumaValida(String t1, String t2, int frameIndex) {
 }
 
 bool mostrarTercerTiro(List<List<String>> frames) {
-  final f10 = frames[9];
-  final t1 = f10[0].toUpperCase();
-  final t2 = f10[1].toUpperCase();
+  if (frames.length < 10) return false;
 
-  return t1 == 'X' || t2 == '/' || t2 == 'X';
+  final f10 = frames[9];
+  final t0 = f10.length > 0 ? f10[0].trim().toUpperCase() : '';
+  final t1 = f10.length > 1 ? f10[1].trim().toUpperCase() : '';
+
+  return t0 == 'X' || t1 == '/';
 }
 
 List<List<String>> interpretarFrames(List<List<String>> entradas) {
@@ -205,6 +207,13 @@ List<int?> calcularPuntuacionPorFrame(
 
   for (int i = 0; i < frames.length && i < 10; i++) {
     final frame = frames[i];
+
+    // ⛔️ NUEVA LÍNEA: omitir si el frame está completamente vacío
+    if (frame.every((t) => t.trim().isEmpty)) {
+      puntuaciones[i] = null;
+      continue;
+    }
+
     final esUltimo = i == 9;
     final tipo = tipoDeFrame(frame, esUltimo: esUltimo);
 
@@ -363,64 +372,107 @@ int calcularPuntuacionMaximaPosible(List<List<String>> frames) {
 
   return total.clamp(0, 300);
 }
-List<String> validarFrame(List<String> frame, {required int index}) {
-  final errores = <String>[];
-  final esUltimo = index == 9;
 
-  // Limpiar y normalizar los tiros
+List<FrameError> validarFrame(List<String> frame, {required int index}) {
+  final errores = <FrameError>[];
+  final esUltimo = index == 9;
   final tiros = frame.map((t) => t.trim().toUpperCase()).toList();
 
-  // Función auxiliar para convertir símbolos a número
+  while (tiros.length < 3) tiros.add('');
+
   int valorNumerico(String s) {
     if (s == 'X') return 10;
     if (s == '-') return 0;
     final n = int.tryParse(s);
-    return n != null ? n.clamp(0, 9) : -1; // -1 = inválido
+    return n != null ? n.clamp(0, 9) : -1;
   }
 
-  // -----------------------------
-  // 1. Validar caracteres permitidos
-  final caracteresValidos = {'X', '/', '-', '', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+  final caracteresValidos = {
+    'X',
+    '/',
+    '-',
+    '',
+    '0',
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+  };
+
+  if (tiros.every((t) => t.isEmpty)) return [];
+
+  if (!esUltimo && tiros[0].isNotEmpty && tiros[1].isEmpty) return [];
+
   for (int i = 0; i < tiros.length; i++) {
     if (!caracteresValidos.contains(tiros[i])) {
-      errores.add('Tiro ${i + 1} del frame ${index + 1} tiene un valor inválido.');
+      errores.add(
+        FrameError(
+          'Tiro ${i + 1} del frame ${index + 1} tiene un valor inválido.',
+        ),
+      );
     }
   }
 
-  // -----------------------------
-  // 2. '/' como primer tiro no es válido
   if (tiros[0] == '/') {
-    errores.add('No se puede usar "/" como primer tiro del frame ${index + 1}.');
+    errores.add(
+      FrameError(
+        'No se puede usar "/" como primer tiro del frame ${index + 1}.',
+      ),
+    );
   }
 
-  // -----------------------------
-  // 3. Solo un 'X' o '/' por frame (excepto frame 10)
   if (!esUltimo) {
     final xCount = tiros.where((t) => t == 'X').length;
     final slashCount = tiros.where((t) => t == '/').length;
+
     if (xCount > 1) {
-      errores.add('Demasiados "X" en el frame ${index + 1}.');
+      errores.add(FrameError('Demasiados "X" en el frame ${index + 1}.'));
     }
+
     if (slashCount > 1) {
-      errores.add('Demasiados "/" en el frame ${index + 1}.');
+      errores.add(FrameError('Demasiados "/" en el frame ${index + 1}.'));
+    }
+
+    if (tiros[1] == 'X') {
+      errores.add(
+        FrameError(
+          'No se permite una "X" como segundo tiro en el frame ${index + 1}.',
+        ),
+      );
+    }
+
+    if (tiros[0] != 'X' && tiros[1].isNotEmpty) {
+      final v1 = valorNumerico(tiros[0]);
+      final v2 = tiros[1] == '/' ? (10 - v1) : valorNumerico(tiros[1]);
+
+      if (v1 < 0 || v2 < 0) {
+        errores.add(FrameError('Tiros inválidos en el frame ${index + 1}.'));
+      } else if (v1 + v2 > 10) {
+        errores.add(
+          FrameError('La suma de pins supera 10 en el frame ${index + 1}.'),
+        );
+      } else if (v1 + v2 == 10 && tiros[1] != '/') {
+        errores.add(
+          FrameError(
+            'El segundo tiro en el frame ${index + 1} debería ser "/" al sumar 10.',
+          ),
+        );
+      } else if (tiros[0] == '0' && tiros[1] == 'X') {
+        errores.add(
+          FrameError(
+            'Se interpreta "0X" como spare. Usa "/" para marcar spare correctamente.',
+            esCritico: false,
+          ),
+        );
+      }
     }
   }
 
-  // -----------------------------
-  // 4. Suma del frame no puede pasar de 10 (frames 1–9, sin strike/spare)
-  if (!esUltimo && tiros[0] != 'X') {
-    final v1 = valorNumerico(tiros[0]);
-    final v2 = tiros[1] == '/' ? (10 - v1) : valorNumerico(tiros[1]);
-
-    if (v1 < 0 || v2 < 0) {
-      errores.add('Tiros inválidos en el frame ${index + 1}.');
-    } else if (v1 + v2 > 10) {
-      errores.add('La suma de pins supera 10 en el frame ${index + 1}.');
-    }
-  }
-
-  // -----------------------------
-  // 5. Frame 10: Validaciones especiales
   if (esUltimo) {
     final t0 = tiros[0];
     final t1 = tiros[1];
@@ -431,29 +483,94 @@ List<String> validarFrame(List<String> frame, {required int index}) {
     final tieneStrikeOspare = t0 == 'X' || t1 == '/';
 
     if (t0.isNotEmpty && t1.isNotEmpty && !tieneStrikeOspare && t2.isNotEmpty) {
-      errores.add('No se permite un tercer tiro en el frame 10 sin strike o spare.');
+      errores.add(
+        FrameError(
+          'No se permite un tercer tiro en el frame 10 sin strike o spare.',
+        ),
+      );
     }
 
     if (t0 != 'X' && t1 == '/') {
       if (v0 < 0 || v0 > 9) {
-        errores.add('Combinación inválida en el frame 10 ("/" sin primer tiro numérico válido).');
+        errores.add(
+          FrameError(
+            'Combinación inválida en el frame 10 ("/" sin primer tiro numérico válido).',
+          ),
+        );
       }
     }
 
     if (t1 == '/' && t0 == 'X') {
-      errores.add('"/" no puede seguir a una "X" directamente en el frame 10.');
+      errores.add(
+        FrameError(
+          '"/" no puede seguir a una "X" directamente en el frame 10.',
+        ),
+      );
     }
   }
 
   return errores;
 }
-List<String> validarPartida(List<List<String>> frames) {
-  final erroresTotales = <String>[];
 
-  for (int i = 0; i < frames.length; i++) {
-    final erroresDelFrame = validarFrame(frames[i], index: i);
-    erroresTotales.addAll(erroresDelFrame);
+List<FrameError> validarPartida(List<List<String>> frames) {
+  final errores = <FrameError>[];
+
+  if (frames.length != 10) {
+    errores.add(FrameError('La partida debe tener exactamente 10 frames.'));
+    return errores; // No tiene sentido seguir validando
   }
 
-  return erroresTotales;
+  bool alMenosUnFrameValido = false;
+
+  for (int i = 0; i < frames.length; i++) {
+    final frame = frames[i];
+    final frameErrores = validarFrame(frame, index: i);
+
+    errores.addAll(frameErrores);
+
+    // Se considera válido si tiene al menos un tiro con valor real
+    if (frame.any((t) => t.trim().isNotEmpty && t.trim() != '-')) {
+      alMenosUnFrameValido = true;
+    }
+  }
+
+  if (!alMenosUnFrameValido) {
+    errores.add(FrameError('La partida no contiene ningún tiro válido.'));
+  }
+
+  return errores;
+}
+
+class FrameError {
+  final String mensaje;
+  final bool esCritico;
+
+  FrameError(this.mensaje, {this.esCritico = true});
+}
+
+Map<int, Set<int>> _obtenerErroresPorTiro(List<List<String>> frames) {
+  final errores = <int, Set<int>>{};
+
+  for (int i = 0; i < frames.length; i++) {
+    final frame = frames[i];
+    final erroresFrame = validarFrame(frame, index: i);
+
+    for (final error in erroresFrame) {
+      final mensaje = error.mensaje;
+
+      // Detectar a qué tiro se refiere el mensaje
+      if (mensaje.contains('Tiro 1')) {
+        errores[i] = (errores[i] ?? {})..add(0);
+      } else if (mensaje.contains('Tiro 2')) {
+        errores[i] = (errores[i] ?? {})..add(1);
+      } else if (mensaje.contains('Tiro 3')) {
+        errores[i] = (errores[i] ?? {})..add(2);
+      } else {
+        // Si el mensaje no menciona tiro específico, marcar todos
+        errores[i] = (errores[i] ?? {})..addAll({0, 1, 2});
+      }
+    }
+  }
+
+  return errores;
 }

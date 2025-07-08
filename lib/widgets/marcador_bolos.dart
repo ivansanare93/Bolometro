@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/animation.dart';
+import '../utils/registro_tiros_utils.dart';
 
 class MarcadorBolos extends StatefulWidget {
   final List<List<String>> frames;
@@ -8,8 +10,9 @@ class MarcadorBolos extends StatefulWidget {
   final bool autoFocusEnabled;
   final bool autoAdvanceFocus;
   final Map<int, Set<int>>? erroresPorTiro;
+  final void Function(int frame, int tiro)? onCampoActivoCambio;
 
-  MarcadorBolos({
+  const MarcadorBolos({
     super.key,
     required this.frames,
     required this.puntuaciones,
@@ -18,19 +21,48 @@ class MarcadorBolos extends StatefulWidget {
     this.autoFocusEnabled = false,
     this.autoAdvanceFocus = false,
     this.erroresPorTiro,
+    this.onCampoActivoCambio,
   });
 
   @override
-  State<MarcadorBolos> createState() => _MarcadorBolosState();
+  MarcadorBolosState createState() => MarcadorBolosState();
 }
 
-class _MarcadorBolosState extends State<MarcadorBolos> {
+class MarcadorBolosState extends State<MarcadorBolos> {
+  late int frameActivo;
+  late int tiroActivo;
   late List<List<TextEditingController>> _controllers;
   late List<List<FocusNode>> _focusNodes;
+  late ScrollController _scrollController;
+
+  void setTiroActivo(int frame, int tiro) {
+    setState(() {
+      frameActivo = frame;
+      tiroActivo = tiro;
+    });
+    widget.onCampoActivoCambio?.call(frame, tiro);
+    _scrollAlFrameActivo();
+  }
+
+  int get frameActivoGetter => frameActivo;
+  int get tiroActivoGetter => tiroActivo;
+
+  bool get hayCampoActivo {
+    return _focusNodes.any((fila) => fila.any((nodo) => nodo.hasFocus));
+  }
+
+  void desactivarCampoActivo() {
+    setState(() {
+      frameActivo = -1;
+      tiroActivo = -1;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
+    frameActivo = widget.frameActivo ?? 0;
+    tiroActivo = 0;
     _controllers = List.generate(
       10,
       (i) => List.generate(
@@ -42,6 +74,87 @@ class _MarcadorBolosState extends State<MarcadorBolos> {
       10,
       (i) => List.generate(3, (j) => FocusNode()),
     );
+    _scrollController = ScrollController();
+  }
+
+  void _scrollAlFrameActivo() {
+    if (frameActivo >= 0 && frameActivo < 10) {
+      final offset = frameActivo * 100.0;
+      _scrollController.animateTo(
+        offset,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void enfocarPrimerError() {
+    final errores = widget.erroresPorTiro;
+    if (errores != null && errores.isNotEmpty) {
+      final primerFrame = errores.keys.first;
+      setState(() {
+        frameActivo = primerFrame;
+        tiroActivo = errores[primerFrame]?.first ?? 0;
+      });
+      widget.onCampoActivoCambio?.call(frameActivo, tiroActivo);
+      _scrollAlFrameActivo();
+    }
+  }
+
+  void insertarValor(String valor) {
+    setState(() {
+      _controllers[frameActivo][tiroActivo].text = valor;
+      widget.onChanged?.call(frameActivo, tiroActivo, valor);
+
+      if (frameActivo < 9) {
+        if (valor == 'X' || tiroActivo == 1) {
+          frameActivo++;
+          tiroActivo = 0;
+        } else {
+          tiroActivo = 1;
+        }
+      } else {
+        if (tiroActivo == 1 && !mostrarTercerTiro(widget.frames)) {
+          return;
+        }
+        if (tiroActivo < 2) {
+          tiroActivo++;
+        }
+      }
+
+      widget.onCampoActivoCambio?.call(frameActivo, tiroActivo);
+      _scrollAlFrameActivo();
+    });
+  }
+
+  void borrarValor() {
+    setState(() {
+      _controllers[frameActivo][tiroActivo].text = '';
+      widget.onChanged?.call(frameActivo, tiroActivo, '');
+      widget.onCampoActivoCambio?.call(frameActivo, tiroActivo);
+    });
+  }
+
+  void siguiente() {
+    setState(() {
+      if (frameActivo < 9) {
+        if (tiroActivo == 0) {
+          tiroActivo = 1;
+        } else {
+          frameActivo++;
+          tiroActivo = 0;
+        }
+      } else {
+        if (tiroActivo == 1 && !mostrarTercerTiro(widget.frames)) {
+          return;
+        }
+        if (tiroActivo < 2) {
+          tiroActivo++;
+        }
+      }
+      widget.onCampoActivoCambio?.call(frameActivo, tiroActivo);
+      _scrollAlFrameActivo();
+    });
   }
 
   @override
@@ -56,40 +169,44 @@ class _MarcadorBolosState extends State<MarcadorBolos> {
         f.dispose();
       }
     }
+    _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
+      controller: _scrollController,
       child: Row(
         children: List.generate(10, (index) {
           final frame = widget.frames[index];
           final puntaje = index < widget.puntuaciones.length
               ? widget.puntuaciones[index]
               : null;
-          final esActivo = index == widget.frameActivo;
           final esUltimo = index == 9;
+
+          final tirosEnFrame = esUltimo
+              ? (mostrarTercerTiro(widget.frames) ? 3 : 2)
+              : 2;
 
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 4),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: esActivo
-                  ? const Color(0xFFE0F3FF)
-                  : const Color(0xFFF0F8FF),
+              color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: esActivo
-                    ? const Color(0xFF0077B6)
-                    : Colors.grey.shade400,
+                color: index == frameActivo
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.outline,
                 width: 2,
               ),
-              boxShadow: esActivo
+              boxShadow: index == frameActivo
                   ? [
                       BoxShadow(
-                        color: Colors.blue.withOpacity(0.2),
+                        color: theme.colorScheme.primary.withOpacity(0.2),
                         blurRadius: 6,
                         offset: const Offset(0, 2),
                       ),
@@ -105,94 +222,91 @@ class _MarcadorBolosState extends State<MarcadorBolos> {
                 const SizedBox(height: 6),
                 Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (int tiro = 0; tiro < (esUltimo ? 3 : 2); tiro++)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 2),
-                        child: Container(
+                  children: List.generate(tirosEnFrame, (tiro) {
+                    final esCampoActivo =
+                        index == frameActivo && tiro == tiroActivo;
+
+                    bool frameCompletoParaValidar() {
+                      if (esUltimo) {
+                        if (tiro == 2) {
+                          final t1 = frame[0];
+                          final t2 = frame[1];
+                          return (t1 == 'X' || t2 == '/') &&
+                              frame[2].isNotEmpty;
+                        }
+                        return frame[0].isNotEmpty && frame[1].isNotEmpty;
+                      } else {
+                        return frame[0].isNotEmpty && frame[1].isNotEmpty;
+                      }
+                    }
+
+                    final mostrarError =
+                        (widget.erroresPorTiro?[index]?.contains(tiro) ??
+                            false) &&
+                        frameCompletoParaValidar();
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      child: AnimatedScale(
+                        scale: esCampoActivo ? 1.05 : 1.0,
+                        duration: const Duration(milliseconds: 150),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: theme.colorScheme.surface,
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
-                              color: (widget.erroresPorTiro?[index]?.contains(tiro) ?? false)
-                                  ? Colors.red
-                                  : const Color(0xFF0077B6),
-                              width: 1.5,
+                              color: mostrarError
+                                  ? theme.colorScheme.error
+                                  : esCampoActivo
+                                  ? Colors.green
+                                  : theme.colorScheme.primary,
+                              width: esCampoActivo ? 2.5 : 1.5,
                             ),
                           ),
                           child: Center(
                             child: TextField(
                               controller: _controllers[index][tiro],
                               focusNode: _focusNodes[index][tiro],
-                              autofocus:
-                                  widget.autoFocusEnabled &&
-                                  index == 0 &&
-                                  tiro == 0,
+                              readOnly: true,
                               textAlign: TextAlign.center,
                               maxLength: 1,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
+                                color: esCampoActivo
+                                    ? Colors.green
+                                    : theme.colorScheme.onSurface,
                               ),
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 border: InputBorder.none,
                                 counterText: '',
                                 isCollapsed: true,
                                 contentPadding: EdgeInsets.zero,
-                                focusedBorder: (widget.erroresPorTiro?[index]?.contains(tiro) ?? false)
-                                    ? const OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.red, width: 2),
-                                      )
-                                    : null,
                               ),
-                              onChanged: (v) {
-                                widget.onChanged?.call(index, tiro, v);
-                                if (widget.autoAdvanceFocus &&
-                                    v.trim().isNotEmpty) {
-                                  final valor = v.trim().toUpperCase();
-
-                                  if (esUltimo) {
-                                    if (tiro == 0 && valor == 'X') {
-                                      FocusScope.of(
-                                        context,
-                                      ).requestFocus(_focusNodes[index][1]);
-                                    } else if (tiro == 1 &&
-                                        (frame[0] == 'X' || frame[1] == '/')) {
-                                      FocusScope.of(
-                                        context,
-                                      ).requestFocus(_focusNodes[index][2]);
-                                    } else if (tiro < 2) {
-                                      FocusScope.of(context).requestFocus(
-                                        _focusNodes[index][tiro + 1],
-                                      );
-                                    }
-                                  } else {
-                                    if (tiro == 0) {
-                                      if (valor == 'X') {
-                                        if (index < 9) {
-                                          FocusScope.of(context).requestFocus(
-                                            _focusNodes[index + 1][0],
-                                          );
-                                        }
-                                      } else {
-                                        FocusScope.of(
-                                          context,
-                                        ).requestFocus(_focusNodes[index][1]);
-                                      }
-                                    } else if (tiro == 1 && index < 9) {
-                                      FocusScope.of(
-                                        context,
-                                      ).requestFocus(_focusNodes[index + 1][0]);
-                                    }
-                                  }
-                                }
+                              onTap: () {
+                                setState(() {
+                                  frameActivo = index;
+                                  tiroActivo = tiro;
+                                });
+                                widget.onChanged?.call(
+                                  index,
+                                  tiro,
+                                  _controllers[index][tiro].text,
+                                );
+                                widget.onCampoActivoCambio?.call(
+                                  frameActivo,
+                                  tiroActivo,
+                                );
+                                _scrollAlFrameActivo();
                               },
                             ),
                           ),
                         ),
                       ),
-                  ],
+                    );
+                  }),
                 ),
                 const SizedBox(height: 6),
                 Text(
@@ -200,8 +314,8 @@ class _MarcadorBolosState extends State<MarcadorBolos> {
                   style: TextStyle(
                     fontSize: 16,
                     color: puntaje == null
-                        ? Colors.grey
-                        : const Color(0xFF0077B6),
+                        ? theme.hintColor
+                        : theme.colorScheme.primary,
                     fontWeight: puntaje == null
                         ? FontWeight.normal
                         : FontWeight.bold,

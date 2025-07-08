@@ -5,7 +5,7 @@ import 'lista_sesiones_screen.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
-import '../providers/language_provider.dart';
+import '../screens/registro_completo_sesion_screen .dart';
 
 class HomeScreen extends StatelessWidget {
   final bool mostrarAppBar;
@@ -18,10 +18,10 @@ class HomeScreen extends StatelessWidget {
       appBar: mostrarAppBar
           ? AppBar(
               title: Row(
-                children: [
-                  const FaIcon(FontAwesomeIcons.bowlingBall),
-                  const SizedBox(width: 8),
-                  const Text('Menú Inicial'),
+                children: const [
+                  FaIcon(FontAwesomeIcons.bowlingBall),
+                  SizedBox(width: 8),
+                  Text('Menú Inicial'),
                 ],
               ),
               actions: [
@@ -40,7 +40,6 @@ class HomeScreen extends StatelessWidget {
                         final themeProvider = Provider.of<ThemeProvider>(
                           context,
                         );
-                        final languageProvider = Provider.of<LanguageProvider>(context);
 
                         return Padding(
                           padding: const EdgeInsets.all(16),
@@ -72,9 +71,8 @@ class HomeScreen extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              const Divider(height: 32),
 
-                              // 🔜 Más ajustes aquí
+                              const Divider(height: 32),
                               const Text(
                                 'Más opciones próximamente...',
                                 style: TextStyle(
@@ -99,28 +97,34 @@ class HomeScreen extends StatelessWidget {
           children: [
             Center(
               child: Column(
-                children: [
-                  const SizedBox(height: 32),
-                  Image.asset('assets/logo_bolometro.png', height: 120),
-                  const SizedBox(height: 12),
-                  const Text(
+                children: const [
+                  SizedBox(height: 32),
+                  Image(
+                    image: AssetImage('assets/logo_bolometro.png'),
+                    height: 120,
+                  ),
+                  SizedBox(height: 12),
+                  Text(
                     '¡Bienvenid@, vamos a lanzar unos strikes!',
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                 ],
               ),
             ),
             Card(
               child: ListTile(
-                leading: const Icon(Icons.event_note),
-                title: const Text('Registrar Sesión'),
-                subtitle: const Text('Una sesión con múltiples partidas'),
+                leading: const Padding(
+                  padding: EdgeInsets.only(top: 4),
+                  child: Text('🎳', style: TextStyle(fontSize: 32)),
+                ),
+                title: const Text('Nueva Sesión'),
+                subtitle: const Text('Registrar varias partidas'),
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const RegistroSesionScreen(),
+                      builder: (_) => const RegistroCompletoSesionScreen(),
                     ),
                   );
                 },
@@ -128,8 +132,8 @@ class HomeScreen extends StatelessWidget {
             ),
             Card(
               child: ListTile(
-                leading: const Icon(Icons.history),
-                title: const Text('Ver Sesiones'),
+                leading: const Text('📋', style: TextStyle(fontSize: 32)),
+                title: const Text('Ver sesiones'),
                 subtitle: const Text('Listado de sesiones registradas'),
                 onTap: () {
                   Navigator.push(
@@ -143,7 +147,7 @@ class HomeScreen extends StatelessWidget {
             ),
             Card(
               child: ListTile(
-                leading: const Icon(Icons.bar_chart),
+                leading: const Text('📊', style: TextStyle(fontSize: 32)),
                 title: const Text('Estadísticas'),
                 subtitle: const Text('Resumen de tu rendimiento'),
                 onTap: () {

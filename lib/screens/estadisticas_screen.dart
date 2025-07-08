@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../models/sesion.dart';
 import '../utils/database_utils.dart';
+import '../utils/ui_herlpers.dart';
+import 'home_screen.dart';
 
 class EstadisticasScreen extends StatefulWidget {
   const EstadisticasScreen({super.key});
@@ -22,7 +24,6 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorPrimario = Theme.of(context).colorScheme.primary;
     return Scaffold(
       appBar: AppBar(title: const Text('Estadísticas')),
       body: FutureBuilder<List<Sesion>>(
@@ -64,21 +65,33 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
               .map((p) => p.total)
               .reduce((a, b) => a < b ? a : b);
 
-          final partidasPorTipo = {
-            'Entrenamiento': partidas
-                .where((p) => p.tipo == 'Entrenamiento')
-                .toList(),
-            'Competición': partidas
-                .where((p) => p.tipo == 'Competición')
-                .toList(),
-          };
+          List<FlSpot> spotsEntrenamiento = [];
+          List<FlSpot> spotsCompeticion = [];
+          int index = 0;
+
+          for (var s in sesionesFiltradas) {
+            for (var p in s.partidas) {
+              if (p.tipo == 'Entrenamiento') {
+                spotsEntrenamiento.add(
+                  FlSpot(index.toDouble(), p.total.toDouble()),
+                );
+              } else if (p.tipo == 'Competición') {
+                spotsCompeticion.add(
+                  FlSpot(index.toDouble(), p.total.toDouble()),
+                );
+              }
+              index++;
+            }
+          }
+
+          final maxY =
+              300.0; // Valor máximo fijo ya que no se puede superar 300
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Filtros
                 Row(
                   children: [
                     const Text('Filtrar por tipo:'),
@@ -90,60 +103,57 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
                             (e) => DropdownMenuItem(value: e, child: Text(e)),
                           )
                           .toList(),
-                      onChanged: (valor) =>
-                          setState(() => _filtroTipo = valor!),
+                      onChanged: (valor) {
+                        if (valor != null) {
+                          setState(() {
+                            _filtroTipo = valor;
+                          });
+                        }
+                      },
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-
-                // Métricas
                 Text(
                   'Promedio: ${promedio.toStringAsFixed(1)}',
-                  style: const TextStyle(fontSize: 18),
+                  style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 Text(
                   'Mejor partida: $mejor',
-                  style: const TextStyle(fontSize: 16),
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 Text(
                   'Peor partida: $peor',
-                  style: const TextStyle(fontSize: 16),
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 24),
-
-                // Gráfico de barras por tipo
                 Text(
-                  'Promedio por tipo',
+                  'Evolución de puntuaciones',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
-                  height: 200,
-                  child: BarChart(
-                    BarChartData(
-                      alignment: BarChartAlignment.spaceAround,
-                      maxY: 300,
-                      barTouchData: BarTouchData(enabled: false),
+                  height: 240,
+                  child: LineChart(
+                    LineChartData(
+                      maxY: maxY,
                       titlesData: FlTitlesData(
-                        leftTitles: AxisTitles(
-                          sideTitles: SideTitles(showTitles: true),
-                        ),
                         bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        leftTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
-                            getTitlesWidget: (value, _) {
-                              final keys = partidasPorTipo.keys.toList();
-                              if (value.toInt() >= keys.length)
-                                return const SizedBox();
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
-                                child: Text(
-                                  keys[value.toInt()],
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                              );
-                            },
+                            reservedSize: 40,
+                            interval: 50,
+                            getTitlesWidget: (value, meta) => Padding(
+                              padding: const EdgeInsets.only(right: 4),
+                              child: Text(
+                                value.toInt().toString(),
+                                style: Theme.of(context).textTheme.bodySmall,
+                                textAlign: TextAlign.right,
+                              ),
+                            ),
                           ),
                         ),
                         rightTitles: AxisTitles(
@@ -153,28 +163,46 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
                           sideTitles: SideTitles(showTitles: false),
                         ),
                       ),
-                      borderData: FlBorderData(show: false),
-                      barGroups: List.generate(partidasPorTipo.length, (i) {
-                        final tipo = partidasPorTipo.keys.elementAt(i);
-                        final lista = partidasPorTipo[tipo]!;
-                        final prom =
-                            lista.map((p) => p.total).reduce((a, b) => a + b) /
-                            lista.length;
-
-                        return BarChartGroupData(
-                          x: i,
-                          barRods: [
-                            BarChartRodData(
-                              toY: prom,
-                              color: colorPrimario,
-                              width: 24,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ],
-                        );
-                      }),
+                      gridData: FlGridData(show: true, horizontalInterval: 50),
+                      borderData: FlBorderData(show: true),
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: spotsEntrenamiento,
+                          isCurved: true,
+                          color: colorTipoSesion('Entrenamiento', context),
+                          barWidth: 2,
+                          dotData: FlDotData(show: true),
+                        ),
+                        LineChartBarData(
+                          spots: spotsCompeticion,
+                          isCurved: true,
+                          color: colorTipoSesion('Competición', context),
+                          barWidth: 2,
+                          dotData: FlDotData(show: true),
+                        ),
+                      ],
                     ),
                   ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.circle,
+                      color: colorTipoSesion('Entrenamiento', context),
+                      size: 12,
+                    ),
+                    const SizedBox(width: 4),
+                    const Text('Entrenamiento'),
+                    const SizedBox(width: 12),
+                    Icon(
+                      Icons.circle,
+                      color: colorTipoSesion('Competición', context),
+                      size: 12,
+                    ),
+                    const SizedBox(width: 4),
+                    const Text('Competición'),
+                  ],
                 ),
                 const SizedBox(height: 24),
                 Text('Sesiones analizadas: ${sesionesFiltradas.length}'),
@@ -183,6 +211,17 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
             ),
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+            (route) => false,
+          );
+        },
+        tooltip: 'Inicio',
+        child: const Icon(Icons.home),
       ),
     );
   }

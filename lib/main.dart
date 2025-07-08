@@ -49,7 +49,14 @@ class BolosApp extends StatelessWidget {
       supportedLocales: const [Locale('es'), Locale('en')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       home: const HomeScreen(),
-      routes: {'/registro': (_) => const RegistroSesionScreen()},
+      routes: {
+        '/registro': (_) => RegistroSesionScreen(
+          onGuardar: (partida) {
+            // Aquí puedes manejar cómo guardar la partida
+            print('Partida guardada desde ruta: ${partida.total}');
+          },
+        ),
+      },
     );
   }
 }

@@ -1,384 +1,270 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
-import '../models/sesion.dart';
 import '../models/partida.dart';
 import '../utils/registro_tiros_utils.dart';
+import '../widgets/marcador_bolos.dart';
+import '../utils/teclado_tiros_adaptativo.dart';
 import 'home_screen.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'editar_partida_screen.dart';
-import 'package:test_bolos/widgets/marcador_bolos.dart';
 
 class RegistroSesionScreen extends StatefulWidget {
-  const RegistroSesionScreen({super.key});
+  final void Function(Partida nuevaPartida) onGuardar;
+
+  const RegistroSesionScreen({super.key, required this.onGuardar});
 
   @override
   State<RegistroSesionScreen> createState() => _RegistroSesionScreenState();
 }
 
 class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
-  final _formKey = GlobalKey<FormState>();
-  DateTime _fecha = DateTime.now();
-  String _lugar = '';
+  final marcadorKey = GlobalKey<MarcadorBolosState>();
+
+  late List<List<String>> framesText;
   String _tipo = 'Entrenamiento';
-  String? _notas;
+  String _lugar = '';
+  String? notas;
+  Map<int, Set<int>> erroresPorTiro = {};
+  final ValueNotifier<Set<String>> teclasDeshabilitadas = ValueNotifier({});
 
-  final List<Partida> _partidas = [];
-
-  void _guardarSesion() async {
-    if (_formKey.currentState!.validate() && _partidas.isNotEmpty) {
-      final nuevaSesion = Sesion(
-        fecha: _fecha,
-        lugar: _lugar,
-        tipo: _tipo,
-        notas: _notas,
-        partidas: _partidas,
-      );
-
-      final box = Hive.box<Sesion>('sesiones');
-      await box.add(nuevaSesion);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('✅ Sesión guardada con éxito 🎉'),
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 2),
-        ),
-      );
-
-      await Future.delayed(const Duration(milliseconds: 700));
-
-      if (!mounted) return;
-      Navigator.pushAndRemoveUntil(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const HomeScreen(),
-          transitionsBuilder: (_, animation, __, child) {
-            final offsetAnimation = Tween<Offset>(
-              begin: const Offset(1.0, 0.0),
-              end: Offset.zero,
-            ).animate(animation);
-
-            return SlideTransition(position: offsetAnimation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 400),
-        ),
-        (route) => false,
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Completa los datos y añade al menos una partida.'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
+  @override
+  void initState() {
+    super.initState();
+    framesText = List.generate(10, (_) => List.filled(3, ''));
+    erroresPorTiro = _obtenerErroresPorTiro(framesText);
   }
 
-  Future<void> _mostrarDialogoNuevaPartida() async {
-    List<List<String>> framesText = List.generate(10, (_) => ['', '', '']);
-    String? notas;
-    Map<int, Set<int>> erroresPorTiro = {};
+  Map<int, Set<int>> _obtenerErroresPorTiro(List<List<String>> frames) {
+    final errores = <int, Set<int>>{};
+    for (int i = 0; i < frames.length; i++) {
+      final frame = frames[i];
+      final erroresFrame = validarFrame(frame, index: i);
+      for (final error in erroresFrame) {
+        final mensaje = error.mensaje;
+        if (mensaje.contains('Tiro 1')) {
+          errores[i] = (errores[i] ?? {})..add(0);
+        } else if (mensaje.contains('Tiro 2')) {
+          errores[i] = (errores[i] ?? {})..add(1);
+        } else if (mensaje.contains('Tiro 3')) {
+          errores[i] = (errores[i] ?? {})..add(2);
+        } else {
+          errores[i] = (errores[i] ?? {})..addAll({0, 1, 2});
+        }
+      }
+    }
+    return errores;
+  }
 
-    await showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        insetPadding: const EdgeInsets.all(24),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: StatefulBuilder(
-          builder: (context, setStateDialog) {
-            final frames = interpretarFrames(framesText);
-            final puntuacionActual = calcularPuntuacionPartida(frames);
-            final puntuacionMaxima = calcularPuntuacionMaximaPosible(frames);
-            final buenaRacha = esBuenaRacha(frames);
+  void _guardar() {
+    final nuevosFrames = interpretarFrames(framesText);
+    final errores = validarPartida(framesText);
 
-            Map<int, Set<int>> obtenerErroresPorTiro(
-              List<List<String>> frames,
-            ) {
-              final errores = <int, Set<int>>{};
-
-              for (int i = 0; i < frames.length; i++) {
-                final frame = frames[i];
-                final erroresFrame = validarFrame(frame, index: i);
-
-                for (final error in erroresFrame) {
-                  if (error.contains('Tiro 1')) {
-                    errores[i] = (errores[i] ?? {})..add(0);
-                  } else if (error.contains('Tiro 2')) {
-                    errores[i] = (errores[i] ?? {})..add(1);
-                  } else if (error.contains('Tiro 3')) {
-                    errores[i] = (errores[i] ?? {})..add(2);
-                  } else {
-                    errores[i] = {0, 1, 2};
-                  }
-                }
-              }
-
-              return errores;
-            }
-
-            return Padding(
-              padding: const EdgeInsets.all(16),
-              child: SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.85,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Row(
-                        children: [
-                          FaIcon(FontAwesomeIcons.bowlingBall, size: 28),
-                          SizedBox(width: 8),
-                          Text(
-                            'Nueva partida',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      MarcadorBolos(
-                        frames: framesText,
-                        puntuaciones: calcularPuntuacionPorFrame(
-                          framesText,
-                          permitirNulos: true,
-                        ),
-                        frameActivo: framesText.indexWhere(
-                          (f) =>
-                              tipoDeFrame(
-                                f,
-                                esUltimo: framesText.indexOf(f) == 9,
-                              ) ==
-                              TipoFrame.incompleto,
-                        ),
-                        autoAdvanceFocus: true,
-                        autoFocusEnabled: true,
-                        erroresPorTiro: erroresPorTiro,
-                        onChanged: (frame, tiro, valor) {
-                          setStateDialog(() {
-                            framesText[frame][tiro] = valor
-                                .trim()
-                                .toUpperCase();
-                            erroresPorTiro = obtenerErroresPorTiro(framesText);
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      Text('Puntuación actual: $puntuacionActual'),
-                      Text(
-                        'Máximo posible: $puntuacionMaxima',
-                        style: const TextStyle(color: Colors.grey),
-                      ),
-                      if (buenaRacha)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 4),
-                          child: Row(
-                            children: [
-                              Icon(Icons.whatshot, color: Colors.orange),
-                              SizedBox(width: 6),
-                              Text(
-                                '¡Vas en racha!',
-                                style: TextStyle(color: Colors.orange),
-                              ),
-                            ],
-                          ),
-                        ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        decoration: const InputDecoration(
-                          labelText: 'Notas (opcional)',
-                          border: OutlineInputBorder(),
-                        ),
-                        maxLines: 2,
-                        onChanged: (value) => notas = value,
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Cancelar'),
-                          ),
-                          const SizedBox(width: 8),
-                          ElevatedButton.icon(
-                            icon: const Icon(Icons.check),
-                            label: const Text('Añadir'),
-                            onPressed: () {
-                              final frames = interpretarFrames(framesText);
-                              final tieneTiros = frames.any(
-                                (f) => f.any((t) => t.isNotEmpty),
-                              );
-
-                              final errores = validarPartida(framesText);
-                              if (!tieneTiros) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Debes ingresar al menos un tiro válido.',
-                                    ),
-                                  ),
-                                );
-                                return;
-                              }
-
-                              if (errores.isNotEmpty) {
-                                showDialog(
-                                  context: context,
-                                  builder: (_) => AlertDialog(
-                                    title: const Text('Errores en la partida'),
-                                    content: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: errores
-                                          .map((e) => Text('• $e'))
-                                          .toList(),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        child: const Text('Entendido'),
-                                        onPressed: () => Navigator.pop(context),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                                return;
-                              }
-
-                              final total = calcularPuntuacionPartida(frames);
-                              final nuevaPartida = Partida(
-                                fecha: DateTime.now(),
-                                lugar: _lugar,
-                                tipo: _tipo,
-                                frames: frames,
-                                notas: notas,
-                                total: total,
-                              );
-                              setState(() => _partidas.add(nuevaPartida));
-                              Navigator.pop(context);
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
+    if (errores.isNotEmpty) {
+      marcadorKey.currentState?.enfocarPrimerError();
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Errores en la partida'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: errores.map((e) => Text('• ${e.mensaje}')).toList(),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Entendido'),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
         ),
-      ),
+      );
+      return;
+    }
+
+    final nuevoTotal = calcularPuntuacionPartida(nuevosFrames);
+
+    if (nuevoTotal == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('La partida no tiene puntuación válida.'),
+          backgroundColor: Theme.of(context).colorScheme.errorContainer,
+        ),
+      );
+      return;
+    }
+
+    final nuevaPartida = Partida(
+      fecha: DateTime.now(),
+      lugar: _lugar.trim(),
+      tipo: _tipo.trim(),
+      frames: nuevosFrames,
+      notas: notas?.trim().isEmpty == true ? null : notas?.trim(),
+      total: nuevoTotal,
     );
+
+    widget.onGuardar(nuevaPartida);
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final frames = interpretarFrames(framesText);
+    final puntuacionActual = calcularPuntuacionPartida(frames);
+    final puntuacionMaxima = calcularPuntuacionMaximaPosible(frames);
+    final buenaRacha = esBuenaRacha(frames);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Registrar Sesión')),
+      appBar: AppBar(title: const Text('Registrar Partida')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Fecha: ${_fecha.toLocal().toString().split(" ")[0]}'),
-              ElevatedButton(
-                onPressed: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: _fecha,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2100),
-                  );
-                  if (picked != null) setState(() => _fecha = picked);
-                },
-                child: const Text('Seleccionar fecha'),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: _tipo,
+              decoration: const InputDecoration(labelText: 'Tipo de partida'),
+              items: ['Entrenamiento', 'Competición']
+                  .map(
+                    (tipo) => DropdownMenuItem(value: tipo, child: Text(tipo)),
+                  )
+                  .toList(),
+              onChanged: (value) =>
+                  setState(() => _tipo = value ?? 'Entrenamiento'),
+            ),
+            const SizedBox(height: 16),
+            MarcadorBolos(
+              key: marcadorKey,
+              frames: framesText,
+              puntuaciones: calcularPuntuacionPorFrame(framesText),
+              frameActivo: framesText.indexWhere(
+                (f) =>
+                    tipoDeFrame(f, esUltimo: framesText.indexOf(f) == 9) ==
+                    TipoFrame.incompleto,
               ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Lugar'),
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Campo obligatorio' : null,
-                onChanged: (value) => _lugar = value,
+              erroresPorTiro: erroresPorTiro,
+              onChanged: (frame, tiro, valor) {
+                setState(() {
+                  framesText[frame][tiro] = valor.trim().toUpperCase();
+                  erroresPorTiro = _obtenerErroresPorTiro(framesText);
+                });
+                final f = marcadorKey.currentState;
+                if (f != null &&
+                    f.frameActivoGetter >= 0 &&
+                    f.tiroActivoGetter >= 0) {
+                  teclasDeshabilitadas.value =
+                      TecladoTiros.calcularTeclasDeshabilitadas(
+                        frame: f.frameActivoGetter,
+                        tiro: f.tiroActivoGetter,
+                        frames: framesText,
+                      );
+                }
+              },
+              autoFocusEnabled: true,
+              autoAdvanceFocus: true,
+            ),
+            const SizedBox(height: 16),
+            TecladoTiros(
+              onKeyPress: (valor) {
+                if (valor == '⌫') {
+                  marcadorKey.currentState?.borrarValor();
+                } else if (valor == '→') {
+                  marcadorKey.currentState?.siguiente();
+                } else {
+                  marcadorKey.currentState?.insertarValor(valor);
+                }
+                final f = marcadorKey.currentState;
+                if (f != null &&
+                    f.frameActivoGetter >= 0 &&
+                    f.tiroActivoGetter >= 0) {
+                  teclasDeshabilitadas.value =
+                      TecladoTiros.calcularTeclasDeshabilitadas(
+                        frame: f.frameActivoGetter,
+                        tiro: f.tiroActivoGetter,
+                        frames: framesText,
+                      );
+                }
+              },
+              deshabilitadosNotifier: teclasDeshabilitadas,
+            ),
+            const SizedBox(height: 16),
+            Card(
+              elevation: 2,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              DropdownButtonFormField<String>(
-                value: _tipo,
-                items: ['Entrenamiento', 'Competición']
-                    .map(
-                      (tipo) =>
-                          DropdownMenuItem(value: tipo, child: Text(tipo)),
-                    )
-                    .toList(),
-                onChanged: (value) =>
-                    setState(() => _tipo = value ?? 'Entrenamiento'),
-                decoration: const InputDecoration(labelText: 'Tipo'),
-              ),
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Notas (opcional)',
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
                 ),
-                onChanged: (value) => _notas = value,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Partidas añadidas:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              ..._partidas.map(
-                (p) => ListTile(
-                  title: Text('Puntaje: ${p.total}'),
-                  subtitle: Text(
-                    'Frames: ${p.frames.length} | ${p.fecha.toLocal().toString().split(" ")[0]}',
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
-                        onPressed: () async {
-                          final index = _partidas.indexOf(p);
-                          final partidaEditada = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => EditarPartidaScreen(
-                                partida: p,
-                                onGuardar: (actualizada) {
-                                  setState(() {
-                                    _partidas[index] = actualizada;
-                                  });
-                                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Text('🎯', style: TextStyle(fontSize: 22)),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Puntuación actual: $puntuacionActual',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Text('🚀', style: TextStyle(fontSize: 22)),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Máximo posible: $puntuacionMaxima',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                fontStyle: FontStyle.italic,
+                                color: Theme.of(context).colorScheme.primary,
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => setState(() => _partidas.remove(p)),
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (buenaRacha)
+              Row(
+                children: [
+                  Icon(
+                    Icons.whatshot,
+                    color: Theme.of(context).colorScheme.tertiary,
                   ),
-                ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '¡Vas en racha!',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.tertiary,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              ElevatedButton.icon(
-                onPressed: _mostrarDialogoNuevaPartida,
-                icon: const Icon(Icons.add),
-                label: const Text('Añadir partida'),
+            const SizedBox(height: 16),
+            TextFormField(
+              decoration: const InputDecoration(
+                labelText: 'Notas (opcional)',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 24),
-              Center(
-                child: ElevatedButton(
-                  onPressed: _guardarSesion,
-                  child: const Text('Guardar sesión'),
-                ),
-              ),
-            ],
-          ),
+              onTap: () {
+                marcadorKey.currentState?.desactivarCampoActivo();
+                setState(() {});
+              },
+              onChanged: (v) => notas = v,
+              maxLines: 2,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _guardar,
+              icon: const Icon(Icons.save),
+              label: const Text('Guardar Partida'),
+            ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
