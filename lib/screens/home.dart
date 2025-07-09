@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'registro_sesion_screen.dart';
-import 'estadisticas_screen.dart';
-import 'lista_sesiones_screen.dart';
+import 'registro_sesion.dart';
+import 'estadisticas.dart';
+import 'lista_sesiones.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
-import '../screens/registro_completo_sesion_screen .dart';
+import 'registro_completo_sesion .dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class HomeScreen extends StatelessWidget {
   final bool mostrarAppBar;
@@ -55,7 +56,6 @@ class HomeScreen extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 16),
-
                               // 🌙 Modo oscuro
                               Row(
                                 mainAxisAlignment:
@@ -71,7 +71,6 @@ class HomeScreen extends StatelessWidget {
                                   ),
                                 ],
                               ),
-
                               const Divider(height: 32),
                               const Text(
                                 'Más opciones próximamente...',
@@ -79,6 +78,27 @@ class HomeScreen extends StatelessWidget {
                                   fontSize: 14,
                                   color: Colors.grey,
                                 ),
+                              ),
+                              const SizedBox(height: 16),
+                              // 🟦 Aquí mostramos la versión:
+                              const SizedBox(height: 28),
+                              FutureBuilder<PackageInfo>(
+                                future: PackageInfo.fromPlatform(),
+                                builder: (context, snapshot) {
+                                  if (!snapshot.hasData)
+                                    return const SizedBox(height: 18);
+                                  final version = snapshot.data!.version;
+                                  final build = snapshot.data!.buildNumber;
+                                  return Center(
+                                    child: Text(
+                                      'Versión: $version',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ],
                           ),

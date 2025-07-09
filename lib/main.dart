@@ -10,16 +10,22 @@ import 'models/partida.dart';
 import 'models/sesion.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import 'screens/home_screen.dart';
-import 'screens/registro_sesion_screen.dart';
+import 'screens/home.dart';
+import 'screens/registro_sesion.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
 
+      // Borra las boxes (¡esto elimina todas las partidas y sesiones!)
+  /*await Hive.deleteBoxFromDisk('partidas');
+  await Hive.deleteBoxFromDisk('sesiones');
+*/
+
   Hive.registerAdapter(PartidaAdapter());
   Hive.registerAdapter(SesionAdapter());
   await Hive.openBox<Sesion>('sesiones');
+
 
   runApp(
     MultiProvider(

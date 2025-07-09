@@ -13,6 +13,28 @@ class ListaPartidas extends StatelessWidget {
     required this.onBorrar,
   });
 
+  Future<bool?> _confirmarBorrado(BuildContext context) async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('¿Eliminar partida?'),
+        content: const Text(
+          '¿Seguro que quieres eliminar esta partida? Esta acción no se puede deshacer.',
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Cancelar'),
+            onPressed: () => Navigator.of(context).pop(false),
+          ),
+          TextButton(
+            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+            onPressed: () => Navigator.of(context).pop(true),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (partidas.isEmpty) {
@@ -32,25 +54,23 @@ class ListaPartidas extends StatelessWidget {
       itemCount: partidas.length,
       itemBuilder: (_, index) {
         final p = partidas[index];
-        return Card(
-          elevation: 1,
-          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
-          child: ListTile(
-            title: Text('Partida ${index + 1} - ${p.total} puntos'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  tooltip: 'Editar',
-                  onPressed: () => onEditar(index),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline),
-                  tooltip: 'Borrar',
-                  onPressed: () => onBorrar(index),
-                ),
-              ],
+        return Dismissible(
+          key: Key('partida_$index'),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            color: Colors.red,
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: const Icon(Icons.delete, color: Colors.white),
+          ),
+          confirmDismiss: (_) => _confirmarBorrado(context),
+          onDismissed: (_) => onBorrar(index),
+          child: Card(
+            elevation: 1,
+            margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
+            child: ListTile(
+              title: Text('Partida ${index + 1} - ${p.total} puntos'),
+              onTap: () => onEditar(index), // ← Toca para editar
             ),
           ),
         );

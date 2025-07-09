@@ -3,29 +3,33 @@ import '../models/partida.dart';
 import '../utils/registro_tiros_utils.dart';
 import '../widgets/marcador_bolos.dart';
 import '../utils/teclado_tiros_adaptativo.dart';
-import '../widgets/selector_tipo_partida.dart';
 import '../widgets/resumen_puntuacion.dart';
+import '../widgets/selector_tipo_partida.dart';
 import '../widgets/notas_field.dart';
+import 'home.dart';
 
-class RegistroSesionScreen extends StatefulWidget {
-  final void Function(Partida nuevaPartida) onGuardar;
+class EditarPartidaScreen extends StatefulWidget {
+  final Partida partida;
+  final Function(Partida partidaActualizada) onGuardar;
 
-  const RegistroSesionScreen({super.key, required this.onGuardar});
+  const EditarPartidaScreen({
+    super.key,
+    required this.partida,
+    required this.onGuardar,
+  });
 
   @override
-  State<RegistroSesionScreen> createState() => _RegistroSesionScreenState();
+  State<EditarPartidaScreen> createState() => _EditarPartidaScreenState();
 }
 
-class _RegistroSesionScreenState extends State<RegistroSesionScreen>
+class _EditarPartidaScreenState extends State<EditarPartidaScreen>
     with SingleTickerProviderStateMixin {
+  late List<List<String>> framesText;
+  late String? notas;
+  Map<int, Set<int>> erroresPorTiro = {};
   final marcadorKey = GlobalKey<MarcadorBolosState>();
   final ValueNotifier<Set<String>> teclasDeshabilitadas = ValueNotifier({});
   final ValueNotifier<bool> mostrarTeclado = ValueNotifier(false);
-
-  late List<List<String>> framesText;
-  String _tipo = 'Entrenamiento';
-  String? notas;
-  Map<int, Set<int>> erroresPorTiro = {};
 
   late AnimationController _animController;
   late Animation<double> _animacionTeclado;
@@ -33,7 +37,10 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
   @override
   void initState() {
     super.initState();
-    framesText = List.generate(10, (_) => List.filled(3, ''));
+    framesText = widget.partida.frames
+        .map((f) => f.map((v) => v == '0' ? '-' : v).toList()..length = 3)
+        .toList();
+    notas = widget.partida.notas;
     erroresPorTiro = _obtenerErroresPorTiro(framesText);
 
     _animController = AnimationController(
@@ -50,6 +57,18 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
         _animController.forward();
       } else {
         _animController.reverse();
+      }
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final f = marcadorKey.currentState;
+      if (f != null && f.frameActivoGetter >= 0 && f.tiroActivoGetter >= 0) {
+        teclasDeshabilitadas.value = TecladoTiros.calcularTeclasDeshabilitadas(
+          frame: f.frameActivoGetter,
+          tiro: f.tiroActivoGetter,
+          frames: framesText,
+        );
+        mostrarTeclado.value = true;
       }
     });
   }
@@ -94,7 +113,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: errores.map((e) => Text('• ${e.mensaje}')).toList(),
+            children: errores.map((e) => Text('• $e')).toList(),
           ),
           actions: [
             TextButton(
@@ -119,16 +138,13 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
       return;
     }
 
-    final nuevaPartida = Partida(
-      fecha: DateTime.now(),
-      lugar: '', // Se podría pedir como campo si lo necesitas
-      tipo: _tipo.trim(),
+    final partidaActualizada = widget.partida.copyWith(
       frames: nuevosFrames,
-      notas: notas?.trim().isEmpty == true ? null : notas?.trim(),
+      notas: notas,
       total: nuevoTotal,
     );
 
-    widget.onGuardar(nuevaPartida);
+    widget.onGuardar(partidaActualizada);
     Navigator.pop(context);
   }
 
@@ -152,17 +168,12 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
     final buenaRacha = esBuenaRacha(frames);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Registrar Partida')),
+      appBar: AppBar(title: const Text('Editar Partida')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SelectorTipoPartida(
-              value: _tipo,
-              onChanged: (value) =>
-                  setState(() => _tipo = value ?? 'Entrenamiento'),
-            ),
             const SizedBox(height: 16),
             MarcadorBolos(
               key: marcadorKey,
@@ -227,22 +238,50 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
             NotasField(
               initialValue: notas,
               onChanged: (v) => notas = v,
-              onFocusChange: (focused) {
-                if (focused) {
-                  marcadorKey.currentState?.desactivarCampoActivo();
-                  mostrarTeclado.value = false;
-                  setState(() {});
-                }
+              onTap: () {
+                marcadorKey.currentState?.desactivarCampoActivo();
+                mostrarTeclado.value = false;
+                setState(() {});
               },
             ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _guardar,
-              icon: const Icon(Icons.save),
-              label: const Text('Guardar Partida'),
+            const SizedBox(height: 40), // Deja espacio para el botón fijo
+          ],
+        ),
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 14,
+              offset: const Offset(0, -2),
             ),
           ],
         ),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        child: ElevatedButton.icon(
+          onPressed: _guardar,
+          icon: const Icon(Icons.save),
+          label: const Text('Guardar cambios'),
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size.fromHeight(48),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+            (route) => false,
+          );
+        },
+        tooltip: 'Inicio',
+        child: const Icon(Icons.home),
       ),
     );
   }

@@ -64,8 +64,8 @@ class TecladoTiros extends StatelessWidget {
           if (primerValor != null) {
             for (var n in numeros) {
               final segundoValor = int.parse(n);
-              if (primerValor + segundoValor > 10) {
-                deshabilitadas.add(n);
+              if (primerValor + segundoValor >= 10) {
+                deshabilitadas.add(n); // suma 10: debería usarse '/'
               }
             }
           }

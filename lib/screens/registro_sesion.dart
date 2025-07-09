@@ -3,34 +3,30 @@ import '../models/partida.dart';
 import '../utils/registro_tiros_utils.dart';
 import '../widgets/marcador_bolos.dart';
 import '../utils/teclado_tiros_adaptativo.dart';
-import '../widgets/resumen_puntuacion.dart';
 import '../widgets/selector_tipo_partida.dart';
+import '../widgets/resumen_puntuacion.dart';
 import '../widgets/notas_field.dart';
-import 'home_screen.dart';
+import 'home.dart';
 
-class EditarPartidaScreen extends StatefulWidget {
-  final Partida partida;
-  final Function(Partida partidaActualizada) onGuardar;
+class RegistroSesionScreen extends StatefulWidget {
+  final void Function(Partida nuevaPartida) onGuardar;
 
-  const EditarPartidaScreen({
-    super.key,
-    required this.partida,
-    required this.onGuardar,
-  });
+  const RegistroSesionScreen({super.key, required this.onGuardar});
 
   @override
-  State<EditarPartidaScreen> createState() => _EditarPartidaScreenState();
+  State<RegistroSesionScreen> createState() => _RegistroSesionScreenState();
 }
 
-class _EditarPartidaScreenState extends State<EditarPartidaScreen>
+class _RegistroSesionScreenState extends State<RegistroSesionScreen>
     with SingleTickerProviderStateMixin {
-  late List<List<String>> framesText;
-  late String? notas;
-  late String _tipo;
-  Map<int, Set<int>> erroresPorTiro = {};
   final marcadorKey = GlobalKey<MarcadorBolosState>();
   final ValueNotifier<Set<String>> teclasDeshabilitadas = ValueNotifier({});
   final ValueNotifier<bool> mostrarTeclado = ValueNotifier(false);
+
+  late List<List<String>> framesText;
+  String _tipo = 'Entrenamiento';
+  String? notas;
+  Map<int, Set<int>> erroresPorTiro = {};
 
   late AnimationController _animController;
   late Animation<double> _animacionTeclado;
@@ -38,13 +34,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
   @override
   void initState() {
     super.initState();
-    framesText = widget.partida.frames
-        .map((f) => List<String>.from(f)..length = 3)
-        .toList();
-    notas = widget.partida.notas;
-    _tipo = widget.partida.tipo?.isNotEmpty == true
-        ? widget.partida.tipo!
-        : 'Entrenamiento';
+    framesText = List.generate(10, (_) => List.filled(3, ''));
     erroresPorTiro = _obtenerErroresPorTiro(framesText);
 
     _animController = AnimationController(
@@ -61,18 +51,6 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
         _animController.forward();
       } else {
         _animController.reverse();
-      }
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final f = marcadorKey.currentState;
-      if (f != null && f.frameActivoGetter >= 0 && f.tiroActivoGetter >= 0) {
-        teclasDeshabilitadas.value = TecladoTiros.calcularTeclasDeshabilitadas(
-          frame: f.frameActivoGetter,
-          tiro: f.tiroActivoGetter,
-          frames: framesText,
-        );
-        mostrarTeclado.value = true;
       }
     });
   }
@@ -117,7 +95,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: errores.map((e) => Text('• $e')).toList(),
+            children: errores.map((e) => Text('• ${e.mensaje}')).toList(),
           ),
           actions: [
             TextButton(
@@ -142,14 +120,15 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
       return;
     }
 
-    final partidaActualizada = widget.partida.copyWith(
+    final nuevaPartida = Partida(
+      fecha: DateTime.now(),
+      lugar: '', // Se podría pedir como campo si lo necesitas
       frames: nuevosFrames,
-      notas: notas,
+      notas: notas?.trim().isEmpty == true ? null : notas?.trim(),
       total: nuevoTotal,
-      tipo: _tipo,
     );
 
-    widget.onGuardar(partidaActualizada);
+    widget.onGuardar(nuevaPartida);
     Navigator.pop(context);
   }
 
@@ -173,21 +152,27 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
     final buenaRacha = esBuenaRacha(frames);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Editar Partida')),
+      appBar: AppBar(title: const Text('Registrar partida'),
+              centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.home),
+            tooltip: "Inicio",
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                (route) => false,
+              );
+            },
+          ),
+        ],),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// --- Modularizamos el selector de tipo ---
-            SelectorTipoPartida(
-              value: _tipo,
-              onChanged: (value) =>
-                  setState(() => _tipo = value ?? 'Entrenamiento'),
-            ),
             const SizedBox(height: 16),
-
-            /// --- El marcador ---
             MarcadorBolos(
               key: marcadorKey,
               frames: framesText,
@@ -212,8 +197,6 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
               autoAdvanceFocus: true,
             ),
             const SizedBox(height: 16),
-
-            /// --- Teclado animado ---
             AnimatedBuilder(
               animation: _animController,
               builder: (context, child) => Opacity(
@@ -244,54 +227,47 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
               ),
             ),
             const SizedBox(height: 16),
-
-            /// --- Resumen modular (puntuación, máximo, racha) ---
             ResumenPuntuacion(
               puntuacionActual: puntuacionActual,
               puntuacionMaxima: puntuacionMaxima,
               buenaRacha: buenaRacha,
             ),
-
             const SizedBox(height: 16),
-
-            /// --- Campo de notas modular ---
             NotasField(
               initialValue: notas,
               onChanged: (v) => notas = v,
-              onTap: () {
-                marcadorKey.currentState?.desactivarCampoActivo();
-                mostrarTeclado.value = false;
-                setState(() {});
+              onFocusChange: (focused) {
+                if (focused) {
+                  marcadorKey.currentState?.desactivarCampoActivo();
+                  mostrarTeclado.value = false;
+                  setState(() {});
+                }
               },
             ),
-
-            const SizedBox(height: 24),
-
-            /// --- Guardar partida ---
-            ElevatedButton.icon(
-              onPressed: _guardar,
-              icon: const Icon(Icons.save),
-              label: const Text('Guardar cambios'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-            ),
+            const SizedBox(height: 40), // Extra espacio al final por estética
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
-            (route) => false,
-          );
-        },
-        tooltip: 'Inicio',
-        child: const Icon(Icons.home),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 14,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        child: ElevatedButton.icon(
+          onPressed: _guardar,
+          icon: const Icon(Icons.save),
+          label: const Text('Guardar Partida'),
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size.fromHeight(48),
+          ),
+        ),
       ),
     );
   }

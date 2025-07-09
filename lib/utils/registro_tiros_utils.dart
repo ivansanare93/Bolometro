@@ -307,14 +307,6 @@ bool esBuenaRacha(List<List<String>> frames) {
   );
 }
 
-int _valorTiro(String tiro) {
-  tiro = tiro.trim().toUpperCase();
-  if (tiro == 'X') return 10;
-  if (tiro == '/')
-    return 10; // solo seguro si se usa en frame 10 o ya controlado
-  if (tiro == '-') return 0;
-  return int.tryParse(tiro) ?? 0;
-}
 
 int valorNumerico(String tiro) {
   tiro = tiro.toUpperCase().trim();

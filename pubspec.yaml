@@ -1,5 +1,5 @@
-name: test_bolos
-description: "A new Flutter project."
+name: bolometro
+description: "Bolómetro es una aplicación para jugadores de bolos que permite registrar, analizar y mejorar el rendimiento en cada sesión y partida. Guarda tus entrenamientos y competiciones, consulta estadísticas visuales, revisa tu evolución y gestiona todas tus sesiones desde el móvil, con una interfaz intuitiva y personalizable."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -36,6 +36,8 @@ dependencies:
   font_awesome_flutter: ^10.6.0
   provider: ^6.1.1
   shared_preferences: ^2.5.3
+  material_design_icons_flutter: ^7.0.7296
+  package_info_plus: ^8.0.0
   flutter:
     sdk: flutter
   flutter_localizations:
@@ -45,6 +47,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  rename: ^3.1.0
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1

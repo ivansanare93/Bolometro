@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/partida.dart';
 import '../models/sesion.dart';
-import '../screens/registro_sesion_screen.dart';
-import '../screens/editar_partida_screen.dart';
+import 'registro_sesion.dart';
+import 'editar_partida.dart';
 import 'package:hive/hive.dart';
-import 'home_screen.dart';
 import '../widgets/lista_partidas.dart';
 import '../widgets/selector_tipo_partida.dart';
 

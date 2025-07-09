@@ -10,32 +10,31 @@ class Partida extends HiveObject {
   @HiveField(1)
   final String lugar;
 
+  // ¡Eliminamos esto!
+  // @HiveField(2)
+  // final String tipo;
+
   @HiveField(2)
-  final String tipo; // 'Entrenamiento' o 'Competición'
+  final List<List<String>> frames;
 
   @HiveField(3)
-  final List<List<String>> frames; // Cada frame: [tiro1, tiro2, (opcional tiroExtra)]
-
-  @HiveField(4)
   final String? notas;
 
-  @HiveField(5)
+  @HiveField(4)
   final int total;
 
   Partida({
     required this.fecha,
     required this.lugar,
-    required this.tipo,
     required this.frames,
     this.notas,
     required this.total,
   });
 
-  // Método para duplicar una partida con cambios opcionales
+  // Actualiza también copyWith y toJson
   Partida copyWith({
     DateTime? fecha,
     String? lugar,
-    String? tipo,
     List<List<String>>? frames,
     String? notas,
     int? total,
@@ -43,37 +42,23 @@ class Partida extends HiveObject {
     return Partida(
       fecha: fecha ?? this.fecha,
       lugar: lugar ?? this.lugar,
-      tipo: tipo ?? this.tipo,
       frames: frames ?? this.frames,
       notas: notas ?? this.notas,
       total: total ?? this.total,
     );
   }
 
-  // Getter útil
-  double get promedioPorTirada {
-    final totalTiradas = frames.fold<int>(
-      0,
-      (sum, frame) => sum + frame.length,
-    );
-    return totalTiradas == 0 ? 0 : total / totalTiradas;
-  }
-
-  // Para exportar (opcional)
   Map<String, dynamic> toJson() => {
     'fecha': fecha.toIso8601String(),
     'lugar': lugar,
-    'tipo': tipo,
     'frames': frames,
     'notas': notas,
     'total': total,
   };
 
-  // Para importar (opcional)
   factory Partida.fromJson(Map<String, dynamic> json) => Partida(
     fecha: DateTime.parse(json['fecha']),
     lugar: json['lugar'],
-    tipo: json['tipo'],
     frames: List<List<String>>.from(
       json['frames'].map<List<String>>(
         (f) => List<String>.from(f.map((x) => x.toString())),
