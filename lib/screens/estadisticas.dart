@@ -73,36 +73,17 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
 
           final partidas = sesionesFiltradas.expand((s) => s.partidas).toList();
 
-          if (partidas.isEmpty) {
-            return Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _FiltroTipo(
-                    filtroTipo: _filtroTipo,
-                    onChanged: (valor) {
-                      if (valor != null) setState(() => _filtroTipo = valor);
-                    },
-                  ),
-                  const SizedBox(height: 32),
-                  const Center(
-                    child: Text('No hay partidas para el filtro seleccionado.'),
-                  ),
-                ],
-              ),
-            );
-          }
+          final promedio = partidas.isNotEmpty
+              ? partidas.map((p) => p.total).reduce((a, b) => a + b) /
+                    partidas.length
+              : 0;
+          final mejor = partidas.isNotEmpty
+              ? partidas.map((p) => p.total).reduce((a, b) => a > b ? a : b)
+              : 0;
+          final peor = partidas.isNotEmpty
+              ? partidas.map((p) => p.total).reduce((a, b) => a < b ? a : b)
+              : 0;
 
-          final promedio =
-              partidas.map((p) => p.total).reduce((a, b) => a + b) /
-              partidas.length;
-          final mejor = partidas
-              .map((p) => p.total)
-              .reduce((a, b) => a > b ? a : b);
-          final peor = partidas
-              .map((p) => p.total)
-              .reduce((a, b) => a < b ? a : b);
 
           // Spots y fechas SOLO en la primera partida de cada sesión
           List<FlSpot> spotsEntrenamiento = [];
@@ -130,7 +111,7 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
 
           final maxY = calcularMaxY(spotsEntrenamiento, spotsCompeticion);
 
-          // ---- Spots y fechas para la gráfica de sesiones (promedio por sesión) ----
+          // Spots y fechas para la gráfica de sesiones (promedio por sesión)
           List<FlSpot> spotsSesiones = [];
           List<String> fechasSesiones = [];
           for (int i = 0; i < sesionesFiltradas.length; i++) {
@@ -174,6 +155,7 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
               ),
               const SizedBox(height: 16),
 
+            
               // KPIs
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -306,6 +288,69 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
   }
 }
 
+// Widget KPI Card igual que antes
+class _KpiCard extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const _KpiCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: Theme.of(context).textTheme.bodyMedium),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// --- Agrupa partidas por día ---
+Map<DateTime, int> contarPartidasPorDia(List<Sesion> sesiones) {
+  final Map<DateTime, int> partidasPorDia = {};
+  for (final sesion in sesiones) {
+    for (final partida in sesion.partidas) {
+      final soloDia = DateTime(
+        partida.fecha.year,
+        partida.fecha.month,
+        partida.fecha.day,
+      );
+      partidasPorDia.update(soloDia, (count) => count + 1, ifAbsent: () => 1);
+    }
+  }
+  return partidasPorDia;
+}
+
 // Widget de filtro separado
 class _FiltroTipo extends StatelessWidget {
   final String filtroTipo;
@@ -405,63 +450,7 @@ class _LeyendaItem extends StatelessWidget {
   }
 }
 
-// ---- Utils
-double calcularMaxY(List<FlSpot> spots1, List<FlSpot> spots2) {
-  final todos = [...spots1, ...spots2];
-  if (todos.isEmpty) return 50; // valor mínimo
-  final maxY = todos.map((e) => e.y).reduce((a, b) => a > b ? a : b);
-  final ajustado = ((maxY + 10) / 50).ceil() * 50.0;
-  return ajustado > 300 ? 300 : ajustado;
-}
-
-// Widget KPI Card igual que antes
-class _KpiCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const _KpiCard({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        child: Row(
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: Theme.of(context).textTheme.bodyMedium),
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ---- Gráfica, solo fechas de la primera partida de cada sesión ----
+// ---- Gráfica de evolución de partidas ----
 class _EvolucionGrafica extends StatelessWidget {
   final List<FlSpot> spotsEntrenamiento;
   final List<FlSpot> spotsCompeticion;
@@ -631,7 +620,7 @@ class _EvolucionGrafica extends StatelessWidget {
   }
 }
 
-// ---- Gráfica evolución por sesiones ----
+// ---- Gráfica de evolución por sesiones ----
 class _EvolucionSesionesGrafica extends StatelessWidget {
   final List<FlSpot> spots;
   final List<String> fechas;
@@ -648,7 +637,7 @@ class _EvolucionSesionesGrafica extends StatelessWidget {
     if (spots.isEmpty) {
       return Center(
         child: Text(
-          "No hay datos suficientes para mostrar la evolución por sesiones.",
+          "No hay sesiones suficientes para mostrar la gráfica.",
           style: Theme.of(context).textTheme.bodyMedium,
         ),
       );
@@ -664,14 +653,16 @@ class _EvolucionSesionesGrafica extends StatelessWidget {
           LineChartData(
             maxY: maxY,
             minY: 0,
+            backgroundColor: Colors.transparent,
             lineTouchData: LineTouchData(
               touchTooltipData: LineTouchTooltipData(
-                tooltipBgColor: Colors.indigo.withOpacity(0.8),
+                tooltipBgColor: Colors.indigo.withOpacity(0.85),
                 tooltipRoundedRadius: 12,
-                getTooltipItems: (touchedSpots) {
+                getTooltipItems: (List<LineBarSpot> touchedSpots) {
                   return touchedSpots.map((spot) {
+                    final int puntos = spot.y.toInt();
                     return LineTooltipItem(
-                      'Promedio: ${spot.y.toStringAsFixed(1)}',
+                      'Promedio: $puntos',
                       const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -687,7 +678,7 @@ class _EvolucionSesionesGrafica extends StatelessWidget {
               drawVerticalLine: false,
               horizontalInterval: 50,
               getDrawingHorizontalLine: (value) => FlLine(
-                color: Colors.indigo.withOpacity(0.10),
+                color: Colors.blueGrey.withOpacity(0.12),
                 strokeWidth: 1,
               ),
             ),
@@ -716,19 +707,20 @@ class _EvolucionSesionesGrafica extends StatelessWidget {
                   interval: 1,
                   getTitlesWidget: (value, meta) {
                     int idx = value.toInt();
-                    if (idx < 0 || idx >= fechas.length)
-                      return const SizedBox();
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        fechas[idx],
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
+                    if (idx >= 0 && idx < fechas.length) {
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          fechas[idx],
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
+                    return const SizedBox.shrink();
                   },
                   reservedSize: 36,
                 ),
@@ -741,7 +733,7 @@ class _EvolucionSesionesGrafica extends StatelessWidget {
             borderData: FlBorderData(
               show: true,
               border: Border.all(
-                color: Colors.indigo.withOpacity(0.18),
+                color: Colors.blueGrey.withOpacity(0.20),
                 width: 2,
               ),
             ),
@@ -773,4 +765,13 @@ class _EvolucionSesionesGrafica extends StatelessWidget {
       ),
     );
   }
+}
+
+// --- Utilidad para calcular maxY ---
+double calcularMaxY(List<FlSpot> spots1, List<FlSpot> spots2) {
+  final todos = [...spots1, ...spots2];
+  if (todos.isEmpty) return 50; // valor mínimo
+  final maxY = todos.map((e) => e.y).reduce((a, b) => a > b ? a : b);
+  final ajustado = ((maxY + 10) / 50).ceil() * 50.0;
+  return ajustado > 300 ? 300 : ajustado;
 }

@@ -10,10 +10,6 @@ class Partida extends HiveObject {
   @HiveField(1)
   final String lugar;
 
-  // ¡Eliminamos esto!
-  // @HiveField(2)
-  // final String tipo;
-
   @HiveField(2)
   final List<List<String>> frames;
 
@@ -23,12 +19,16 @@ class Partida extends HiveObject {
   @HiveField(4)
   final int total;
 
+  @HiveField(5)
+  final List<List<List<int>?>>? pinosPorTiro;
+
   Partida({
     required this.fecha,
     required this.lugar,
     required this.frames,
     this.notas,
     required this.total,
+    this.pinosPorTiro,
   });
 
   // Actualiza también copyWith y toJson
@@ -38,6 +38,7 @@ class Partida extends HiveObject {
     List<List<String>>? frames,
     String? notas,
     int? total,
+    List<List<List<int>?>>? pinosPorTiro, // Añadido
   }) {
     return Partida(
       fecha: fecha ?? this.fecha,
@@ -45,6 +46,7 @@ class Partida extends HiveObject {
       frames: frames ?? this.frames,
       notas: notas ?? this.notas,
       total: total ?? this.total,
+      pinosPorTiro: pinosPorTiro ?? this.pinosPorTiro, // Añadido
     );
   }
 
@@ -54,6 +56,13 @@ class Partida extends HiveObject {
     'frames': frames,
     'notas': notas,
     'total': total,
+    'pinosPorTiro': pinosPorTiro
+        ?.map(
+          (frame) => frame
+              .map((tiro) => tiro?.toList()) // List<int>? -> List<int>?
+              .toList(),
+        )
+        .toList(),
   };
 
   factory Partida.fromJson(Map<String, dynamic> json) => Partida(
@@ -66,5 +75,16 @@ class Partida extends HiveObject {
     ),
     notas: json['notas'],
     total: json['total'],
+    pinosPorTiro: json['pinosPorTiro'] != null
+        ? List<List<List<int>?>>.from(
+            (json['pinosPorTiro'] as List).map(
+              (frame) => List<List<int>?>.from(
+                (frame as List).map(
+                  (tiro) => tiro == null ? null : List<int>.from(tiro as List),
+                ),
+              ),
+            ),
+          )
+        : null,
   );
 }

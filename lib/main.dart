@@ -19,8 +19,8 @@ void main() async {
 
       // Borra las boxes (¡esto elimina todas las partidas y sesiones!)
   /*await Hive.deleteBoxFromDisk('partidas');
-  await Hive.deleteBoxFromDisk('sesiones');
-*/
+  await Hive.deleteBoxFromDisk('sesiones');*/
+
 
   Hive.registerAdapter(PartidaAdapter());
   Hive.registerAdapter(SesionAdapter());
