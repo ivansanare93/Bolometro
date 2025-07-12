@@ -22,13 +22,11 @@ class TecladoTiros extends StatelessWidget {
     final numeros = List.generate(10, (i) => '$i');
 
     if (esUltimo) {
+      // Frame 10
       if (tiro == 0) {
-        deshabilitadas.add('/'); // primer tiro nunca puede ser spare
+        deshabilitadas.add('/'); // nunca puede ser spare en primer tiro
       } else if (tiro == 1) {
-        deshabilitadas.add(
-          'X',
-        ); // segundo tiro nunca puede ser strike (salvo si el primero fue X)
-
+        deshabilitadas.add('X'); // por defecto
         if (t1 == 'X') {
           // Strike en el primero → todo permitido menos '/'
           deshabilitadas.clear();
@@ -53,10 +51,11 @@ class TecladoTiros extends StatelessWidget {
     } else {
       // Frames 1–9
       if (tiro == 0) {
-        deshabilitadas.add('/');
+        deshabilitadas.add('/'); // nunca puede ser spare
       } else if (tiro == 1) {
-        deshabilitadas.add('X');
+        deshabilitadas.add('X'); // nunca puede ser strike en segundo tiro
         if (t1 == 'X') {
+          // Strike en el primer tiro: todos los tiros deshabilitados en tiro 2
           deshabilitadas.addAll(numeros);
           deshabilitadas.add('/');
         } else if (t1.isNotEmpty && t1 != '-') {
@@ -64,15 +63,25 @@ class TecladoTiros extends StatelessWidget {
           if (primerValor != null) {
             for (var n in numeros) {
               final segundoValor = int.parse(n);
-              if (primerValor + segundoValor >= 10) {
-                deshabilitadas.add(n); // suma 10: debería usarse '/'
+              if (primerValor + segundoValor > 10) {
+                deshabilitadas.add(n);
+              } else if (primerValor + segundoValor == 10) {
+                // Si es justo 10, solo permitir '/'
+                deshabilitadas.add(n); // ¡importante!
               }
+            }
+            // Habilita solo '/' si suma 10 exacto
+            if (primerValor < 10) {
+              // Solo habilita '/' si no es strike
+              // En este punto, '/' solo tiene sentido si la suma es 10
+              // Así que no añadas nada, ya está bien
+            } else {
+              deshabilitadas.add('/');
             }
           }
         }
       }
     }
-
     return deshabilitadas;
   }
 

@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 
-part 'partida.g.dart'; // Importante para generar el adaptador
+part 'partida.g.dart';
 
 @HiveType(typeId: 0)
 class Partida extends HiveObject {
@@ -19,8 +19,10 @@ class Partida extends HiveObject {
   @HiveField(4)
   final int total;
 
+  /// [pinesPorTiro] = [ [ [pines tiro 1], [pines tiro 2], [pines tiro 3] ], ...] (10 frames)
+  /// Cada [pines tiro x] es `List<int>` de bolos tirados (1-10), o null si no se usó.
   @HiveField(5)
-  final List<List<List<int>?>>? pinosPorTiro;
+  final List<List<List<int>?>>? pinesPorTiro;
 
   Partida({
     required this.fecha,
@@ -28,17 +30,16 @@ class Partida extends HiveObject {
     required this.frames,
     this.notas,
     required this.total,
-    this.pinosPorTiro,
+    this.pinesPorTiro,
   });
 
-  // Actualiza también copyWith y toJson
   Partida copyWith({
     DateTime? fecha,
     String? lugar,
     List<List<String>>? frames,
     String? notas,
     int? total,
-    List<List<List<int>?>>? pinosPorTiro, // Añadido
+    List<List<List<int>?>>? pinesPorTiro,
   }) {
     return Partida(
       fecha: fecha ?? this.fecha,
@@ -46,7 +47,7 @@ class Partida extends HiveObject {
       frames: frames ?? this.frames,
       notas: notas ?? this.notas,
       total: total ?? this.total,
-      pinosPorTiro: pinosPorTiro ?? this.pinosPorTiro, // Añadido
+      pinesPorTiro: pinesPorTiro ?? this.pinesPorTiro,
     );
   }
 
@@ -56,12 +57,8 @@ class Partida extends HiveObject {
     'frames': frames,
     'notas': notas,
     'total': total,
-    'pinosPorTiro': pinosPorTiro
-        ?.map(
-          (frame) => frame
-              .map((tiro) => tiro?.toList()) // List<int>? -> List<int>?
-              .toList(),
-        )
+    'pinesPorTiro': pinesPorTiro
+        ?.map((frame) => frame.map((tiro) => tiro?.toList()).toList())
         .toList(),
   };
 
@@ -69,15 +66,15 @@ class Partida extends HiveObject {
     fecha: DateTime.parse(json['fecha']),
     lugar: json['lugar'],
     frames: List<List<String>>.from(
-      json['frames'].map<List<String>>(
+      (json['frames'] as List).map(
         (f) => List<String>.from(f.map((x) => x.toString())),
       ),
     ),
     notas: json['notas'],
     total: json['total'],
-    pinosPorTiro: json['pinosPorTiro'] != null
+    pinesPorTiro: json['pinesPorTiro'] != null
         ? List<List<List<int>?>>.from(
-            (json['pinosPorTiro'] as List).map(
+            (json['pinesPorTiro'] as List).map(
               (frame) => List<List<int>?>.from(
                 (frame as List).map(
                   (tiro) => tiro == null ? null : List<int>.from(tiro as List),

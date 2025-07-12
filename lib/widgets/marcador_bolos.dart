@@ -164,6 +164,19 @@ class MarcadorBolosState extends State<MarcadorBolos> {
       _scrollAlFrameActivo();
     });
   }
+  
+  @override
+void didUpdateWidget(covariant MarcadorBolos oldWidget) {
+  super.didUpdateWidget(oldWidget);
+  // Si los frames han cambiado, actualiza los controllers
+  for (int i = 0; i < 10; i++) {
+    for (int j = 0; j < 3; j++) {
+      if (_controllers[i][j].text != widget.frames[i][j]) {
+        _controllers[i][j].text = widget.frames[i][j];
+      }
+    }
+  }
+}
 
   @override
   void dispose() {

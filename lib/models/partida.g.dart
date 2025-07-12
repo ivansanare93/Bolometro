@@ -24,7 +24,7 @@ class PartidaAdapter extends TypeAdapter<Partida> {
           .toList(),
       notas: fields[3] as String?,
       total: fields[4] as int,
-      pinosPorTiro: fields[5] != null
+      pinesPorTiro: fields[5] != null
           ? (fields[5] as List)
                 .map<List<List<int>?>>(
                   (frame) => (frame as List)
@@ -54,7 +54,7 @@ class PartidaAdapter extends TypeAdapter<Partida> {
       ..writeByte(4)
       ..write(obj.total)
       ..writeByte(5)
-      ..write(obj.pinosPorTiro);
+      ..write(obj.pinesPorTiro);
   }
 
   @override

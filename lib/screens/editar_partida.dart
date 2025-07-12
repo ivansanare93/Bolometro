@@ -4,7 +4,6 @@ import '../utils/registro_tiros_utils.dart';
 import '../widgets/marcador_bolos.dart';
 import '../utils/teclado_tiros_adaptativo.dart';
 import '../widgets/resumen_puntuacion.dart';
-import '../widgets/selector_tipo_partida.dart';
 import '../widgets/notas_field.dart';
 import 'home.dart';
 
