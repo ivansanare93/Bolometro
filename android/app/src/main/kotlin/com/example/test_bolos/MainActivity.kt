@@ -1,4 +1,4 @@
-package com.example.test_bolos
+package com.bolometro
 
 import io.flutter.embedding.android.FlutterActivity
 

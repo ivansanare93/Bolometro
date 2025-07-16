@@ -20,9 +20,9 @@ class Partida extends HiveObject {
   final int total;
 
   /// [pinesPorTiro] = [ [ [pines tiro 1], [pines tiro 2], [pines tiro 3] ], ...] (10 frames)
-  /// Cada [pines tiro x] es `List<int>` de bolos tirados (1-10), o null si no se usó.
+  /// Cada [pines tiro x] es `List<int>` (pines caídos: 1-10), o null si no se usó.
   @HiveField(5)
-  final List<List<List<int>?>>? pinesPorTiro;
+  final List<List<List<int>?>> pinesPorTiro;
 
   Partida({
     required this.fecha,
@@ -30,8 +30,9 @@ class Partida extends HiveObject {
     required this.frames,
     this.notas,
     required this.total,
-    this.pinesPorTiro,
-  });
+    List<List<List<int>?>>? pinesPorTiro,
+  }) : pinesPorTiro =
+           pinesPorTiro ?? List.generate(10, (_) => List.filled(3, null));
 
   Partida copyWith({
     DateTime? fecha,
@@ -58,7 +59,7 @@ class Partida extends HiveObject {
     'notas': notas,
     'total': total,
     'pinesPorTiro': pinesPorTiro
-        ?.map((frame) => frame.map((tiro) => tiro?.toList()).toList())
+        .map((frame) => frame.map((tiro) => tiro?.toList()).toList())
         .toList(),
   };
 
@@ -82,6 +83,6 @@ class Partida extends HiveObject {
               ),
             ),
           )
-        : null,
+        : List.generate(10, (_) => List.filled(3, null)),
   );
 }

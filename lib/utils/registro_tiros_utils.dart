@@ -100,15 +100,26 @@ TipoFrame tipoDeFrame(List<String> frame, {bool esUltimo = false}) {
   String? t2 = frame.length > 2 ? frame[2] : null;
 
   if (esUltimo) {
-    if (t0 == 'X' || t1 == '/' || t1 == 'X') {
-      if (t2 != null && t2.isNotEmpty) return TipoFrame.strike;
-      return TipoFrame.incompleto;
+    // Si hay strike en tiro 1 o spare en tiro 2, puede haber tercer tiro
+    if ((t0 == 'X') || (t1 == '/') || (t1 == 'X')) {
+      if ((t0 != null && t0.isNotEmpty) &&
+          (t1 != null && t1.isNotEmpty) &&
+          (t2 != null && t2.isNotEmpty)) {
+        return TipoFrame.strike; // Frame 10 completo con extra
+      } else {
+        return TipoFrame.incompleto;
+      }
     } else {
-      if (t0 != null && t1 != null) return TipoFrame.abierto;
-      return TipoFrame.incompleto;
+      // No hay strike/spare: frame termina tras 2 tiros
+      if ((t0 != null && t0.isNotEmpty) && (t1 != null && t1.isNotEmpty)) {
+        return TipoFrame.abierto;
+      } else {
+        return TipoFrame.incompleto;
+      }
     }
   }
 
+  // Frames 1-9
   if (t0 == 'X') return TipoFrame.strike;
   if (t0 != null && t1 == '/') return TipoFrame.spare;
   if (t0 != null && t1 != null) return TipoFrame.abierto;
@@ -201,6 +212,16 @@ int calcularPuntuacionPartida(List<List<String>> frames) {
   }
 
   return score;
+}
+
+bool frame10Completo(List<String> frame) {
+  // Si hay strike o spare en los dos primeros, derecho a tercer tiro
+  if ((frame[0] == 'X') || (frame[1] == '/') || (frame[1] == 'X')) {
+    return frame.length > 2 && frame[2].isNotEmpty;
+  } else {
+    // Si no, solo dos tiros permitidos
+    return frame.length > 1 && frame[1].isNotEmpty;
+  }
 }
 
 List<int?> calcularPuntuacionPorFrame(
@@ -307,7 +328,6 @@ bool esBuenaRacha(List<List<String>> frames) {
   );
 }
 
-
 int valorNumerico(String tiro) {
   tiro = tiro.toUpperCase().trim();
   if (tiro == 'X') return 10;
@@ -318,8 +338,12 @@ int valorNumerico(String tiro) {
 }
 
 int calcularPuntuacionMaximaPosible(List<List<String>> frames) {
+  // Si el frame 10 está completo, devuelve la puntuación real
+  if (frame10Completo(frames[9])) {
+    return calcularPuntuacionPartida(frames); // ¡usa aquí tu función real!
+  }
+
   int total = 0;
-  int framesCompletos = 0;
 
   for (int i = 0; i < 10; i++) {
     final frame = frames[i];
@@ -333,9 +357,9 @@ int calcularPuntuacionMaximaPosible(List<List<String>> frames) {
         if (bonus.length >= 2) {
           total += tiroToInt(bonus[0]) + tiroToInt(bonus[1], bonus[0]);
         } else {
-          total += 20; // máximo bonus posible
+          total += (2 - bonus.length) * 10;
+          total += bonus.fold<int>(0, (s, t) => s + tiroToInt(t));
         }
-        framesCompletos++;
         break;
 
       case TipoFrame.spare:
@@ -346,26 +370,33 @@ int calcularPuntuacionMaximaPosible(List<List<String>> frames) {
         } else {
           total += 10;
         }
-        framesCompletos++;
         break;
 
       case TipoFrame.abierto:
         if (frame.length >= 2) {
           total += tiroToInt(frame[0]) + tiroToInt(frame[1]);
+        } else if (frame.length == 1 && frame[0].isNotEmpty) {
+          final tiro1 = tiroToInt(frame[0]);
+          final max2 = (tiro1 < 10) ? (10 - tiro1) : 0;
+          total += tiro1 + max2;
         }
-        framesCompletos++;
         break;
 
       case TipoFrame.incompleto:
       case TipoFrame.invalido:
-        // Aún no jugado, contamos el máximo posible
+        if (!esUltimo) {
+          total += 30;
+        } else {
+          // *** FRAME 10 ***
+          final tirosHechos = frame.where((t) => t.isNotEmpty).length;
+          final tirosRestantes = (3 - tirosHechos).clamp(0, 3);
+          if (tirosRestantes > 0) {
+            total += tirosRestantes * 10;
+          }
+        }
         break;
     }
   }
-
-  // Si quedan frames sin jugar, asumimos que son strikes (30 puntos por frame)
-  final framesRestantes = 10 - framesCompletos;
-  total += framesRestantes * 30;
 
   return total.clamp(0, 300);
 }
@@ -570,29 +601,4 @@ class FrameError {
   FrameError(this.mensaje, {this.esCritico = true});
 }
 
-Map<int, Set<int>> _obtenerErroresPorTiro(List<List<String>> frames) {
-  final errores = <int, Set<int>>{};
 
-  for (int i = 0; i < frames.length; i++) {
-    final frame = frames[i];
-    final erroresFrame = validarFrame(frame, index: i);
-
-    for (final error in erroresFrame) {
-      final mensaje = error.mensaje;
-
-      // Detectar a qué tiro se refiere el mensaje
-      if (mensaje.contains('Tiro 1')) {
-        errores[i] = (errores[i] ?? {})..add(0);
-      } else if (mensaje.contains('Tiro 2')) {
-        errores[i] = (errores[i] ?? {})..add(1);
-      } else if (mensaje.contains('Tiro 3')) {
-        errores[i] = (errores[i] ?? {})..add(2);
-      } else {
-        // Si el mensaje no menciona tiro específico, marcar todos
-        errores[i] = (errores[i] ?? {})..addAll({0, 1, 2});
-      }
-    }
-  }
-
-  return errores;
-}

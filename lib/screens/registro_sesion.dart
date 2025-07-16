@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/partida.dart';
 import '../utils/registro_tiros_utils.dart';
 import '../widgets/marcador_bolos.dart';
-import '../widgets/prueba_selector_pins.dart'; // Debe aceptar onAceptar
+import '../widgets/teclado_selector_pins.dart'; // Debe aceptar onAceptar
 import '../widgets/resumen_puntuacion.dart';
 import '../widgets/notas_field.dart';
 import 'home.dart';
@@ -22,9 +22,11 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
   String? notas;
   Map<int, Set<int>> erroresPorTiro = {};
 
+  // Estructura visual de pines: [frame][tiro][pines]
+  late List<List<List<int>?>> pinesPorTiro;
+
   // Estado visual
   bool _modoVisual = false;
-  Map<String, List<int>> pinesPorTiro = {};
   int? _frameActivo;
   int? _tiroActivo;
   bool mostrarSelectorpines = false;
@@ -37,6 +39,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
     super.initState();
     framesText = List.generate(10, (_) => List.filled(3, ''));
     erroresPorTiro = _obtenerErroresPorTiro(framesText);
+    pinesPorTiro = List.generate(10, (_) => List.filled(3, null));
     // Frame/tiro activo: primero incompleto
     final iFrame = framesText.indexWhere(
       (f) =>
@@ -109,7 +112,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
       frames: nuevosFrames,
       notas: notas?.trim().isEmpty == true ? null : notas?.trim(),
       total: nuevoTotal,
-      // pinesPorTiro: ...  // Si lo integras en el modelo
+      pinesPorTiro: pinesPorTiro, // <-- Guardamos aquí el array de pines visual
     );
 
     widget.onGuardar(nuevaPartida);
@@ -129,10 +132,9 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
   void _onAceptarSeleccionPins(List<int> seleccionados) {
     final frame = _frameActivo!;
     final tiro = _tiroActivo!;
-    final key = '$frame-$tiro';
     setState(() {
       // Guarda la selección visual
-      pinesPorTiro[key] = seleccionados;
+      pinesPorTiro[frame][tiro] = seleccionados;
 
       // Traduce a valor de marcador clásico (esto ES LO QUE SE VE EN CADA FRAME)
       final count = seleccionados.length;
@@ -141,7 +143,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
         if (tiro == 0 && count == 10) {
           valor = "X"; // Strike
         } else if (tiro == 1 &&
-            ((pinesPorTiro['$frame-0']?.length ?? 0) + count == 10)) {
+            ((pinesPorTiro[frame][0]?.length ?? 0) + count == 10)) {
           valor = "/"; // Spare
         } else if (count == 0) {
           valor = "-"; // Fallo
@@ -153,16 +155,12 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
         valor = (count == 10) ? "X" : (count == 0 ? "-" : "$count");
       }
 
-      // ¡Esto es lo IMPORTANTE! Aquí cambias lo que se muestra en el marcador.
+      // Actualiza el marcador visual
       framesText[frame][tiro] = valor;
 
-      // Si tu MarcadorBolos está bien programado, esto lo fuerza a actualizar visualmente.
       erroresPorTiro = _obtenerErroresPorTiro(framesText);
       mostrarSelectorpines = false;
     });
-
-    // OPCIONAL: Si tu MarcadorBolos tiene métodos de refresco explícitos, llama aquí
-    // marcadorKey.currentState?.setState(() {}); // Normalmente NO necesario
   }
 
   void _actualizarTeclasDeshabilitadas({int? frame, int? tiro}) {
@@ -182,15 +180,14 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
     final puntuacionMaxima = calcularPuntuacionMaximaPosible(frames);
     final buenaRacha = esBuenaRacha(frames);
 
-    // pines ya tirados en tiros previos (para deshabilitar)
+    // Pines ya tirados en tiros previos del frame activo (para deshabilitar)
     List<int> pinesDeshabilitados = [];
     if (_modoVisual &&
         _frameActivo != null &&
         _tiroActivo != null &&
         _tiroActivo! > 0) {
       for (int prev = 0; prev < _tiroActivo!; prev++) {
-        final prevKey = '${_frameActivo}-$prev';
-        pinesDeshabilitados.addAll(pinesPorTiro[prevKey] ?? []);
+        pinesDeshabilitados.addAll(pinesPorTiro[_frameActivo!][prev] ?? []);
       }
     }
 
@@ -265,9 +262,9 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
               onChanged: (frame, tiro, valor) {
                 setState(() {
                   framesText[frame][tiro] = valor.trim().toUpperCase();
-                  print(framesText[frame]); // Mira en consola
+                  // Si no es visual, resetea el visual:
+                  if (!_modoVisual) pinesPorTiro[frame][tiro] = null;
                   erroresPorTiro = _obtenerErroresPorTiro(framesText);
-                  if (!_modoVisual) pinesPorTiro.remove('$frame-$tiro');
                 });
                 if (!_modoVisual) {
                   _frameActivo = frame;
@@ -293,10 +290,11 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
                 _frameActivo != null &&
                 _tiroActivo != null)
               SelectorpinesWidget(
-                pinesIniciales:
-                    pinesPorTiro['${_frameActivo}-${_tiroActivo}'] ?? [],
+                pinesIniciales: pinesPorTiro[_frameActivo!][_tiroActivo!] ?? [],
                 pinesDeshabilitados: pinesDeshabilitados,
                 onAceptar: _onAceptarSeleccionPins,
+                isFrame10: _frameActivo == 9,
+                tiroActual: _tiroActivo!,
               )
             else if (!_modoVisual)
               TecladoTiros(

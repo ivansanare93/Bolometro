@@ -43,9 +43,44 @@ class TecladoTiros extends StatelessWidget {
           }
         }
       } else if (tiro == 2) {
-        // Tercer tiro solo si hubo X o / antes
+        // --- Tercer tiro del frame 10 ---
         if (!(t1 == 'X' || t2 == '/' || t2 == 'X')) {
+          // No hay derecho a tercer tiro
           deshabilitadas.addAll(numeros + ['X', '/']);
+        } else {
+          // Hay tercer tiro, analizar los tiros previos
+          if (t2 == '/') {
+            // Spare en segundo tiro: tercer tiro NO puede ser '/'
+            deshabilitadas.add('/');
+            // Permite 0-9 y X
+          } else if (t1 == 'X' && t2 == 'X') {
+            deshabilitadas.add('/');
+          } else if (t1 == 'X' &&
+              t2 != 'X' &&
+              t2 != null &&
+              t2.isNotEmpty &&
+              t2 != '-') {
+            // Strike y luego número: el tercer tiro debe sumar máximo 10 con el segundo
+            final segundoValor = int.tryParse(t2) ?? 0;
+            for (var n in numeros) {
+              final val = int.parse(n);
+              if (segundoValor + val > 10) deshabilitadas.add(n);
+            }
+            // Solo permitir '/' si suma exactamente 10
+            if (segundoValor < 10) {
+              // Si la suma no da 10, deshabilita '/'
+              // (la siguiente condición podría ser explícita si quieres mayor claridad)
+            } else {
+              deshabilitadas.add('/');
+            }
+          } else if (t1 == 'X' && (t2 == '-' || t2 == '')) {
+            // Strike y fallo/ninguno: todo permitido
+          } else if (t1 != 'X' && t2 == 'X') {
+            // Segundo tiro es strike: todo permitido
+          } else {
+            // Por seguridad: nunca permitir '/' en el tercer tiro si no es spare
+            deshabilitadas.add('/');
+          }
         }
       }
     } else {
@@ -72,9 +107,7 @@ class TecladoTiros extends StatelessWidget {
             }
             // Habilita solo '/' si suma 10 exacto
             if (primerValor < 10) {
-              // Solo habilita '/' si no es strike
-              // En este punto, '/' solo tiene sentido si la suma es 10
-              // Así que no añadas nada, ya está bien
+              // '/' solo es válido si suma 10
             } else {
               deshabilitadas.add('/');
             }
@@ -95,72 +128,156 @@ class TecladoTiros extends StatelessWidget {
       ['⌫', '→', ''],
     ];
 
+    // Colores adaptativos
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    final fondoTeclado = cs.surface;
+    final colorPrincipal = cs.primary;
+    final colorSplash = cs.secondary.withOpacity(0.22);
+    final colorInactivo = cs.onSurface.withOpacity(0.14);
+    final colorTextoActivo = cs.onPrimary;
+    final colorTextoInactivo = cs.onSurface.withOpacity(0.6);
+
     return ValueListenableBuilder<Set<String>>(
       valueListenable: deshabilitadosNotifier,
       builder: (context, deshabilitados, _) {
         return Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceVariant,
-            borderRadius: BorderRadius.circular(20),
+            color: fondoTeclado,
+            borderRadius: BorderRadius.circular(32),
             boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
+              if (theme.brightness == Brightness.light)
+                BoxShadow(
+                  color: colorPrincipal.withOpacity(0.10),
+                  blurRadius: 14,
+                  offset: const Offset(0, 7),
+                ),
             ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: botones.map((fila) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: fila.map((valor) {
-                  if (valor.isEmpty) {
-                    return const SizedBox(width: 64, height: 64);
-                  }
-                  final deshabilitado = deshabilitados.contains(valor);
-                  return Padding(
-                    padding: const EdgeInsets.all(6.0),
-                    child: AnimatedScale(
-                      scale: 1.0,
-                      duration: const Duration(milliseconds: 120),
-                      child: ElevatedButton(
-                        onPressed: deshabilitado
-                            ? null
-                            : () => onKeyPress(valor),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: deshabilitado
-                              ? Colors.grey.shade300
-                              : Theme.of(context).colorScheme.primaryContainer,
-                          foregroundColor: deshabilitado
-                              ? Colors.grey.shade600
-                              : Theme.of(
-                                  context,
-                                ).colorScheme.onPrimaryContainer,
-                          minimumSize: const Size(64, 64),
-                          elevation: deshabilitado ? 0 : 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                        ),
-                        child: Text(
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: fila.map((valor) {
+                    if (valor.isEmpty)
+                      return const SizedBox(width: 60, height: 60);
+                    final deshabilitado = deshabilitados.contains(valor);
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 5.5),
+                      child: TeclaAnimada(
+                        deshabilitado: deshabilitado,
+                        onTap: deshabilitado ? null : () => onKeyPress(valor),
+                        colorFondo: deshabilitado
+                            ? colorInactivo
+                            : colorPrincipal,
+                        colorSplash: colorSplash,
+                        child: _buildKeyContent(
                           valor,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          deshabilitado,
+                          colorTextoActivo,
+                          colorTextoInactivo,
                         ),
                       ),
-                    ),
-                  );
-                }).toList(),
+                    );
+                  }).toList(),
+                ),
               );
             }).toList(),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildKeyContent(
+    String valor,
+    bool deshabilitado,
+    Color colorActivo,
+    Color colorInactivo,
+  ) {
+    final color = deshabilitado ? colorInactivo : colorActivo;
+    if (valor == '⌫') {
+      return Icon(Icons.backspace_rounded, size: 30, color: color);
+    }
+    if (valor == '→') {
+      return Icon(Icons.arrow_forward_ios_rounded, size: 27, color: color);
+    }
+    return Text(
+      valor,
+      style: TextStyle(
+        fontSize: 27,
+        fontWeight: FontWeight.bold,
+        color: color,
+        letterSpacing: 1.1,
+      ),
+    );
+  }
+}
+
+class TeclaAnimada extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+  final bool deshabilitado;
+  final Color colorFondo;
+  final Color colorSplash;
+
+  const TeclaAnimada({
+    super.key,
+    required this.child,
+    required this.onTap,
+    required this.deshabilitado,
+    required this.colorFondo,
+    required this.colorSplash,
+  });
+
+  @override
+  State<TeclaAnimada> createState() => _TeclaAnimadaState();
+}
+
+class _TeclaAnimadaState extends State<TeclaAnimada> {
+  double escala = 1.0;
+
+  void _presionar() {
+    if (!widget.deshabilitado) {
+      setState(() => escala = 0.84); // Encoge rápido
+      Future.delayed(const Duration(milliseconds: 85), () {
+        if (mounted) setState(() => escala = 1.0); // Rebote rápido
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedScale(
+      scale: escala,
+      duration: const Duration(milliseconds: 105),
+      curve: Curves.easeInOutCubic,
+      child: Material(
+        color: widget.colorFondo,
+        shape: const CircleBorder(),
+        elevation: widget.deshabilitado ? 0 : 7,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(40),
+          splashColor: widget.colorSplash,
+          onTap: widget.deshabilitado
+              ? null
+              : () {
+                  _presionar();
+                  widget.onTap?.call();
+                },
+          child: SizedBox(
+            width: 60,
+            height: 60,
+            child: Center(child: widget.child),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
 import 'registro_completo_sesion .dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import '../widgets/prueba_selector_pins.dart';
+import '../widgets/teclado_selector_pins.dart';
 
 class HomeScreen extends StatelessWidget {
   final bool mostrarAppBar;
