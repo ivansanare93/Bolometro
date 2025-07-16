@@ -13,6 +13,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'screens/home.dart';
 import 'screens/registro_sesion.dart';
 
+import '../models/perfil_usuario.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
@@ -24,7 +26,9 @@ void main() async {
 
   Hive.registerAdapter(PartidaAdapter());
   Hive.registerAdapter(SesionAdapter());
+  Hive.registerAdapter(PerfilUsuarioAdapter());
   await Hive.openBox<Sesion>('sesiones');
+  await Hive.openBox<PerfilUsuario>('perfilUsuario');
 
 
   runApp(
