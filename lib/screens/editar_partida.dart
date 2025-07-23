@@ -167,7 +167,22 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
     final buenaRacha = esBuenaRacha(frames);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Editar Partida')),
+      appBar: AppBar(
+        title: const Text('Editar Partida'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.home),
+            tooltip: "Inicio",
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -198,6 +213,12 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
               autoAdvanceFocus: true,
             ),
             const SizedBox(height: 16),
+            ResumenPuntuacion(
+              puntuacionActual: puntuacionActual,
+              puntuacionMaxima: puntuacionMaxima,
+              buenaRacha: buenaRacha,
+            ),
+            const SizedBox(height: 16),
             AnimatedBuilder(
               animation: _animController,
               builder: (context, child) => Opacity(
@@ -226,12 +247,6 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            ResumenPuntuacion(
-              puntuacionActual: puntuacionActual,
-              puntuacionMaxima: puntuacionMaxima,
-              buenaRacha: buenaRacha,
             ),
             const SizedBox(height: 16),
             NotasField(
@@ -270,17 +285,6 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
             ),
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
-            (route) => false,
-          );
-        },
-        tooltip: 'Inicio',
-        child: const Icon(Icons.home),
       ),
     );
   }

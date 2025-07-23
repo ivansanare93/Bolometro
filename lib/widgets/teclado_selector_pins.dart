@@ -6,7 +6,7 @@ class SelectorpinesWidget extends StatefulWidget {
   final List<int> pinesDeshabilitados;
   final void Function(List<int>) onAceptar;
   final bool isFrame10;
-  final int tiroActual; // 0 = primer tiro, 1 = segundo tiro
+  final int tiroActual; // 0 = primer tiro, 1 = segundo tiro, 2 = tercero
 
   const SelectorpinesWidget({
     super.key,
@@ -21,9 +21,13 @@ class SelectorpinesWidget extends StatefulWidget {
   State<SelectorpinesWidget> createState() => _SelectorpinesWidgetState();
 }
 
-class _SelectorpinesWidgetState extends State<SelectorpinesWidget> {
+class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
+    with SingleTickerProviderStateMixin {
   late List<bool> _pinesCaidos;
   late List<double> _scaleList;
+  late AnimationController _shakeController;
+  late Animation<double> _shakeAnimation;
+  Color? _falloOverlayColor;
 
   @override
   void initState() {
@@ -33,6 +37,20 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget> {
       (i) => widget.pinesIniciales.contains(i + 1),
     );
     _scaleList = List.filled(10, 1.0);
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _shakeAnimation = Tween<double>(
+      begin: 0,
+      end: 14,
+    ).chain(CurveTween(curve: Curves.elasticIn)).animate(_shakeController);
+  }
+
+  @override
+  void dispose() {
+    _shakeController.dispose();
+    super.dispose();
   }
 
   void _togglePino(int index) {
@@ -68,8 +86,19 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget> {
   }
 
   void _marcarFallo() {
+    HapticFeedback.heavyImpact();
     setState(() {
       _pinesCaidos = List.generate(10, (_) => false);
+      _falloOverlayColor = Colors.red.withOpacity(0.15);
+    });
+    _shakeController.forward(from: 0);
+
+    // Tras el “shake” y destello, cierra y confirma automáticamente
+    Future.delayed(const Duration(milliseconds: 220), () {
+      if (mounted) {
+        setState(() => _falloOverlayColor = null);
+        widget.onAceptar([]); // ← Confirma y cierra solo
+      }
     });
   }
 
@@ -93,6 +122,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget> {
     final int tiroActual = widget.tiroActual;
     final bool esPrimerTiro = tiroActual == 0;
     final bool esSegundoTiro = tiroActual == 1;
+    final bool esTercerTiro = tiroActual == 2;
     final bool todosCaidos = _pinesCaidos.every((v) => v);
     final bool ningunoCaido = _pinesCaidos.every((v) => !v);
     final bool strikeEnPrimerTiro =
@@ -105,220 +135,262 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget> {
       (i) => _pinesCaidos[i] ? i + 1 : null,
     ).whereType<int>().toList();
 
-    // Mostrar Pleno solo en primer tiro y si hay pinos en pie
-    final bool mostrarPleno = esPrimerTiro && !todosCaidos;
+    // ---- LÓGICA AJUSTADA PARA FRAME 10 ----
+    bool mostrarPleno = false;
+    bool mostrarRemate = false;
+    bool mostrarFallo = false;
 
-    // Mostrar Remate solo en segundo tiro, si no hubo pleno, si quedan pinos en pie y no están todos ya seleccionados
-    final bool mostrarRemate =
-        esSegundoTiro &&
-        !strikeEnPrimerTiro &&
-        !todosCaidos &&
-        widget.pinesIniciales.length < 10;
+    if (widget.isFrame10) {
+      if (esPrimerTiro) {
+        mostrarPleno = !todosCaidos;
+        mostrarFallo = ningunoCaido;
+      } else if (esSegundoTiro) {
+        // Si en el primer tiro hubo strike, todos los pines están "nuevos"
+        if (widget.pinesIniciales.length == 10) {
+          mostrarPleno = !todosCaidos;
+          mostrarFallo = ningunoCaido;
+        } else if (widget.pinesIniciales.length < 10 &&
+            widget.pinesIniciales.isNotEmpty) {
+          // Si quedan menos de 10 pines de inicio (no strike), sólo "Remate" si no todos caídos
+          mostrarRemate = !todosCaidos;
+          mostrarFallo = ningunoCaido;
+        } else {
+          mostrarFallo = ningunoCaido;
+        }
+      } else if (esTercerTiro) {
+        mostrarPleno = !todosCaidos;
+        mostrarFallo = ningunoCaido;
+      }
+    } else {
+      // ---- LÓGICA NORMAL (frames 1-9) ----
+      mostrarPleno = esPrimerTiro && !todosCaidos;
+      mostrarRemate =
+          esSegundoTiro &&
+          !strikeEnPrimerTiro &&
+          !todosCaidos &&
+          widget.pinesIniciales.length < 10;
+      mostrarFallo = ningunoCaido;
+    }
 
-    // Fallo: Solo si hay pinos en pie (para ambos tiros)
-    final bool mostrarFallo = ningunoCaido;
-
-    // Deshabilitar todo si hubo pleno en el primer tiro (segundo tiro debe estar bloqueado)
+    // Deshabilitar todo si hubo pleno en el primer tiro (segundo tiro debe estar bloqueado en frames 1-9)
     final bool bloquearTodo = strikeEnPrimerTiro;
 
-    return Card(
-      elevation: 7,
-      color: fondoCard,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 18),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Selecciona los pines que has tirado',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: cs.onSurface,
+    return AnimatedBuilder(
+      animation: _shakeController,
+      builder: (context, child) {
+        double offset =
+            _shakeAnimation.value *
+            (_shakeController.status == AnimationStatus.forward ? 1 : -1);
+        return Transform.translate(
+          offset: Offset(offset, 0),
+          child: Stack(
+            children: [
+              child!,
+              if (_falloOverlayColor != null)
+                Positioned.fill(child: Container(color: _falloOverlayColor)),
+            ],
+          ),
+        );
+      },
+      child: Card(
+        elevation: 7,
+        color: fondoCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Selecciona los pines que has tirado',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: cs.onSurface,
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-            if (!bloquearTodo)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (mostrarPleno)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.bolt, size: 18),
-                        label: const Text('Pleno'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 8,
+              const SizedBox(height: 10),
+              if (!bloquearTodo)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (mostrarPleno)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.bolt, size: 18),
+                          label: const Text('Pleno'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 8,
+                            ),
+                            textStyle: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                          textStyle: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          onPressed: _marcarPleno,
                         ),
-                        onPressed: _marcarPleno,
                       ),
-                    ),
-                  if (mostrarRemate)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.auto_fix_high, size: 18),
-                        label: const Text('Remate'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: azul,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 8,
+                    if (mostrarRemate)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.auto_fix_high, size: 18),
+                          label: const Text('Remate'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: azul,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 8,
+                            ),
+                            textStyle: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                          textStyle: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          onPressed: _marcarRemate,
                         ),
-                        onPressed: _marcarRemate,
                       ),
-                    ),
-                  if (!mostrarPleno && !mostrarRemate && mostrarFallo)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.close, size: 18),
-                        label: const Text('Fallo'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey[500],
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 8,
+                    if (mostrarFallo)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.close, size: 18),
+                          label: const Text('Fallo'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey[500],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 8,
+                            ),
+                            textStyle: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                          textStyle: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          onPressed: _marcarFallo,
                         ),
-                        onPressed: _marcarFallo,
                       ),
-                    ),
-                ],
-              ),
-            if (!bloquearTodo) const SizedBox(height: 8),
-            ...filas.map(
-              (fila) => Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: fila.map((pino) {
-                  final idx = pino - 1;
-                  final deshabilitado = widget.pinesDeshabilitados.contains(
-                    pino,
-                  );
-                  final seleccionado = _pinesCaidos[idx];
+                  ],
+                ),
+              if (!bloquearTodo) const SizedBox(height: 8),
+              ...filas.map(
+                (fila) => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: fila.map((pino) {
+                    final idx = pino - 1;
+                    final deshabilitado = widget.pinesDeshabilitados.contains(
+                      pino,
+                    );
+                    final seleccionado = _pinesCaidos[idx];
 
-                  final pinEstaDeshabilitado = deshabilitado || bloquearTodo;
+                    final pinEstaDeshabilitado = deshabilitado || bloquearTodo;
 
-                  final pinFondo = pinEstaDeshabilitado
-                      ? fondoPinNoSel.withOpacity(0.28)
-                      : seleccionado
-                      ? azul
-                      : fondoPinNoSel;
-                  final pinBorde = pinEstaDeshabilitado
-                      ? fondoPinNoSel.withOpacity(0.45)
-                      : seleccionado
-                      ? azul
-                      : pinBordeNoSel;
-                  final pinTexto = pinEstaDeshabilitado
-                      ? cs.onSurface.withOpacity(0.30)
-                      : seleccionado
-                      ? Colors.white
-                      : (isDark ? Colors.white : Colors.black87);
+                    final pinFondo = pinEstaDeshabilitado
+                        ? fondoPinNoSel.withOpacity(0.28)
+                        : seleccionado
+                        ? azul
+                        : fondoPinNoSel;
+                    final pinBorde = pinEstaDeshabilitado
+                        ? fondoPinNoSel.withOpacity(0.45)
+                        : seleccionado
+                        ? azul
+                        : pinBordeNoSel;
+                    final pinTexto = pinEstaDeshabilitado
+                        ? cs.onSurface.withOpacity(0.30)
+                        : seleccionado
+                        ? Colors.white
+                        : (isDark ? Colors.white : Colors.black87);
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 7,
-                      vertical: 2,
-                    ),
-                    child: AnimatedScale(
-                      scale: _scaleList[idx],
-                      duration: const Duration(milliseconds: 100),
-                      curve: Curves.easeInOutCubic,
-                      child: GestureDetector(
-                        onTap: pinEstaDeshabilitado
-                            ? null
-                            : () => _togglePino(idx),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 160),
-                          width: 38,
-                          height: 38,
-                          decoration: BoxDecoration(
-                            color: pinFondo,
-                            border: Border.all(color: pinBorde, width: 2.5),
-                            borderRadius: BorderRadius.circular(19),
-                            boxShadow: [
-                              if (seleccionado && !pinEstaDeshabilitado)
-                                BoxShadow(
-                                  color: azul.withOpacity(0.19),
-                                  blurRadius: 12,
-                                  spreadRadius: 1,
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 2,
+                      ),
+                      child: AnimatedScale(
+                        scale: _scaleList[idx],
+                        duration: const Duration(milliseconds: 100),
+                        curve: Curves.easeInOutCubic,
+                        child: GestureDetector(
+                          onTap: pinEstaDeshabilitado
+                              ? null
+                              : () => _togglePino(idx),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 160),
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: pinFondo,
+                              border: Border.all(color: pinBorde, width: 2.5),
+                              borderRadius: BorderRadius.circular(19),
+                              boxShadow: [
+                                if (seleccionado && !pinEstaDeshabilitado)
+                                  BoxShadow(
+                                    color: azul.withOpacity(0.19),
+                                    blurRadius: 12,
+                                    spreadRadius: 1,
+                                  ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                pino.toString(),
+                                style: TextStyle(
+                                  color: pinTexto,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
                                 ),
-                            ],
-                          ),
-                          child: Center(
-                            child: Text(
-                              pino.toString(),
-                              style: TextStyle(
-                                color: pinTexto,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                }).toList(),
+                    );
+                  }).toList(),
+                ),
               ),
-            ),
-            const SizedBox(height: 18),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.restart_alt_rounded),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: cs.surfaceVariant,
-                      foregroundColor: azul,
-                      minimumSize: const Size.fromHeight(46),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.restart_alt_rounded),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: cs.surfaceVariant,
+                        foregroundColor: azul,
+                        minimumSize: const Size.fromHeight(46),
+                      ),
+                      onPressed: bloquearTodo
+                          ? null
+                          : () {
+                              setState(() {
+                                _pinesCaidos = List.generate(10, (_) => false);
+                                _scaleList = List.filled(10, 1.0);
+                              });
+                            },
+                      label: const Text('Limpiar'),
                     ),
-                    onPressed: bloquearTodo
-                        ? null
-                        : () {
-                            setState(() {
-                              _pinesCaidos = List.generate(10, (_) => false);
-                              _scaleList = List.filled(10, 1.0);
-                            });
-                          },
-                    label: const Text('Limpiar'),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.check),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green[700],
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size.fromHeight(46),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.check),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[700],
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size.fromHeight(46),
+                      ),
+                      onPressed: () => widget.onAceptar(seleccionados),
+                      label: const Text('Aceptar'),
                     ),
-                    onPressed: () => widget.onAceptar(seleccionados),
-                    label: const Text('Aceptar'),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

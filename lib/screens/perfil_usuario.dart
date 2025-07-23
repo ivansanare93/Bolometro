@@ -91,6 +91,15 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
         margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
       ),
     );
+
+    // Espera un poco para que se vea el mensaje y navega al Home
+    await Future.delayed(const Duration(milliseconds: 600));
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false,
+      );
+    }
   }
 
   Future<void> _seleccionarAvatar() async {

@@ -128,36 +128,62 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
     });
   }
 
-  // Al aceptar los pines seleccionados
   void _onAceptarSeleccionPins(List<int> seleccionados) {
     final frame = _frameActivo!;
     final tiro = _tiroActivo!;
     setState(() {
-      // Guarda la selección visual
       pinesPorTiro[frame][tiro] = seleccionados;
-
-      // Traduce a valor de marcador clásico (esto ES LO QUE SE VE EN CADA FRAME)
-      final count = seleccionados.length;
       String valor = "";
+
       if (frame < 9) {
-        if (tiro == 0 && count == 10) {
+        // Frames 1-9
+        if (tiro == 0 && seleccionados.length == 10) {
           valor = "X"; // Strike
-        } else if (tiro == 1 &&
-            ((pinesPorTiro[frame][0]?.length ?? 0) + count == 10)) {
-          valor = "/"; // Spare
-        } else if (count == 0) {
-          valor = "-"; // Fallo
+        } else if (tiro == 1) {
+          final prevTiro = pinesPorTiro[frame][0] ?? [];
+          final union = <int>{...prevTiro, ...seleccionados};
+          if (union.length == 10 && prevTiro.length != 10) {
+            valor = "/"; // Spare (solo si el primer tiro NO fue strike)
+          } else if (seleccionados.length == 0) {
+            valor = "-";
+          } else {
+            valor = "${seleccionados.length}";
+          }
+        } else if (seleccionados.length == 0) {
+          valor = "-";
         } else {
-          valor = "$count"; // pines caídos
+          valor = "${seleccionados.length}";
         }
       } else {
         // Frame 10
-        valor = (count == 10) ? "X" : (count == 0 ? "-" : "$count");
+        if (tiro == 0 && seleccionados.length == 10) {
+          valor = "X";
+        } else if (tiro == 1) {
+          final prevTiro = pinesPorTiro[frame][0] ?? [];
+          final union = <int>{...prevTiro, ...seleccionados};
+          if (union.length == 10 && prevTiro.length != 10) {
+            valor = "/"; // Spare (sin strike en el primer tiro)
+          } else if (seleccionados.length == 10) {
+            valor = "X"; // Strike también en el segundo tiro (caso especial)
+          } else if (seleccionados.length == 0) {
+            valor = "-";
+          } else {
+            valor = "${seleccionados.length}";
+          }
+        } else if (tiro == 2) {
+          if (seleccionados.length == 10) {
+            valor = "X";
+          } else if (seleccionados.length == 0) {
+            valor = "-";
+          } else {
+            valor = "${seleccionados.length}";
+          }
+        } else {
+          valor = seleccionados.length == 0 ? "-" : "${seleccionados.length}";
+        }
       }
 
-      // Actualiza el marcador visual
       framesText[frame][tiro] = valor;
-
       erroresPorTiro = _obtenerErroresPorTiro(framesText);
       mostrarSelectorpines = false;
     });
@@ -183,14 +209,46 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
 
     // Pines ya tirados en tiros previos del frame activo (para deshabilitar)
     List<int> pinesDeshabilitados = [];
-    if (_modoVisual &&
-        _frameActivo != null &&
-        _tiroActivo != null &&
-        _tiroActivo! > 0) {
-      for (int prev = 0; prev < _tiroActivo!; prev++) {
-        pinesDeshabilitados.addAll(pinesPorTiro[_frameActivo!][prev] ?? []);
+
+    if (_modoVisual && _frameActivo != null && _tiroActivo != null) {
+      // Lógica para frame 10
+      if (_frameActivo == 9) {
+        if (_tiroActivo == 0) {
+          // Primer tiro del frame 10: todos disponibles
+          pinesDeshabilitados = [];
+        } else if (_tiroActivo == 1) {
+          final prevTiro = pinesPorTiro[9][0];
+          if (prevTiro != null && prevTiro.length == 10) {
+            // Si fue strike: se reponen todos
+            pinesDeshabilitados = [];
+          } else {
+            // No strike: deshabilitas los caídos en tiro 1
+            pinesDeshabilitados = prevTiro ?? [];
+          }
+        } else if (_tiroActivo == 2) {
+          final prevTiro1 = pinesPorTiro[9][0];
+          final prevTiro2 = pinesPorTiro[9][1];
+          final huboStrikeTiro1 = prevTiro1 != null && prevTiro1.length == 10;
+          final sumaTiros1y2 =
+              (prevTiro1?.length ?? 0) + (prevTiro2?.length ?? 0);
+          final huboSpare = !huboStrikeTiro1 && sumaTiros1y2 == 10;
+          if (huboStrikeTiro1 || huboSpare) {
+            // Se reponen todos
+            pinesDeshabilitados = [];
+          } else {
+            // No debería haber tiro 3 si no hubo strike/spare, ¡lógica de fuera!
+            pinesDeshabilitados = [];
+          }
+        }
+      }
+      // Resto de frames (1-9): como ya lo tienes
+      else if (_tiroActivo! > 0) {
+        for (int prev = 0; prev < _tiroActivo!; prev++) {
+          pinesDeshabilitados.addAll(pinesPorTiro[_frameActivo!][prev] ?? []);
+        }
       }
     }
+
     // Detectar si en el segundo tiro (de un frame que NO es el 10) ya hubo strike en el primero
 
     if (_modoVisual &&
@@ -295,7 +353,13 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
               autoFocusEnabled: !_modoVisual,
               autoAdvanceFocus: true,
             ),
-            const SizedBox(height: 16),
+
+            const SizedBox(height: 8),
+            ResumenPuntuacion(
+              puntuacionActual: puntuacionActual,
+              puntuacionMaxima: puntuacionMaxima,
+              buenaRacha: buenaRacha,
+            ),
 
             // Selector visual o teclado, según el modo
             if (_modoVisual &&
@@ -328,13 +392,6 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
                 },
                 deshabilitadosNotifier: teclasDeshabilitadas,
               ),
-
-            const SizedBox(height: 16),
-            ResumenPuntuacion(
-              puntuacionActual: puntuacionActual,
-              puntuacionMaxima: puntuacionMaxima,
-              buenaRacha: buenaRacha,
-            ),
             const SizedBox(height: 16),
             NotasField(
               initialValue: notas,
