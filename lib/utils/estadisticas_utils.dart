@@ -1,0 +1,128 @@
+import '../models/sesion.dart';
+import '../models/partida.dart';
+
+class EstadisticasUtils {
+  /// Racha máxima de strikes o spares (según símbolo)
+  static int rachaMaximaDe(String simbolo, List<List<List<String>>> partidasFrames) {
+    int maxRacha = 0;
+    for (final frames in partidasFrames) {
+      int racha = 0;
+      for (final frame in frames) {
+        if (frame[0] == simbolo || (frame.length > 1 && frame[1] == simbolo)) {
+          racha++;
+          if (racha > maxRacha) maxRacha = racha;
+        } else {
+          racha = 0;
+        }
+      }
+    }
+    return maxRacha;
+  }
+
+  /// Porcentaje de strikes, spares y fallos
+  static Map<String, double> calcularPorcentajes(List<List<List<String>>> partidasFrames) {
+    int totalTiros = 0;
+    int strikes = 0;
+    int spares = 0;
+    int fallos = 0;
+
+    for (final frames in partidasFrames) {
+      for (final frame in frames) {
+        for (final tiro in frame) {
+          if (tiro == "X") strikes++;
+          else if (tiro == "/") spares++;
+          else if (tiro == "-") fallos++;
+          totalTiros++;
+        }
+      }
+    }
+    if (totalTiros == 0) return {"strikes": 0, "spares": 0, "fallos": 0};
+    return {
+      "strikes": (strikes / totalTiros) * 100,
+      "spares": (spares / totalTiros) * 100,
+      "fallos": (fallos / totalTiros) * 100,
+    };
+  }
+
+  /// Promedio de las últimas X partidas
+  static double promedioUltimasPartidas(List<Partida> partidas, int cantidad) {
+    if (partidas.isEmpty) return 0;
+    final ultimas = partidas.length > cantidad
+        ? partidas.sublist(partidas.length - cantidad)
+        : partidas;
+    return ultimas.map((p) => p.total).reduce((a, b) => a + b) / ultimas.length;
+  }
+
+  /// Mejor puntuación en entrenamiento / competición
+  static int mejorPuntuacionPorTipo(List<Sesion> sesiones, String tipo) {
+    final partidasTipo = <Partida>[];
+    for (final sesion in sesiones) {
+      if (sesion.tipo == tipo) {
+        partidasTipo.addAll(sesion.partidas);
+      }
+    }
+    if (partidasTipo.isEmpty) return 0;
+    return partidasTipo.map((p) => p.total).reduce((a, b) => a > b ? a : b);
+  }
+
+  /// Histograma de puntuaciones (por bin de tamaño binSize)
+  static Map<String, int> calcularHistograma(List<Partida> partidas, {int binSize = 20}) {
+    final histograma = <String, int>{};
+    for (final p in partidas) {
+      int binInicio = (p.total ~/ binSize) * binSize;
+      int binFin = binInicio + binSize - 1;
+      String binLabel = "$binInicio-$binFin";
+      histograma[binLabel] = (histograma[binLabel] ?? 0) + 1;
+    }
+    return histograma;
+  }
+
+  /// Promedio móvil de tamaño windowSize
+  static List<double> promedioMovil(List<Partida> partidas, int windowSize) {
+    List<double> promedios = [];
+    if (partidas.length < windowSize) return promedios;
+    for (int i = 0; i <= partidas.length - windowSize; i++) {
+      final window = partidas.sublist(i, i + windowSize);
+      final promedio = window.map((p) => p.total).reduce((a, b) => a + b) / window.length;
+      promedios.add(promedio);
+    }
+    return promedios;
+  }
+
+  /// Top N mejores o peores partidas (con fecha)
+  static List<Partida> topNPartidas(List<Partida> partidas, int n, {bool mejores = true}) {
+    final copia = List<Partida>.from(partidas);
+    copia.sort((a, b) => mejores ? b.total.compareTo(a.total) : a.total.compareTo(b.total));
+    return copia.take(n).toList();
+  }
+
+  /// Filtrar sesiones por fecha (inclusive)
+  static List<Sesion> filtrarSesionesPorFecha(List<Sesion> sesiones, DateTime desde, DateTime hasta) {
+    return sesiones.where((s) =>
+      s.fecha.isAfter(desde.subtract(const Duration(days: 1))) &&
+      s.fecha.isBefore(hasta.add(const Duration(days: 1)))
+    ).toList();
+  }
+
+  /// Sesión con mejor promedio (récord personal)
+  static Sesion? sesionRecord(List<Sesion> sesiones) {
+    if (sesiones.isEmpty) return null;
+    return sesiones.reduce((a, b) =>
+      promedioSesion(a) > promedioSesion(b) ? a : b
+    );
+  }
+
+  /// Sesión con peor promedio
+  static Sesion? sesionPeor(List<Sesion> sesiones) {
+    if (sesiones.isEmpty) return null;
+    return sesiones.reduce((a, b) =>
+      promedioSesion(a) < promedioSesion(b) ? a : b
+    );
+  }
+
+  /// Promedio de una sesión
+  static double promedioSesion(Sesion sesion) {
+    if (sesion.partidas.isEmpty) return 0;
+    return sesion.partidas.map((p) => p.total).reduce((a, b) => a + b) / sesion.partidas.length;
+  }
+}

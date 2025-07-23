@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/services.dart';
 import 'dart:io';
 
 import '../models/perfil_usuario.dart';
+import 'home.dart'; // Asegúrate de que la ruta sea correcta
 
 class PerfilUsuarioScreen extends StatefulWidget {
   const PerfilUsuarioScreen({super.key});
@@ -47,7 +49,18 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
   }
 
   Future<void> _guardarPerfil() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Corrige los errores antes de guardar'),
+          backgroundColor: Colors.red[600],
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+        ),
+      );
+      return;
+    }
 
     final nuevoPerfil = PerfilUsuario(
       nombre: _nombreController.text.trim(),
@@ -69,12 +82,19 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
     setState(() {
       perfil = nuevoPerfil;
     });
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Perfil guardado.')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Perfil guardado correctamente'),
+        backgroundColor: Colors.green[600],
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+      ),
+    );
   }
 
   Future<void> _seleccionarAvatar() async {
+    HapticFeedback.selectionClick();
     final picker = ImagePicker();
     final img = await picker.pickImage(
       source: ImageSource.gallery,
@@ -84,6 +104,54 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       setState(() {
         _avatarPath = img.path;
       });
+    }
+  }
+
+  void _quitarAvatar() {
+    setState(() {
+      _avatarPath = null;
+    });
+  }
+
+  void _confirmarEliminarPerfil() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('¿Eliminar perfil?'),
+        content: const Text(
+          '¿Seguro que quieres borrar tu perfil?\nEsta acción no se puede deshacer.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await perfilBox.delete('perfil');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Perfil eliminado'),
+          backgroundColor: Colors.red[600],
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+        ),
+      );
+      await Future.delayed(const Duration(milliseconds: 600));
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false,
+      );
     }
   }
 
@@ -99,6 +167,8 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final avatarFileExists =
+        _avatarPath != null && File(_avatarPath!).existsSync();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Mi perfil'), centerTitle: true),
@@ -114,17 +184,33 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                 child: CircleAvatar(
                   radius: 48,
                   backgroundColor: cs.primary.withOpacity(0.09),
-                  backgroundImage:
-                      _avatarPath != null && File(_avatarPath!).existsSync()
+                  backgroundImage: avatarFileExists
                       ? FileImage(File(_avatarPath!))
                       : null,
-                  child:
-                      (_avatarPath == null || !File(_avatarPath!).existsSync())
+                  child: !avatarFileExists
                       ? Icon(Icons.person, size: 48, color: cs.primary)
                       : null,
                 ),
               ),
-              const SizedBox(height: 12),
+              if (avatarFileExists)
+                TextButton.icon(
+                  icon: const Icon(Icons.delete_outline, size: 18),
+                  label: const Text('Quitar foto'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.red,
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                  ),
+                  onPressed: _quitarAvatar,
+                ),
+              if (_avatarPath != null && !avatarFileExists)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Text(
+                    'Imagen no encontrada, selecciona otra.',
+                    style: TextStyle(color: Colors.red[400], fontSize: 13),
+                  ),
+                ),
+              const SizedBox(height: 8),
               Text(
                 'Pulsa para cambiar tu imagen',
                 style: TextStyle(
@@ -155,6 +241,14 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.emailAddress,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return null;
+                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                  if (!emailRegex.hasMatch(v.trim())) {
+                    return 'Introduce un email válido';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
               // Club
@@ -175,16 +269,13 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                   prefixIcon: Icon(Icons.pan_tool_alt_outlined),
                   border: OutlineInputBorder(),
                 ),
-                items: [
-                  const DropdownMenuItem(
-                    child: Text('Derecha'),
-                    value: 'Derecha',
-                  ),
-                  const DropdownMenuItem(
+                items: const [
+                  DropdownMenuItem(child: Text('Derecha'), value: 'Derecha'),
+                  DropdownMenuItem(
                     child: Text('Izquierda'),
                     value: 'Izquierda',
                   ),
-                  const DropdownMenuItem(child: Text('Ambas'), value: 'Ambas'),
+                  DropdownMenuItem(child: Text('Ambas'), value: 'Ambas'),
                 ],
                 onChanged: (v) => setState(() => _manoDominante = v),
               ),
@@ -265,6 +356,18 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+              ),
+              const SizedBox(height: 10),
+              TextButton.icon(
+                icon: const Icon(Icons.delete_forever, color: Colors.red),
+                label: const Text(
+                  'Eliminar perfil',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onPressed: _confirmarEliminarPerfil,
               ),
             ],
           ),

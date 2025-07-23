@@ -179,6 +179,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
     final puntuacionActual = calcularPuntuacionPartida(frames);
     final puntuacionMaxima = calcularPuntuacionMaximaPosible(frames);
     final buenaRacha = esBuenaRacha(frames);
+    bool esStrikeEnPrimerTiro = false;
 
     // Pines ya tirados en tiros previos del frame activo (para deshabilitar)
     List<int> pinesDeshabilitados = [];
@@ -188,6 +189,18 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
         _tiroActivo! > 0) {
       for (int prev = 0; prev < _tiroActivo!; prev++) {
         pinesDeshabilitados.addAll(pinesPorTiro[_frameActivo!][prev] ?? []);
+      }
+    }
+    // Detectar si en el segundo tiro (de un frame que NO es el 10) ya hubo strike en el primero
+
+    if (_modoVisual &&
+        _frameActivo != null &&
+        _tiroActivo == 1 && // Segundo tiro
+        _frameActivo! < 9) {
+      // Solo frames 1-9
+      final prevTiro = pinesPorTiro[_frameActivo!][0];
+      if (prevTiro != null && prevTiro.length == 10) {
+        esStrikeEnPrimerTiro = true;
       }
     }
 
@@ -288,7 +301,10 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
             if (_modoVisual &&
                 mostrarSelectorpines &&
                 _frameActivo != null &&
-                _tiroActivo != null)
+                _tiroActivo != null &&
+                !(esStrikeEnPrimerTiro &&
+                    _tiroActivo == 1 &&
+                    _frameActivo! < 9))
               SelectorpinesWidget(
                 pinesIniciales: pinesPorTiro[_frameActivo!][_tiroActivo!] ?? [],
                 pinesDeshabilitados: pinesDeshabilitados,

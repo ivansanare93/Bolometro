@@ -116,7 +116,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget> {
         widget.pinesIniciales.length < 10;
 
     // Fallo: Solo si hay pinos en pie (para ambos tiros)
-    final bool mostrarFallo = !todosCaidos && !ningunoCaido;
+    final bool mostrarFallo = ningunoCaido;
 
     // Deshabilitar todo si hubo pleno en el primer tiro (segundo tiro debe estar bloqueado)
     final bool bloquearTodo = strikeEnPrimerTiro;
