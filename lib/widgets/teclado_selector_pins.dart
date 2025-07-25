@@ -142,22 +142,28 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
 
     if (widget.isFrame10) {
       if (esPrimerTiro) {
+        // Primer tiro: Pleno si no están todos caídos
         mostrarPleno = !todosCaidos;
         mostrarFallo = ningunoCaido;
       } else if (esSegundoTiro) {
-        // Si en el primer tiro hubo strike, todos los pines están "nuevos"
-        if (widget.pinesIniciales.length == 10) {
+        final strikeEnTiro1 =
+            widget.pinesIniciales.length == 10; // Strike en primer tiro
+        final pinosTiradosTiro1 = widget.pinesIniciales.length;
+
+        if (strikeEnTiro1) {
+          // Tienes todos los pinos, puedes hacer otro strike o pleno
           mostrarPleno = !todosCaidos;
           mostrarFallo = ningunoCaido;
-        } else if (widget.pinesIniciales.length < 10 &&
-            widget.pinesIniciales.isNotEmpty) {
-          // Si quedan menos de 10 pines de inicio (no strike), sólo "Remate" si no todos caídos
+        } else if (pinosTiradosTiro1 < 10 && pinosTiradosTiro1 > 0) {
+          // No fue strike, pero hay pinos caídos, puedes rematar si faltan pinos
           mostrarRemate = !todosCaidos;
           mostrarFallo = ningunoCaido;
-        } else {
+        } else if (pinosTiradosTiro1 == 0) {
+          // Caso muy raro: no caíste ninguno en el tiro 1
           mostrarFallo = ningunoCaido;
         }
       } else if (esTercerTiro) {
+        // Tercer tiro: siempre puedes hacer pleno si no están todos caídos
         mostrarPleno = !todosCaidos;
         mostrarFallo = ningunoCaido;
       }

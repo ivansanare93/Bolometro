@@ -36,6 +36,18 @@ class _EstadisticasPantallaCompletaState
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Colores personalizados para las tarjetas en función del modo
+    final recordCardColor = isDark
+        ? const Color(0xFF153F2D).withOpacity(0.72)
+        : Colors.green[50];
+    final worstCardColor = isDark
+        ? const Color(0xFF422323).withOpacity(0.74)
+        : Colors.red[50];
+    final textCardColor = isDark
+        ? Colors.white.withOpacity(0.93)
+        : Colors.black87;
 
     return Scaffold(
       appBar: AppBar(
@@ -316,7 +328,7 @@ class _EstadisticasPantallaCompletaState
               const SizedBox(height: 5),
               if (sesionRecord != null)
                 Card(
-                  color: Colors.green[50],
+                  color: recordCardColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -327,12 +339,15 @@ class _EstadisticasPantallaCompletaState
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.star, color: Colors.green[700], size: 28),
+                        Icon(Icons.star, color: Colors.green[400], size: 28),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             "¡Récord personal!\n${sesionRecord.partidas.length} partidas el ${_formatearFechaCorta(sesionRecord.fecha)}. Prom: ${EstadisticasUtils.promedioSesion(sesionRecord).toStringAsFixed(1)}",
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: textCardColor,
+                            ),
                           ),
                         ),
                       ],
@@ -341,7 +356,7 @@ class _EstadisticasPantallaCompletaState
                 ),
               if (sesionPeor != null)
                 Card(
-                  color: Colors.red[50],
+                  color: worstCardColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -354,14 +369,17 @@ class _EstadisticasPantallaCompletaState
                       children: [
                         Icon(
                           Icons.error_outline,
-                          color: Colors.red[400],
+                          color: Colors.red[300],
                           size: 28,
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             "Peor sesión: ${sesionPeor.partidas.length} partidas el ${_formatearFechaCorta(sesionPeor.fecha)}. Prom: ${EstadisticasUtils.promedioSesion(sesionPeor).toStringAsFixed(1)}",
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: textCardColor,
+                            ),
                           ),
                         ),
                       ],

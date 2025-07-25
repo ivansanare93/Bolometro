@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../models/partida.dart';
+import '../../models/partida.dart';
 
 class TopPartidasWidget extends StatelessWidget {
   final List<Partida> partidas;
@@ -7,47 +7,85 @@ class TopPartidasWidget extends StatelessWidget {
   final Color color;
 
   const TopPartidasWidget({
-    super.key,
+    Key? key,
     required this.partidas,
     required this.titulo,
     required this.color,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: color.withOpacity(0.09),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              titulo,
-              style: TextStyle(
-                  color: color, fontWeight: FontWeight.bold, fontSize: 16),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final background = isDark
+        ? color.withOpacity(0.20)
+        : color.withOpacity(0.10);
+    final borderColor = color.withOpacity(isDark ? 0.28 : 0.18);
+    final fechaColor = Theme.of(
+      context,
+    ).colorScheme.onSurface.withOpacity(isDark ? 0.70 : 0.58);
+    final puntosColor = Theme.of(
+      context,
+    ).colorScheme.onSurface.withOpacity(0.88);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: background,
+        border: Border.all(color: borderColor),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          if (!isDark)
+            BoxShadow(
+              color: color.withOpacity(0.08),
+              blurRadius: 9,
+              offset: const Offset(0, 3),
             ),
-            const SizedBox(height: 8),
-            ...partidas.map(
-              (p) => Row(
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            titulo,
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 10),
+          ...partidas.map((p) {
+            final fecha =
+                "${p.fecha.day.toString().padLeft(2, '0')}/${p.fecha.month.toString().padLeft(2, '0')}/${p.fecha.year}";
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Row(
                 children: [
-                  const Text('🎳', style: TextStyle(fontSize: 32)),
+                  const Text("🎳", style: TextStyle(fontSize: 22)),
                   const SizedBox(width: 8),
                   Text(
                     "${p.total} pts",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: puntosColor,
+                    ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 14),
                   Text(
-                    "${p.fecha.day.toString().padLeft(2, '0')}/${p.fecha.month.toString().padLeft(2, '0')}/${p.fecha.year}",
-                    style: const TextStyle(color: Colors.grey),
+                    fecha,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: fechaColor,
+                    ),
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
+            );
+          }).toList(),
+        ],
       ),
     );
   }

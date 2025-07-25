@@ -69,7 +69,6 @@ class TecladoTiros extends StatelessWidget {
             // Solo permitir '/' si suma exactamente 10
             if (segundoValor < 10) {
               // Si la suma no da 10, deshabilita '/'
-              // (la siguiente condición podría ser explícita si quieres mayor claridad)
             } else {
               deshabilitadas.add('/');
             }
@@ -90,9 +89,11 @@ class TecladoTiros extends StatelessWidget {
       } else if (tiro == 1) {
         deshabilitadas.add('X'); // nunca puede ser strike en segundo tiro
         if (t1 == 'X') {
-          // Strike en el primer tiro: todos los tiros deshabilitados en tiro 2
+          // Strike en el primer tiro: bloquea TODO en tiro 2
           deshabilitadas.addAll(numeros);
           deshabilitadas.add('/');
+          deshabilitadas.add('X');
+          deshabilitadas.add('-');
         } else if (t1.isNotEmpty && t1 != '-') {
           final primerValor = int.tryParse(t1);
           if (primerValor != null) {

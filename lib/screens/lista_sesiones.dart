@@ -28,6 +28,9 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
       setState(() {});
     }
 
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sesiones guardadas'),
@@ -48,37 +51,67 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
       ),
       body: Column(
         children: [
-          // Filtro
+          // Filtro visual optimizado
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              children: [
-                const Icon(Icons.filter_alt_outlined, size: 22),
-                const SizedBox(width: 8),
-                const Text(
-                  'Filtrar:',
-                  style: TextStyle(fontWeight: FontWeight.w500),
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDark ? cs.surface : Colors.grey[100],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: cs.primary.withOpacity(0.38),
+                  width: 1.3,
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: cs.primary.withOpacity(isDark ? 0.13 : 0.06),
+                    blurRadius: 7,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+              child: Row(
+                children: [
+                  Icon(Icons.filter_list_rounded, color: cs.primary, size: 22),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Filtrar:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: cs.onSurface.withOpacity(0.84),
+                      fontSize: 16,
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         value: _filtroTipo,
                         borderRadius: BorderRadius.circular(12),
-                        underline: const SizedBox(),
                         isExpanded: true,
-                        style: Theme.of(context).textTheme.bodyLarge,
+                        icon: Icon(Icons.arrow_drop_down, color: cs.primary),
+                        dropdownColor: isDark ? cs.surface : Colors.white,
+                        style: TextStyle(
+                          color: cs.onSurface,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
                         items: ['Todos', 'Entrenamiento', 'Competición']
                             .map(
                               (tipo) => DropdownMenuItem(
                                 value: tipo,
-                                child: Text(tipo),
+                                child: Text(
+                                  tipo,
+                                  style: TextStyle(
+                                    color: cs.onSurface.withOpacity(
+                                      tipo == _filtroTipo ? 1.0 : 0.72,
+                                    ),
+                                    fontWeight: tipo == _filtroTipo
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  ),
+                                ),
                               ),
                             )
                             .toList(),
@@ -87,8 +120,8 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
@@ -100,7 +133,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
                       children: [
                         Icon(
                           Icons.event_busy,
-                          color: Colors.blue[300],
+                          color: cs.primary.withOpacity(0.48),
                           size: 54,
                         ),
                         const SizedBox(height: 12),

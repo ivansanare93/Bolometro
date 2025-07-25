@@ -215,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             'Mano dominante: ${perfil.manoDominante}',
                             style: TextStyle(
                               fontSize: 14,
-                              color: cs.secondary.withOpacity(0.8),
+                              color: cs.secondary.withOpacity(0.68),
                             ),
                           ),
                         ),
