@@ -44,10 +44,10 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: widget.mostrarAppBar
           ? AppBar(
               title: Row(
-                children: const [
-                  FaIcon(FontAwesomeIcons.bowlingBall),
-                  SizedBox(width: 8),
-                  Text('Menú Inicial'),
+                children: [
+                  Image.asset('assets/logo_bolometro_min.png', height: 60),
+                  const SizedBox(width: 2),
+                  const Text('Bolómetro'),
                 ],
               ),
               actions: [
@@ -143,7 +143,8 @@ class _HomeScreenState extends State<HomeScreen> {
               perfil != null && (perfil.nombre.trim().isNotEmpty);
 
           // Avatar: comprobamos si la imagen existe realmente
-          final avatarFileExists = perfil != null &&
+          final avatarFileExists =
+              perfil != null &&
               perfil.avatarPath != null &&
               perfil.avatarPath!.isNotEmpty &&
               File(perfil.avatarPath!).existsSync();
@@ -156,11 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
               : CircleAvatar(
                   radius: 46,
                   backgroundColor: cs.primary.withOpacity(0.10),
-                  child: Icon(
-                    Icons.person,
-                    size: 46,
-                    color: cs.primary,
-                  ),
+                  child: Icon(Icons.person, size: 46, color: cs.primary),
                 );
 
           return SingleChildScrollView(
@@ -204,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             'Club: ${perfil.club}',
                             style: TextStyle(
                               fontSize: 15,
-                              color: cs.primary.withOpacity(0.68),
+                              color: cs.primary,
                             ),
                           ),
                         ),
@@ -215,7 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             'Mano dominante: ${perfil.manoDominante}',
                             style: TextStyle(
                               fontSize: 14,
-                              color: cs.secondary.withOpacity(0.68),
+                              color: cs.primary.withOpacity(0.68),
                             ),
                           ),
                         ),
@@ -290,7 +287,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const RegistroCompletoSesionScreen(),
+                            builder: (_) =>
+                                const RegistroCompletoSesionScreen(),
                           ),
                         );
                       },
@@ -320,7 +318,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const EstadisticasPantallaCompleta(),
+                            builder: (_) =>
+                                const EstadisticasPantallaCompleta(),
                           ),
                         );
                       },

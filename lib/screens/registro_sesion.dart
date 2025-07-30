@@ -30,6 +30,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
   int? _frameActivo;
   int? _tiroActivo;
   bool mostrarSelectorpines = false;
+  List<List<String>> _frames = List.generate(10, (_) => []);
 
   // Notifier para teclas deshabilitadas
   final ValueNotifier<Set<String>> teclasDeshabilitadas = ValueNotifier({});
@@ -413,6 +414,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
                     onAceptar: _onAceptarSeleccionPins,
                     isFrame10: _frameActivo == 9,
                     tiroActual: _tiroActivo!,
+                    frames: _frames,
                   );
                 },
               )

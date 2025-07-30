@@ -78,6 +78,8 @@ flutter:
   generate: true
   assets:
     - assets/logo_bolometro.png
+    - assets/logo_bolometro_min.png
+    - assets/logo_bolometro_blanco.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

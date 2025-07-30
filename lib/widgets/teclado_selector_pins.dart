@@ -7,6 +7,7 @@ class SelectorpinesWidget extends StatefulWidget {
   final void Function(List<int>) onAceptar;
   final bool isFrame10;
   final int tiroActual; // 0 = primer tiro, 1 = segundo tiro, 2 = tercero
+  final List<List<String>> frames; // lista completa de frames
 
   const SelectorpinesWidget({
     super.key,
@@ -15,6 +16,7 @@ class SelectorpinesWidget extends StatefulWidget {
     required this.onAceptar,
     required this.isFrame10,
     required this.tiroActual,
+    required this.frames,
   });
 
   @override
@@ -93,13 +95,19 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
     });
     _shakeController.forward(from: 0);
 
-    // Tras el “shake” y destello, cierra y confirma automáticamente
     Future.delayed(const Duration(milliseconds: 220), () {
       if (mounted) {
         setState(() => _falloOverlayColor = null);
-        widget.onAceptar([]); // ← Confirma y cierra solo
+        widget.onAceptar([]);
       }
     });
+  }
+
+  int _parseTiro(String tiro, String previo) {
+    if (tiro == 'X') return 10;
+    if (tiro == '/') return 10 - _parseTiro(previo, '');
+    if (tiro == '-') return 0;
+    return int.tryParse(tiro) ?? 0;
   }
 
   @override
@@ -125,61 +133,84 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
     final bool esTercerTiro = tiroActual == 2;
     final bool todosCaidos = _pinesCaidos.every((v) => v);
     final bool ningunoCaido = _pinesCaidos.every((v) => !v);
-    final bool strikeEnPrimerTiro =
-        esSegundoTiro &&
-        widget.pinesIniciales.length == 10 &&
-        !widget.isFrame10;
 
     final seleccionados = List.generate(
       10,
       (i) => _pinesCaidos[i] ? i + 1 : null,
     ).whereType<int>().toList();
 
-    // ---- LÓGICA AJUSTADA PARA FRAME 10 ----
+    // ---- LÓGICA BOTONES ----
     bool mostrarPleno = false;
     bool mostrarRemate = false;
     bool mostrarFallo = false;
 
     if (widget.isFrame10) {
-      if (esPrimerTiro) {
-        // Primer tiro: Pleno si no están todos caídos
-        mostrarPleno = !todosCaidos;
-        mostrarFallo = ningunoCaido;
-      } else if (esSegundoTiro) {
-        final strikeEnTiro1 =
-            widget.pinesIniciales.length == 10; // Strike en primer tiro
-        final pinosTiradosTiro1 = widget.pinesIniciales.length;
+      final frame10 = widget.frames[9];
+      final tiro1 = frame10.isNotEmpty ? frame10[0] : '';
+      final tiro2 = frame10.length > 1 ? frame10[1] : '';
 
-        if (strikeEnTiro1) {
-          // Tienes todos los pinos, puedes hacer otro strike o pleno
+      if (esPrimerTiro) {
+        // Primer tiro → strike posible o fallo
+        mostrarPleno = !todosCaidos;
+        mostrarRemate = false;
+        mostrarFallo = true;
+      } else if (esSegundoTiro) {
+        final primerTiroStrike = tiro1 == 'X';
+        if (primerTiroStrike) {
+          // Después de strike → tablero reseteado
           mostrarPleno = !todosCaidos;
-          mostrarFallo = ningunoCaido;
-        } else if (pinosTiradosTiro1 < 10 && pinosTiradosTiro1 > 0) {
-          // No fue strike, pero hay pinos caídos, puedes rematar si faltan pinos
-          mostrarRemate = !todosCaidos;
-          mostrarFallo = ningunoCaido;
-        } else if (pinosTiradosTiro1 == 0) {
-          // Caso muy raro: no caíste ninguno en el tiro 1
-          mostrarFallo = ningunoCaido;
+          mostrarRemate = false;
+          mostrarFallo = true;
+        } else {
+          final pinosTiro1 = _parseTiro(tiro1, '');
+          final quedanPinos = 10 - pinosTiro1;
+          if (quedanPinos > 0) {
+            mostrarPleno = false;
+            mostrarRemate = !todosCaidos;
+            mostrarFallo = true;
+          } else {
+            mostrarPleno = false;
+            mostrarRemate = false;
+            mostrarFallo = true; // aún puede fallar (ej. cero pinos)
+          }
         }
       } else if (esTercerTiro) {
-        // Tercer tiro: siempre puedes hacer pleno si no están todos caídos
-        mostrarPleno = !todosCaidos;
-        mostrarFallo = ningunoCaido;
+        final primerTiroStrike = tiro1 == 'X';
+        final pinosTiro1 = tiro1.isNotEmpty ? _parseTiro(tiro1, '') : 0;
+        final pinosTiro2 = tiro2.isNotEmpty ? _parseTiro(tiro2, tiro1) : 0;
+        final spareEnPrimerosDos =
+            !primerTiroStrike && (pinosTiro1 + pinosTiro2 == 10);
+
+        final habilitarTercerTiro = primerTiroStrike || spareEnPrimerosDos;
+
+        if (habilitarTercerTiro) {
+          mostrarPleno = !todosCaidos;
+          mostrarRemate = !todosCaidos;
+          mostrarFallo = true;
+
+          // Resetear pinos una sola vez, sin bucles de build
+          if (_pinesCaidos.every((v) => !v)) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() {
+                  _pinesCaidos = List.generate(10, (_) => false);
+                });
+              }
+            });
+          }
+        } else {
+          // No corresponde tercer tiro → bloquear explícitamente
+          mostrarPleno = false;
+          mostrarRemate = false;
+          mostrarFallo = false;
+        }
       }
     } else {
-      // ---- LÓGICA NORMAL (frames 1-9) ----
+      // Frames 1-9
       mostrarPleno = esPrimerTiro && !todosCaidos;
-      mostrarRemate =
-          esSegundoTiro &&
-          !strikeEnPrimerTiro &&
-          !todosCaidos &&
-          widget.pinesIniciales.length < 10;
-      mostrarFallo = ningunoCaido;
+      mostrarRemate = esSegundoTiro && !todosCaidos;
+      mostrarFallo = true;
     }
-
-    // Deshabilitar todo si hubo pleno en el primer tiro (segundo tiro debe estar bloqueado en frames 1-9)
-    final bool bloquearTodo = strikeEnPrimerTiro;
 
     return AnimatedBuilder(
       animation: _shakeController,
@@ -216,73 +247,51 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
                 ),
               ),
               const SizedBox(height: 10),
-              if (!bloquearTodo)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (mostrarPleno)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.bolt, size: 18),
-                          label: const Text('Pleno'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 8,
-                            ),
-                            textStyle: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          onPressed: _marcarPleno,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (mostrarPleno)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.bolt, size: 18),
+                        label: const Text('Pleno'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          foregroundColor: Colors.white,
                         ),
+                        onPressed: _marcarPleno,
                       ),
-                    if (mostrarRemate)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.auto_fix_high, size: 18),
-                          label: const Text('Remate'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: azul,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 8,
-                            ),
-                            textStyle: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          onPressed: _marcarRemate,
+                    ),
+                  if (mostrarRemate)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.auto_fix_high, size: 18),
+                        label: const Text('Remate'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: azul,
+                          foregroundColor: Colors.white,
                         ),
+                        onPressed: _marcarRemate,
                       ),
-                    if (mostrarFallo)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.close, size: 18),
-                          label: const Text('Fallo'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[500],
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 8,
-                            ),
-                            textStyle: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          onPressed: _marcarFallo,
+                    ),
+                  if (mostrarFallo)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.close, size: 18),
+                        label: const Text('Fallo'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[500],
+                          foregroundColor: Colors.white,
                         ),
+                        onPressed: _marcarFallo,
                       ),
-                  ],
-                ),
-              if (!bloquearTodo) const SizedBox(height: 8),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
               ...filas.map(
                 (fila) => Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -293,7 +302,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
                     );
                     final seleccionado = _pinesCaidos[idx];
 
-                    final pinEstaDeshabilitado = deshabilitado || bloquearTodo;
+                    final pinEstaDeshabilitado = deshabilitado;
 
                     final pinFondo = pinEstaDeshabilitado
                         ? fondoPinNoSel.withOpacity(0.28)
@@ -332,14 +341,6 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
                               color: pinFondo,
                               border: Border.all(color: pinBorde, width: 2.5),
                               borderRadius: BorderRadius.circular(19),
-                              boxShadow: [
-                                if (seleccionado && !pinEstaDeshabilitado)
-                                  BoxShadow(
-                                    color: azul.withOpacity(0.19),
-                                    blurRadius: 12,
-                                    spreadRadius: 1,
-                                  ),
-                              ],
                             ),
                             child: Center(
                               child: Text(
@@ -369,14 +370,12 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
                         foregroundColor: azul,
                         minimumSize: const Size.fromHeight(46),
                       ),
-                      onPressed: bloquearTodo
-                          ? null
-                          : () {
-                              setState(() {
-                                _pinesCaidos = List.generate(10, (_) => false);
-                                _scaleList = List.filled(10, 1.0);
-                              });
-                            },
+                      onPressed: () {
+                        setState(() {
+                          _pinesCaidos = List.generate(10, (_) => false);
+                          _scaleList = List.filled(10, 1.0);
+                        });
+                      },
                       label: const Text('Limpiar'),
                     ),
                   ),
