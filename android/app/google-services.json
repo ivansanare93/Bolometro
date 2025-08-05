@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "529847148516",
+    "project_id": "bolometro-f216b",
+    "storage_bucket": "bolometro-f216b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:529847148516:android:7aeadd1c51f3474a1bb1f1",
+        "android_client_info": {
+          "package_name": "com.bolometro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxdg2bzNfw05MnSAK9Eqw6wrWbK2bbIUk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
