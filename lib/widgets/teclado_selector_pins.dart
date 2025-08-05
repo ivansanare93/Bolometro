@@ -185,7 +185,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
 
         if (habilitarTercerTiro) {
           mostrarPleno = !todosCaidos;
-          mostrarRemate = !todosCaidos;
+          mostrarRemate = false;
           mostrarFallo = true;
 
           // Resetear pinos una sola vez, sin bucles de build

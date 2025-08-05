@@ -129,58 +129,78 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
     });
   }
 
+    int _parseTiro(String tiro, String previo) {
+    if (tiro == 'X') return 10;
+    if (tiro == '/') return 10 - _parseTiro(previo, '');
+    if (tiro == '-') return 0;
+    return int.tryParse(tiro) ?? 0;
+  }
+
   void _onAceptarSeleccionPins(List<int> seleccionados) {
     final frame = _frameActivo!;
     final tiro = _tiroActivo!;
+
     setState(() {
       pinesPorTiro[frame][tiro] = seleccionados;
       String valor = "";
 
       if (frame < 9) {
-        // Frames 1-9
+        // Frames 1–9
         if (tiro == 0 && seleccionados.length == 10) {
           valor = "X"; // Strike
         } else if (tiro == 1) {
           final prevTiro = pinesPorTiro[frame][0] ?? [];
           final union = <int>{...prevTiro, ...seleccionados};
           if (union.length == 10 && prevTiro.length != 10) {
-            valor = "/"; // Spare (solo si el primer tiro NO fue strike)
-          } else if (seleccionados.length == 0) {
+            valor = "/"; // Spare
+          } else if (seleccionados.isEmpty) {
             valor = "-";
           } else {
             valor = "${seleccionados.length}";
           }
-        } else if (seleccionados.length == 0) {
-          valor = "-";
         } else {
-          valor = "${seleccionados.length}";
+          valor = seleccionados.isEmpty ? "-" : "${seleccionados.length}";
         }
       } else {
         // Frame 10
-        if (tiro == 0 && seleccionados.length == 10) {
-          valor = "X";
+        final tiro1 = framesText[9][0];
+        final tiro2 = framesText[9][1];
+
+        final primerTiroStrike = tiro1 == "X";
+        final sparePrevio =
+            tiro1 != "X" &&
+            tiro1.isNotEmpty &&
+            tiro2.isNotEmpty &&
+            (_parseTiro(tiro1, "") + _parseTiro(tiro2, tiro1) == 10);
+
+        if (tiro == 0) {
+          valor = seleccionados.length == 10
+              ? "X"
+              : (seleccionados.isEmpty ? "-" : "${seleccionados.length}");
         } else if (tiro == 1) {
           final prevTiro = pinesPorTiro[frame][0] ?? [];
           final union = <int>{...prevTiro, ...seleccionados};
           if (union.length == 10 && prevTiro.length != 10) {
-            valor = "/"; // Spare (sin strike en el primer tiro)
+            valor = "/"; // Spare
           } else if (seleccionados.length == 10) {
-            valor = "X"; // Strike también en el segundo tiro (caso especial)
-          } else if (seleccionados.length == 0) {
+            valor = "X"; // Strike en segundo tiro
+          } else if (seleccionados.isEmpty) {
             valor = "-";
           } else {
             valor = "${seleccionados.length}";
           }
         } else if (tiro == 2) {
-          if (seleccionados.length == 10) {
-            valor = "X";
-          } else if (seleccionados.length == 0) {
-            valor = "-";
+          if (primerTiroStrike || sparePrevio) {
+            if (seleccionados.length == 10) {
+              valor = "X"; // Strike en tercer tiro
+            } else if (seleccionados.isEmpty) {
+              valor = "-"; // Fallo
+            } else {
+              valor = "${seleccionados.length}";
+            }
           } else {
-            valor = "${seleccionados.length}";
+            valor = "-"; // No correspondía tercer tiro → fallo por defecto
           }
-        } else {
-          valor = seleccionados.length == 0 ? "-" : "${seleccionados.length}";
         }
       }
 
@@ -392,7 +412,6 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
                         pinesIniciales = tiro1;
                       }
                     } else if (_tiroActivo == 2) {
-                      // Tiro 3 del frame 10
                       final tiro1 = pinesPorTiro[9][0] ?? [];
                       final tiro2 = pinesPorTiro[9][1] ?? [];
                       final huboStrike1 = tiro1.length == 10;
@@ -400,10 +419,13 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
                           !huboStrike1 && (tiro1.length + tiro2.length == 10);
 
                       if (huboStrike1 || huboSpare) {
+                        // Reinicio completo de pinos disponibles
                         pinesIniciales = [];
+                        pinesDeshabilitados = [];
                       } else {
-                        // Caso raro: suma < 10 y hay tercer tiro
+                        // Caso raro: no strike ni spare pero llegó un tiro 3 → bloquear
                         pinesIniciales = [...tiro1, ...tiro2];
+                        pinesDeshabilitados = [...tiro1, ...tiro2];
                       }
                     }
                   }
@@ -414,7 +436,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
                     onAceptar: _onAceptarSeleccionPins,
                     isFrame10: _frameActivo == 9,
                     tiroActual: _tiroActivo!,
-                    frames: _frames,
+                    frames: framesText,
                   );
                 },
               )
