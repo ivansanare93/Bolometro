@@ -19,6 +19,7 @@ import 'screens/login_screen.dart';
 import 'models/perfil_usuario.dart';
 import 'services/auth_service.dart';
 import 'repositories/data_repository.dart';
+import 'utils/estadisticas_cache.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,6 +47,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => LanguageProvider()),
         ChangeNotifierProvider(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (_) => DataRepository()),
+        ChangeNotifierProvider(create: (_) => EstadisticasCache()),
       ],
       child: const BolosApp(),
     ),
