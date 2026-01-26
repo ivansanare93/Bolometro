@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/app_constants.dart';
 
 class SelectorTipoSesion extends StatelessWidget {
   final String value;
@@ -15,11 +16,9 @@ class SelectorTipoSesion extends StatelessWidget {
     return DropdownButtonFormField<String>(
       value: value,
       decoration: const InputDecoration(labelText: 'Filtrar por tipo'),
-      items: [
-        'Todos',
-        'Entrenamiento',
-        'Competición',
-      ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+      items: AppConstants.tiposSesionConTodos
+          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+          .toList(),
       onChanged: onChanged,
       borderRadius: BorderRadius.circular(14),
     );
