@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'theme/app_theme.dart';
 import 'providers/theme_provider.dart';
 import 'providers/language_provider.dart';
+import 'utils/app_constants.dart';
 
 import 'models/partida.dart';
 import 'models/sesion.dart';
@@ -27,8 +28,8 @@ void main() async {
   Hive.registerAdapter(PartidaAdapter());
   Hive.registerAdapter(SesionAdapter());
   Hive.registerAdapter(PerfilUsuarioAdapter());
-  await Hive.openBox<Sesion>('sesiones');
-  await Hive.openBox<PerfilUsuario>('perfilUsuario');
+  await Hive.openBox<Sesion>(AppConstants.boxSesiones);
+  await Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
 
 
   runApp(
@@ -60,7 +61,7 @@ class BolosApp extends StatelessWidget {
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       home: const HomeScreen(),
       routes: {
-        '/registro': (_) => RegistroSesionScreen(
+        AppConstants.rutaRegistro: (_) => RegistroSesionScreen(
           onGuardar: (partida) {
             // Aquí puedes manejar cómo guardar la partida
             // TODO: Implementar manejo de guardado desde ruta

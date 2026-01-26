@@ -6,6 +6,7 @@ import 'editar_partida.dart';
 import 'package:hive/hive.dart';
 import '../widgets/lista_partidas.dart';
 import '../widgets/selector_tipo_partida.dart';
+import '../utils/app_constants.dart';
 
 class RegistroCompletoSesionScreen extends StatefulWidget {
   const RegistroCompletoSesionScreen({super.key});
@@ -18,7 +19,7 @@ class RegistroCompletoSesionScreen extends StatefulWidget {
 class _RegistroCompletoSesionScreenState
     extends State<RegistroCompletoSesionScreen> {
   String _lugar = '';
-  String _tipo = 'Entrenamiento';
+  String _tipo = AppConstants.tipoEntrenamiento;
   final List<Partida> _partidas = [];
 
   void anadirPartida() async {
@@ -72,7 +73,7 @@ class _RegistroCompletoSesionScreenState
       partidas: _partidas,
     );
 
-    final box = Hive.box<Sesion>('sesiones');
+    final box = Hive.box<Sesion>(AppConstants.boxSesiones);
     await box.add(nuevaSesion);
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -102,7 +103,7 @@ class _RegistroCompletoSesionScreenState
             SelectorTipoPartida(
               value: _tipo,
               onChanged: (value) =>
-                  setState(() => _tipo = value ?? 'Entrenamiento'),
+                  setState(() => _tipo = value ?? AppConstants.tipoEntrenamiento),
             ),
             const SizedBox(height: 24),
             Row(
