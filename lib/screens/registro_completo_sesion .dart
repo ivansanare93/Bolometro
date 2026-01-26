@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/partida.dart';
 import '../models/sesion.dart';
 import 'registro_sesion.dart';
 import 'editar_partida.dart';
-import 'package:hive/hive.dart';
 import '../widgets/lista_partidas.dart';
 import '../widgets/selector_tipo_partida.dart';
 import '../utils/app_constants.dart';
+import '../repositories/data_repository.dart';
 
 class RegistroCompletoSesionScreen extends StatefulWidget {
   const RegistroCompletoSesionScreen({super.key});
@@ -73,14 +74,27 @@ class _RegistroCompletoSesionScreenState
       partidas: _partidas,
     );
 
-    final box = Hive.box<Sesion>(AppConstants.boxSesiones);
-    await box.add(nuevaSesion);
+    try {
+      final dataRepository = Provider.of<DataRepository>(context, listen: false);
+      await dataRepository.guardarSesion(nuevaSesion);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Sesión guardada correctamente')),
-    );
-
-    Navigator.pop(context);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sesión guardada correctamente')),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      debugPrint('Error al guardar sesión: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error al guardar la sesión'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override

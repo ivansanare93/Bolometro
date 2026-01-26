@@ -23,6 +23,7 @@
 - 📈 **Visualizar** tu evolución a lo largo del tiempo
 - 🏆 **Mejorar** tu técnica con datos objetivos
 - 💾 **Guardar** todas tus partidas de forma local y segura
+- ☁️ **Sincronizar** tus datos en la nube con tu cuenta de Google
 
 ## ✨ Características Principales
 
@@ -55,10 +56,13 @@
 - **Idiomas**: Español e Inglés
 - Interfaz intuitiva y moderna con Material Design
 
-### 💾 Almacenamiento
-- Base de datos local con Hive (sin conexión a internet requerida)
-- Exportación de datos
-- Respaldo en la nube con Firebase (opcional)
+### 💾 Almacenamiento y Sincronización
+- **Almacenamiento local** con Hive (funciona sin internet)
+- **Autenticación con Google** para sincronización en la nube
+- **Sincronización automática** de datos con Firebase Firestore
+- **Cambio de dispositivo** sin perder datos
+- Exportación de datos a formato compartible
+- Respaldo en la nube con autenticación segura
 
 ## 🚀 Tecnologías
 
@@ -148,6 +152,7 @@ lib/
 │   └── perfil_usuario.dart  # Modelo de perfil de usuario
 ├── screens/                  # Pantallas principales
 │   ├── home.dart            # Pantalla principal con navegación
+│   ├── login_screen.dart    # Pantalla de inicio de sesión
 │   ├── registro_sesion.dart # Registro rápido de partida
 │   ├── registro_completo_sesion.dart # Registro de sesión completa
 │   ├── lista_sesiones.dart  # Lista de todas las sesiones
@@ -155,7 +160,12 @@ lib/
 │   ├── editar_partida.dart  # Edición de partida
 │   ├── estadisticas.dart    # Dashboard de estadísticas
 │   └── perfil_usuario.dart  # Gestión de perfil
-├── widgets/                  # Componentes reutilizables
+├── services/                # Servicios de backend
+│   ├── auth_service.dart    # Autenticación con Google
+│   └── firestore_service.dart # Sincronización con Firestore
+├── repositories/            # Capa de acceso a datos
+│   └── data_repository.dart # Abstracción de Hive y Firestore
+├── widgets/                 # Componentes reutilizables
 │   ├── marcador_bolos.dart  # Marcador de bolos
 │   ├── teclado_selector_pins.dart # Teclado para seleccionar pines
 │   ├── estadisticas/        # Widgets de estadísticas
@@ -165,20 +175,40 @@ lib/
 │   └── language_provider.dart # Idioma de la aplicación
 ├── utils/                   # Utilidades y helpers
 │   ├── estadisticas_utils.dart # Cálculos estadísticos
+│   ├── estadisticas_cache.dart # Cache de estadísticas
 │   ├── registro_tiros_utils.dart # Lógica de registro de tiros
-│   └── ...
+│   └── database_utils.dart  # Utilidades de base de datos
 └── theme/                   # Configuración de temas
     └── app_theme.dart       # Temas claro y oscuro
 ```
 
 ### Patrón de Diseño
 
-- **Arquitectura**: MVVM (Model-View-ViewModel)
-- **Gestión de estado**: Provider para temas e idiomas
-- **Persistencia**: Hive con adaptadores personalizados
+- **Arquitectura**: MVVM (Model-View-ViewModel) con Repository Pattern
+- **Gestión de estado**: Provider para temas, idiomas, autenticación y caché
+- **Persistencia**: Hive (local) + Firestore (cloud) con sincronización
+- **Autenticación**: Firebase Authentication con Google Sign-In
 - **Navegación**: Navigator 2.0 con rutas nombradas
 
+### Optimizaciones Implementadas
+
+- ✅ **Lazy Loading**: Carga paginada de sesiones (20 por página)
+- ✅ **Cache de Estadísticas**: Cálculos optimizados con invalidación inteligente
+- ✅ **Manejo Robusto de Errores**: Try-catch en todos los accesos a base de datos
+- ✅ **Pull-to-Refresh**: Actualización manual de datos
+- ✅ **Sincronización en la Nube**: Backup automático con Firebase
+
 ## 📖 Guía de Uso
+
+### Iniciar Sesión (Primera Vez)
+
+1. Al abrir la app, verás la pantalla de bienvenida
+2. **Opción 1**: Toca "Continuar con Google" para iniciar sesión
+   - Tus datos se sincronizarán automáticamente en la nube
+   - Podrás acceder desde cualquier dispositivo
+3. **Opción 2**: Toca "Continuar sin iniciar sesión"
+   - Los datos se guardarán solo localmente
+   - Podrás iniciar sesión más tarde desde ajustes
 
 ### Registrar una Partida Rápida
 
@@ -202,6 +232,13 @@ lib/
 2. Explora tus KPIs: promedio, mejor partida, rachas
 3. Filtra por tipo de sesión o rango de fechas
 4. Revisa gráficos de evolución y distribución
+
+### Sincronizar Datos (Usuario Autenticado)
+
+1. Ve a "Ajustes" (icono de engranaje)
+2. Verás tu estado de autenticación
+3. Toca "Sincronizar datos" para guardar en la nube manualmente
+4. La sincronización automática ocurre al guardar sesiones
 
 ### Personalizar la App
 
