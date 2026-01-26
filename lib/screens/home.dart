@@ -11,6 +11,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:hive/hive.dart';
 import '../models/perfil_usuario.dart';
 import '../utils/app_constants.dart';
+import '../services/auth_service.dart';
+import '../repositories/data_repository.dart';
 import 'dart:io';
 
 class HomeScreen extends StatefulWidget {
@@ -67,6 +69,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         final themeProvider = Provider.of<ThemeProvider>(
                           context,
                         );
+                        final authService = Provider.of<AuthService>(
+                          context,
+                          listen: false,
+                        );
+                        final dataRepository = Provider.of<DataRepository>(
+                          context,
+                          listen: false,
+                        );
 
                         return Padding(
                           padding: const EdgeInsets.all(16),
@@ -82,6 +92,53 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               const SizedBox(height: 16),
+                              
+                              // Estado de autenticación
+                              if (authService.isAuthenticated) ...[
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: cs.primaryContainer.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: cs.primary.withOpacity(0.2),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.cloud_done,
+                                        color: cs.primary,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Sesión iniciada',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Text(
+                                              authService.user?.email ?? 'Usuario',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: cs.onSurface
+                                                    .withOpacity(0.7),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                              
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -96,14 +153,118 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ],
                               ),
-                              const Divider(height: 32),
-                              const Text(
-                                'Más opciones próximamente...',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey,
+                              
+                              if (authService.isAuthenticated) ...[
+                                const Divider(height: 32),
+                                ListTile(
+                                  leading: Icon(
+                                    Icons.sync,
+                                    color: cs.primary,
+                                  ),
+                                  title: const Text('Sincronizar datos'),
+                                  subtitle: Text(
+                                    dataRepository.isSyncing
+                                        ? 'Sincronizando...'
+                                        : 'Guardar datos en la nube',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  trailing: dataRepository.isSyncing
+                                      ? const SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : null,
+                                  onTap: dataRepository.isSyncing
+                                      ? null
+                                      : () async {
+                                          try {
+                                            await dataRepository
+                                                .sincronizarANube();
+                                            if (context.mounted) {
+                                              Navigator.pop(context);
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    'Sincronización completada',
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          } catch (e) {
+                                            if (context.mounted) {
+                                              Navigator.pop(context);
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    'Error: ${e.toString()}',
+                                                  ),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        },
                                 ),
-                              ),
+                                const Divider(height: 32),
+                                ListTile(
+                                  leading: const Icon(
+                                    Icons.logout,
+                                    color: Colors.red,
+                                  ),
+                                  title: const Text(
+                                    'Cerrar sesión',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                  onTap: () async {
+                                    Navigator.pop(context);
+                                    final confirm = await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text('Cerrar sesión'),
+                                        content: const Text(
+                                          '¿Estás seguro de que deseas cerrar sesión? Tus datos locales se mantendrán.',
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, false),
+                                            child: const Text('Cancelar'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, true),
+                                            child: const Text(
+                                              'Cerrar sesión',
+                                              style:
+                                                  TextStyle(color: Colors.red),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+
+                                    if (confirm == true) {
+                                      await authService.signOut();
+                                      dataRepository.setUser(null);
+                                    }
+                                  },
+                                ),
+                              ] else ...[
+                                const Divider(height: 32),
+                                const Text(
+                                  'Más opciones próximamente...',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                              
                               const SizedBox(height: 16),
                               const SizedBox(height: 28),
                               FutureBuilder<PackageInfo>(
