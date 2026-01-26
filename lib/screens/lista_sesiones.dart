@@ -281,7 +281,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
                     onRefresh: _cargarSesiones,
                     child: ListView.builder(
                       controller: _scrollController,
-                      itemCount: _sesionesFiltradas.length + (_hasMore ? 1 : 0),
+                      itemCount: _sesionesFiltradas.length + (_hasMore && _isLoading ? 1 : 0),
                       itemBuilder: (context, idx) {
                         // Mostrar indicador de carga al final
                         if (idx >= _sesionesFiltradas.length) {

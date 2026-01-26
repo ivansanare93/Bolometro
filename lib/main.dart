@@ -106,7 +106,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
     // Mostrar pantalla de login solo la primera vez
     if (!_hasShownLoginScreen && !authService.isAuthenticated) {
-      return LoginScreen();
+      return const LoginScreen();
     }
 
     // Si el usuario inicia sesión o continúa sin autenticarse, marcar como visto

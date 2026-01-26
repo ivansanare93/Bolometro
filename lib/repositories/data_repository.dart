@@ -105,8 +105,14 @@ class DataRepository extends ChangeNotifier {
   /// Eliminar una sesión
   Future<void> eliminarSesion(Sesion sesion) async {
     try {
-      // Eliminar localmente
-      await sesion.delete();
+      // Eliminar localmente desde Hive usando el índice
+      final box = Hive.box<Sesion>(AppConstants.boxSesiones);
+      final sesiones = box.values.toList();
+      final index = sesiones.indexOf(sesion);
+      
+      if (index != -1) {
+        await box.deleteAt(index);
+      }
 
       // Si está online, eliminar también de Firestore
       if (_isOnlineMode && _userId != null) {
