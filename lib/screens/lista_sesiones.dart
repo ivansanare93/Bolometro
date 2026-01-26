@@ -3,6 +3,7 @@ import 'package:hive/hive.dart';
 import '../models/sesion.dart';
 import '../widgets/sesion_card.dart';
 import '../screens/ver_sesion.dart';
+import '../utils/app_constants.dart';
 import 'home.dart';
 
 class ListaSesionesScreen extends StatefulWidget {
@@ -13,13 +14,13 @@ class ListaSesionesScreen extends StatefulWidget {
 }
 
 class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
-  String _filtroTipo = 'Todos';
+  String _filtroTipo = AppConstants.tipoTodos;
 
   @override
   Widget build(BuildContext context) {
-    final Box<Sesion> sesionesBox = Hive.box<Sesion>('sesiones');
+    final Box<Sesion> sesionesBox = Hive.box<Sesion>(AppConstants.boxSesiones);
     final sesiones = sesionesBox.values.toList();
-    final sesionesFiltradas = _filtroTipo == 'Todos'
+    final sesionesFiltradas = _filtroTipo == AppConstants.tipoTodos
         ? sesiones
         : sesiones.where((s) => s.tipo == _filtroTipo).toList();
 
@@ -97,7 +98,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                         ),
-                        items: ['Todos', 'Entrenamiento', 'Competición']
+                        items: AppConstants.tiposSesionConTodos
                             .map(
                               (tipo) => DropdownMenuItem(
                                 value: tipo,
@@ -116,7 +117,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
                             )
                             .toList(),
                         onChanged: (v) =>
-                            setState(() => _filtroTipo = v ?? 'Todos'),
+                            setState(() => _filtroTipo = v ?? AppConstants.tipoTodos),
                       ),
                     ),
                   ),

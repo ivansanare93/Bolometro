@@ -4,6 +4,15 @@ class AppTheme {
   static const Color fondo = Color(0xFFF0F8FF); // Fondo general
   static const Color primario = Color(0xFF0077B6); // Azul principal
 
+  // Colores para tarjetas de estadísticas
+  static const Color recordCardDark = Color(0xFF153F2D);
+  static const Color worstCardDark = Color(0xFF422323);
+  static final Color recordCardLight = Colors.green[50]!;
+  static final Color worstCardLight = Colors.red[50]!;
+  static const double cardOpacity = 0.72;
+  static const double worstCardOpacity = 0.74;
+  static const double textCardOpacity = 0.93;
+
   static final ThemeData azul = ThemeData(
     brightness: Brightness.light,
 

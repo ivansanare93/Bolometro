@@ -10,6 +10,7 @@ import 'registro_completo_sesion .dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:hive/hive.dart';
 import '../models/perfil_usuario.dart';
+import '../utils/app_constants.dart';
 import 'dart:io';
 
 class HomeScreen extends StatefulWidget {
@@ -27,12 +28,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _perfilBoxFuture = Hive.openBox<PerfilUsuario>('perfilUsuario');
+    _perfilBoxFuture = Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
   }
 
   Future<void> _refrescarPerfil() async {
     setState(() {
-      _perfilBoxFuture = Hive.openBox<PerfilUsuario>('perfilUsuario');
+      _perfilBoxFuture = Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
     });
   }
 

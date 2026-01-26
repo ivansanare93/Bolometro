@@ -4,6 +4,7 @@ import '../models/sesion.dart';
 import '../models/partida.dart';
 import '../utils/database_utils.dart'; // para cargarSesionesDesdeHive()
 import '../utils/estadisticas_utils.dart'; // las funciones utilitarias nuevas
+import '../theme/app_theme.dart';
 import 'home.dart';
 
 import '../widgets/estadisticas/kpi_card_dinamico.dart';
@@ -40,13 +41,13 @@ class _EstadisticasPantallaCompletaState
 
     // Colores personalizados para las tarjetas en función del modo
     final recordCardColor = isDark
-        ? const Color(0xFF153F2D).withOpacity(0.72)
-        : Colors.green[50];
+        ? AppTheme.recordCardDark.withOpacity(AppTheme.cardOpacity)
+        : AppTheme.recordCardLight;
     final worstCardColor = isDark
-        ? const Color(0xFF422323).withOpacity(0.74)
-        : Colors.red[50];
+        ? AppTheme.worstCardDark.withOpacity(AppTheme.worstCardOpacity)
+        : AppTheme.worstCardLight;
     final textCardColor = isDark
-        ? Colors.white.withOpacity(0.93)
+        ? Colors.white.withOpacity(AppTheme.textCardOpacity)
         : Colors.black87;
 
     return Scaffold(

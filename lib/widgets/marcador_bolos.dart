@@ -305,7 +305,7 @@ void didUpdateWidget(covariant MarcadorBolos oldWidget) {
                                 border: InputBorder.none,
                                 counterText: '',
                                 isCollapsed: true,
-                                contentPadding: EdgeInsets.zero,
+                                contentPadding: const EdgeInsets.zero,
                               ),
                               onTap: () {
                                 setState(() {

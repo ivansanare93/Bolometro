@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'dart:io';
 
 import '../models/perfil_usuario.dart';
+import '../utils/app_constants.dart';
 import 'home.dart'; // Asegúrate de que la ruta sea correcta
 
 class PerfilUsuarioScreen extends StatefulWidget {
@@ -32,7 +33,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
   @override
   void initState() {
     super.initState();
-    perfilBox = Hive.box<PerfilUsuario>('perfilUsuario');
+    perfilBox = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
     perfil = perfilBox.get('perfil');
     // Si no hay perfil, crea uno por defecto
     if (perfil == null) {

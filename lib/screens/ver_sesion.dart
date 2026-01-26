@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import '../models/sesion.dart';
 import '../models/partida.dart';
+import '../utils/app_constants.dart';
 import 'editar_partida.dart';
 import 'home.dart';
 
@@ -30,7 +31,7 @@ class _VerSesionState extends State<VerSesion> {
         builder: (_) => EditarPartidaScreen(
           partida: partidaOriginal,
           onGuardar: (partidaActualizada) async {
-            final box = Hive.box<Sesion>('sesiones');
+            final box = Hive.box<Sesion>(AppConstants.boxSesiones);
             final sesionIndex = box.values.toList().indexOf(sesionActual);
             if (sesionIndex == -1) return;
 
@@ -72,7 +73,7 @@ class _VerSesionState extends State<VerSesion> {
       ),
     );
     if (confirm == true) {
-      final box = Hive.box<Sesion>('sesiones');
+      final box = Hive.box<Sesion>(AppConstants.boxSesiones);
       final sesionIndex = box.values.toList().indexOf(sesionActual);
       if (sesionIndex == -1) return;
 

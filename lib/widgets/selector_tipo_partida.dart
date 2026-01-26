@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/app_constants.dart';
 
 class SelectorTipoPartida extends StatelessWidget {
   final String value;
@@ -15,7 +16,7 @@ class SelectorTipoPartida extends StatelessWidget {
     return DropdownButtonFormField<String>(
       value: value,
       decoration: const InputDecoration(labelText: 'Tipo de partida'),
-      items: ['Entrenamiento', 'Competición']
+      items: AppConstants.tiposSesion
           .map((tipo) => DropdownMenuItem(value: tipo, child: Text(tipo)))
           .toList(),
       onChanged: onChanged,
