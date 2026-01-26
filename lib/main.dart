@@ -63,7 +63,7 @@ class BolosApp extends StatelessWidget {
         '/registro': (_) => RegistroSesionScreen(
           onGuardar: (partida) {
             // Aquí puedes manejar cómo guardar la partida
-            print('Partida guardada desde ruta: ${partida.total}');
+            // TODO: Implementar manejo de guardado desde ruta
           },
         ),
       },
