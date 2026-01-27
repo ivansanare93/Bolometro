@@ -50,8 +50,12 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final analytics = Provider.of<AnalyticsService>(context, listen: false);
-      analytics.logScreenView('profile_screen');
+      try {
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        analytics.logScreenView('profile_screen');
+      } catch (e) {
+        debugPrint('Error logging screen view: $e');
+      }
     });
     try {
       perfilBox = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);

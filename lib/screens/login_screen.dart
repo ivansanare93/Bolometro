@@ -25,8 +25,12 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final analytics = Provider.of<AnalyticsService>(context, listen: false);
-      analytics.logScreenView('login_screen');
+      try {
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        analytics.logScreenView('login_screen');
+      } catch (e) {
+        debugPrint('Error logging screen view: $e');
+      }
     });
   }
 

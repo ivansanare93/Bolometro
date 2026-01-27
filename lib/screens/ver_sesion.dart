@@ -25,8 +25,12 @@ class _VerSesionState extends State<VerSesion> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final analytics = Provider.of<AnalyticsService>(context, listen: false);
-      analytics.logScreenView('view_session_screen');
+      try {
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        analytics.logScreenView('view_session_screen');
+      } catch (e) {
+        debugPrint('Error logging screen view: $e');
+      }
     });
     sesionActual = widget.sesion;
   }

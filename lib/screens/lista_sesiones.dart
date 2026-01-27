@@ -29,8 +29,12 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final analytics = Provider.of<AnalyticsService>(context, listen: false);
-      analytics.logScreenView('sessions_list_screen');
+      try {
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        analytics.logScreenView('sessions_list_screen');
+      } catch (e) {
+        debugPrint('Error logging screen view: $e');
+      }
     });
     _scrollController.addListener(_onScroll);
     _cargarSesiones();

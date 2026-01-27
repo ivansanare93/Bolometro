@@ -37,8 +37,12 @@ class _EstadisticasPantallaCompletaState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final analytics = Provider.of<AnalyticsService>(context, listen: false);
-      analytics.logScreenView('statistics_screen');
+      try {
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        analytics.logScreenView('statistics_screen');
+      } catch (e) {
+        debugPrint('Error logging screen view: $e');
+      }
     });
     _cargarSesiones();
   }

@@ -29,8 +29,12 @@ class _RegistroCompletoSesionScreenState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final analytics = Provider.of<AnalyticsService>(context, listen: false);
-      analytics.logScreenView('register_session_screen');
+      try {
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        analytics.logScreenView('register_session_screen');
+      } catch (e) {
+        debugPrint('Error logging screen view: $e');
+      }
     });
   }
 

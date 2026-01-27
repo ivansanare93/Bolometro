@@ -42,8 +42,12 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final analytics = Provider.of<AnalyticsService>(context, listen: false);
-      analytics.logScreenView('register_game_screen');
+      try {
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        analytics.logScreenView('register_game_screen');
+      } catch (e) {
+        debugPrint('Error logging screen view: $e');
+      }
     });
     framesText = List.generate(10, (_) => List.filled(3, ''));
     erroresPorTiro = _obtenerErroresPorTiro(framesText);

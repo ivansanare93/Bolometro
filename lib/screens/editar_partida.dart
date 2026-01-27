@@ -40,8 +40,12 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final analytics = Provider.of<AnalyticsService>(context, listen: false);
-      analytics.logScreenView('edit_game_screen');
+      try {
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        analytics.logScreenView('edit_game_screen');
+      } catch (e) {
+        debugPrint('Error logging screen view: $e');
+      }
     });
     framesText = widget.partida.frames
         .map((f) => f.map((v) => v == '0' ? '-' : v).toList()..length = 3)

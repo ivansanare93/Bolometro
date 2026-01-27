@@ -34,8 +34,12 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _perfilBoxFuture = Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final analytics = Provider.of<AnalyticsService>(context, listen: false);
-      analytics.logScreenView('home_screen');
+      try {
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        analytics.logScreenView('home_screen');
+      } catch (e) {
+        debugPrint('Error logging screen view: $e');
+      }
     });
   }
 
