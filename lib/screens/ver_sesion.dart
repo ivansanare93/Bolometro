@@ -6,6 +6,7 @@ import '../models/partida.dart';
 import '../utils/app_constants.dart';
 import 'editar_partida.dart';
 import 'home.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class VerSesion extends StatefulWidget {
   final Sesion sesion;
@@ -39,8 +40,8 @@ class _VerSesionState extends State<VerSesion> {
                 debugPrint('Sesión no encontrada en Hive');
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Error: sesión no encontrada'),
+                    SnackBar(
+                      content: Text(AppLocalizations.of(context)!.sessionNotFoundError),
                       backgroundColor: Colors.red,
                     ),
                   );
@@ -61,7 +62,7 @@ class _VerSesionState extends State<VerSesion> {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: const Text('Partida actualizada'),
+                    content: Text(AppLocalizations.of(context)!.gameUpdated),
                     backgroundColor: Colors.green[600],
                     duration: const Duration(seconds: 2),
                     behavior: SnackBarBehavior.floating,
@@ -72,8 +73,8 @@ class _VerSesionState extends State<VerSesion> {
               debugPrint('Error de Hive al actualizar partida: $e');
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Error al guardar cambios. Intenta nuevamente.'),
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context)!.gameUpdateError),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -82,8 +83,8 @@ class _VerSesionState extends State<VerSesion> {
               debugPrint('Error al actualizar partida: $e');
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Error inesperado al guardar cambios'),
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context)!.gameUnexpectedUpdateError),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -99,16 +100,16 @@ class _VerSesionState extends State<VerSesion> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Eliminar partida'),
-        content: const Text('¿Seguro que deseas eliminar esta partida?'),
+        title: Text(AppLocalizations.of(context)!.deleteGameTitle),
+        content: Text(AppLocalizations.of(context)!.deleteGameConfirmation),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+            child: Text(AppLocalizations.of(context)!.delete, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -121,8 +122,8 @@ class _VerSesionState extends State<VerSesion> {
           debugPrint('Sesión no encontrada en Hive');
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Error: sesión no encontrada'),
+              SnackBar(
+                content: Text(AppLocalizations.of(context)!.sessionNotFoundError),
                 backgroundColor: Colors.red,
               ),
             );
@@ -142,7 +143,7 @@ class _VerSesionState extends State<VerSesion> {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Partida eliminada'),
+              content: Text(AppLocalizations.of(context)!.gameDeletedSuccess),
               backgroundColor: Colors.orange[600],
               duration: const Duration(seconds: 2),
               behavior: SnackBarBehavior.floating,
@@ -153,8 +154,8 @@ class _VerSesionState extends State<VerSesion> {
         debugPrint('Error de Hive al eliminar partida: $e');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Error al eliminar partida. Intenta nuevamente.'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.gameDeleteErrorMessage),
               backgroundColor: Colors.red,
             ),
           );
@@ -163,8 +164,8 @@ class _VerSesionState extends State<VerSesion> {
         debugPrint('Error al eliminar partida: $e');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Error inesperado al eliminar partida'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.gameUnexpectedDeleteError),
               backgroundColor: Colors.red,
             ),
           );

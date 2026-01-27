@@ -6,6 +6,7 @@ import '../utils/teclado_tiros_adaptativo.dart';
 import '../widgets/resumen_puntuacion.dart';
 import '../widgets/notas_field.dart';
 import 'home.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class EditarPartidaScreen extends StatefulWidget {
   final Partida partida;
@@ -108,7 +109,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: const Text('Errores en la partida'),
+          title: Text(AppLocalizations.of(context)!.gameErrors),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,7 +117,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
           ),
           actions: [
             TextButton(
-              child: const Text('Entendido'),
+              child: Text(AppLocalizations.of(context)!.understood),
               onPressed: () => Navigator.pop(context),
             ),
           ],
@@ -130,7 +131,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
     if (nuevoTotal == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('La partida no tiene puntuación válida.'),
+          content: Text(AppLocalizations.of(context)!.gameInvalidScore),
           backgroundColor: Theme.of(context).colorScheme.errorContainer,
         ),
       );
@@ -168,7 +169,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Editar Partida'),
+        title: Text(AppLocalizations.of(context)!.editGameTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.home),
@@ -277,7 +278,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
         child: ElevatedButton.icon(
           onPressed: _guardar,
           icon: const Icon(Icons.save),
-          label: const Text('Guardar cambios'),
+          label: Text(AppLocalizations.of(context)!.saveChanges),
           style: ElevatedButton.styleFrom(
             minimumSize: const Size.fromHeight(48),
             shape: RoundedRectangleBorder(

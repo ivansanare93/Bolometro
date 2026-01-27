@@ -15,6 +15,7 @@ import '../widgets/estadisticas/top_partidas_widget.dart';
 import '../widgets/estadisticas/mini_grafico_promedio_movil.dart';
 import '../widgets/estadisticas/histograma_puntuaciones.dart';
 import 'home.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class EstadisticasPantallaCompleta extends StatefulWidget {
   const EstadisticasPantallaCompleta({super.key});
@@ -59,7 +60,7 @@ class _EstadisticasPantallaCompletaState
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Estadísticas completas'),
+        title: Text(AppLocalizations.of(context)!.fullStatistics),
         centerTitle: true,
         actions: [
           IconButton(

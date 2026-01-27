@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:io';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../models/perfil_usuario.dart';
 import '../utils/app_constants.dart';
@@ -81,7 +82,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Corrige los errores antes de guardar'),
+          content: Text(AppLocalizations.of(context)!.fixErrorsBeforeSaving),
           backgroundColor: Colors.red[600],
           duration: const Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
@@ -120,7 +121,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Perfil guardado correctamente'),
+            content: Text(AppLocalizations.of(context)!.profileSaved),
             backgroundColor: Colors.green[600],
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
@@ -142,7 +143,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Error al guardar perfil. Intenta nuevamente.'),
+            content: Text(AppLocalizations.of(context)!.profileSaveError),
             backgroundColor: Colors.red[600],
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
@@ -155,7 +156,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Error inesperado al guardar perfil'),
+            content: Text(AppLocalizations.of(context)!.profileUnexpectedSaveError),
             backgroundColor: Colors.red[600],
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
@@ -194,18 +195,18 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('¿Eliminar perfil?'),
+        title: Text(AppLocalizations.of(context)!.deleteProfileConfirmation),
         content: const Text(
           '¿Seguro que quieres borrar tu perfil?\nEsta acción no se puede deshacer.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+            child: Text(AppLocalizations.of(context)!.delete, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -217,7 +218,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Perfil eliminado'),
+              content: Text(AppLocalizations.of(context)!.profileDeleted),
               backgroundColor: Colors.red[600],
               duration: const Duration(seconds: 2),
               behavior: SnackBarBehavior.floating,
@@ -237,7 +238,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Error al eliminar perfil. Intenta nuevamente.'),
+              content: Text(AppLocalizations.of(context)!.profileDeleteError),
               backgroundColor: Colors.red[600],
               duration: const Duration(seconds: 2),
               behavior: SnackBarBehavior.floating,
@@ -250,7 +251,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Error inesperado al eliminar perfil'),
+              content: Text(AppLocalizations.of(context)!.profileUnexpectedDeleteError),
               backgroundColor: Colors.red[600],
               duration: const Duration(seconds: 2),
               behavior: SnackBarBehavior.floating,
@@ -281,7 +282,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
     final showGooglePhoto = perfil?.hasGooglePhoto == true && !avatarFileExists;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mi perfil'), centerTitle: true),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.myProfile), centerTitle: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(18),
         child: Form(
@@ -361,7 +362,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
               if (avatarFileExists || showGooglePhoto)
                 TextButton.icon(
                   icon: const Icon(Icons.delete_outline, size: 18),
-                  label: const Text('Quitar foto'),
+                  label: Text(AppLocalizations.of(context)!.removePhoto),
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.red,
                     padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -390,10 +391,10 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
               // Nombre
               TextFormField(
                 controller: _nombreController,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre',
-                  prefixIcon: Icon(Icons.person_outline),
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.name,
+                  prefixIcon: const Icon(Icons.person_outline),
+                  border: const OutlineInputBorder(),
                 ),
                 validator: (v) => v == null || v.trim().isEmpty
                     ? 'Introduce tu nombre'
@@ -422,28 +423,28 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
               // Club
               TextFormField(
                 controller: _clubController,
-                decoration: const InputDecoration(
-                  labelText: 'Club',
-                  prefixIcon: Icon(Icons.sports),
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.clubName,
+                  prefixIcon: const Icon(Icons.sports),
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 16),
               // Mano dominante
               DropdownButtonFormField<String>(
                 value: _manoDominante,
-                decoration: const InputDecoration(
-                  labelText: 'Mano dominante',
-                  prefixIcon: Icon(Icons.pan_tool_alt_outlined),
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.hand,
+                  prefixIcon: const Icon(Icons.pan_tool_alt_outlined),
+                  border: const OutlineInputBorder(),
                 ),
-                items: const [
-                  DropdownMenuItem(child: Text('Derecha'), value: 'Derecha'),
+                items: [
+                  DropdownMenuItem(child: Text(AppLocalizations.of(context)!.rightHand), value: 'Derecha'),
                   DropdownMenuItem(
-                    child: Text('Izquierda'),
+                    child: Text(AppLocalizations.of(context)!.leftHand),
                     value: 'Izquierda',
                   ),
-                  DropdownMenuItem(child: Text('Ambas'), value: 'Ambas'),
+                  DropdownMenuItem(child: Text(AppLocalizations.of(context)!.bothHands), value: 'Ambas'),
                 ],
                 onChanged: (v) => setState(() => _manoDominante = v),
               ),
@@ -514,7 +515,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
               ElevatedButton.icon(
                 onPressed: _guardarPerfil,
                 icon: const Icon(Icons.save),
-                label: const Text('Guardar perfil'),
+                label: Text(AppLocalizations.of(context)!.saveProfile),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
                   backgroundColor: cs.primary,
@@ -528,9 +529,9 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
               const SizedBox(height: 10),
               TextButton.icon(
                 icon: const Icon(Icons.delete_forever, color: Colors.red),
-                label: const Text(
-                  'Eliminar perfil',
-                  style: TextStyle(
+                label: Text(
+                  AppLocalizations.of(context)!.deleteProfile,
+                  style: const TextStyle(
                     color: Colors.red,
                     fontWeight: FontWeight.bold,
                   ),

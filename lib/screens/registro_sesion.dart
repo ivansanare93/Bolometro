@@ -7,6 +7,7 @@ import '../widgets/resumen_puntuacion.dart';
 import '../widgets/notas_field.dart';
 import 'home.dart';
 import '../utils/teclado_tiros_adaptativo.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RegistroSesionScreen extends StatefulWidget {
   final void Function(Partida nuevaPartida) onGuardar;
@@ -82,7 +83,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: const Text('Errores en la partida'),
+          title: Text(AppLocalizations.of(context)!.gameErrors),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,7 +91,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
           ),
           actions: [
             TextButton(
-              child: const Text('Entendido'),
+              child: Text(AppLocalizations.of(context)!.understood),
               onPressed: () => Navigator.pop(context),
             ),
           ],
@@ -102,7 +103,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
     final nuevoTotal = calcularPuntuacionPartida(nuevosFrames);
     if (nuevoTotal == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: const Text('La partida no tiene puntuación válida.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.gameInvalidScore)),
       );
       return;
     }
@@ -290,7 +291,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Registrar partida'),
+        title: Text(AppLocalizations.of(context)!.registerGame),
         centerTitle: true,
         actions: [
           IconButton(
@@ -482,7 +483,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
         child: ElevatedButton.icon(
           onPressed: _guardar,
           icon: const Icon(Icons.save),
-          label: const Text('Guardar Partida'),
+          label: Text(AppLocalizations.of(context)!.saveGame),
           style: ElevatedButton.styleFrom(
             minimumSize: const Size.fromHeight(48),
           ),

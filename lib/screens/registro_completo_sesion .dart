@@ -8,6 +8,7 @@ import '../widgets/lista_partidas.dart';
 import '../widgets/selector_tipo_partida.dart';
 import '../utils/app_constants.dart';
 import '../repositories/data_repository.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RegistroCompletoSesionScreen extends StatefulWidget {
   const RegistroCompletoSesionScreen({super.key});
@@ -60,8 +61,8 @@ class _RegistroCompletoSesionScreenState
   Future<void> _guardarSesion() async {
     if (_partidas.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Añade al menos una partida para guardar la sesión.'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.addAtLeastOneGame),
         ),
       );
       return;
@@ -80,7 +81,7 @@ class _RegistroCompletoSesionScreenState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sesión guardada correctamente')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.sessionSavedSuccess)),
         );
         Navigator.pop(context);
       }
@@ -88,8 +89,8 @@ class _RegistroCompletoSesionScreenState
       debugPrint('Error al guardar sesión: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error al guardar la sesión'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.sessionSaveErrorMessage),
             backgroundColor: Colors.red,
           ),
         );
@@ -100,7 +101,7 @@ class _RegistroCompletoSesionScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Registrar sesión')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.registerSession)),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -130,7 +131,7 @@ class _RegistroCompletoSesionScreenState
                 ElevatedButton.icon(
                   onPressed: anadirPartida,
                   icon: const Icon(Icons.add),
-                  label: const Text('Añadir partida'),
+                  label: Text(AppLocalizations.of(context)!.addGame),
                 ),
               ],
             ),
@@ -146,7 +147,7 @@ class _RegistroCompletoSesionScreenState
             ElevatedButton.icon(
               onPressed: _guardarSesion,
               icon: const Icon(Icons.save),
-              label: const Text('Guardar sesión'),
+              label: Text(AppLocalizations.of(context)!.save),
             ),
           ],
         ),

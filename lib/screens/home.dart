@@ -14,6 +14,7 @@ import '../utils/app_constants.dart';
 import '../services/auth_service.dart';
 import '../repositories/data_repository.dart';
 import 'dart:io';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool mostrarAppBar;
@@ -56,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
               actions: [
                 IconButton(
                   icon: const Icon(Icons.settings),
-                  tooltip: 'Ajustes',
+                  tooltip: AppLocalizations.of(context)!.settings,
                   onPressed: () {
                     showModalBottomSheet(
                       context: context,
@@ -85,9 +86,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                              const Text(
-                                'Ajustes',
-                                style: TextStyle(
+                              Text(
+                                AppLocalizations.of(context)!.settings,
+                                style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -144,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('Modo oscuro'),
+                                  Text(AppLocalizations.of(context)!.darkMode),
                                   Switch(
                                     value: themeProvider.isDarkMode,
                                     onChanged: (val) {
@@ -162,12 +163,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Icons.sync,
                                     color: cs.primary,
                                   ),
-                                  title: const Text('Sincronizar datos'),
+                                  title: Text(AppLocalizations.of(context)!.syncData),
                                   subtitle: Text(
                                     dataRepository.isSyncing
                                         ? 'Sincronizando...'
                                         : 'Guardar datos en la nube',
-                                    style: TextStyle(fontSize: 12),
+                                    style: const TextStyle(fontSize: 12),
                                   ),
                                   trailing: dataRepository.isSyncing
                                       ? const SizedBox(
@@ -188,9 +189,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                               Navigator.pop(context);
                                               ScaffoldMessenger.of(context)
                                                   .showSnackBar(
-                                                const SnackBar(
+                                                SnackBar(
                                                   content: Text(
-                                                    'Sincronización completada',
+                                                    AppLocalizations.of(context)!.syncSuccess,
                                                   ),
                                                 ),
                                               );
@@ -217,16 +218,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Icons.logout,
                                     color: Colors.red,
                                   ),
-                                  title: const Text(
-                                    'Cerrar sesión',
-                                    style: TextStyle(color: Colors.red),
+                                  title: Text(
+                                    AppLocalizations.of(context)!.signOut,
+                                    style: const TextStyle(color: Colors.red),
                                   ),
                                   onTap: () async {
                                     Navigator.pop(context);
                                     final confirm = await showDialog<bool>(
                                       context: context,
                                       builder: (context) => AlertDialog(
-                                        title: const Text('Cerrar sesión'),
+                                        title: Text(AppLocalizations.of(context)!.signOut),
                                         content: const Text(
                                           '¿Estás seguro de que deseas cerrar sesión? Tus datos locales se mantendrán.',
                                         ),
@@ -234,15 +235,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                           TextButton(
                                             onPressed: () =>
                                                 Navigator.pop(context, false),
-                                            child: const Text('Cancelar'),
+                                            child: Text(AppLocalizations.of(context)!.cancel),
                                           ),
                                           TextButton(
                                             onPressed: () =>
                                                 Navigator.pop(context, true),
-                                            child: const Text(
-                                              'Cerrar sesión',
+                                            child: Text(
+                                              AppLocalizations.of(context)!.signOut,
                                               style:
-                                                  TextStyle(color: Colors.red),
+                                                  const TextStyle(color: Colors.red),
                                             ),
                                           ),
                                         ],
@@ -419,7 +420,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       tienePerfil
                           ? OutlinedButton.icon(
                               icon: const Icon(Icons.edit, size: 19),
-                              label: const Text('Editar mi perfil'),
+                              label: Text(AppLocalizations.of(context)!.editMyProfile),
                               style: OutlinedButton.styleFrom(
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(13),
@@ -440,9 +441,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             )
                           : ElevatedButton.icon(
                               icon: const Icon(Icons.person_add_alt_1),
-                              label: const Text(
+                              label: Text(
                                 'Crear mi perfil',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: cs.primary,
@@ -480,8 +481,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: EdgeInsets.only(top: 4),
                         child: Text('🎳', style: TextStyle(fontSize: 32)),
                       ),
-                      title: const Text('Nueva Sesión'),
-                      subtitle: const Text('Registrar varias partidas'),
+                      title: Text(AppLocalizations.of(context)!.newSession),
+                      subtitle: Text(AppLocalizations.of(context)!.registerMultipleGames),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -496,8 +497,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   Card(
                     child: ListTile(
                       leading: const Text('📋', style: TextStyle(fontSize: 32)),
-                      title: const Text('Ver sesiones'),
-                      subtitle: const Text('Listado de sesiones registradas'),
+                      title: Text(AppLocalizations.of(context)!.viewSessions),
+                      subtitle: Text(AppLocalizations.of(context)!.sessionsList),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -511,8 +512,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   Card(
                     child: ListTile(
                       leading: const Text('📊', style: TextStyle(fontSize: 32)),
-                      title: const Text('Estadísticas'),
-                      subtitle: const Text('Resumen de tu rendimiento'),
+                      title: Text(AppLocalizations.of(context)!.statistics),
+                      subtitle: Text(AppLocalizations.of(context)!.performanceSummary),
                       onTap: () {
                         Navigator.push(
                           context,
