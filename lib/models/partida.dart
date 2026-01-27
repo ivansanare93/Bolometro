@@ -5,10 +5,10 @@ part 'partida.g.dart';
 @HiveType(typeId: 0)
 class Partida extends HiveObject {
   @HiveField(0)
-  final DateTime fecha;
+  final DateTime? fecha;
 
   @HiveField(1)
-  final String lugar;
+  final String? lugar;
 
   @HiveField(2)
   final List<List<String>> frames;
@@ -25,8 +25,8 @@ class Partida extends HiveObject {
   final List<List<List<int>?>> pinesPorTiro;
 
   Partida({
-    required this.fecha,
-    required this.lugar,
+    this.fecha,
+    this.lugar,
     required this.frames,
     this.notas,
     required this.total,
@@ -53,7 +53,7 @@ class Partida extends HiveObject {
   }
 
   Map<String, dynamic> toJson() => {
-    'fecha': fecha.toIso8601String(),
+    'fecha': fecha?.toIso8601String(),
     'lugar': lugar,
     // Flatten frames from List<List<String>> to List<String> to avoid nested arrays
     'frames': frames.map((frame) => frame.join(',')).toList(),
@@ -145,7 +145,7 @@ class Partida extends HiveObject {
     }
 
     return Partida(
-      fecha: DateTime.parse(json['fecha']),
+      fecha: json['fecha'] != null ? DateTime.parse(json['fecha']) : null,
       lugar: json['lugar'],
       frames: parsedFrames,
       notas: json['notas'],

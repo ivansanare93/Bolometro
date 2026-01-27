@@ -17,8 +17,8 @@ class PartidaAdapter extends TypeAdapter<Partida> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Partida(
-      fecha: fields[0] as DateTime,
-      lugar: fields[1] as String,
+      fecha: fields[0] as DateTime?,
+      lugar: fields[1] as String?,
       frames: (fields[2] as List)
           .map((dynamic e) => (e as List).cast<String>())
           .toList(),
