@@ -149,5 +149,131 @@ void main() {
       expect(partidas.first.total, equals(180));
       expect(partidas.last.total, equals(120));
     });
+
+    test('calcularPorcentajes should correctly calculate percentages', () {
+      // Arrange - Create test data with known frame outcomes
+      final partidasFrames = [
+        // Game 1: 9 strikes + 1 spare in 10th frame (10 frames total)
+        [
+          ...List.generate(9, (i) => [AppConstants.simboloStrike]),
+          ['7', AppConstants.simboloSpare, AppConstants.simboloStrike],
+        ],
+        // Game 2: 10 spares
+        [
+          ...List.generate(9, (i) => ['5', AppConstants.simboloSpare]),
+          ['5', AppConstants.simboloSpare, '5'],
+        ],
+        // Game 3: 10 open frames
+        [
+          ...List.generate(9, (i) => ['6', '3']),
+          ['6', '3'], // 10th frame with open frame (no bonus)
+        ],
+      ];
+
+      // Act
+      final porcentajes = EstadisticasUtils.calcularPorcentajes(partidasFrames);
+
+      // Assert - 30 frames total: 9 strikes, 11 spares, 10 open
+      expect(porcentajes['strikes'], closeTo(30.0, 0.1));
+      expect(porcentajes['spares'], closeTo(36.67, 0.1));
+      expect(porcentajes['fallos'], closeTo(33.33, 0.1));
+    });
+
+    test('calcularPorcentajes should handle all strikes', () {
+      // Arrange - Realistic perfect game with 10th frame bonus balls
+      final partidasFrames = [
+        [
+          // Frames 1-9: single strikes
+          ...List.generate(9, (i) => [AppConstants.simboloStrike]),
+          // Frame 10: strike with two bonus strikes
+          [AppConstants.simboloStrike, AppConstants.simboloStrike, AppConstants.simboloStrike],
+        ],
+      ];
+
+      // Act
+      final porcentajes = EstadisticasUtils.calcularPorcentajes(partidasFrames);
+
+      // Assert - Still 10 frames total, all are strikes
+      expect(porcentajes['strikes'], equals(100.0));
+      expect(porcentajes['spares'], equals(0.0));
+      expect(porcentajes['fallos'], equals(0.0));
+    });
+
+    test('calcularPorcentajes should handle all spares', () {
+      // Arrange - Realistic all spares game with 10th frame bonus ball
+      final partidasFrames = [
+        [
+          // Frames 1-9: spares
+          ...List.generate(9, (i) => ['7', AppConstants.simboloSpare]),
+          // Frame 10: spare with bonus strike
+          ['7', AppConstants.simboloSpare, AppConstants.simboloStrike],
+        ],
+      ];
+
+      // Act
+      final porcentajes = EstadisticasUtils.calcularPorcentajes(partidasFrames);
+
+      // Assert - Still 10 frames total, all are spares
+      expect(porcentajes['strikes'], equals(0.0));
+      expect(porcentajes['spares'], equals(100.0));
+      expect(porcentajes['fallos'], equals(0.0));
+    });
+
+    test('calcularPorcentajes should handle all open frames', () {
+      // Arrange
+      final partidasFrames = [
+        List.generate(10, (i) => ['5', '4']),
+      ];
+
+      // Act
+      final porcentajes = EstadisticasUtils.calcularPorcentajes(partidasFrames);
+
+      // Assert
+      expect(porcentajes['strikes'], equals(0.0));
+      expect(porcentajes['spares'], equals(0.0));
+      expect(porcentajes['fallos'], equals(100.0));
+    });
+
+    test('calcularPorcentajes should handle empty frames', () {
+      // Arrange
+      final partidasFrames = [
+        <List<String>>[],
+      ];
+
+      // Act
+      final porcentajes = EstadisticasUtils.calcularPorcentajes(partidasFrames);
+
+      // Assert
+      expect(porcentajes['strikes'], equals(0.0));
+      expect(porcentajes['spares'], equals(0.0));
+      expect(porcentajes['fallos'], equals(0.0));
+    });
+
+    test('calcularPorcentajes should skip empty frames in mixed data', () {
+      // Arrange - 3 strikes, 2 spares, 5 open frames
+      final partidasFrames = [
+        [
+          [AppConstants.simboloStrike],
+          [AppConstants.simboloStrike],
+          [AppConstants.simboloStrike],
+          ['5', AppConstants.simboloSpare],
+          ['7', AppConstants.simboloSpare],
+          ['3', '4'],
+          ['2', '5'],
+          ['6', '1'],
+          ['8', '0'],
+          ['9', AppConstants.simboloFallo],
+          [], // empty frame should be skipped
+        ],
+      ];
+
+      // Act
+      final porcentajes = EstadisticasUtils.calcularPorcentajes(partidasFrames);
+
+      // Assert - 10 frames: 3 strikes, 2 spares, 5 open
+      expect(porcentajes['strikes'], equals(30.0));
+      expect(porcentajes['spares'], equals(20.0));
+      expect(porcentajes['fallos'], equals(50.0));
+    });
   });
 }
