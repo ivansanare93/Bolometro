@@ -127,8 +127,12 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
       pinesPorTiro: pinesPorTiro, // <-- Guardamos aquí el array de pines visual
     );
 
-    final analytics = Provider.of<AnalyticsService>(context, listen: false);
-    await analytics.logGameCreated(nuevoTotal);
+    try {
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      await analytics.logGameCreated(nuevoTotal);
+    } catch (e) {
+      debugPrint('Error logging game creation: $e');
+    }
 
     widget.onGuardar(nuevaPartida);
     Navigator.pop(context);

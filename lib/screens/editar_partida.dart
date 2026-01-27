@@ -154,8 +154,12 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
       total: nuevoTotal,
     );
 
-    final analytics = Provider.of<AnalyticsService>(context, listen: false);
-    await analytics.logGameEdited();
+    try {
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      await analytics.logGameEdited();
+    } catch (e) {
+      debugPrint('Error logging game edit: $e');
+    }
 
     widget.onGuardar(partidaActualizada);
     Navigator.pop(context);

@@ -140,8 +140,12 @@ class _EstadisticasPantallaCompletaState
           // Log analytics after successful data load (only once)
           if (!_hasLoggedView) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              final analytics = Provider.of<AnalyticsService>(context, listen: false);
-              analytics.logStatisticsViewed('all');
+              try {
+                final analytics = Provider.of<AnalyticsService>(context, listen: false);
+                analytics.logStatisticsViewed('all');
+              } catch (e) {
+                debugPrint('Error logging statistics view: $e');
+              }
             });
             _hasLoggedView = true;
           }

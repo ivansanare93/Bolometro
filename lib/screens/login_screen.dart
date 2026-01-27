@@ -46,8 +46,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (success && authService.userId != null) {
       // Log successful Google sign-in
-      final analytics = Provider.of<AnalyticsService>(context, listen: false);
-      await analytics.logLogin('google');
+      try {
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        await analytics.logLogin('google');
+      } catch (e) {
+        debugPrint('Error logging login: $e');
+      }
       
       // Configurar el repositorio con el usuario autenticado
       dataRepository.setUser(authService.userId);
