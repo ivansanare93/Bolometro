@@ -16,7 +16,7 @@ import '../widgets/estadisticas/top_partidas_widget.dart';
 import '../widgets/estadisticas/mini_grafico_promedio_movil.dart';
 import '../widgets/estadisticas/histograma_puntuaciones.dart';
 import 'home.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../l10n/app_localizations.dart';
 import '../widgets/skeleton_loaders.dart';
 
 class EstadisticasPantallaCompleta extends StatefulWidget {

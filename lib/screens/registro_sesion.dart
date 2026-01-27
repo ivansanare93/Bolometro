@@ -9,7 +9,7 @@ import '../widgets/resumen_puntuacion.dart';
 import '../widgets/notas_field.dart';
 import 'home.dart';
 import '../utils/teclado_tiros_adaptativo.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../l10n/app_localizations.dart';
 
 class RegistroSesionScreen extends StatefulWidget {
   final void Function(Partida nuevaPartida) onGuardar;
@@ -84,7 +84,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
     return errores;
   }
 
-  void _guardar() {
+  Future<void> _guardar() async {
     final nuevosFrames = interpretarFrames(framesText);
     final errores = validarPartida(framesText);
 

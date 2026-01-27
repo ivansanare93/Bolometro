@@ -9,7 +9,7 @@ import '../widgets/selector_tipo_partida.dart';
 import '../utils/app_constants.dart';
 import '../repositories/data_repository.dart';
 import '../services/analytics_service.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../l10n/app_localizations.dart';
 
 class RegistroCompletoSesionScreen extends StatefulWidget {
   const RegistroCompletoSesionScreen({super.key});

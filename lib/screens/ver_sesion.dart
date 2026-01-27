@@ -8,7 +8,7 @@ import '../utils/app_constants.dart';
 import '../services/analytics_service.dart';
 import 'editar_partida.dart';
 import 'home.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../l10n/app_localizations.dart';
 
 class VerSesion extends StatefulWidget {
   final Sesion sesion;

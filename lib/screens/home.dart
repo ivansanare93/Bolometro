@@ -15,7 +15,7 @@ import '../services/auth_service.dart';
 import '../services/analytics_service.dart';
 import '../repositories/data_repository.dart';
 import 'dart:io';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../l10n/app_localizations.dart';
 import '../widgets/skeleton_loaders.dart';
 
 class HomeScreen extends StatefulWidget {

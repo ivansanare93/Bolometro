@@ -7,7 +7,7 @@ import '../utils/app_constants.dart';
 import '../repositories/data_repository.dart';
 import '../services/analytics_service.dart';
 import 'home.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../l10n/app_localizations.dart';
 import '../widgets/skeleton_loaders.dart';
 
 class ListaSesionesScreen extends StatefulWidget {
