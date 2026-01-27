@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/sesion.dart';
 import '../models/perfil_usuario.dart';
+import '../utils/app_constants.dart';
+import '../exceptions/sync_exceptions.dart';
 
 /// Servicio para interactuar con Firestore
 /// Maneja la sincronización de datos del usuario en la nube
@@ -42,15 +44,17 @@ class FirestoreService {
     } catch (e) {
       debugPrint('Error al guardar sesión en Firestore: $e');
       
-      // Proporcionar mensajes de error más específicos
-      if (e.toString().contains('PERMISSION_DENIED')) {
-        throw Exception(
+      // Lanzar excepciones específicas basadas en el tipo de error
+      final errorMsg = e.toString();
+      
+      if (errorMsg.contains('PERMISSION_DENIED')) {
+        throw PermissionException(
           'Error de permisos al guardar sesión. '
           'Verifica las reglas de seguridad de Firestore.'
         );
-      } else if (e.toString().contains('UNAVAILABLE') || 
-                 e.toString().contains('network')) {
-        throw Exception(
+      } else if (errorMsg.contains('UNAVAILABLE') || 
+                 errorMsg.contains('network')) {
+        throw NetworkException(
           'Error de red al guardar sesión. '
           'Verifica tu conexión a Internet.'
         );
@@ -143,15 +147,17 @@ class FirestoreService {
     } catch (e) {
       debugPrint('Error al guardar perfil en Firestore: $e');
       
-      // Proporcionar mensajes de error más específicos
-      if (e.toString().contains('PERMISSION_DENIED')) {
-        throw Exception(
+      // Lanzar excepciones específicas basadas en el tipo de error
+      final errorMsg = e.toString();
+      
+      if (errorMsg.contains('PERMISSION_DENIED')) {
+        throw PermissionException(
           'Error de permisos al guardar perfil. '
           'Verifica las reglas de seguridad de Firestore.'
         );
-      } else if (e.toString().contains('UNAVAILABLE') || 
-                 e.toString().contains('network')) {
-        throw Exception(
+      } else if (errorMsg.contains('UNAVAILABLE') || 
+                 errorMsg.contains('network')) {
+        throw NetworkException(
           'Error de red al guardar perfil. '
           'Verifica tu conexión a Internet.'
         );
@@ -233,8 +239,8 @@ class FirestoreService {
           await guardarSesion(userId, sesion);
           sesionesSubidas++;
           
-          // Log de progreso cada 10 sesiones
-          if (sesionesSubidas % 10 == 0) {
+          // Log de progreso
+          if (sesionesSubidas % AppConstants.intervaloLogSincronizacion == 0) {
             debugPrint('Progreso: $sesionesSubidas/${sesionesLocales.length} sesiones sincronizadas');
           }
         } catch (e) {
@@ -262,9 +268,9 @@ class FirestoreService {
         '${erroresSesiones > 0 ? ', $erroresSesiones errores' : ''}'
       );
 
-      // Si hubo errores significativos, lanzar excepción
-      if (erroresSesiones > 0 && sesionesSubidas == 0) {
-        throw Exception(
+      // Si no se subió ninguna sesión y hubo errores, lanzar excepción
+      if (sesionesSubidas == 0 && erroresSesiones > 0) {
+        throw SyncException(
           'No se pudo sincronizar ninguna sesión. '
           'Verifica tu conexión y permisos de Firestore.'
         );

@@ -5,6 +5,7 @@ import 'package:bolometro/models/sesion.dart';
 import 'package:bolometro/models/partida.dart';
 import 'package:bolometro/models/perfil_usuario.dart';
 import 'package:bolometro/utils/app_constants.dart';
+import 'package:bolometro/exceptions/sync_exceptions.dart';
 
 /// Tests para DataRepository y funcionalidad de sincronización
 /// 
@@ -44,19 +45,13 @@ void main() {
       await Hive.close();
     });
 
-    test('sincronizarANube debe lanzar excepción si no hay usuario autenticado', () async {
+    test('sincronizarANube debe lanzar AuthenticationException si no hay usuario autenticado', () async {
       // Arrange: no configurar usuario
       
       // Act & Assert
       expect(
         () => repository.sincronizarANube(),
-        throwsA(
-          isA<Exception>().having(
-            (e) => e.toString(),
-            'message',
-            contains('usuario no autenticado'),
-          ),
-        ),
+        throwsA(isA<AuthenticationException>()),
       );
     });
 
