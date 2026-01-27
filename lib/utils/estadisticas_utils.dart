@@ -1,5 +1,6 @@
 import '../models/sesion.dart';
 import '../models/partida.dart';
+import 'app_constants.dart';
 
 class EstadisticasUtils {
   /// Racha máxima de strikes o spares (según símbolo)
@@ -29,9 +30,9 @@ class EstadisticasUtils {
     for (final frames in partidasFrames) {
       for (final frame in frames) {
         for (final tiro in frame) {
-          if (tiro == "X") strikes++;
-          else if (tiro == "/") spares++;
-          else if (tiro == "-") fallos++;
+          if (tiro == AppConstants.simboloStrike) strikes++;
+          else if (tiro == AppConstants.simboloSpare) spares++;
+          else if (tiro == AppConstants.simboloFallo) fallos++;
           totalTiros++;
         }
       }
@@ -66,7 +67,7 @@ class EstadisticasUtils {
   }
 
   /// Histograma de puntuaciones (por bin de tamaño binSize)
-  static Map<String, int> calcularHistograma(List<Partida> partidas, {int binSize = 20}) {
+  static Map<String, int> calcularHistograma(List<Partida> partidas, {int binSize = AppConstants.histogramaBinSize}) {
     final histograma = <String, int>{};
     for (final p in partidas) {
       int binInicio = (p.total ~/ binSize) * binSize;

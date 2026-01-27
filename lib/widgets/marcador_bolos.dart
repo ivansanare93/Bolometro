@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/animation.dart';
 import '../utils/registro_tiros_utils.dart';
+import '../utils/app_constants.dart';
 
 class MarcadorBolos extends StatefulWidget {
   final List<List<String>> frames;
@@ -68,21 +69,21 @@ class MarcadorBolosState extends State<MarcadorBolos> {
     tiroActivo = 0;
     hayCampoActivoNotifier.value = false;
     _controllers = List.generate(
-      10,
+      AppConstants.totalFrames,
       (i) => List.generate(
-        3,
+        AppConstants.maxTirosFrame10,
         (j) => TextEditingController(text: widget.frames[i][j]),
       ),
     );
     _focusNodes = List.generate(
-      10,
-      (i) => List.generate(3, (j) => FocusNode()),
+      AppConstants.totalFrames,
+      (i) => List.generate(AppConstants.maxTirosFrame10, (j) => FocusNode()),
     );
     _scrollController = ScrollController();
   }
 
   void _scrollAlFrameActivo() {
-    if (frameActivo >= 0 && frameActivo < 10) {
+    if (frameActivo >= 0 && frameActivo < AppConstants.totalFrames) {
       final offset = frameActivo * 100.0;
       _scrollController.animateTo(
         offset,
@@ -111,8 +112,8 @@ class MarcadorBolosState extends State<MarcadorBolos> {
       _controllers[frameActivo][tiroActivo].text = valor;
       widget.onChanged?.call(frameActivo, tiroActivo, valor);
 
-      if (frameActivo < 9) {
-        if (valor == 'X' || tiroActivo == 1) {
+      if (frameActivo < AppConstants.totalFrames - 1) {
+        if (valor == AppConstants.simboloStrike || tiroActivo == 1) {
           frameActivo++;
           tiroActivo = 0;
         } else {
@@ -253,7 +254,7 @@ void didUpdateWidget(covariant MarcadorBolos oldWidget) {
                         if (tiro == 2) {
                           final t1 = frame[0];
                           final t2 = frame[1];
-                          return (t1 == 'X' || t2 == '/') &&
+                          return (t1 == AppConstants.simboloStrike || t2 == AppConstants.simboloSpare) &&
                               frame[2].isNotEmpty;
                         }
                         return frame[0].isNotEmpty && frame[1].isNotEmpty;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../utils/app_constants.dart';
 
 class SelectorpinesWidget extends StatefulWidget {
   final List<int> pinesIniciales;
@@ -35,10 +36,10 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
   void initState() {
     super.initState();
     _pinesCaidos = List.generate(
-      10,
+      AppConstants.maxPinesBowling,
       (i) => widget.pinesIniciales.contains(i + 1),
     );
-    _scaleList = List.filled(10, 1.0);
+    _scaleList = List.filled(AppConstants.maxPinesBowling, 1.0);
     _shakeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 350),
@@ -104,9 +105,9 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
   }
 
   int _parseTiro(String tiro, String previo) {
-    if (tiro == 'X') return 10;
-    if (tiro == '/') return 10 - _parseTiro(previo, '');
-    if (tiro == '-') return 0;
+    if (tiro == AppConstants.simboloStrike) return AppConstants.maxPinesBowling;
+    if (tiro == AppConstants.simboloSpare) return AppConstants.maxPinesBowling - _parseTiro(previo, '');
+    if (tiro == AppConstants.simboloFallo) return 0;
     return int.tryParse(tiro) ?? 0;
   }
 
@@ -121,7 +122,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
     final pinBordeNoSel = isDark ? const Color(0xFF50555A) : cs.outlineVariant;
 
     final filas = [
-      [7, 8, 9, 10],
+      [7, 8, 9, AppConstants.maxPinesBowling],
       [4, 5, 6],
       [2, 3],
       [1],
@@ -135,7 +136,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
     final bool ningunoCaido = _pinesCaidos.every((v) => !v);
 
     final seleccionados = List.generate(
-      10,
+      AppConstants.maxPinesBowling,
       (i) => _pinesCaidos[i] ? i + 1 : null,
     ).whereType<int>().toList();
 
@@ -145,7 +146,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
     bool mostrarFallo = false;
 
     if (widget.isFrame10) {
-      final frame10 = widget.frames[9];
+      final frame10 = widget.frames[AppConstants.totalFrames - 1];
       final tiro1 = frame10.isNotEmpty ? frame10[0] : '';
       final tiro2 = frame10.length > 1 ? frame10[1] : '';
 
@@ -155,7 +156,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
         mostrarRemate = false;
         mostrarFallo = true;
       } else if (esSegundoTiro) {
-        final primerTiroStrike = tiro1 == 'X';
+        final primerTiroStrike = tiro1 == AppConstants.simboloStrike;
         if (primerTiroStrike) {
           // Después de strike → tablero reseteado
           mostrarPleno = !todosCaidos;
@@ -163,7 +164,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
           mostrarFallo = true;
         } else {
           final pinosTiro1 = _parseTiro(tiro1, '');
-          final quedanPinos = 10 - pinosTiro1;
+          final quedanPinos = AppConstants.maxPinesBowling - pinosTiro1;
           if (quedanPinos > 0) {
             mostrarPleno = false;
             mostrarRemate = !todosCaidos;
@@ -175,7 +176,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
           }
         }
       } else if (esTercerTiro) {
-        final primerTiroStrike = tiro1 == 'X';
+        final primerTiroStrike = tiro1 == AppConstants.simboloStrike;
         final pinosTiro1 = tiro1.isNotEmpty ? _parseTiro(tiro1, '') : 0;
         final pinosTiro2 = tiro2.isNotEmpty ? _parseTiro(tiro2, tiro1) : 0;
         final spareEnPrimerosDos =
