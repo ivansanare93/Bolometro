@@ -113,9 +113,9 @@ class _EstadisticasPantallaCompletaState
                           setState(() => _rangoFechas = nuevoRango),
                     ),
                     const SizedBox(height: 38),
-                    const Text(
-                      "No hay datos para mostrar estadísticas.",
-                      style: TextStyle(fontSize: 17),
+                    Text(
+                      AppLocalizations.of(context)!.noDataForStatistics,
+                      style: const TextStyle(fontSize: 17),
                     ),
                   ],
                 ),

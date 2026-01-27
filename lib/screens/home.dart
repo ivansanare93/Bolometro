@@ -166,8 +166,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   title: Text(AppLocalizations.of(context)!.syncData),
                                   subtitle: Text(
                                     dataRepository.isSyncing
-                                        ? 'Sincronizando...'
-                                        : 'Guardar datos en la nube',
+                                        ? AppLocalizations.of(context)!.syncing
+                                        : AppLocalizations.of(context)!.saveDataToCloud,
                                     style: const TextStyle(fontSize: 12),
                                   ),
                                   trailing: dataRepository.isSyncing

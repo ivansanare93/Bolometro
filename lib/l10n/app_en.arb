@@ -232,5 +232,9 @@
   "enterYourName": "Enter your name",
   "enterValidEmail": "Enter a valid email",
   "selectDate": "Select date",
-  "aboutMe": "About me"
+  "aboutMe": "About me",
+  "deleteSessionConfirmation": "Are you sure you want to delete this session?",
+  "syncing": "Syncing...",
+  "saveDataToCloud": "Save data to cloud",
+  "noDataForStatistics": "No data to display statistics."
 }

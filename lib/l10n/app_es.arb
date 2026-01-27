@@ -232,5 +232,9 @@
   "enterYourName": "Introduce tu nombre",
   "enterValidEmail": "Introduce un email válido",
   "selectDate": "Seleccionar fecha",
-  "aboutMe": "Sobre mí"
+  "aboutMe": "Sobre mí",
+  "deleteSessionConfirmation": "¿Seguro que deseas eliminar esta sesión?",
+  "syncing": "Sincronizando...",
+  "saveDataToCloud": "Guardar datos en la nube",
+  "noDataForStatistics": "No hay datos para mostrar estadísticas."
 }

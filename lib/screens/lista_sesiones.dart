@@ -160,8 +160,8 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
       context: context,
       builder: (_) => AlertDialog(
         title: Text(AppLocalizations.of(context)!.deleteSessionTitle),
-        content: const Text(
-          '¿Seguro que deseas eliminar esta sesión?',
+        content: Text(
+          AppLocalizations.of(context)!.deleteSessionConfirmation,
         ),
         actions: [
           TextButton(
