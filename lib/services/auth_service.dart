@@ -63,7 +63,23 @@ class AuthService extends ChangeNotifier {
       
       return true;
     } catch (e) {
-      _errorMessage = 'Error al iniciar sesión: ${e.toString()}';
+      String errorMsg = 'Error al iniciar sesión';
+      
+      // Proporcionar mensajes de error más descriptivos
+      if (e.toString().contains('ApiException: 10')) {
+        errorMsg = 'Error de configuración de Google Sign-In.\n\n'
+            'Por favor, verifica:\n'
+            '1. El SHA-1 está registrado en Firebase Console\n'
+            '2. El archivo google-services.json está actualizado\n'
+            '3. El applicationId coincide con el de Firebase\n\n'
+            'Consulta AUTENTICACION.md para más detalles.';
+      } else if (e.toString().contains('network')) {
+        errorMsg = 'Error de conexión. Verifica tu conexión a Internet.';
+      } else if (e.toString().contains('sign_in_failed')) {
+        errorMsg = 'Error al iniciar sesión con Google. Intenta nuevamente.';
+      }
+      
+      _errorMessage = errorMsg;
       _isLoading = false;
       notifyListeners();
       debugPrint('Error en signInWithGoogle: $e');

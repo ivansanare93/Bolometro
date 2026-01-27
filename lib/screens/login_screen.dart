@@ -6,7 +6,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// Pantalla de inicio de sesión con Google
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final VoidCallback? onContinueWithoutLogin;
+  
+  const LoginScreen({super.key, this.onContinueWithoutLogin});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -66,8 +68,8 @@ class _LoginScreenState extends State<LoginScreen> {
     // Configurar modo offline
     dataRepository.setUser(null);
     
-    // Navegar a la pantalla principal
-    // La navegación se maneja automáticamente por el MaterialApp
+    // Notificar al AuthWrapper que el usuario continuó sin login
+    widget.onContinueWithoutLogin?.call();
   }
 
   @override
