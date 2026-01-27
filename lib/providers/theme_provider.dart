@@ -17,10 +17,21 @@ class ThemeProvider extends ChangeNotifier {
   }
 
   /// Cambia el tema y guarda la preferencia.
-  void toggleTheme(bool isOn) async {
+  Future<void> toggleTheme(bool isOn) async {
     _themeMode = isOn ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
+    await _saveThemePreference();
+  }
 
+  /// Cambia el modo de tema directamente
+  Future<void> setThemeMode(ThemeMode mode) async {
+    _themeMode = mode;
+    notifyListeners();
+    await _saveThemePreference();
+  }
+
+  /// Guarda la preferencia de tema en SharedPreferences
+  Future<void> _saveThemePreference() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('themeMode', _themeMode.name);
   }

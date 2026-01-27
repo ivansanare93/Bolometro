@@ -126,4 +126,60 @@ class EstadisticasUtils {
     if (sesion.partidas.isEmpty) return 0;
     return sesion.partidas.map((p) => p.total).reduce((a, b) => a + b) / sesion.partidas.length;
   }
+
+  /// Calcula estadísticas generales de las sesiones
+  /// 
+  /// Retorna un Map con las siguientes claves:
+  /// - 'totalSesiones': int - Número total de sesiones
+  /// - 'totalPartidas': int - Número total de partidas
+  /// - 'promedio': double - Promedio de puntuación de todas las partidas
+  /// - 'mejorPartida': int - Puntuación de la mejor partida
+  static Map<String, dynamic> calcularEstadisticas(List<Sesion> sesiones) {
+    if (sesiones.isEmpty) {
+      return {
+        'totalSesiones': 0,
+        'totalPartidas': 0,
+        'promedio': 0.0,
+        'mejorPartida': 0,
+      };
+    }
+
+    final todasPartidas = <Partida>[];
+    for (final sesion in sesiones) {
+      todasPartidas.addAll(sesion.partidas);
+    }
+
+    if (todasPartidas.isEmpty) {
+      return {
+        'totalSesiones': sesiones.length,
+        'totalPartidas': 0,
+        'promedio': 0.0,
+        'mejorPartida': 0,
+      };
+    }
+
+    final totalPuntos = todasPartidas.fold<int>(0, (sum, p) => sum + p.total);
+    final promedio = totalPuntos / todasPartidas.length;
+    final mejorPartida = todasPartidas.map((p) => p.total).reduce((a, b) => a > b ? a : b);
+
+    return {
+      'totalSesiones': sesiones.length,
+      'totalPartidas': todasPartidas.length,
+      'promedio': promedio,
+      'mejorPartida': mejorPartida,
+    };
+  }
+
+  /// Calcula la distribución de puntajes por rangos
+  /// 
+  /// Utiliza histograma con bins del tamaño definido en AppConstants.histogramaBinSize
+  /// Retorna un Map donde las claves son rangos (ej: "100-119") y los valores
+  /// son la cantidad de partidas que caen en ese rango
+  static Map<String, int> calcularDistribucionPuntajes(List<Sesion> sesiones) {
+    final todasPartidas = <Partida>[];
+    for (final sesion in sesiones) {
+      todasPartidas.addAll(sesion.partidas);
+    }
+    return calcularHistograma(todasPartidas);
+  }
 }
