@@ -139,7 +139,9 @@ class _EstadisticasPantallaCompletaState
 
           // Log analytics after successful data load (only once)
           if (!_hasLoggedView) {
+            _hasLoggedView = true;
             WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
               try {
                 final analytics = Provider.of<AnalyticsService>(context, listen: false);
                 analytics.logStatisticsViewed('all');
@@ -147,7 +149,6 @@ class _EstadisticasPantallaCompletaState
                 debugPrint('Error logging statistics view: $e');
               }
             });
-            _hasLoggedView = true;
           }
 
           // --- OBTENER DATOS DEL CACHE ---
