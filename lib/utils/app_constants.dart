@@ -66,8 +66,7 @@ class AppConstants {
   static const int maxPartidasTop = 10; // Top N mejores partidas
   static const int ultimasPartidasPromedio5 = 5; // Últimas 5 partidas para promedio
   static const int ultimasPartidasPromedio10 = 10; // Últimas 10 partidas para promedio
-  static const int topNMejoresPartidas = 3; // Top 3 mejores partidas
-  static const int topNPeoresPartidas = 3; // Top 3 peores partidas
+  static const int topNPartidas = 3; // Top N mejores/peores partidas para mostrar
   static const int histogramaBinSize = 20; // Tamaño de bin para histograma
 
   // ===== Cache =====

@@ -122,7 +122,7 @@ class _EstadisticasPantallaCompletaState
             );
           }
 
-          // Usar cache de estadísticas
+          // Usar cache de estadísticas (provider registrado en main.dart)
           final estadisticasCache = Provider.of<EstadisticasCache>(context, listen: false);
           final stats = estadisticasCache.getEstadisticas(sesiones);
 
@@ -137,8 +137,15 @@ class _EstadisticasPantallaCompletaState
           final rachaStrike = stats['rachaStrikes'] as int;
           final rachaSpare = stats['rachaSpares'] as int;
           final porcentajes = stats['porcentajes'] as Map<String, double>;
-          final top3 = (stats['topMejores'] as List<Partida>).take(AppConstants.topNMejoresPartidas).toList();
-          final peores3 = (stats['topPeores'] as List<Partida>).take(AppConstants.topNPeoresPartidas).toList();
+          
+          // Las listas ya vienen limitadas del cache
+          final topMejores = stats['topMejores'] as List<Partida>;
+          final topPeores = stats['topPeores'] as List<Partida>;
+          
+          // Tomar solo los primeros N para mostrar
+          final top3 = topMejores.take(AppConstants.topNPartidas).toList();
+          final peores3 = topPeores.take(AppConstants.topNPartidas).toList();
+          
           final histograma = stats['histograma'] as Map<String, int>;
           final miniPromedios = EstadisticasUtils.promedioMovil(partidas, AppConstants.ventanaPromedioMovil);
           final sesionRecord = stats['sesionRecord'] as Sesion?;
