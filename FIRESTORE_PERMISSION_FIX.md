@@ -164,7 +164,7 @@ Las reglas de Firestore funcionan así:
 
 3. **Verifica en Firebase Console**:
    - Ve a **Authentication** y verifica que tu usuario existe
-   - Ve a **Firestore Database** y verifica que existen las colecciones `users` y subcolecc`iones `sesiones`
+   - Ve a **Firestore Database** y verifica que existen las colecciones `users` y subcolecciones `sesiones`
 
 4. **Verifica la estructura de datos**:
    - Cada sesión debe estar en `/users/{tu-uid}/sesiones/{sesion-id}`
