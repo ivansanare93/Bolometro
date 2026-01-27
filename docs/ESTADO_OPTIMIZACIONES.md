@@ -181,7 +181,7 @@ flutter pub add --dev import_sorter
 echo "import_sorter:
   comments: false
   ignored_files:
-    - /*.g.dart
+    - '**/*.g.dart'
   emojis: false" > import_sorter.yaml
 
 # 4. Ordenar imports
