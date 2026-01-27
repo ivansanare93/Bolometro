@@ -155,6 +155,38 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
     }
   }
 
+  Future<bool> _mostrarDialogoConfirmacion() async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Eliminar sesión'),
+        content: const Text(
+          '¿Seguro que deseas eliminar esta sesión?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Eliminar',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    ) ?? false;
+  }
+
+  Future<void> _confirmarYEliminarSesion(Sesion sesion) async {
+    final confirm = await _mostrarDialogoConfirmacion();
+    if (confirm) {
+      await _borrarSesion(sesion);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -306,36 +338,11 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
                               size: 34,
                             ),
                           ),
-                          confirmDismiss: (_) async {
-                            return await showDialog<bool>(
-                                  context: context,
-                                  builder: (_) => AlertDialog(
-                                    title: const Text('Eliminar sesión'),
-                                    content: const Text(
-                                      '¿Seguro que deseas eliminar esta sesión?',
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(context, false),
-                                        child: const Text('Cancelar'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(context, true),
-                                        child: const Text(
-                                          'Eliminar',
-                                          style: TextStyle(color: Colors.red),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ) ??
-                                false;
-                          },
+                          confirmDismiss: (_) => _mostrarDialogoConfirmacion(),
                           onDismissed: (_) => _borrarSesion(sesion),
                           child: SesionCard(
                             sesion: sesion,
+                            onDelete: () => _confirmarYEliminarSesion(sesion),
                             // VER SESIÓN
                             onTap: () {
                               Navigator.push(
