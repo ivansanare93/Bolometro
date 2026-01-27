@@ -155,6 +155,35 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
     }
   }
 
+  Future<void> _confirmarYEliminarSesion(Sesion sesion) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Eliminar sesión'),
+        content: const Text(
+          '¿Seguro que deseas eliminar esta sesión?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Eliminar',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+    
+    if (confirm == true) {
+      await _borrarSesion(sesion);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -336,6 +365,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
                           onDismissed: (_) => _borrarSesion(sesion),
                           child: SesionCard(
                             sesion: sesion,
+                            onDelete: () => _confirmarYEliminarSesion(sesion),
                             // VER SESIÓN
                             onTap: () {
                               Navigator.push(

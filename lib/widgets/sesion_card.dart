@@ -62,6 +62,16 @@ class SesionCard extends StatelessWidget {
             ),
           ],
         ),
+        trailing: onDelete != null
+            ? IconButton(
+                icon: const Icon(
+                  Icons.delete_outline,
+                  color: Colors.red,
+                ),
+                tooltip: 'Eliminar',
+                onPressed: onDelete,
+              )
+            : null,
       ),
     );
   }
