@@ -77,6 +77,10 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       bio: _bioController.text.trim().isEmpty
           ? null
           : _bioController.text.trim(),
+      // Preservar datos de Google si existen
+      googlePhotoUrl: perfil?.googlePhotoUrl,
+      googleDisplayName: perfil?.googleDisplayName,
+      isFromGoogle: perfil?.isFromGoogle ?? false,
     );
 
     await perfilBox.put('perfil', nuevoPerfil);
@@ -179,6 +183,11 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
     final cs = Theme.of(context).colorScheme;
     final avatarFileExists =
         _avatarPath != null && File(_avatarPath!).existsSync();
+    
+    // Mostrar foto de Google si está disponible y no hay foto local
+    final hasGooglePhoto = perfil?.googlePhotoUrl != null && 
+                          perfil!.googlePhotoUrl!.isNotEmpty;
+    final showGooglePhoto = hasGooglePhoto && !avatarFileExists;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Mi perfil'), centerTitle: true),
@@ -188,6 +197,34 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
           key: _formKey,
           child: Column(
             children: [
+              // Mostrar info si el perfil es de Google
+              if (perfil?.isFromGoogle == true)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: cs.primaryContainer.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: cs.primary.withOpacity(0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: cs.primary, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Perfil creado desde tu cuenta de Google. Puedes editarlo libremente.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: cs.onSurface.withOpacity(0.8),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               // Avatar
               GestureDetector(
                 onTap: _seleccionarAvatar,
@@ -196,13 +233,15 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                   backgroundColor: cs.primary.withOpacity(0.09),
                   backgroundImage: avatarFileExists
                       ? FileImage(File(_avatarPath!))
-                      : null,
-                  child: !avatarFileExists
+                      : showGooglePhoto
+                          ? NetworkImage(perfil!.googlePhotoUrl!) as ImageProvider
+                          : null,
+                  child: !avatarFileExists && !showGooglePhoto
                       ? Icon(Icons.person, size: 48, color: cs.primary)
                       : null,
                 ),
               ),
-              if (avatarFileExists)
+              if (avatarFileExists || showGooglePhoto)
                 TextButton.icon(
                   icon: const Icon(Icons.delete_outline, size: 18),
                   label: const Text('Quitar foto'),
@@ -212,7 +251,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                   ),
                   onPressed: _quitarAvatar,
                 ),
-              if (_avatarPath != null && !avatarFileExists)
+              if (_avatarPath != null && !avatarFileExists && !showGooglePhoto)
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
                   child: Text(
@@ -222,7 +261,9 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                 ),
               const SizedBox(height: 8),
               Text(
-                'Pulsa para cambiar tu imagen',
+                showGooglePhoto 
+                    ? 'Usando foto de Google. Pulsa para cambiar' 
+                    : 'Pulsa para cambiar tu imagen',
                 style: TextStyle(
                   fontSize: 13,
                   color: cs.onSurface.withOpacity(0.6),

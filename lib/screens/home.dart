@@ -78,12 +78,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           listen: false,
                         );
 
-                        return Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
+                        return SingleChildScrollView(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                               const Text(
                                 'Ajustes',
                                 style: TextStyle(
@@ -284,7 +285,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   );
                                 },
                               ),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -311,16 +313,31 @@ class _HomeScreenState extends State<HomeScreen> {
               perfil.avatarPath!.isNotEmpty &&
               File(perfil.avatarPath!).existsSync();
 
-          final avatar = (perfil != null && avatarFileExists)
-              ? CircleAvatar(
-                  radius: 46,
-                  backgroundImage: FileImage(File(perfil.avatarPath!)),
-                )
-              : CircleAvatar(
-                  radius: 46,
-                  backgroundColor: cs.primary.withOpacity(0.10),
-                  child: Icon(Icons.person, size: 46, color: cs.primary),
-                );
+          // Determinar qué avatar mostrar (prioridad: local > Google > default)
+          final Widget avatar;
+          if (perfil != null && avatarFileExists) {
+            // Usar imagen local
+            avatar = CircleAvatar(
+              radius: 46,
+              backgroundImage: FileImage(File(perfil.avatarPath!)),
+            );
+          } else if (perfil != null && 
+                     perfil.googlePhotoUrl != null && 
+                     perfil.googlePhotoUrl!.isNotEmpty) {
+            // Usar foto de Google
+            avatar = CircleAvatar(
+              radius: 46,
+              backgroundImage: NetworkImage(perfil.googlePhotoUrl!),
+              backgroundColor: cs.primary.withOpacity(0.10),
+            );
+          } else {
+            // Avatar por defecto
+            avatar = CircleAvatar(
+              radius: 46,
+              backgroundColor: cs.primary.withOpacity(0.10),
+              child: Icon(Icons.person, size: 46, color: cs.primary),
+            );
+          }
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),

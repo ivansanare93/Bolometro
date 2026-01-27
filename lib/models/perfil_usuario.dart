@@ -25,6 +25,15 @@ class PerfilUsuario extends HiveObject {
   @HiveField(6)
   String? bio; // Pequeña descripción
 
+  @HiveField(7)
+  String? googlePhotoUrl; // URL de la foto de perfil de Google
+
+  @HiveField(8)
+  String? googleDisplayName; // Nombre de Google
+
+  @HiveField(9)
+  bool isFromGoogle; // Indica si el perfil fue creado desde Google
+
   PerfilUsuario({
     required this.nombre,
     this.email,
@@ -33,5 +42,8 @@ class PerfilUsuario extends HiveObject {
     this.manoDominante,
     this.fechaNacimiento,
     this.bio,
+    this.googlePhotoUrl,
+    this.googleDisplayName,
+    this.isFromGoogle = false,
   });
 }

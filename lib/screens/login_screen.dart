@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../repositories/data_repository.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hive/hive.dart';
+import '../models/perfil_usuario.dart';
+import '../utils/app_constants.dart';
 
 /// Pantalla de inicio de sesión con Google
 class LoginScreen extends StatefulWidget {
@@ -30,6 +33,30 @@ class _LoginScreenState extends State<LoginScreen> {
     if (success && authService.userId != null) {
       // Configurar el repositorio con el usuario autenticado
       dataRepository.setUser(authService.userId);
+
+      // Auto-poblar perfil con datos de Google si no existe
+      try {
+        final perfilBox = await Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+        final perfilExistente = perfilBox.get('perfil');
+        
+        // Si no hay perfil o el perfil está vacío, crear uno con datos de Google
+        if (perfilExistente == null || perfilExistente.nombre.trim().isEmpty) {
+          final user = authService.user;
+          if (user != null) {
+            final nuevoPerfil = PerfilUsuario(
+              nombre: user.displayName ?? 'Usuario',
+              email: user.email,
+              googlePhotoUrl: user.photoURL,
+              googleDisplayName: user.displayName,
+              isFromGoogle: true,
+            );
+            await perfilBox.put('perfil', nuevoPerfil);
+            debugPrint('Perfil creado automáticamente con datos de Google');
+          }
+        }
+      } catch (e) {
+        debugPrint('Error al crear perfil desde Google: $e');
+      }
 
       // Sincronizar datos locales a la nube
       try {
