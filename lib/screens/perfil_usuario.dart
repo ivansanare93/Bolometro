@@ -32,6 +32,17 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
   String? _avatarPath;
   bool _clearGooglePhoto = false; // Flag para limpiar foto de Google
 
+  void _initializeDefaultValues() {
+    perfil = PerfilUsuario(nombre: '');
+    _nombreController = TextEditingController(text: '');
+    _emailController = TextEditingController(text: '');
+    _clubController = TextEditingController(text: '');
+    _bioController = TextEditingController(text: '');
+    _manoDominante = null;
+    _fechaNacimiento = null;
+    _avatarPath = null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -52,26 +63,17 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       _avatarPath = perfil?.avatarPath;
     } on HiveError catch (e) {
       debugPrint('Error de Hive al cargar perfil: $e');
-      // Crear valores por defecto si hay error
-      perfil = PerfilUsuario(nombre: '');
-      _nombreController = TextEditingController(text: '');
-      _emailController = TextEditingController(text: '');
-      _clubController = TextEditingController(text: '');
-      _bioController = TextEditingController(text: '');
-      _manoDominante = null;
-      _fechaNacimiento = null;
-      _avatarPath = null;
+      // Intentar abrir la box nuevamente o crear valores por defecto
+      try {
+        perfilBox = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+      } catch (_) {
+        // Si falla, será necesario recrear la box en un futuro acceso
+        debugPrint('No se pudo abrir la box de perfil');
+      }
+      _initializeDefaultValues();
     } catch (e) {
       debugPrint('Error inesperado al inicializar perfil: $e');
-      // Crear valores por defecto si hay error
-      perfil = PerfilUsuario(nombre: '');
-      _nombreController = TextEditingController(text: '');
-      _emailController = TextEditingController(text: '');
-      _clubController = TextEditingController(text: '');
-      _bioController = TextEditingController(text: '');
-      _manoDominante = null;
-      _fechaNacimiento = null;
-      _avatarPath = null;
+      _initializeDefaultValues();
     }
   }
 

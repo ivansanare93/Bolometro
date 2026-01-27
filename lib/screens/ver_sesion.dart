@@ -58,9 +58,16 @@ class _VerSesionState extends State<VerSesion> {
               await box.putAt(sesionIndex, sesionActual);
 
               Navigator.pop(context); // Cierra edición
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Partida actualizada')),
-              );
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Partida actualizada'),
+                    backgroundColor: Colors.green[600],
+                    duration: const Duration(seconds: 2),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
             } on HiveError catch (e) {
               debugPrint('Error de Hive al actualizar partida: $e');
               if (context.mounted) {
@@ -133,9 +140,14 @@ class _VerSesionState extends State<VerSesion> {
         await box.putAt(sesionIndex, sesionActual);
 
         if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Partida eliminada')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Partida eliminada'),
+              backgroundColor: Colors.orange[600],
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
         }
       } on HiveError catch (e) {
         debugPrint('Error de Hive al eliminar partida: $e');
