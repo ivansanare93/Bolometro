@@ -60,8 +60,7 @@ void main() {
       expect(AppConstants.maxPartidasTop, equals(10));
       expect(AppConstants.ultimasPartidasPromedio5, equals(5));
       expect(AppConstants.ultimasPartidasPromedio10, equals(10));
-      expect(AppConstants.topNMejoresPartidas, equals(3));
-      expect(AppConstants.topNPeoresPartidas, equals(3));
+      expect(AppConstants.topNPartidas, equals(3));
       expect(AppConstants.histogramaBinSize, equals(20));
     });
 
@@ -70,8 +69,7 @@ void main() {
       expect(AppConstants.maxPartidasTop, greaterThan(0));
       expect(AppConstants.ultimasPartidasPromedio5, greaterThan(0));
       expect(AppConstants.ultimasPartidasPromedio10, greaterThan(0));
-      expect(AppConstants.topNMejoresPartidas, greaterThan(0));
-      expect(AppConstants.topNPeoresPartidas, greaterThan(0));
+      expect(AppConstants.topNPartidas, greaterThan(0));
       expect(AppConstants.histogramaBinSize, greaterThan(0));
     });
 
