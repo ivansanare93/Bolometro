@@ -128,6 +128,12 @@ class EstadisticasUtils {
   }
 
   /// Calcula estadísticas generales de las sesiones
+  /// 
+  /// Retorna un Map con las siguientes claves:
+  /// - 'totalSesiones': int - Número total de sesiones
+  /// - 'totalPartidas': int - Número total de partidas
+  /// - 'promedio': double - Promedio de puntuación de todas las partidas
+  /// - 'mejorPartida': int - Puntuación de la mejor partida
   static Map<String, dynamic> calcularEstadisticas(List<Sesion> sesiones) {
     if (sesiones.isEmpty) {
       return {
@@ -165,6 +171,10 @@ class EstadisticasUtils {
   }
 
   /// Calcula la distribución de puntajes por rangos
+  /// 
+  /// Utiliza histograma con bins del tamaño definido en AppConstants.histogramaBinSize
+  /// Retorna un Map donde las claves son rangos (ej: "100-119") y los valores
+  /// son la cantidad de partidas que caen en ese rango
   static Map<String, int> calcularDistribucionPuntajes(List<Sesion> sesiones) {
     final todasPartidas = <Partida>[];
     for (final sesion in sesiones) {

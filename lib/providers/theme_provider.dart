@@ -17,7 +17,7 @@ class ThemeProvider extends ChangeNotifier {
   }
 
   /// Cambia el tema y guarda la preferencia.
-  void toggleTheme(bool isOn) async {
+  Future<void> toggleTheme(bool isOn) async {
     _themeMode = isOn ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
 
@@ -26,7 +26,7 @@ class ThemeProvider extends ChangeNotifier {
   }
 
   /// Cambia el modo de tema directamente
-  void setThemeMode(ThemeMode mode) async {
+  Future<void> setThemeMode(ThemeMode mode) async {
     _themeMode = mode;
     notifyListeners();
 
