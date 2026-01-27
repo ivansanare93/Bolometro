@@ -97,10 +97,12 @@ Map<DateTime, int> contarPartidasPorDia(List<Sesion> sesiones) {
   final Map<DateTime, int> partidasPorDia = {};
   for (final sesion in sesiones) {
     for (final partida in sesion.partidas) {
+      // Use partida.fecha if available, otherwise fall back to sesion.fecha
+      final fecha = partida.fecha ?? sesion.fecha;
       final soloDia = DateTime(
-        partida.fecha.year,
-        partida.fecha.month,
-        partida.fecha.day,
+        fecha.year,
+        fecha.month,
+        fecha.day,
       );
       partidasPorDia.update(soloDia, (count) => count + 1, ifAbsent: () => 1);
     }
