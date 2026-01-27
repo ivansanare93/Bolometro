@@ -56,8 +56,9 @@ class TopPartidasWidget extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           ...partidas.map((p) {
-            final fecha =
-                "${p.fecha.day.toString().padLeft(2, '0')}/${p.fecha.month.toString().padLeft(2, '0')}/${p.fecha.year}";
+            final fecha = p.fecha != null
+                ? "${p.fecha!.day.toString().padLeft(2, '0')}/${p.fecha!.month.toString().padLeft(2, '0')}/${p.fecha!.year}"
+                : "Sin fecha";
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: Row(

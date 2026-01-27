@@ -18,6 +18,7 @@ void main() {
           tipo: AppConstants.tipoEntrenamiento,
           partidas: [
             Partida(
+              fecha: DateTime(2024, 1, 1),
               total: 150,
               frames: List.generate(
                 AppConstants.totalFrames,
@@ -25,6 +26,7 @@ void main() {
               ),
             ),
             Partida(
+              fecha: DateTime(2024, 1, 1),
               total: 180,
               frames: List.generate(
                 AppConstants.totalFrames,
@@ -39,6 +41,7 @@ void main() {
           tipo: AppConstants.tipoCompeticion,
           partidas: [
             Partida(
+              fecha: DateTime(2024, 1, 2),
               total: 120,
               frames: List.generate(
                 AppConstants.totalFrames,

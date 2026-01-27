@@ -25,6 +25,15 @@ class ThemeProvider extends ChangeNotifier {
     await prefs.setString('themeMode', _themeMode.name);
   }
 
+  /// Cambia el modo de tema directamente
+  void setThemeMode(ThemeMode mode) async {
+    _themeMode = mode;
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('themeMode', _themeMode.name);
+  }
+
   /// Carga la preferencia guardada (por defecto: `system`).
   Future<void> loadThemeFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
