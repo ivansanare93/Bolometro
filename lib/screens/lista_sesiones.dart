@@ -350,6 +350,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
                     },
                   ),
           ),
+          )
         ],
       ),
     );
