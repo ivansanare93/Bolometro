@@ -153,48 +153,67 @@ void main() {
     test('calcularPorcentajes should correctly calculate percentages', () {
       // Arrange - Create test data with known frame outcomes
       final partidasFrames = [
-        // Game 1: 10 strikes (100%)
-        List.generate(10, (i) => [AppConstants.simboloStrike]),
-        // Game 2: 10 spares (100%)
-        List.generate(10, (i) => ['5', AppConstants.simboloSpare]),
-        // Game 3: 10 open frames (100%)
-        List.generate(10, (i) => ['6', '3']),
+        // Game 1: 9 strikes + 1 spare in 10th frame (10 frames total)
+        [
+          ...List.generate(9, (i) => [AppConstants.simboloStrike]),
+          ['7', AppConstants.simboloSpare, AppConstants.simboloStrike],
+        ],
+        // Game 2: 10 spares
+        [
+          ...List.generate(9, (i) => ['5', AppConstants.simboloSpare]),
+          ['5', AppConstants.simboloSpare, '5'],
+        ],
+        // Game 3: 10 open frames
+        [
+          ...List.generate(9, (i) => ['6', '3']),
+          ['6', '3'], // 10th frame with open frame (no bonus)
+        ],
       ];
 
       // Act
       final porcentajes = EstadisticasUtils.calcularPorcentajes(partidasFrames);
 
-      // Assert - 30 frames total: 10 strikes, 10 spares, 10 open
-      expect(porcentajes['strikes'], closeTo(33.33, 0.1));
-      expect(porcentajes['spares'], closeTo(33.33, 0.1));
+      // Assert - 30 frames total: 9 strikes, 11 spares, 10 open
+      expect(porcentajes['strikes'], closeTo(30.0, 0.1));
+      expect(porcentajes['spares'], closeTo(36.67, 0.1));
       expect(porcentajes['fallos'], closeTo(33.33, 0.1));
     });
 
     test('calcularPorcentajes should handle all strikes', () {
-      // Arrange
+      // Arrange - Realistic perfect game with 10th frame bonus balls
       final partidasFrames = [
-        List.generate(10, (i) => [AppConstants.simboloStrike]),
+        [
+          // Frames 1-9: single strikes
+          ...List.generate(9, (i) => [AppConstants.simboloStrike]),
+          // Frame 10: strike with two bonus strikes
+          [AppConstants.simboloStrike, AppConstants.simboloStrike, AppConstants.simboloStrike],
+        ],
       ];
 
       // Act
       final porcentajes = EstadisticasUtils.calcularPorcentajes(partidasFrames);
 
-      // Assert
+      // Assert - Still 10 frames total, all are strikes
       expect(porcentajes['strikes'], equals(100.0));
       expect(porcentajes['spares'], equals(0.0));
       expect(porcentajes['fallos'], equals(0.0));
     });
 
     test('calcularPorcentajes should handle all spares', () {
-      // Arrange
+      // Arrange - Realistic all spares game with 10th frame bonus ball
       final partidasFrames = [
-        List.generate(10, (i) => ['7', AppConstants.simboloSpare]),
+        [
+          // Frames 1-9: spares
+          ...List.generate(9, (i) => ['7', AppConstants.simboloSpare]),
+          // Frame 10: spare with bonus strike
+          ['7', AppConstants.simboloSpare, AppConstants.simboloStrike],
+        ],
       ];
 
       // Act
       final porcentajes = EstadisticasUtils.calcularPorcentajes(partidasFrames);
 
-      // Assert
+      // Assert - Still 10 frames total, all are spares
       expect(porcentajes['strikes'], equals(0.0));
       expect(porcentajes['spares'], equals(100.0));
       expect(porcentajes['fallos'], equals(0.0));
