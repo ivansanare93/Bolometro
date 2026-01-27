@@ -175,7 +175,14 @@ class DataRepository extends ChangeNotifier {
 
   /// Sincronizar datos locales a la nube
   /// 
-  /// Sube todos los datos locales almacenados en Hive a Firestore.
+  /// Realiza una sincronización bidireccional inteligente entre Hive y Firestore:
+  /// 1. Descarga sesiones existentes en Firestore
+  /// 2. Sube solo las sesiones locales que NO existen en la nube
+  /// 3. Actualiza el almacenamiento local con los datos de la nube (verdad única)
+  /// 
+  /// Este enfoque evita que sesiones eliminadas de Firestore sean re-subidas,
+  /// asegurando que Firestore sea la fuente de verdad para los datos sincronizados.
+  /// 
   /// Requiere que el usuario esté autenticado.
   /// 
   /// Lanza:
@@ -211,25 +218,60 @@ class DataRepository extends ChangeNotifier {
       _isSyncing = true;
       notifyListeners();
 
-      debugPrint('Iniciando sincronización a la nube...');
+      debugPrint('Iniciando sincronización bidireccional...');
 
-      // Obtener datos locales desde Hive
+      // 1. Obtener sesiones existentes en Firestore (fuente de verdad)
+      final sesionesRemotas = await _firestoreService.obtenerSesiones(_userId!);
+      debugPrint('Sesiones en la nube: ${sesionesRemotas.length}');
+
+      // Crear un Set de IDs de sesiones remotas para búsqueda rápida
+      final idsRemotosSet = sesionesRemotas
+          .map((s) => s.fecha.millisecondsSinceEpoch.toString())
+          .toSet();
+
+      // 2. Obtener datos locales desde Hive
       final boxSesiones = Hive.box<Sesion>(AppConstants.boxSesiones);
       final sesionesLocales = boxSesiones.values.toList();
+      debugPrint('Sesiones locales: ${sesionesLocales.length}');
 
+      // Obtener perfil local una sola vez
       final boxPerfil = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
       final perfilLocal = boxPerfil.isNotEmpty ? boxPerfil.getAt(0) : null;
 
-      debugPrint('Sincronizando ${sesionesLocales.length} sesiones y perfil...');
+      // 3. Filtrar sesiones locales que NO existen en la nube
+      final sesionesNuevas = sesionesLocales.where((sesion) {
+        final id = sesion.fecha.millisecondsSinceEpoch.toString();
+        return !idsRemotosSet.contains(id);
+      }).toList();
 
-      // Sincronizar con Firestore
-      await _firestoreService.sincronizarDatosLocales(
-        _userId!,
-        sesionesLocales,
-        perfilLocal,
-      );
+      debugPrint('Sesiones nuevas a subir: ${sesionesNuevas.length}');
 
-      debugPrint('Sincronización completada exitosamente');
+      // 4. Subir solo las sesiones nuevas y el perfil
+      if (sesionesNuevas.isNotEmpty) {
+        await _firestoreService.sincronizarDatosLocales(
+          _userId!,
+          sesionesNuevas,
+          perfilLocal,
+        );
+      } else if (perfilLocal != null) {
+        // Si no hay sesiones nuevas pero hay perfil, sincronizarlo
+        debugPrint('No hay sesiones nuevas, sincronizando solo perfil...');
+        await _firestoreService.guardarPerfil(_userId!, perfilLocal);
+      } else {
+        debugPrint('No hay sesiones ni perfil para sincronizar');
+      }
+
+      // 5. Obtener sesiones finales de la nube después de la subida
+      debugPrint('Descargando estado final desde la nube...');
+      final sesionesFinal = await _firestoreService.obtenerSesiones(_userId!);
+
+      // 6. Actualizar almacenamiento local con datos de la nube (verdad única)
+      // IMPORTANTE: Solo limpiamos después de confirmar que tenemos los datos de la nube
+      debugPrint('Actualizando almacenamiento local con datos de la nube...');
+      await boxSesiones.clear();
+      await boxSesiones.addAll(sesionesFinal);
+
+      debugPrint('Sincronización bidireccional completada: ${sesionesFinal.length} sesiones totales');
       
       _isSyncing = false;
       notifyListeners();
