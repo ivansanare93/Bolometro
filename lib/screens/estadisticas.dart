@@ -61,8 +61,13 @@ class _EstadisticasPantallaCompletaState
   }
   
   List<Sesion> _getFilteredSesiones(List<Sesion> sesiones) {
-    // Return cached result if filters haven't changed
-    if (_cachedSesiones == sesiones &&
+    // Return cached result if filters haven't changed and data is the same
+    final sesionesSame = _cachedSesiones != null && 
+                         _cachedSesiones!.length == sesiones.length &&
+                         (_cachedSesiones!.isEmpty || 
+                          _cachedSesiones!.first == sesiones.first);
+    
+    if (sesionesSame &&
         _cachedFiltroTipo == _filtroTipo &&
         _cachedRangoFechas == _rangoFechas &&
         _cachedFilteredSesiones != null) {
