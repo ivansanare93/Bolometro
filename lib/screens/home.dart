@@ -383,7 +383,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 12),
                       Text(
                         tienePerfil
-                            ? '¡Bienvenido, ${perfil!.nombre}!'
+                            ? '¡Bienvenid@, ${perfil!.nombre}!'
                             : '¡Bienvenid@! Antes de nada, crea tu perfil para empezar',
                         style: const TextStyle(
                           fontSize: 22,
