@@ -149,5 +149,112 @@ void main() {
       expect(partidas.first.total, equals(180));
       expect(partidas.last.total, equals(120));
     });
+
+    test('calcularPorcentajes should correctly calculate percentages', () {
+      // Arrange - Create test data with known frame outcomes
+      final partidasFrames = [
+        // Game 1: 10 strikes (100%)
+        List.generate(10, (i) => [AppConstants.simboloStrike]),
+        // Game 2: 10 spares (100%)
+        List.generate(10, (i) => ['5', AppConstants.simboloSpare]),
+        // Game 3: 10 open frames (100%)
+        List.generate(10, (i) => ['6', '3']),
+      ];
+
+      // Act
+      final porcentajes = EstadisticasUtils.calcularPorcentajes(partidasFrames);
+
+      // Assert - 30 frames total: 10 strikes, 10 spares, 10 open
+      expect(porcentajes['strikes'], closeTo(33.33, 0.1));
+      expect(porcentajes['spares'], closeTo(33.33, 0.1));
+      expect(porcentajes['fallos'], closeTo(33.33, 0.1));
+    });
+
+    test('calcularPorcentajes should handle all strikes', () {
+      // Arrange
+      final partidasFrames = [
+        List.generate(10, (i) => [AppConstants.simboloStrike]),
+      ];
+
+      // Act
+      final porcentajes = EstadisticasUtils.calcularPorcentajes(partidasFrames);
+
+      // Assert
+      expect(porcentajes['strikes'], equals(100.0));
+      expect(porcentajes['spares'], equals(0.0));
+      expect(porcentajes['fallos'], equals(0.0));
+    });
+
+    test('calcularPorcentajes should handle all spares', () {
+      // Arrange
+      final partidasFrames = [
+        List.generate(10, (i) => ['7', AppConstants.simboloSpare]),
+      ];
+
+      // Act
+      final porcentajes = EstadisticasUtils.calcularPorcentajes(partidasFrames);
+
+      // Assert
+      expect(porcentajes['strikes'], equals(0.0));
+      expect(porcentajes['spares'], equals(100.0));
+      expect(porcentajes['fallos'], equals(0.0));
+    });
+
+    test('calcularPorcentajes should handle all open frames', () {
+      // Arrange
+      final partidasFrames = [
+        List.generate(10, (i) => ['5', '4']),
+      ];
+
+      // Act
+      final porcentajes = EstadisticasUtils.calcularPorcentajes(partidasFrames);
+
+      // Assert
+      expect(porcentajes['strikes'], equals(0.0));
+      expect(porcentajes['spares'], equals(0.0));
+      expect(porcentajes['fallos'], equals(100.0));
+    });
+
+    test('calcularPorcentajes should handle empty frames', () {
+      // Arrange
+      final partidasFrames = [
+        <List<String>>[],
+      ];
+
+      // Act
+      final porcentajes = EstadisticasUtils.calcularPorcentajes(partidasFrames);
+
+      // Assert
+      expect(porcentajes['strikes'], equals(0.0));
+      expect(porcentajes['spares'], equals(0.0));
+      expect(porcentajes['fallos'], equals(0.0));
+    });
+
+    test('calcularPorcentajes should skip empty frames in mixed data', () {
+      // Arrange - 3 strikes, 2 spares, 5 open frames
+      final partidasFrames = [
+        [
+          [AppConstants.simboloStrike],
+          [AppConstants.simboloStrike],
+          [AppConstants.simboloStrike],
+          ['5', AppConstants.simboloSpare],
+          ['7', AppConstants.simboloSpare],
+          ['3', '4'],
+          ['2', '5'],
+          ['6', '1'],
+          ['8', '0'],
+          ['9', AppConstants.simboloFallo],
+          [], // empty frame should be skipped
+        ],
+      ];
+
+      // Act
+      final porcentajes = EstadisticasUtils.calcularPorcentajes(partidasFrames);
+
+      // Assert - 10 frames: 3 strikes, 2 spares, 5 open
+      expect(porcentajes['strikes'], equals(30.0));
+      expect(porcentajes['spares'], equals(20.0));
+      expect(porcentajes['fallos'], equals(50.0));
+    });
   });
 }
