@@ -150,7 +150,7 @@ void main() {
       repository = DataRepository();
     });
 
-    tearDown() async {
+    tearDown(() async {
       await Hive.deleteFromDisk();
       await Hive.close();
     });
