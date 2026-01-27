@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
 import '../models/sesion.dart';
 import '../models/partida.dart';
-import '../utils/database_utils.dart'; // para cargarSesionesDesdeHive()
+import '../repositories/data_repository.dart';
 import '../utils/estadisticas_utils.dart'; // las funciones utilitarias nuevas
 import '../theme/app_theme.dart';
 import 'home.dart';
@@ -31,7 +32,12 @@ class _EstadisticasPantallaCompletaState
   @override
   void initState() {
     super.initState();
-    _sesionesFuture = cargarSesionesDesdeHive();
+    _cargarSesiones();
+  }
+
+  void _cargarSesiones() {
+    final dataRepository = Provider.of<DataRepository>(context, listen: false);
+    _sesionesFuture = dataRepository.obtenerSesiones();
   }
 
   @override
