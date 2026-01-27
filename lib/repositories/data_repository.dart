@@ -4,6 +4,7 @@ import '../models/sesion.dart';
 import '../models/perfil_usuario.dart';
 import '../services/firestore_service.dart';
 import '../utils/app_constants.dart';
+import '../exceptions/sync_exceptions.dart';
 
 /// Repositorio que abstrae el acceso a datos
 /// Maneja tanto almacenamiento local (Hive) como remoto (Firestore)
@@ -173,21 +174,53 @@ class DataRepository extends ChangeNotifier {
   }
 
   /// Sincronizar datos locales a la nube
+  /// 
+  /// Sube todos los datos locales almacenados en Hive a Firestore.
+  /// Requiere que el usuario esté autenticado.
+  /// 
+  /// Lanza:
+  /// - [AuthenticationException] si el usuario no está autenticado
+  /// - [OfflineModeException] si no hay conexión
+  /// - [NetworkException] si hay problemas de red durante la sincronización
+  /// - [PermissionException] si hay problemas de permisos en Firestore
+  /// - [SyncException] para otros errores de sincronización
   Future<void> sincronizarANube() async {
-    if (!_isOnlineMode || _userId == null || _isSyncing) {
+    // Validar que el usuario está autenticado
+    if (_userId == null) {
+      throw AuthenticationException(
+        'No se puede sincronizar: usuario no autenticado. '
+        'Por favor, inicia sesión antes de sincronizar.'
+      );
+    }
+
+    // Evitar sincronizaciones simultáneas
+    if (_isSyncing) {
+      debugPrint('Sincronización ya en curso, ignorando nueva solicitud');
       return;
+    }
+
+    // Validar modo online
+    if (!_isOnlineMode) {
+      throw OfflineModeException(
+        'No se puede sincronizar: modo offline. '
+        'Por favor, verifica tu conexión a Internet.'
+      );
     }
 
     try {
       _isSyncing = true;
       notifyListeners();
 
-      // Obtener datos locales
+      debugPrint('Iniciando sincronización a la nube...');
+
+      // Obtener datos locales desde Hive
       final boxSesiones = Hive.box<Sesion>(AppConstants.boxSesiones);
       final sesionesLocales = boxSesiones.values.toList();
 
       final boxPerfil = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
       final perfilLocal = boxPerfil.isNotEmpty ? boxPerfil.getAt(0) : null;
+
+      debugPrint('Sincronizando ${sesionesLocales.length} sesiones y perfil...');
 
       // Sincronizar con Firestore
       await _firestoreService.sincronizarDatosLocales(
@@ -196,13 +229,47 @@ class DataRepository extends ChangeNotifier {
         perfilLocal,
       );
 
+      debugPrint('Sincronización completada exitosamente');
+      
       _isSyncing = false;
       notifyListeners();
+    } on NetworkException {
+      _isSyncing = false;
+      notifyListeners();
+      rethrow; // Re-lanzar la excepción específica
+    } on PermissionException {
+      _isSyncing = false;
+      notifyListeners();
+      rethrow; // Re-lanzar la excepción específica
     } catch (e) {
-      debugPrint('Error durante la sincronización: $e');
       _isSyncing = false;
       notifyListeners();
-      rethrow;
+      
+      // Convertir excepciones genéricas basándonos en el mensaje
+      // (para compatibilidad con errores de Firebase que vienen como strings)
+      final errorMsg = e.toString().toLowerCase();
+      
+      if (errorMsg.contains('network') || 
+          errorMsg.contains('unavailable') ||
+          errorMsg.contains('failed to connect')) {
+        throw NetworkException(
+          'Error de conexión durante la sincronización. '
+          'Por favor, verifica tu conexión a Internet e intenta nuevamente.'
+        );
+      } else if (errorMsg.contains('permission') || 
+                 errorMsg.contains('permission_denied')) {
+        throw PermissionException(
+          'Error de permisos durante la sincronización. '
+          'Por favor, verifica que tienes los permisos necesarios en Firebase.'
+        );
+      } else {
+        debugPrint('Error durante la sincronización: $e');
+        throw SyncException(
+          'Error durante la sincronización. '
+          'Por favor, intenta nuevamente más tarde.',
+          e is Exception ? e : null,
+        );
+      }
     }
   }
 

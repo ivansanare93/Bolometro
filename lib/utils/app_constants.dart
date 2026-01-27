@@ -65,6 +65,9 @@ class AppConstants {
   static const int ventanaPromedioMovil = 5; // Número de partidas para promedio móvil
   static const int maxPartidasTop = 10; // Top N mejores partidas
 
+  // ===== Sincronización =====
+  static const int intervaloLogSincronizacion = 10; // Log cada N sesiones durante sincronización
+
   // ===== Dimensiones de iconos =====
   static const double iconSizeSmall = 18.0;
   static const double iconSizeMedium = 24.0;
