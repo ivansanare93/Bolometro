@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart'; // For PlatformException (Google Sign-In errors)
 
 /// Servicio de autenticación que maneja el login con Google
 /// y la gestión de sesiones de usuario
