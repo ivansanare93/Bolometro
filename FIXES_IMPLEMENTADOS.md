@@ -1,6 +1,6 @@
 # Correcciones Implementadas
 
-## Fecha: 27 de Enero de 2026
+## Fecha: Enero 2024
 
 Este documento describe las correcciones implementadas para resolver los problemas reportados en el sistema de autenticación de Bolómetro.
 
@@ -244,5 +244,5 @@ Para verificar que las correcciones funcionan correctamente:
 ---
 
 **Autor:** GitHub Copilot
-**Fecha de Implementación:** 27 de Enero de 2026
+**Fecha de Implementación:** Enero 2024
 **Versión:** 1.0.0

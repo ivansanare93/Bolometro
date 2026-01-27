@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 /// Servicio de autenticación que maneja el login con Google
 /// y la gestión de sesiones de usuario
@@ -62,27 +63,81 @@ class AuthService extends ChangeNotifier {
       notifyListeners();
       
       return true;
-    } catch (e) {
-      String errorMsg = 'Error al iniciar sesión';
+    } on PlatformException catch (e) {
+      // Manejo específico de errores de plataforma
+      String errorMsg = 'Error al iniciar sesión con Google';
       
-      // Proporcionar mensajes de error más descriptivos
-      if (e.toString().contains('ApiException: 10')) {
-        errorMsg = 'Error de configuración de Google Sign-In.\n\n'
-            'Por favor, verifica:\n'
-            '1. El SHA-1 está registrado en Firebase Console\n'
-            '2. El archivo google-services.json está actualizado\n'
-            '3. El applicationId coincide con el de Firebase\n\n'
-            'Consulta AUTENTICACION.md para más detalles.';
-      } else if (e.toString().contains('network')) {
-        errorMsg = 'Error de conexión. Verifica tu conexión a Internet.';
-      } else if (e.toString().contains('sign_in_failed')) {
-        errorMsg = 'Error al iniciar sesión con Google. Intenta nuevamente.';
+      if (e.code == 'sign_in_failed') {
+        // Error específico de Google Sign-In
+        final String? message = e.message;
+        if (message != null && message.contains('10:')) {
+          // ApiException: 10 - Error de configuración
+          errorMsg = 'Error de configuración de Google Sign-In.\n\n'
+              'Por favor, verifica:\n'
+              '1. El SHA-1 está registrado en Firebase Console\n'
+              '2. El archivo google-services.json está actualizado\n'
+              '3. El applicationId coincide con el de Firebase\n\n'
+              'Consulta AUTENTICACION.md para más detalles.';
+        } else {
+          errorMsg = 'Error al iniciar sesión con Google.\n'
+              'Por favor, intenta nuevamente o verifica tu configuración.';
+        }
+      } else if (e.code == 'network_error') {
+        errorMsg = 'Error de conexión.\n'
+            'Verifica tu conexión a Internet e intenta nuevamente.';
+      } else {
+        errorMsg = 'Error al iniciar sesión: ${e.message ?? e.code}';
       }
       
       _errorMessage = errorMsg;
       _isLoading = false;
       notifyListeners();
-      debugPrint('Error en signInWithGoogle: $e');
+      debugPrint('PlatformException en signInWithGoogle: ${e.code} - ${e.message}');
+      return false;
+    } on FirebaseAuthException catch (e) {
+      // Manejo específico de errores de Firebase Auth
+      String errorMsg = 'Error de autenticación';
+      
+      switch (e.code) {
+        case 'account-exists-with-different-credential':
+          errorMsg = 'Ya existe una cuenta con este correo electrónico.\n'
+              'Intenta iniciar sesión con otro método.';
+          break;
+        case 'invalid-credential':
+          errorMsg = 'Las credenciales proporcionadas no son válidas.\n'
+              'Por favor, intenta nuevamente.';
+          break;
+        case 'operation-not-allowed':
+          errorMsg = 'La autenticación con Google no está habilitada.\n'
+              'Contacta al administrador de la aplicación.';
+          break;
+        case 'user-disabled':
+          errorMsg = 'Esta cuenta ha sido deshabilitada.\n'
+              'Contacta al soporte para más información.';
+          break;
+        case 'user-not-found':
+          errorMsg = 'No se encontró ninguna cuenta con estas credenciales.';
+          break;
+        case 'network-request-failed':
+          errorMsg = 'Error de red.\n'
+              'Verifica tu conexión a Internet e intenta nuevamente.';
+          break;
+        default:
+          errorMsg = 'Error de autenticación: ${e.message ?? e.code}';
+      }
+      
+      _errorMessage = errorMsg;
+      _isLoading = false;
+      notifyListeners();
+      debugPrint('FirebaseAuthException en signInWithGoogle: ${e.code} - ${e.message}');
+      return false;
+    } catch (e) {
+      // Cualquier otro error no esperado
+      _errorMessage = 'Error inesperado al iniciar sesión.\n'
+          'Por favor, intenta nuevamente.';
+      _isLoading = false;
+      notifyListeners();
+      debugPrint('Error inesperado en signInWithGoogle: $e');
       return false;
     }
   }
