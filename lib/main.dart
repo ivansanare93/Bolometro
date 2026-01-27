@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'theme/app_theme.dart';
 import 'providers/theme_provider.dart';
@@ -18,6 +19,7 @@ import 'screens/login_screen.dart';
 
 import 'models/perfil_usuario.dart';
 import 'services/auth_service.dart';
+import 'services/analytics_service.dart';
 import 'repositories/data_repository.dart';
 import 'utils/estadisticas_cache.dart';
 
@@ -48,6 +50,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (_) => DataRepository()),
         ChangeNotifierProvider(create: (_) => EstadisticasCache()),
+        Provider(create: (_) => AnalyticsService()),
       ],
       child: const BolosApp(),
     ),
@@ -61,6 +64,7 @@ class BolosApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final languageProvider = Provider.of<LanguageProvider>(context);
+    final analyticsService = Provider.of<AnalyticsService>(context, listen: false);
 
     return MaterialApp(
       title: 'Bolómetro',
@@ -69,7 +73,13 @@ class BolosApp extends StatelessWidget {
       themeMode: themeProvider.themeMode,
       locale: languageProvider.locale,
       supportedLocales: const [Locale('es'), Locale('en')],
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      navigatorObservers: [analyticsService.getAnalyticsObserver()],
       home: const AuthWrapper(),
       routes: {
         AppConstants.rutaRegistro: (_) => RegistroSesionScreen(
