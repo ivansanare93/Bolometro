@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/partida.dart';
+import '../services/analytics_service.dart';
 import '../utils/registro_tiros_utils.dart';
 import '../widgets/marcador_bolos.dart';
 import '../widgets/teclado_selector_pins.dart'; // Debe aceptar onAceptar
@@ -39,6 +41,10 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      analytics.logScreenView('register_game_screen');
+    });
     framesText = List.generate(10, (_) => List.filled(3, ''));
     erroresPorTiro = _obtenerErroresPorTiro(framesText);
     pinesPorTiro = List.generate(10, (_) => List.filled(3, null));
@@ -116,6 +122,9 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
       total: nuevoTotal,
       pinesPorTiro: pinesPorTiro, // <-- Guardamos aquí el array de pines visual
     );
+
+    final analytics = Provider.of<AnalyticsService>(context, listen: false);
+    await analytics.logGameCreated(nuevoTotal);
 
     widget.onGuardar(nuevaPartida);
     Navigator.pop(context);

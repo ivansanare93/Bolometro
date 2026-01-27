@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:provider/provider.dart';
 import '../models/sesion.dart';
 import '../models/partida.dart';
 import '../utils/app_constants.dart';
+import '../services/analytics_service.dart';
 import 'editar_partida.dart';
 import 'home.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -22,6 +24,10 @@ class _VerSesionState extends State<VerSesion> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      analytics.logScreenView('view_session_screen');
+    });
     sesionActual = widget.sesion;
   }
 
@@ -139,6 +145,9 @@ class _VerSesionState extends State<VerSesion> {
         });
 
         await box.putAt(sesionIndex, sesionActual);
+
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        await analytics.logGameDeleted();
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

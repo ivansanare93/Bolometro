@@ -12,6 +12,7 @@ import 'package:hive/hive.dart';
 import '../models/perfil_usuario.dart';
 import '../utils/app_constants.dart';
 import '../services/auth_service.dart';
+import '../services/analytics_service.dart';
 import '../repositories/data_repository.dart';
 import 'dart:io';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -32,6 +33,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _perfilBoxFuture = Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      analytics.logScreenView('home_screen');
+    });
   }
 
   Future<void> _refrescarPerfil() async {
@@ -148,9 +153,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Text(AppLocalizations.of(context)!.darkMode),
                                   Switch(
                                     value: themeProvider.isDarkMode,
-                                    onChanged: (val) {
+                                    onChanged: (val) async {
                                       themeProvider.toggleTheme(val);
-                                      Navigator.pop(context);
+                                      final analytics = Provider.of<AnalyticsService>(
+                                        context,
+                                        listen: false,
+                                      );
+                                      await analytics.logThemeChanged(val ? 'dark' : 'light');
+                                      if (context.mounted) Navigator.pop(context);
                                     },
                                   ),
                                 ],
@@ -183,6 +193,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ? null
                                       : () async {
                                           try {
+                                            final analytics = Provider.of<AnalyticsService>(
+                                              context,
+                                              listen: false,
+                                            );
+                                            await analytics.logSync();
                                             await dataRepository
                                                 .sincronizarANube();
                                             if (context.mounted) {
@@ -251,6 +266,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                     );
 
                                     if (confirm == true) {
+                                      final analytics = Provider.of<AnalyticsService>(
+                                        context,
+                                        listen: false,
+                                      );
+                                      await analytics.logSignOut();
                                       await authService.signOut();
                                       dataRepository.setUser(null);
                                     }

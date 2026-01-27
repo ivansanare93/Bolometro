@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/sesion.dart';
 import '../models/partida.dart';
 import '../repositories/data_repository.dart';
+import '../services/analytics_service.dart';
 import '../utils/estadisticas_utils.dart';
 import '../utils/estadisticas_cache.dart';
 import '../utils/app_constants.dart';
@@ -34,6 +35,10 @@ class _EstadisticasPantallaCompletaState
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      analytics.logScreenView('statistics_screen');
+    });
     _cargarSesiones();
   }
 
@@ -126,6 +131,12 @@ class _EstadisticasPantallaCompletaState
           // Usar cache de estadísticas (provider registrado en main.dart)
           final estadisticasCache = Provider.of<EstadisticasCache>(context, listen: false);
           final stats = estadisticasCache.getEstadisticas(sesiones);
+
+          // Log analytics after successful data load
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final analytics = Provider.of<AnalyticsService>(context, listen: false);
+            analytics.logStatisticsViewed('all');
+          });
 
           // --- OBTENER DATOS DEL CACHE ---
           final promedio = stats['promedioGeneral'] as double;

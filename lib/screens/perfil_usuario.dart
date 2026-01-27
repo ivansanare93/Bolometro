@@ -5,10 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
 
 import '../models/perfil_usuario.dart';
 import '../utils/app_constants.dart';
-import 'home.dart'; // Asegúrate de que la ruta sea correcta
+import '../services/analytics_service.dart';
+import 'home.dart';
 
 class PerfilUsuarioScreen extends StatefulWidget {
   const PerfilUsuarioScreen({super.key});
@@ -47,6 +49,10 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      analytics.logScreenView('profile_screen');
+    });
     try {
       perfilBox = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
       perfil = perfilBox.get('perfil');
@@ -118,6 +124,9 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
         perfil = nuevoPerfil;
       });
       
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      await analytics.logProfileUpdated();
+      
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -180,6 +189,8 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
         // Al seleccionar una foto local, preservar datos de Google para uso futuro
         _clearGooglePhoto = false;
       });
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      await analytics.logAvatarChanged();
     }
   }
 

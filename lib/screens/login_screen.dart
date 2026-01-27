@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
+import '../services/analytics_service.dart';
 import '../repositories/data_repository.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
@@ -20,6 +21,15 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool _isProcessing = false;
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      analytics.logScreenView('login_screen');
+    });
+  }
+
   Future<void> _handleGoogleSignIn() async {
     final authService = Provider.of<AuthService>(context, listen: false);
     final dataRepository = Provider.of<DataRepository>(context, listen: false);
@@ -31,6 +41,10 @@ class _LoginScreenState extends State<LoginScreen> {
     final success = await authService.signInWithGoogle();
 
     if (success && authService.userId != null) {
+      // Log successful Google sign-in
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      await analytics.logLogin('google');
+      
       // Configurar el repositorio con el usuario autenticado
       dataRepository.setUser(authService.userId);
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/partida.dart';
+import '../services/analytics_service.dart';
 import '../utils/registro_tiros_utils.dart';
 import '../widgets/marcador_bolos.dart';
 import '../utils/teclado_tiros_adaptativo.dart';
@@ -37,6 +39,10 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      analytics.logScreenView('edit_game_screen');
+    });
     framesText = widget.partida.frames
         .map((f) => f.map((v) => v == '0' ? '-' : v).toList()..length = 3)
         .toList();
@@ -143,6 +149,9 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
       notas: notas,
       total: nuevoTotal,
     );
+
+    final analytics = Provider.of<AnalyticsService>(context, listen: false);
+    await analytics.logGameEdited();
 
     widget.onGuardar(partidaActualizada);
     Navigator.pop(context);

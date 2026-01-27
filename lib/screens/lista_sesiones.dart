@@ -5,6 +5,7 @@ import '../widgets/sesion_card.dart';
 import '../screens/ver_sesion.dart';
 import '../utils/app_constants.dart';
 import '../repositories/data_repository.dart';
+import '../services/analytics_service.dart';
 import 'home.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -27,6 +28,10 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      analytics.logScreenView('sessions_list_screen');
+    });
     _scrollController.addListener(_onScroll);
     _cargarSesiones();
   }
@@ -131,6 +136,9 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
     try {
       final dataRepository = Provider.of<DataRepository>(context, listen: false);
       await dataRepository.eliminarSesion(sesion);
+      
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      await analytics.logSessionDeleted();
       
       setState(() {
         _sesiones.remove(sesion);

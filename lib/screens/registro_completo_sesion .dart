@@ -8,6 +8,7 @@ import '../widgets/lista_partidas.dart';
 import '../widgets/selector_tipo_partida.dart';
 import '../utils/app_constants.dart';
 import '../repositories/data_repository.dart';
+import '../services/analytics_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RegistroCompletoSesionScreen extends StatefulWidget {
@@ -23,6 +24,15 @@ class _RegistroCompletoSesionScreenState
   String _lugar = '';
   String _tipo = AppConstants.tipoEntrenamiento;
   final List<Partida> _partidas = [];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      analytics.logScreenView('register_session_screen');
+    });
+  }
 
   void anadirPartida() async {
     await Navigator.push(
@@ -78,6 +88,9 @@ class _RegistroCompletoSesionScreenState
     try {
       final dataRepository = Provider.of<DataRepository>(context, listen: false);
       await dataRepository.guardarSesion(nuevaSesion);
+
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      await analytics.logSessionCreated(_tipo);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
