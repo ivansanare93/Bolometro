@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
+
 import '../models/sesion.dart';
 import '../models/partida.dart';
 import '../repositories/data_repository.dart';
-import '../utils/estadisticas_utils.dart'; // las funciones utilitarias nuevas
+import '../utils/estadisticas_utils.dart';
+import '../utils/estadisticas_cache.dart';
+import '../utils/app_constants.dart';
 import '../theme/app_theme.dart';
-import 'home.dart';
-
 import '../widgets/estadisticas/kpi_card_dinamico.dart';
 import '../widgets/estadisticas/racha_card.dart';
 import '../widgets/estadisticas/pastel_porcentajes.dart';
 import '../widgets/estadisticas/top_partidas_widget.dart';
 import '../widgets/estadisticas/mini_grafico_promedio_movil.dart';
 import '../widgets/estadisticas/histograma_puntuaciones.dart';
+import 'home.dart';
 
 class EstadisticasPantallaCompleta extends StatefulWidget {
   const EstadisticasPantallaCompleta({super.key});
@@ -26,7 +28,7 @@ class EstadisticasPantallaCompleta extends StatefulWidget {
 class _EstadisticasPantallaCompletaState
     extends State<EstadisticasPantallaCompleta> {
   late Future<List<Sesion>> _sesionesFuture;
-  String _filtroTipo = 'Todos';
+  String _filtroTipo = AppConstants.tipoTodos;
   DateTimeRange? _rangoFechas;
 
   @override
@@ -83,7 +85,7 @@ class _EstadisticasPantallaCompletaState
 
           // --- Filtros por tipo y fecha ---
           List<Sesion> sesiones = snapshot.data!;
-          if (_filtroTipo != 'Todos') {
+          if (_filtroTipo != AppConstants.tipoTodos) {
             sesiones = sesiones.where((s) => s.tipo == _filtroTipo).toList();
           }
           if (_rangoFechas != null) {
@@ -105,7 +107,7 @@ class _EstadisticasPantallaCompletaState
                     _FiltrosEstadisticas(
                       filtroTipo: _filtroTipo,
                       onTipoChanged: (valor) =>
-                          setState(() => _filtroTipo = valor ?? 'Todos'),
+                          setState(() => _filtroTipo = valor ?? AppConstants.tipoTodos),
                       rangoFechas: _rangoFechas,
                       onFechaChanged: (nuevoRango) =>
                           setState(() => _rangoFechas = nuevoRango),
@@ -121,58 +123,27 @@ class _EstadisticasPantallaCompletaState
             );
           }
 
-          // --- CÁLCULOS ---
-          final framesList = partidas.map((p) => p.frames).toList();
+          // Usar cache de estadísticas
+          final estadisticasCache = Provider.of<EstadisticasCache>(context, listen: false);
+          final stats = estadisticasCache.getEstadisticas(sesiones);
 
-          final promedio =
-              partidas.map((p) => p.total).reduce((a, b) => a + b) /
-              partidas.length;
-          final promedioUlt5 = EstadisticasUtils.promedioUltimasPartidas(
-            partidas,
-            5,
-          );
-          final promedioUlt10 = EstadisticasUtils.promedioUltimasPartidas(
-            partidas,
-            10,
-          );
-
-          final mejor = partidas
-              .map((p) => p.total)
-              .reduce((a, b) => a > b ? a : b);
-          final peor = partidas
-              .map((p) => p.total)
-              .reduce((a, b) => a < b ? a : b);
-
-          final mejorEntrenamiento = EstadisticasUtils.mejorPuntuacionPorTipo(
-            sesiones,
-            "Entrenamiento",
-          );
-          final mejorCompeticion = EstadisticasUtils.mejorPuntuacionPorTipo(
-            sesiones,
-            "Competición",
-          );
-
-          final rachaStrike = EstadisticasUtils.rachaMaximaDe("X", framesList);
-          final rachaSpare = EstadisticasUtils.rachaMaximaDe("/", framesList);
-
-          final porcentajes = EstadisticasUtils.calcularPorcentajes(framesList);
-
-          final top3 = EstadisticasUtils.topNPartidas(
-            partidas,
-            3,
-            mejores: true,
-          );
-          final peores3 = EstadisticasUtils.topNPartidas(
-            partidas,
-            3,
-            mejores: false,
-          );
-
-          final histograma = EstadisticasUtils.calcularHistograma(partidas);
-          final miniPromedios = EstadisticasUtils.promedioMovil(partidas, 5);
-
-          final sesionRecord = EstadisticasUtils.sesionRecord(sesiones);
-          final sesionPeor = EstadisticasUtils.sesionPeor(sesiones);
+          // --- OBTENER DATOS DEL CACHE ---
+          final promedio = stats['promedioGeneral'] as double;
+          final promedioUlt5 = stats['promedioUltimas5'] as double;
+          final promedioUlt10 = stats['promedioUltimas10'] as double;
+          final mejor = (stats['mejorPartida'] as Partida?)?.total ?? 0;
+          final peor = (stats['peorPartida'] as Partida?)?.total ?? 0;
+          final mejorEntrenamiento = stats['mejorEntrenamiento'] as int;
+          final mejorCompeticion = stats['mejorCompeticion'] as int;
+          final rachaStrike = stats['rachaStrikes'] as int;
+          final rachaSpare = stats['rachaSpares'] as int;
+          final porcentajes = stats['porcentajes'] as Map<String, double>;
+          final top3 = (stats['topMejores'] as List<Partida>).take(AppConstants.topNMejoresPartidas).toList();
+          final peores3 = (stats['topPeores'] as List<Partida>).take(AppConstants.topNPeoresPartidas).toList();
+          final histograma = stats['histograma'] as Map<String, int>;
+          final miniPromedios = EstadisticasUtils.promedioMovil(partidas, AppConstants.ventanaPromedioMovil);
+          final sesionRecord = stats['sesionRecord'] as Sesion?;
+          final sesionPeor = stats['sesionPeor'] as Sesion?;
 
           return ListView(
             padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 14),
@@ -181,7 +152,7 @@ class _EstadisticasPantallaCompletaState
               _FiltrosEstadisticas(
                 filtroTipo: _filtroTipo,
                 onTipoChanged: (valor) =>
-                    setState(() => _filtroTipo = valor ?? 'Todos'),
+                    setState(() => _filtroTipo = valor ?? AppConstants.tipoTodos),
                 rangoFechas: _rangoFechas,
                 onFechaChanged: (nuevoRango) =>
                     setState(() => _rangoFechas = nuevoRango),
@@ -428,11 +399,9 @@ class _FiltrosEstadisticas extends StatelessWidget {
         DropdownButton<String>(
           value: filtroTipo,
           borderRadius: BorderRadius.circular(12),
-          items: [
-            'Todos',
-            'Entrenamiento',
-            'Competición',
-          ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+          items: AppConstants.tiposSesionConTodos
+              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+              .toList(),
           onChanged: onTipoChanged,
         ),
         const SizedBox(width: 18),

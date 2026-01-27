@@ -21,7 +21,6 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
   bool _isLoading = false;
   bool _hasMore = true;
   int _currentPage = 0;
-  final int _pageSize = 20;
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -39,7 +38,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
 
   void _onScroll() {
     if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
+        _scrollController.position.maxScrollExtent - AppConstants.scrollThreshold) {
       if (!_isLoading && _hasMore) {
         _cargarMasSesiones();
       }
@@ -59,14 +58,14 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
     try {
       final dataRepository = Provider.of<DataRepository>(context, listen: false);
       final nuevasSesiones = await dataRepository.obtenerSesionesPaginadas(
-        limite: _pageSize,
+        limite: AppConstants.pageSize,
         offset: 0,
       );
 
       setState(() {
         _sesiones.addAll(nuevasSesiones);
         _aplicarFiltro();
-        _hasMore = nuevasSesiones.length >= _pageSize;
+        _hasMore = nuevasSesiones.length >= AppConstants.pageSize;
         _isLoading = false;
       });
     } catch (e) {
@@ -95,15 +94,15 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
     try {
       final dataRepository = Provider.of<DataRepository>(context, listen: false);
       final nuevasSesiones = await dataRepository.obtenerSesionesPaginadas(
-        limite: _pageSize,
-        offset: (_currentPage + 1) * _pageSize,
+        limite: AppConstants.pageSize,
+        offset: (_currentPage + 1) * AppConstants.pageSize,
       );
 
       setState(() {
         _currentPage++;
         _sesiones.addAll(nuevasSesiones);
         _aplicarFiltro();
-        _hasMore = nuevasSesiones.length >= _pageSize;
+        _hasMore = nuevasSesiones.length >= AppConstants.pageSize;
         _isLoading = false;
       });
     } catch (e) {

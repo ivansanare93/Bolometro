@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+
 import '../models/sesion.dart';
+import '../utils/app_constants.dart';
 
 class SesionCard extends StatelessWidget {
   final Sesion sesion;
@@ -24,14 +26,14 @@ class SesionCard extends StatelessWidget {
         onTap: onTap,
         leading: CircleAvatar(
           radius: 28,
-          backgroundColor: sesion.tipo == "Competición"
+          backgroundColor: sesion.tipo == AppConstants.tipoCompeticion
               ? Colors.green[200]
               : Colors.blue[200],
           child: Icon(
-            sesion.tipo == "Competición"
+            sesion.tipo == AppConstants.tipoCompeticion
                 ? MdiIcons.trophyVariant
                 : MdiIcons.dumbbell,
-            color: sesion.tipo == "Competición"
+            color: sesion.tipo == AppConstants.tipoCompeticion
                 ? Colors.green[800]
                 : Colors.blue[800],
             size: 32,

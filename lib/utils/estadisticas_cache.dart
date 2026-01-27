@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
+
 import '../models/sesion.dart';
 import '../models/partida.dart';
 import 'estadisticas_utils.dart';
+import 'app_constants.dart';
 
 /// Cache para optimizar cálculos estadísticos
 /// Evita recalcular estadísticas en cada rebuild
@@ -12,7 +14,7 @@ class EstadisticasCache extends ChangeNotifier {
   int _lastPartidasCount = 0;
 
   // Tiempo de expiración del cache en minutos
-  final int _cacheExpirationMinutes = 5;
+  static const int _cacheExpirationMinutes = 5;
 
   /// Obtener estadísticas con cache
   Map<String, dynamic> getEstadisticas(List<Sesion> sesiones) {
@@ -71,9 +73,9 @@ class EstadisticasCache extends ChangeNotifier {
     final porcentajes =
         EstadisticasUtils.calcularPorcentajes(partidasFrames);
     final rachaStrikes =
-        EstadisticasUtils.rachaMaximaDe("X", partidasFrames);
+        EstadisticasUtils.rachaMaximaDe(AppConstants.simboloStrike, partidasFrames);
     final rachaSpares =
-        EstadisticasUtils.rachaMaximaDe("/", partidasFrames);
+        EstadisticasUtils.rachaMaximaDe(AppConstants.simboloSpare, partidasFrames);
 
     final promedioGeneral = partidas.isEmpty
         ? 0.0
@@ -93,25 +95,25 @@ class EstadisticasCache extends ChangeNotifier {
 
     final mejorEntrenamiento = EstadisticasUtils.mejorPuntuacionPorTipo(
       sesiones,
-      'Entrenamiento',
+      AppConstants.tipoEntrenamiento,
     );
     final mejorCompeticion = EstadisticasUtils.mejorPuntuacionPorTipo(
       sesiones,
-      'Competición',
+      AppConstants.tipoCompeticion,
     );
 
     final promedioUltimas5 =
-        EstadisticasUtils.promedioUltimasPartidas(partidas, 5);
+        EstadisticasUtils.promedioUltimasPartidas(partidas, AppConstants.ultimasPartidasPromedio5);
     final promedioUltimas10 =
-        EstadisticasUtils.promedioUltimasPartidas(partidas, 10);
+        EstadisticasUtils.promedioUltimasPartidas(partidas, AppConstants.ultimasPartidasPromedio10);
 
     final histograma =
-        EstadisticasUtils.calcularHistograma(partidas, binSize: 20);
+        EstadisticasUtils.calcularHistograma(partidas, binSize: AppConstants.histogramaBinSize);
 
     final topMejores =
-        EstadisticasUtils.topNPartidas(partidas, 5, mejores: true);
+        EstadisticasUtils.topNPartidas(partidas, AppConstants.maxPartidasTop, mejores: true);
     final topPeores =
-        EstadisticasUtils.topNPartidas(partidas, 5, mejores: false);
+        EstadisticasUtils.topNPartidas(partidas, AppConstants.maxPartidasTop, mejores: false);
 
     return {
       'porcentajes': porcentajes,

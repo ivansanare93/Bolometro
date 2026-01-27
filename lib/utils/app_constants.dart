@@ -64,6 +64,15 @@ class AppConstants {
   // ===== Estadísticas =====
   static const int ventanaPromedioMovil = 5; // Número de partidas para promedio móvil
   static const int maxPartidasTop = 10; // Top N mejores partidas
+  static const int ultimasPartidasPromedio5 = 5; // Últimas 5 partidas para promedio
+  static const int ultimasPartidasPromedio10 = 10; // Últimas 10 partidas para promedio
+  static const int topNMejoresPartidas = 3; // Top 3 mejores partidas
+  static const int topNPeoresPartidas = 3; // Top 3 peores partidas
+  static const int histogramaBinSize = 20; // Tamaño de bin para histograma
+
+  // ===== Paginación =====
+  static const int pageSize = 20; // Tamaño de página para lazy loading
+  static const int scrollThreshold = 200; // Píxeles antes del final para cargar más
 
   // ===== Sincronización =====
   static const int intervaloLogSincronizacion = 10; // Log cada N sesiones durante sincronización
