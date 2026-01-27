@@ -274,6 +274,74 @@ flutter test
 flutter test --coverage
 ```
 
+## 🧪 Testing
+
+Bolometro includes comprehensive test coverage:
+
+```bash
+# Ejecutar todos los tests
+flutter test
+
+# Ejecutar con cobertura
+flutter test --coverage
+```
+
+For detailed information, see [docs/TESTING.md](docs/TESTING.md).
+
+### Test Coverage
+
+- ✅ Unit tests for models (Partida, Sesion, PerfilUsuario)
+- ✅ Unit tests for providers (Theme, Language)
+- ✅ Unit tests for services (Analytics, Auth, Firestore)
+- ✅ Unit tests for utilities (Statistics, Cache)
+- ✅ Widget tests for components
+- ✅ Integration test framework
+
+## 🌍 Internationalization
+
+The app supports multiple languages:
+
+- 🇪🇸 **Spanish** (Default)
+- 🇬🇧 **English**
+
+Language can be changed in the Settings screen. For implementation details, see [docs/INTERNATIONALIZATION.md](docs/INTERNATIONALIZATION.md).
+
+## 📊 Analytics
+
+Firebase Analytics is integrated to track user behavior and improve the app. Key events tracked:
+
+- Session and game creation/editing/deletion
+- Statistics viewing and filtering
+- User authentication and sync
+- Theme and language changes
+
+For full analytics documentation, see [docs/ANALYTICS.md](docs/ANALYTICS.md).
+
+## 🎨 UI Components
+
+### Skeleton Loaders
+
+The app uses skeleton loaders to improve perceived performance while data is loading:
+
+- Session card skeletons
+- Statistics card skeletons
+- Chart skeletons
+- List item skeletons
+
+For implementation guide, see [docs/SKELETON_LOADERS.md](docs/SKELETON_LOADERS.md).
+
+## 🔄 CI/CD
+
+GitHub Actions automatically runs tests and builds on every pull request and push to main/develop branches.
+
+The pipeline includes:
+- Automated testing with coverage
+- Code analysis and linting
+- Android APK build
+- iOS build (no codesign)
+
+For CI/CD configuration details, see [docs/CICD.md](docs/CICD.md).
+
 ## 📄 Licencia
 
 Este proyecto es de código cerrado y uso personal. Todos los derechos reservados.
