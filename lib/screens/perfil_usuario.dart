@@ -29,6 +29,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
   String? _manoDominante;
   DateTime? _fechaNacimiento;
   String? _avatarPath;
+  bool _clearGooglePhoto = false; // Flag para limpiar foto de Google
 
   @override
   void initState() {
@@ -77,6 +78,10 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       bio: _bioController.text.trim().isEmpty
           ? null
           : _bioController.text.trim(),
+      // Preservar datos de Google si existen, excepto si se solicitó limpiar foto
+      googlePhotoUrl: _clearGooglePhoto ? null : perfil?.googlePhotoUrl,
+      googleDisplayName: perfil?.googleDisplayName,
+      isFromGoogle: perfil?.isFromGoogle ?? false,
     );
 
     await perfilBox.put('perfil', nuevoPerfil);
@@ -113,6 +118,8 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
     if (img != null) {
       setState(() {
         _avatarPath = img.path;
+        // Al seleccionar una foto local, preservar datos de Google para uso futuro
+        _clearGooglePhoto = false;
       });
     }
   }
@@ -120,6 +127,8 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
   void _quitarAvatar() {
     setState(() {
       _avatarPath = null;
+      // Marcar para limpiar la foto de Google del perfil al guardar
+      _clearGooglePhoto = true;
     });
   }
 
@@ -179,6 +188,9 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
     final cs = Theme.of(context).colorScheme;
     final avatarFileExists =
         _avatarPath != null && File(_avatarPath!).existsSync();
+    
+    // Mostrar foto de Google si está disponible y no hay foto local
+    final showGooglePhoto = perfil?.hasGooglePhoto == true && !avatarFileExists;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Mi perfil'), centerTitle: true),
@@ -188,21 +200,77 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
           key: _formKey,
           child: Column(
             children: [
+              // Mostrar info si el perfil es de Google
+              if (perfil?.isFromGoogle == true)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: cs.primaryContainer.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: cs.primary.withOpacity(0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: cs.primary, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Perfil creado desde tu cuenta de Google. Puedes editarlo libremente.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: cs.onSurface.withOpacity(0.8),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               // Avatar
               GestureDetector(
                 onTap: _seleccionarAvatar,
                 child: CircleAvatar(
                   radius: 48,
                   backgroundColor: cs.primary.withOpacity(0.09),
-                  backgroundImage: avatarFileExists
-                      ? FileImage(File(_avatarPath!))
-                      : null,
-                  child: !avatarFileExists
-                      ? Icon(Icons.person, size: 48, color: cs.primary)
-                      : null,
+                  child: avatarFileExists
+                      ? ClipOval(
+                          child: Image.file(
+                            File(_avatarPath!),
+                            width: 96,
+                            height: 96,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : showGooglePhoto
+                          ? ClipOval(
+                              child: Image.network(
+                                perfil!.googlePhotoUrl!,
+                                width: 96,
+                                height: 96,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  // Fallback a icono por defecto si falla la carga
+                                  return Icon(Icons.person, size: 48, color: cs.primary);
+                                },
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Center(
+                                    child: CircularProgressIndicator(
+                                      value: loadingProgress.expectedTotalBytes != null
+                                          ? loadingProgress.cumulativeBytesLoaded /
+                                              loadingProgress.expectedTotalBytes!
+                                          : null,
+                                    ),
+                                  );
+                                },
+                              ),
+                            )
+                          : Icon(Icons.person, size: 48, color: cs.primary),
                 ),
               ),
-              if (avatarFileExists)
+              if (avatarFileExists || showGooglePhoto)
                 TextButton.icon(
                   icon: const Icon(Icons.delete_outline, size: 18),
                   label: const Text('Quitar foto'),
@@ -212,7 +280,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                   ),
                   onPressed: _quitarAvatar,
                 ),
-              if (_avatarPath != null && !avatarFileExists)
+              if (_avatarPath != null && !avatarFileExists && !showGooglePhoto)
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
                   child: Text(
@@ -222,7 +290,9 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                 ),
               const SizedBox(height: 8),
               Text(
-                'Pulsa para cambiar tu imagen',
+                showGooglePhoto 
+                    ? 'Usando foto de Google. Pulsa para cambiar' 
+                    : 'Pulsa para cambiar tu imagen',
                 style: TextStyle(
                   fontSize: 13,
                   color: cs.onSurface.withOpacity(0.6),
