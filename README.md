@@ -288,6 +288,24 @@ Este proyecto es de código cerrado y uso personal. Todos los derechos reservado
 
 Para reportar bugs o solicitar nuevas características, por favor abre un [issue](https://github.com/ivansanare93/Bolometro/issues) en GitHub.
 
+### 🔧 Solución de Problemas Comunes
+
+#### Error de Permisos en Firestore
+
+Si ves el siguiente error:
+```
+Error al obtener sesiones paginadas desde Firestore: [cloud_firestore/permission-denied]
+```
+
+**Solución**: Las reglas de seguridad de Firestore necesitan ser desplegadas a Firebase. Consulta el archivo [`FIRESTORE_PERMISSION_FIX.md`](FIRESTORE_PERMISSION_FIX.md) para instrucciones detalladas paso a paso.
+
+#### Error de Configuración de Google Sign-In
+
+Si ves errores de autenticación con Google, consulta el archivo [`AUTENTICACION.md`](AUTENTICACION.md) para configurar correctamente:
+- SHA-1 en Firebase Console
+- google-services.json actualizado
+- Configuración del applicationId
+
 ## 🙏 Agradecimientos
 
 - Comunidad de Flutter
