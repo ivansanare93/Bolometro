@@ -15,6 +15,7 @@ import '../widgets/estadisticas/pastel_porcentajes.dart';
 import '../widgets/estadisticas/top_partidas_widget.dart';
 import '../widgets/estadisticas/mini_grafico_promedio_movil.dart';
 import '../widgets/estadisticas/histograma_puntuaciones.dart';
+import '../widgets/mapa_calor.dart';
 import 'home.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/skeleton_loaders.dart';
@@ -346,6 +347,13 @@ class _EstadisticasPantallaCompletaState
               ),
               const SizedBox(height: 3),
               MiniGraficoPromedioMovil(promedios: miniPromedios),
+
+              const SizedBox(height: 18),
+              RepaintBoundary(
+                child: MapaCalorGitHub(
+                  partidasPorDia: contarPartidasPorDia(sesiones),
+                ),
+              ),
 
               const SizedBox(height: 18),
               Text(
