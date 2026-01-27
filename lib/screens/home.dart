@@ -12,8 +12,11 @@ import 'package:hive/hive.dart';
 import '../models/perfil_usuario.dart';
 import '../utils/app_constants.dart';
 import '../services/auth_service.dart';
+import '../services/analytics_service.dart';
 import '../repositories/data_repository.dart';
 import 'dart:io';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../widgets/skeleton_loaders.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool mostrarAppBar;
@@ -31,6 +34,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _perfilBoxFuture = Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        analytics.logScreenView('home_screen');
+      } catch (e) {
+        debugPrint('Error logging screen view: $e');
+      }
+    });
   }
 
   Future<void> _refrescarPerfil() async {
@@ -56,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
               actions: [
                 IconButton(
                   icon: const Icon(Icons.settings),
-                  tooltip: 'Ajustes',
+                  tooltip: AppLocalizations.of(context)!.settings,
                   onPressed: () {
                     showModalBottomSheet(
                       context: context,
@@ -85,9 +96,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                              const Text(
-                                'Ajustes',
-                                style: TextStyle(
+                              Text(
+                                AppLocalizations.of(context)!.settings,
+                                style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -117,9 +128,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            const Text(
-                                              'Sesión iniciada',
-                                              style: TextStyle(
+                                            Text(
+                                              AppLocalizations.of(context)!.signedIn,
+                                              style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
                                               ),
                                             ),
@@ -144,12 +155,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('Modo oscuro'),
+                                  Text(AppLocalizations.of(context)!.darkMode),
                                   Switch(
                                     value: themeProvider.isDarkMode,
-                                    onChanged: (val) {
+                                    onChanged: (val) async {
                                       themeProvider.toggleTheme(val);
-                                      Navigator.pop(context);
+                                      try {
+                                        final analytics = Provider.of<AnalyticsService>(
+                                          context,
+                                          listen: false,
+                                        );
+                                        await analytics.logThemeChanged(val ? 'dark' : 'light');
+                                      } catch (e) {
+                                        debugPrint('Error logging theme change: $e');
+                                      }
+                                      if (context.mounted) Navigator.pop(context);
                                     },
                                   ),
                                 ],
@@ -162,12 +182,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Icons.sync,
                                     color: cs.primary,
                                   ),
-                                  title: const Text('Sincronizar datos'),
+                                  title: Text(AppLocalizations.of(context)!.syncData),
                                   subtitle: Text(
                                     dataRepository.isSyncing
-                                        ? 'Sincronizando...'
-                                        : 'Guardar datos en la nube',
-                                    style: TextStyle(fontSize: 12),
+                                        ? AppLocalizations.of(context)!.syncing
+                                        : AppLocalizations.of(context)!.saveDataToCloud,
+                                    style: const TextStyle(fontSize: 12),
                                   ),
                                   trailing: dataRepository.isSyncing
                                       ? const SizedBox(
@@ -182,15 +202,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ? null
                                       : () async {
                                           try {
+                                            final analytics = Provider.of<AnalyticsService>(
+                                              context,
+                                              listen: false,
+                                            );
+                                            await analytics.logSync();
                                             await dataRepository
                                                 .sincronizarANube();
                                             if (context.mounted) {
                                               Navigator.pop(context);
                                               ScaffoldMessenger.of(context)
                                                   .showSnackBar(
-                                                const SnackBar(
+                                                SnackBar(
                                                   content: Text(
-                                                    'Sincronización completada',
+                                                    AppLocalizations.of(context)!.syncSuccess,
                                                   ),
                                                 ),
                                               );
@@ -217,32 +242,32 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Icons.logout,
                                     color: Colors.red,
                                   ),
-                                  title: const Text(
-                                    'Cerrar sesión',
-                                    style: TextStyle(color: Colors.red),
+                                  title: Text(
+                                    AppLocalizations.of(context)!.signOut,
+                                    style: const TextStyle(color: Colors.red),
                                   ),
                                   onTap: () async {
                                     Navigator.pop(context);
                                     final confirm = await showDialog<bool>(
                                       context: context,
                                       builder: (context) => AlertDialog(
-                                        title: const Text('Cerrar sesión'),
-                                        content: const Text(
-                                          '¿Estás seguro de que deseas cerrar sesión? Tus datos locales se mantendrán.',
+                                        title: Text(AppLocalizations.of(context)!.signOut),
+                                        content: Text(
+                                          AppLocalizations.of(context)!.signOutConfirmation,
                                         ),
                                         actions: [
                                           TextButton(
                                             onPressed: () =>
                                                 Navigator.pop(context, false),
-                                            child: const Text('Cancelar'),
+                                            child: Text(AppLocalizations.of(context)!.cancel),
                                           ),
                                           TextButton(
                                             onPressed: () =>
                                                 Navigator.pop(context, true),
-                                            child: const Text(
-                                              'Cerrar sesión',
+                                            child: Text(
+                                              AppLocalizations.of(context)!.signOut,
                                               style:
-                                                  TextStyle(color: Colors.red),
+                                                  const TextStyle(color: Colors.red),
                                             ),
                                           ),
                                         ],
@@ -250,6 +275,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                     );
 
                                     if (confirm == true) {
+                                      try {
+                                        final analytics = Provider.of<AnalyticsService>(
+                                          context,
+                                          listen: false,
+                                        );
+                                        await analytics.logSignOut();
+                                      } catch (e) {
+                                        debugPrint('Error logging sign out: $e');
+                                      }
                                       await authService.signOut();
                                       dataRepository.setUser(null);
                                     }
@@ -257,9 +291,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ] else ...[
                                 const Divider(height: 32),
-                                const Text(
-                                  'Más opciones próximamente...',
-                                  style: TextStyle(
+                                Text(
+                                  AppLocalizations.of(context)!.moreOptionsComingSoon,
+                                  style: const TextStyle(
                                     fontSize: 14,
                                     color: Colors.grey,
                                   ),
@@ -300,7 +334,10 @@ class _HomeScreenState extends State<HomeScreen> {
         future: _perfilBoxFuture,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return ListView.builder(
+              itemCount: 5,
+              itemBuilder: (context, index) => const ListItemSkeleton(),
+            );
           }
           final perfil = snapshot.data!.get('perfil');
           final tienePerfil =
@@ -383,8 +420,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 12),
                       Text(
                         tienePerfil
-                            ? '¡Bienvenid@, ${perfil!.nombre}!'
-                            : '¡Bienvenid@! Antes de nada, crea tu perfil para empezar',
+                            ? AppLocalizations.of(context)!.welcomeUser(perfil!.nombre)
+                            : AppLocalizations.of(context)!.welcomeCreateProfile,
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -397,7 +434,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Padding(
                           padding: const EdgeInsets.only(top: 3.0),
                           child: Text(
-                            'Club: ${perfil.club}',
+                            AppLocalizations.of(context)!.clubLabel(perfil.club!),
                             style: TextStyle(
                               fontSize: 15,
                               color: cs.primary,
@@ -408,7 +445,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Padding(
                           padding: const EdgeInsets.only(top: 2.0),
                           child: Text(
-                            'Mano dominante: ${perfil.manoDominante}',
+                            AppLocalizations.of(context)!.dominantHandLabel(perfil.manoDominante!),
                             style: TextStyle(
                               fontSize: 14,
                               color: cs.primary.withOpacity(0.68),
@@ -419,7 +456,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       tienePerfil
                           ? OutlinedButton.icon(
                               icon: const Icon(Icons.edit, size: 19),
-                              label: const Text('Editar mi perfil'),
+                              label: Text(AppLocalizations.of(context)!.editMyProfile),
                               style: OutlinedButton.styleFrom(
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(13),
@@ -440,9 +477,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             )
                           : ElevatedButton.icon(
                               icon: const Icon(Icons.person_add_alt_1),
-                              label: const Text(
-                                'Crear mi perfil',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              label: Text(
+                                AppLocalizations.of(context)!.createMyProfile,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: cs.primary,
@@ -480,8 +517,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: EdgeInsets.only(top: 4),
                         child: Text('🎳', style: TextStyle(fontSize: 32)),
                       ),
-                      title: const Text('Nueva Sesión'),
-                      subtitle: const Text('Registrar varias partidas'),
+                      title: Text(AppLocalizations.of(context)!.newSession),
+                      subtitle: Text(AppLocalizations.of(context)!.registerMultipleGames),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -496,8 +533,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   Card(
                     child: ListTile(
                       leading: const Text('📋', style: TextStyle(fontSize: 32)),
-                      title: const Text('Ver sesiones'),
-                      subtitle: const Text('Listado de sesiones registradas'),
+                      title: Text(AppLocalizations.of(context)!.viewSessions),
+                      subtitle: Text(AppLocalizations.of(context)!.sessionsList),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -511,8 +548,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   Card(
                     child: ListTile(
                       leading: const Text('📊', style: TextStyle(fontSize: 32)),
-                      title: const Text('Estadísticas'),
-                      subtitle: const Text('Resumen de tu rendimiento'),
+                      title: Text(AppLocalizations.of(context)!.statistics),
+                      subtitle: Text(AppLocalizations.of(context)!.performanceSummary),
                       onTap: () {
                         Navigator.push(
                           context,

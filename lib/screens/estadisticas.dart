@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/sesion.dart';
 import '../models/partida.dart';
 import '../repositories/data_repository.dart';
+import '../services/analytics_service.dart';
 import '../utils/estadisticas_utils.dart';
 import '../utils/estadisticas_cache.dart';
 import '../utils/app_constants.dart';
@@ -15,6 +16,8 @@ import '../widgets/estadisticas/top_partidas_widget.dart';
 import '../widgets/estadisticas/mini_grafico_promedio_movil.dart';
 import '../widgets/estadisticas/histograma_puntuaciones.dart';
 import 'home.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../widgets/skeleton_loaders.dart';
 
 class EstadisticasPantallaCompleta extends StatefulWidget {
   const EstadisticasPantallaCompleta({super.key});
@@ -29,10 +32,19 @@ class _EstadisticasPantallaCompletaState
   late Future<List<Sesion>> _sesionesFuture;
   String _filtroTipo = AppConstants.tipoTodos;
   DateTimeRange? _rangoFechas;
+  bool _hasLoggedView = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        analytics.logScreenView('statistics_screen');
+      } catch (e) {
+        debugPrint('Error logging screen view: $e');
+      }
+    });
     _cargarSesiones();
   }
 
@@ -59,7 +71,7 @@ class _EstadisticasPantallaCompletaState
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Estadísticas completas'),
+        title: Text(AppLocalizations.of(context)!.fullStatistics),
         centerTitle: true,
         actions: [
           IconButton(
@@ -79,7 +91,33 @@ class _EstadisticasPantallaCompletaState
         future: _sesionesFuture,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(child: StatisticsCardSkeleton()),
+                      Expanded(child: StatisticsCardSkeleton()),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(child: StatisticsCardSkeleton()),
+                      Expanded(child: StatisticsCardSkeleton()),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(child: StatisticsCardSkeleton()),
+                      Expanded(child: StatisticsCardSkeleton()),
+                    ],
+                  ),
+                  ChartSkeleton(height: 250),
+                  ChartSkeleton(height: 200),
+                ],
+              ),
+            );
           }
 
           // --- Filtros por tipo y fecha ---
@@ -112,9 +150,9 @@ class _EstadisticasPantallaCompletaState
                           setState(() => _rangoFechas = nuevoRango),
                     ),
                     const SizedBox(height: 38),
-                    const Text(
-                      "No hay datos para mostrar estadísticas.",
-                      style: TextStyle(fontSize: 17),
+                    Text(
+                      AppLocalizations.of(context)!.noDataForStatistics,
+                      style: const TextStyle(fontSize: 17),
                     ),
                   ],
                 ),
@@ -125,6 +163,20 @@ class _EstadisticasPantallaCompletaState
           // Usar cache de estadísticas (provider registrado en main.dart)
           final estadisticasCache = Provider.of<EstadisticasCache>(context, listen: false);
           final stats = estadisticasCache.getEstadisticas(sesiones);
+
+          // Log analytics after successful data load (only once)
+          if (!_hasLoggedView) {
+            _hasLoggedView = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              try {
+                final analytics = Provider.of<AnalyticsService>(context, listen: false);
+                analytics.logStatisticsViewed('all');
+              } catch (e) {
+                debugPrint('Error logging statistics view: $e');
+              }
+            });
+          }
 
           // --- OBTENER DATOS DEL CACHE ---
           final promedio = stats['promedioGeneral'] as double;

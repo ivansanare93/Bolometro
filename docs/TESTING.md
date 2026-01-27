@@ -1,117 +1,117 @@
-# Testing Guide
+# Guía de Testing
 
-This document describes the comprehensive testing strategy implemented for Bolometro.
+Este documento describe la estrategia de testing comprehensiva implementada para Bolometro.
 
-## Test Coverage
+## Cobertura de Pruebas
 
-### Unit Tests
+### Pruebas Unitarias
 
-#### Models
-- `test/partida_model_test.dart` - Tests for Partida model
-- `test/sesion_model_test.dart` - Tests for Sesion model
+#### Modelos
+- `test/partida_model_test.dart` - Pruebas del modelo Partida
+- `test/sesion_model_test.dart` - Pruebas del modelo Sesion
 
-#### Providers
-- `test/theme_provider_test.dart` - Tests for theme management
-- `test/language_provider_test.dart` - Tests for language switching
+#### Proveedores
+- `test/theme_provider_test.dart` - Pruebas de gestión de temas
+- `test/language_provider_test.dart` - Pruebas de cambio de idioma
 
-#### Services
-- `test/analytics_service_test.dart` - Tests for analytics service
-- `test/data_repository_test.dart` - Tests for data repository (existing)
-- `test/estadisticas_cache_test.dart` - Tests for statistics caching (existing)
+#### Servicios
+- `test/analytics_service_test.dart` - Pruebas del servicio de analytics
+- `test/data_repository_test.dart` - Pruebas del repositorio de datos (existente)
+- `test/estadisticas_cache_test.dart` - Pruebas de caché de estadísticas (existente)
 
-#### Utils
-- `test/app_constants_test.dart` - Tests for app constants (existing)
-- `test/lazy_loading_test.dart` - Tests for lazy loading (existing)
+#### Utilidades
+- `test/app_constants_test.dart` - Pruebas de constantes de la app (existente)
+- `test/lazy_loading_test.dart` - Pruebas de carga diferida (existente)
 
-### Widget Tests
-- `test/skeleton_loaders_test.dart` - Tests for skeleton loader components
+### Pruebas de Widgets
+- `test/skeleton_loaders_test.dart` - Pruebas de componentes skeleton loader
 
-### Integration Tests
-- `test/integration_test.dart` - End-to-end user flow tests
+### Pruebas de Integración
+- `test/integration_test.dart` - Pruebas de flujos de usuario end-to-end
 
-## Running Tests
+## Ejecutar Pruebas
 
-### Run all tests
+### Ejecutar todas las pruebas
 ```bash
 flutter test
 ```
 
-### Run specific test file
+### Ejecutar archivo de prueba específico
 ```bash
 flutter test test/partida_model_test.dart
 ```
 
-### Run with coverage
+### Ejecutar con cobertura
 ```bash
 flutter test --coverage
 ```
 
-### View coverage report
+### Ver reporte de cobertura
 ```bash
-# Generate HTML report
+# Generar reporte HTML
 genhtml coverage/lcov.info -o coverage/html
 
-# Open in browser
+# Abrir en navegador
 open coverage/html/index.html
 ```
 
-## CI/CD Integration
+## Integración CI/CD
 
-Tests are automatically run in the CI/CD pipeline:
-- On every pull request
-- On pushes to main and develop branches
-- Coverage reports are uploaded to Codecov
+Las pruebas se ejecutan automáticamente en el pipeline CI/CD:
+- En cada pull request
+- En pushes a las ramas main y develop
+- Los reportes de cobertura se suben a Codecov
 
-See `.github/workflows/flutter-ci.yml` for details.
+Ver `.github/workflows/flutter-ci.yml` para detalles.
 
-## Writing New Tests
+## Escribir Nuevas Pruebas
 
-### Unit Test Example
+### Ejemplo de Prueba Unitaria
 ```dart
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('MyClass', () {
-    test('should do something', () {
-      // Arrange
-      // Act
-      // Assert
+    test('debería hacer algo', () {
+      // Organizar (Arrange)
+      // Actuar (Act)
+      // Afirmar (Assert)
     });
   });
 }
 ```
 
-### Widget Test Example
+### Ejemplo de Prueba de Widget
 ```dart
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('MyWidget should display text', (WidgetTester tester) async {
+  testWidgets('MyWidget debería mostrar texto', (WidgetTester tester) async {
     await tester.pumpWidget(MyWidget());
-    expect(find.text('Hello'), findsOneWidget);
+    expect(find.text('Hola'), findsOneWidget);
   });
 }
 ```
 
-## Test Best Practices
+## Mejores Prácticas de Testing
 
-1. **Arrange-Act-Assert Pattern**: Structure tests clearly
-2. **Test Names**: Use descriptive names that explain what is being tested
-3. **Mock External Dependencies**: Use mocks for Firebase, network calls, etc.
-4. **Test Edge Cases**: Not just happy paths
-5. **Keep Tests Fast**: Avoid unnecessary delays
-6. **Independent Tests**: Each test should be able to run independently
+1. **Patrón Arrange-Act-Assert**: Estructura las pruebas claramente
+2. **Nombres de Pruebas**: Usa nombres descriptivos que expliquen qué se está probando
+3. **Mock de Dependencias Externas**: Usa mocks para Firebase, llamadas de red, etc.
+4. **Prueba Casos Límite**: No solo rutas felices
+5. **Mantén las Pruebas Rápidas**: Evita retrasos innecesarios
+6. **Pruebas Independientes**: Cada prueba debe poder ejecutarse independientemente
 
-## Known Limitations
+## Limitaciones Conocidas
 
-- Firebase services (Auth, Firestore, Analytics) require mocking for proper testing
-- Some integration tests are commented out pending Firebase test configuration
-- Widget tests for complex screens may require extensive mocking
+- Los servicios de Firebase (Auth, Firestore, Analytics) requieren mocking para pruebas apropiadas
+- Algunas pruebas de integración están comentadas pendiente configuración de pruebas de Firebase
+- Las pruebas de widgets para pantallas complejas pueden requerir mocking extensivo
 
-## Future Improvements
+## Mejoras Futuras
 
-- [ ] Add golden tests for UI consistency
-- [ ] Increase coverage to 80%+
-- [ ] Add performance tests
-- [ ] Mock Firebase services for integration tests
-- [ ] Add screenshot tests for different screen sizes
+- [ ] Agregar pruebas golden para consistencia de UI
+- [ ] Aumentar cobertura a 80%+
+- [ ] Agregar pruebas de rendimiento
+- [ ] Mock de servicios de Firebase para pruebas de integración
+- [ ] Agregar pruebas de captura de pantalla para diferentes tamaños de pantalla

@@ -8,6 +8,8 @@ import '../widgets/lista_partidas.dart';
 import '../widgets/selector_tipo_partida.dart';
 import '../utils/app_constants.dart';
 import '../repositories/data_repository.dart';
+import '../services/analytics_service.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RegistroCompletoSesionScreen extends StatefulWidget {
   const RegistroCompletoSesionScreen({super.key});
@@ -22,6 +24,19 @@ class _RegistroCompletoSesionScreenState
   String _lugar = '';
   String _tipo = AppConstants.tipoEntrenamiento;
   final List<Partida> _partidas = [];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        analytics.logScreenView('register_session_screen');
+      } catch (e) {
+        debugPrint('Error logging screen view: $e');
+      }
+    });
+  }
 
   void anadirPartida() async {
     await Navigator.push(
@@ -60,8 +75,8 @@ class _RegistroCompletoSesionScreenState
   Future<void> _guardarSesion() async {
     if (_partidas.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Añade al menos una partida para guardar la sesión.'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.addAtLeastOneGame),
         ),
       );
       return;
@@ -78,9 +93,12 @@ class _RegistroCompletoSesionScreenState
       final dataRepository = Provider.of<DataRepository>(context, listen: false);
       await dataRepository.guardarSesion(nuevaSesion);
 
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      await analytics.logSessionCreated(_tipo);
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sesión guardada correctamente')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.sessionSavedSuccess)),
         );
         Navigator.pop(context);
       }
@@ -88,8 +106,8 @@ class _RegistroCompletoSesionScreenState
       debugPrint('Error al guardar sesión: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error al guardar la sesión'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.sessionSaveErrorMessage),
             backgroundColor: Colors.red,
           ),
         );
@@ -100,7 +118,7 @@ class _RegistroCompletoSesionScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Registrar sesión')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.registerSession)),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -130,7 +148,7 @@ class _RegistroCompletoSesionScreenState
                 ElevatedButton.icon(
                   onPressed: anadirPartida,
                   icon: const Icon(Icons.add),
-                  label: const Text('Añadir partida'),
+                  label: Text(AppLocalizations.of(context)!.addGame),
                 ),
               ],
             ),
@@ -146,7 +164,7 @@ class _RegistroCompletoSesionScreenState
             ElevatedButton.icon(
               onPressed: _guardarSesion,
               icon: const Icon(Icons.save),
-              label: const Text('Guardar sesión'),
+              label: Text(AppLocalizations.of(context)!.save),
             ),
           ],
         ),

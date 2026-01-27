@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/partida.dart';
+import '../services/analytics_service.dart';
 import '../utils/registro_tiros_utils.dart';
 import '../widgets/marcador_bolos.dart';
 import '../widgets/teclado_selector_pins.dart'; // Debe aceptar onAceptar
@@ -7,6 +9,7 @@ import '../widgets/resumen_puntuacion.dart';
 import '../widgets/notas_field.dart';
 import 'home.dart';
 import '../utils/teclado_tiros_adaptativo.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RegistroSesionScreen extends StatefulWidget {
   final void Function(Partida nuevaPartida) onGuardar;
@@ -38,6 +41,14 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        analytics.logScreenView('register_game_screen');
+      } catch (e) {
+        debugPrint('Error logging screen view: $e');
+      }
+    });
     framesText = List.generate(10, (_) => List.filled(3, ''));
     erroresPorTiro = _obtenerErroresPorTiro(framesText);
     pinesPorTiro = List.generate(10, (_) => List.filled(3, null));
@@ -82,7 +93,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: const Text('Errores en la partida'),
+          title: Text(AppLocalizations.of(context)!.gameErrors),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,7 +101,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
           ),
           actions: [
             TextButton(
-              child: const Text('Entendido'),
+              child: Text(AppLocalizations.of(context)!.understood),
               onPressed: () => Navigator.pop(context),
             ),
           ],
@@ -102,7 +113,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
     final nuevoTotal = calcularPuntuacionPartida(nuevosFrames);
     if (nuevoTotal == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: const Text('La partida no tiene puntuación válida.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.gameInvalidScore)),
       );
       return;
     }
@@ -115,6 +126,13 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
       total: nuevoTotal,
       pinesPorTiro: pinesPorTiro, // <-- Guardamos aquí el array de pines visual
     );
+
+    try {
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      await analytics.logGameCreated(nuevoTotal);
+    } catch (e) {
+      debugPrint('Error logging game creation: $e');
+    }
 
     widget.onGuardar(nuevaPartida);
     Navigator.pop(context);
@@ -290,7 +308,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Registrar partida'),
+        title: Text(AppLocalizations.of(context)!.registerGame),
         centerTitle: true,
         actions: [
           IconButton(
@@ -482,7 +500,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
         child: ElevatedButton.icon(
           onPressed: _guardar,
           icon: const Icon(Icons.save),
-          label: const Text('Guardar Partida'),
+          label: Text(AppLocalizations.of(context)!.saveGame),
           style: ElevatedButton.styleFrom(
             minimumSize: const Size.fromHeight(48),
           ),

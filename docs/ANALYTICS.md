@@ -1,148 +1,148 @@
-# Analytics Guide
+# Guía de Analytics
 
-Bolometro uses Firebase Analytics to track user behavior and app performance.
+Bolometro utiliza Firebase Analytics para rastrear el comportamiento del usuario y el rendimiento de la aplicación.
 
-## Overview
+## Descripción General
 
-The `AnalyticsService` provides a centralized way to log analytics events throughout the app.
+El `AnalyticsService` proporciona una forma centralizada de registrar eventos de analytics en toda la aplicación.
 
-## Setup
+## Configuración
 
-### 1. Firebase Configuration
+### 1. Configuración de Firebase
 
-Ensure Firebase is properly configured:
-- `android/app/google-services.json` - Android configuration
-- `ios/Runner/GoogleService-Info.plist` - iOS configuration
+Asegúrate de que Firebase esté configurado correctamente:
+- `android/app/google-services.json` - Configuración Android
+- `ios/Runner/GoogleService-Info.plist` - Configuración iOS
 
-### 2. Enable Analytics in Firebase Console
+### 2. Habilitar Analytics en la Consola de Firebase
 
-1. Go to [Firebase Console](https://console.firebase.google.com)
-2. Select your project
-3. Navigate to Analytics
-4. Enable Google Analytics
+1. Ve a [Firebase Console](https://console.firebase.google.com)
+2. Selecciona tu proyecto
+3. Navega a Analytics
+4. Habilita Google Analytics
 
-## Using Analytics Service
+## Usar el Servicio de Analytics
 
-### Singleton Instance
+### Instancia Singleton
 
 ```dart
 import 'package:bolometro/services/analytics_service.dart';
 import 'package:provider/provider.dart';
 
-// Get instance via Provider
+// Obtener instancia vía Provider
 final analytics = Provider.of<AnalyticsService>(context, listen: false);
 
-// Or use singleton directly
+// O usar singleton directamente
 final analytics = AnalyticsService();
 ```
 
-## Available Events
+## Eventos Disponibles
 
-### Screen Views
+### Vistas de Pantalla
 
-Automatically tracked when using the analytics observer, or manually:
+Se rastrean automáticamente al usar el observer de analytics, o manualmente:
 
 ```dart
 analytics.logScreenView('home_screen');
 analytics.logScreenView('statistics_screen');
 ```
 
-### Session Events
+### Eventos de Sesión
 
 ```dart
-// When creating a new session
-analytics.logSessionCreated('training'); // or 'competition'
+// Al crear una nueva sesión
+analytics.logSessionCreated('training'); // o 'competition'
 
-// When editing a session
+// Al editar una sesión
 analytics.logSessionEdited();
 
-// When deleting a session
+// Al eliminar una sesión
 analytics.logSessionDeleted();
 ```
 
-### Game Events
+### Eventos de Partida
 
 ```dart
-// When creating a new game
-analytics.logGameCreated(150); // Pass the score
+// Al crear una nueva partida
+analytics.logGameCreated(150); // Pasar la puntuación
 
-// When editing a game
+// Al editar una partida
 analytics.logGameEdited();
 
-// When deleting a game
+// Al eliminar una partida
 analytics.logGameDeleted();
 ```
 
-### User Authentication
+### Autenticación de Usuario
 
 ```dart
-// When user logs in
-analytics.logLogin('google'); // or other method
+// Cuando el usuario inicia sesión
+analytics.logLogin('google'); // u otro método
 
-// When user signs out
+// Cuando el usuario cierra sesión
 analytics.logSignOut();
 
-// Set user ID (called automatically on login)
+// Establecer ID de usuario (llamado automáticamente en login)
 analytics.setUserId('user123');
 ```
 
-### Data Sync
+### Sincronización de Datos
 
 ```dart
-// When syncing data with cloud
+// Al sincronizar datos con la nube
 analytics.logSync();
 ```
 
-### Statistics Events
+### Eventos de Estadísticas
 
 ```dart
-// When viewing statistics page
-analytics.logStatisticsViewed('all'); // or 'training', 'competition'
+// Al ver la página de estadísticas
+analytics.logStatisticsViewed('all'); // o 'training', 'competition'
 
-// When viewing a specific chart
+// Al ver un gráfico específico
 analytics.logChartViewed('histogram');
 analytics.logChartViewed('moving_average');
 analytics.logChartViewed('heatmap');
 ```
 
-### Profile Events
+### Eventos de Perfil
 
 ```dart
-// When updating profile
+// Al actualizar el perfil
 analytics.logProfileUpdated();
 
-// When changing avatar
+// Al cambiar el avatar
 analytics.logAvatarChanged();
 ```
 
-### Settings Events
+### Eventos de Configuración
 
 ```dart
-// When changing theme
+// Al cambiar el tema
 analytics.logThemeChanged('dark'); // 'light', 'dark', 'system'
 
-// When changing language
+// Al cambiar el idioma
 analytics.logLanguageChanged('en'); // 'es', 'en'
 ```
 
-### Share Events
+### Eventos de Compartir
 
 ```dart
-// When sharing content
-analytics.logShare('session'); // or 'statistics', 'game'
+// Al compartir contenido
+analytics.logShare('session'); // o 'statistics', 'game'
 ```
 
-### User Properties
+### Propiedades de Usuario
 
 ```dart
-// Set custom user properties
+// Establecer propiedades de usuario personalizadas
 analytics.setUserProperty('preferred_hand', 'right');
 analytics.setUserProperty('skill_level', 'intermediate');
 ```
 
-## Implementation Examples
+## Ejemplos de Implementación
 
-### Tracking Button Clicks
+### Rastrear Clics de Botones
 
 ```dart
 ElevatedButton(
@@ -150,18 +150,18 @@ ElevatedButton(
     final analytics = Provider.of<AnalyticsService>(context, listen: false);
     await analytics.logGameCreated(score);
     
-    // Continue with your logic
+    // Continuar con tu lógica
     Navigator.push(...);
   },
-  child: Text('Save Game'),
+  child: Text('Guardar Partida'),
 )
 ```
 
-### Tracking Screen Navigation
+### Rastrear Navegación de Pantallas
 
-Screen views are automatically tracked via `FirebaseAnalyticsObserver` in the navigator.
+Las vistas de pantalla se rastrean automáticamente vía `FirebaseAnalyticsObserver` en el navigator.
 
-For manual tracking:
+Para rastreo manual:
 
 ```dart
 @override
@@ -175,25 +175,25 @@ void initState() {
 }
 ```
 
-### Tracking Form Submissions
+### Rastrear Envíos de Formularios
 
 ```dart
 void _submitForm() async {
   if (_formKey.currentState!.validate()) {
     final analytics = Provider.of<AnalyticsService>(context, listen: false);
     
-    // Log the event
+    // Registrar el evento
     await analytics.logSessionCreated(selectedType);
     
-    // Save data
+    // Guardar datos
     await _saveSession();
   }
 }
 ```
 
-## Custom Events
+## Eventos Personalizados
 
-For events not covered by the service:
+Para eventos no cubiertos por el servicio:
 
 ```dart
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -209,68 +209,68 @@ await analytics.logEvent(
 );
 ```
 
-## Event Parameters
+## Parámetros de Eventos
 
-Most events include relevant parameters:
+La mayoría de los eventos incluyen parámetros relevantes:
 
 ```dart
-// Session created
+// Sesión creada
 {
-  'session_type': 'training' // or 'competition'
+  'session_type': 'training' // o 'competition'
 }
 
-// Game created
+// Partida creada
 {
   'score': 150
 }
 
-// Statistics viewed
+// Estadísticas vistas
 {
-  'filter_type': 'all' // or 'training', 'competition'
+  'filter_type': 'all' // o 'training', 'competition'
 }
 
-// Chart viewed
+// Gráfico visto
 {
-  'chart_type': 'histogram' // or 'moving_average', 'heatmap'
+  'chart_type': 'histogram' // o 'moving_average', 'heatmap'
 }
 ```
 
-## Viewing Analytics Data
+## Ver Datos de Analytics
 
-### Firebase Console
+### Consola de Firebase
 
-1. Go to [Firebase Console](https://console.firebase.google.com)
-2. Select your project
-3. Navigate to Analytics > Events
-4. View real-time and historical data
+1. Ve a [Firebase Console](https://console.firebase.google.com)
+2. Selecciona tu proyecto
+3. Navega a Analytics > Events
+4. Ver datos en tiempo real e históricos
 
-### Key Metrics to Monitor
+### Métricas Clave a Monitorear
 
-- **Active Users**: Daily, weekly, monthly active users
-- **Session Events**: How often users create/edit/delete sessions
-- **Game Events**: Game creation frequency and score distribution
-- **Screen Views**: Most visited screens
-- **Retention**: User retention over time
-- **User Properties**: Distribution of user characteristics
+- **Usuarios Activos**: Usuarios activos diarios, semanales, mensuales
+- **Eventos de Sesión**: Con qué frecuencia los usuarios crean/editan/eliminan sesiones
+- **Eventos de Partida**: Frecuencia de creación de partidas y distribución de puntuaciones
+- **Vistas de Pantalla**: Pantallas más visitadas
+- **Retención**: Retención de usuarios a lo largo del tiempo
+- **Propiedades de Usuario**: Distribución de características de usuarios
 
-### Custom Dashboards
+### Dashboards Personalizados
 
-Create custom dashboards in Firebase Console:
+Crea dashboards personalizados en Firebase Console:
 1. Analytics > Custom Dashboards
-2. Add relevant metrics and events
-3. Filter by user properties or date ranges
+2. Agrega métricas y eventos relevantes
+3. Filtra por propiedades de usuario o rangos de fechas
 
-## Privacy Considerations
+## Consideraciones de Privacidad
 
-### Data Collection
+### Recolección de Datos
 
-- Analytics data is anonymous by default
-- User IDs are Firebase Auth UIDs (not personal information)
-- No personally identifiable information (PII) is logged
+- Los datos de analytics son anónimos por defecto
+- Los IDs de usuario son UIDs de Firebase Auth (no información personal)
+- No se registra información personalmente identificable (PII)
 
-### Opt-Out (Future Enhancement)
+### Opt-Out (Mejora Futura)
 
-Consider adding an opt-out option:
+Considera agregar una opción de opt-out:
 
 ```dart
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -278,17 +278,17 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(false);
 ```
 
-### GDPR Compliance
+### Cumplimiento GDPR
 
-- Inform users about analytics in privacy policy
-- Provide option to disable analytics
-- Don't log sensitive user data
+- Informa a los usuarios sobre analytics en la política de privacidad
+- Proporciona opción para deshabilitar analytics
+- No registres datos sensibles del usuario
 
-## Testing Analytics
+## Probar Analytics
 
-### Debug Mode
+### Modo de Depuración
 
-Enable analytics debug mode to see events in real-time:
+Habilita el modo de depuración de analytics para ver eventos en tiempo real:
 
 #### Android
 ```bash
@@ -296,73 +296,73 @@ adb shell setprop debug.firebase.analytics.app com.example.bolometro
 ```
 
 #### iOS
-In Xcode, add `-FIRDebugEnabled` to Arguments Passed On Launch
+En Xcode, agrega `-FIRDebugEnabled` a Arguments Passed On Launch
 
 ### DebugView
 
-1. Enable debug mode
-2. Go to Firebase Console > Analytics > DebugView
-3. See events in real-time as you use the app
+1. Habilita el modo de depuración
+2. Ve a Firebase Console > Analytics > DebugView
+3. Ver eventos en tiempo real mientras usas la app
 
-### Verifying Events
+### Verificar Eventos
 
 ```dart
 import 'package:firebase_analytics/firebase_analytics.dart';
 
-// In development, print events
+// En desarrollo, imprime eventos
 if (kDebugMode) {
-  print('Analytics Event: session_created');
+  print('Evento de Analytics: session_created');
 }
 
 await analytics.logSessionCreated('training');
 ```
 
-## Best Practices
+## Mejores Prácticas
 
-1. **Event Naming**: Use snake_case for event names
-2. **Parameter Consistency**: Use same parameter names across similar events
-3. **Don't Overdo It**: Track meaningful events, not every tap
-4. **Async Operations**: Analytics calls are async but non-blocking
-5. **Error Handling**: Analytics failures shouldn't crash the app
-6. **Test Thoroughly**: Use DebugView during development
+1. **Nombres de Eventos**: Usa snake_case para nombres de eventos
+2. **Consistencia de Parámetros**: Usa los mismos nombres de parámetros en eventos similares
+3. **No Exageres**: Rastrea eventos significativos, no cada toque
+4. **Operaciones Asíncronas**: Las llamadas de analytics son async pero no bloqueantes
+5. **Manejo de Errores**: Los fallos de analytics no deben bloquear la app
+6. **Prueba a Fondo**: Usa DebugView durante el desarrollo
 
-## Common Events Reference
+## Referencia de Eventos Comunes
 
-| Event Name | When to Log | Parameters |
-|------------|-------------|------------|
-| `screen_view` | User navigates to screen | `screen_name`, `screen_class` |
-| `session_created` | New session created | `session_type` |
-| `game_created` | New game created | `score` |
-| `login` | User authenticates | `method` |
-| `statistics_viewed` | Statistics page opened | `filter_type` |
-| `theme_changed` | Theme preference changed | `theme` |
-| `language_changed` | Language preference changed | `language` |
-| `share` | User shares content | `content_type` |
+| Nombre de Evento | Cuándo Registrar | Parámetros |
+|------------------|------------------|------------|
+| `screen_view` | Usuario navega a pantalla | `screen_name`, `screen_class` |
+| `session_created` | Nueva sesión creada | `session_type` |
+| `game_created` | Nueva partida creada | `score` |
+| `login` | Usuario se autentica | `method` |
+| `statistics_viewed` | Página de estadísticas abierta | `filter_type` |
+| `theme_changed` | Preferencia de tema cambiada | `theme` |
+| `language_changed` | Preferencia de idioma cambiada | `language` |
+| `share` | Usuario comparte contenido | `content_type` |
 
-## Troubleshooting
+## Solución de Problemas
 
-### Events Not Appearing
+### Eventos No Aparecen
 
-- Check Firebase configuration files are present
-- Verify app is connected to Firebase in Console
-- Enable debug mode to see real-time events
-- Wait up to 24 hours for production events to appear
+- Verifica que los archivos de configuración de Firebase estén presentes
+- Verifica que la app esté conectada a Firebase en Console
+- Habilita el modo de depuración para ver eventos en tiempo real
+- Espera hasta 24 horas para que aparezcan eventos de producción
 
-### Invalid Event Names
+### Nombres de Eventos Inválidos
 
-- Must be 40 characters or less
-- Must start with letter
-- Can only contain letters, numbers, underscores
-- Case-sensitive
+- Deben tener 40 caracteres o menos
+- Deben comenzar con letra
+- Solo pueden contener letras, números, guiones bajos
+- Sensible a mayúsculas/minúsculas
 
-### Too Many Parameters
+### Demasiados Parámetros
 
-- Maximum 25 unique parameters per event
-- Parameter names must be 40 characters or less
-- Parameter values must be 100 characters or less
+- Máximo 25 parámetros únicos por evento
+- Los nombres de parámetros deben tener 40 caracteres o menos
+- Los valores de parámetros deben tener 100 caracteres o menos
 
-## Resources
+## Recursos
 
-- [Firebase Analytics Documentation](https://firebase.google.com/docs/analytics)
-- [Flutter Firebase Analytics Package](https://pub.dev/packages/firebase_analytics)
-- [Analytics Best Practices](https://firebase.google.com/docs/analytics/best-practices)
+- [Documentación de Firebase Analytics](https://firebase.google.com/docs/analytics)
+- [Paquete Flutter Firebase Analytics](https://pub.dev/packages/firebase_analytics)
+- [Mejores Prácticas de Analytics](https://firebase.google.com/docs/analytics/best-practices)

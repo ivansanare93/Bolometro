@@ -5,7 +5,10 @@ import '../widgets/sesion_card.dart';
 import '../screens/ver_sesion.dart';
 import '../utils/app_constants.dart';
 import '../repositories/data_repository.dart';
+import '../services/analytics_service.dart';
 import 'home.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../widgets/skeleton_loaders.dart';
 
 class ListaSesionesScreen extends StatefulWidget {
   const ListaSesionesScreen({super.key});
@@ -26,6 +29,14 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        analytics.logScreenView('sessions_list_screen');
+      } catch (e) {
+        debugPrint('Error logging screen view: $e');
+      }
+    });
     _scrollController.addListener(_onScroll);
     _cargarSesiones();
   }
@@ -75,8 +86,8 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error al cargar sesiones'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.sessionLoadError),
             backgroundColor: Colors.red,
           ),
         );
@@ -131,6 +142,9 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
       final dataRepository = Provider.of<DataRepository>(context, listen: false);
       await dataRepository.eliminarSesion(sesion);
       
+      final analytics = Provider.of<AnalyticsService>(context, listen: false);
+      await analytics.logSessionDeleted();
+      
       setState(() {
         _sesiones.remove(sesion);
         _aplicarFiltro();
@@ -138,15 +152,15 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sesión eliminada')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.sessionDeletedSuccess)),
         );
       }
     } catch (e) {
       debugPrint('Error al borrar sesión: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error al eliminar sesión'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.sessionDeleteErrorMessage),
             backgroundColor: Colors.red,
           ),
         );
@@ -158,20 +172,20 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
     return await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Eliminar sesión'),
-        content: const Text(
-          '¿Seguro que deseas eliminar esta sesión?',
+        title: Text(AppLocalizations.of(context)!.deleteSessionTitle),
+        content: Text(
+          AppLocalizations.of(context)!.deleteSessionConfirmation,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Eliminar',
-              style: TextStyle(color: Colors.red),
+            child: Text(
+              AppLocalizations.of(context)!.delete,
+              style: const TextStyle(color: Colors.red),
             ),
           ),
         ],
@@ -193,7 +207,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sesiones guardadas'),
+        title: Text(AppLocalizations.of(context)!.sessionListTitle),
         centerTitle: true,
         actions: [
           IconButton(
@@ -317,8 +331,8 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
                         // Mostrar indicador de carga al final
                         if (idx >= _sesionesFiltradas.length) {
                           return const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Center(child: CircularProgressIndicator()),
+                            padding: EdgeInsets.all(8.0),
+                            child: SessionCardSkeleton(),
                           );
                         }
 

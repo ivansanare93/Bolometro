@@ -137,5 +137,104 @@
   "validationError": "Error de validación",
   "networkError": "Error de red",
   "permissionDenied": "Permiso denegado",
-  "unknownError": "Error desconocido"
+  "unknownError": "Error desconocido",
+  "name": "Nombre",
+  "fullName": "Nombre completo",
+  "clubName": "Club",
+  "hand": "Mano dominante",
+  "rightHand": "Derecha",
+  "leftHand": "Izquierda",
+  "bothHands": "Ambas",
+  "removePhoto": "Quitar foto",
+  "myProfile": "Mi perfil",
+  "saveProfile": "Guardar perfil",
+  "deleteProfile": "Eliminar perfil",
+  "deleteProfileConfirmation": "¿Eliminar perfil?",
+  "profileSaved": "Perfil guardado correctamente",
+  "profileDeleted": "Perfil eliminado",
+  "profileSaveError": "Error al guardar perfil. Intenta nuevamente.",
+  "profileDeleteError": "Error al eliminar perfil. Intenta nuevamente.",
+  "profileUnexpectedSaveError": "Error inesperado al guardar perfil",
+  "profileUnexpectedDeleteError": "Error inesperado al eliminar perfil",
+  "fixErrorsBeforeSaving": "Corrige los errores antes de guardar",
+  "addGame": "Añadir partida",
+  "registerMultipleGames": "Registrar varias partidas",
+  "registerSession": "Registrar sesión",
+  "registerGame": "Registrar partida",
+  "saveGame": "Guardar Partida",
+  "editGameTitle": "Editar Partida",
+  "deleteGameTitle": "Eliminar partida",
+  "deleteGameConfirmation": "¿Seguro que deseas eliminar esta partida?",
+  "gameUpdated": "Partida actualizada",
+  "gameDeletedSuccess": "Partida eliminada",
+  "gameUpdateError": "Error al guardar cambios. Intenta nuevamente.",
+  "gameDeleteErrorMessage": "Error al eliminar partida. Intenta nuevamente.",
+  "gameUnexpectedUpdateError": "Error inesperado al guardar cambios",
+  "gameUnexpectedDeleteError": "Error inesperado al eliminar partida",
+  "gameErrors": "Errores en la partida",
+  "understood": "Entendido",
+  "gameInvalidScore": "La partida no tiene puntuación válida.",
+  "addAtLeastOneGame": "Añade al menos una partida para guardar la sesión.",
+  "sessionSavedSuccess": "Sesión guardada correctamente",
+  "sessionSaveErrorMessage": "Error al guardar la sesión",
+  "sessionListTitle": "Sesiones guardadas",
+  "sessionsList": "Listado de sesiones registradas",
+  "sessionLoadError": "Error al cargar sesiones",
+  "sessionDeletedSuccess": "Sesión eliminada",
+  "sessionDeleteErrorMessage": "Error al eliminar sesión",
+  "deleteSessionTitle": "Eliminar sesión",
+  "sessionNotFoundError": "Error: sesión no encontrada",
+  "fullStatistics": "Estadísticas completas",
+  "performanceSummary": "Resumen de tu rendimiento",
+  "viewSessions": "Ver sesiones",
+  "editMyProfile": "Editar mi perfil",
+  "saveChanges": "Guardar cambios",
+  "deleteProfileMessage": "¿Seguro que quieres borrar tu perfil?\nEsta acción no se puede deshacer.",
+  "signedIn": "Sesión iniciada",
+  "signOutConfirmation": "¿Estás seguro de que deseas cerrar sesión? Tus datos locales se mantendrán.",
+  "moreOptionsComingSoon": "Más opciones próximamente...",
+  "welcomeUser": "¡Bienvenid@, {name}!",
+  "@welcomeUser": {
+    "description": "Mensaje de bienvenida con nombre del usuario",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Juan"
+      }
+    }
+  },
+  "welcomeCreateProfile": "¡Bienvenid@! Antes de nada, crea tu perfil para empezar",
+  "clubLabel": "Club: {club}",
+  "@clubLabel": {
+    "description": "Etiqueta de club",
+    "placeholders": {
+      "club": {
+        "type": "String",
+        "example": "Bolos Madrid"
+      }
+    }
+  },
+  "dominantHandLabel": "Mano dominante: {hand}",
+  "@dominantHandLabel": {
+    "description": "Etiqueta de mano dominante",
+    "placeholders": {
+      "hand": {
+        "type": "String",
+        "example": "Derecha"
+      }
+    }
+  },
+  "createMyProfile": "Crear mi perfil",
+  "profileFromGoogle": "Perfil creado desde tu cuenta de Google. Puedes editarlo libremente.",
+  "imageNotFound": "Imagen no encontrada, selecciona otra.",
+  "usingGooglePhoto": "Usando foto de Google. Pulsa para cambiar",
+  "tapToChangeImage": "Pulsa para cambiar tu imagen",
+  "enterYourName": "Introduce tu nombre",
+  "enterValidEmail": "Introduce un email válido",
+  "selectDate": "Seleccionar fecha",
+  "aboutMe": "Sobre mí",
+  "deleteSessionConfirmation": "¿Seguro que deseas eliminar esta sesión?",
+  "syncing": "Sincronizando...",
+  "saveDataToCloud": "Guardar datos en la nube",
+  "noDataForStatistics": "No hay datos para mostrar estadísticas."
 }
