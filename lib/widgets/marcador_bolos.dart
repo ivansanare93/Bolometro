@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/animation.dart';
-
 import '../utils/registro_tiros_utils.dart';
 import '../utils/app_constants.dart';
 

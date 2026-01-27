@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
-
 import '../models/sesion.dart';
 import '../models/partida.dart';
 import '../repositories/data_repository.dart';
