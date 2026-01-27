@@ -75,19 +75,19 @@ void main() {
       // Página 1 (segunda carga)
       int currentPage = 1;
       int offset = (currentPage) * AppConstants.pageSize;
-      expect(offset, equals(20)); // Asumiendo pageSize = 20
+      expect(offset, equals(AppConstants.pageSize));
 
       // Página 2 (tercera carga)
       currentPage = 2;
       offset = (currentPage) * AppConstants.pageSize;
-      expect(offset, equals(40));
+      expect(offset, equals(2 * AppConstants.pageSize));
     });
 
     test('número de items totales debe ser correcto después de múltiples cargas', () {
       // Simular 3 cargas completas
       int totalLoads = 3;
       int totalItems = totalLoads * AppConstants.pageSize;
-      expect(totalItems, equals(60)); // 3 * 20 = 60
+      expect(totalItems, equals(3 * AppConstants.pageSize));
     });
   });
 }

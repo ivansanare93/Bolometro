@@ -13,9 +13,6 @@ class EstadisticasCache extends ChangeNotifier {
   int _lastSesionesCount = 0;
   int _lastPartidasCount = 0;
 
-  // Tiempo de expiración del cache en minutos
-  static const int _cacheExpirationMinutes = 5;
-
   /// Obtener estadísticas con cache
   Map<String, dynamic> getEstadisticas(List<Sesion> sesiones) {
     final todasPartidas = <Partida>[];
@@ -50,7 +47,7 @@ class EstadisticasCache extends ChangeNotifier {
 
     // Si pasó el tiempo de expiración, refrescar
     if (DateTime.now().difference(_lastUpdate!).inMinutes >
-        _cacheExpirationMinutes) {
+        AppConstants.cacheExpirationMinutes) {
       return true;
     }
 

@@ -70,6 +70,9 @@ class AppConstants {
   static const int topNPeoresPartidas = 3; // Top 3 peores partidas
   static const int histogramaBinSize = 20; // Tamaño de bin para histograma
 
+  // ===== Cache =====
+  static const int cacheExpirationMinutes = 5; // Tiempo de expiración del cache de estadísticas
+
   // ===== Paginación =====
   static const int pageSize = 20; // Tamaño de página para lazy loading
   static const int scrollThreshold = 200; // Píxeles antes del final para cargar más
