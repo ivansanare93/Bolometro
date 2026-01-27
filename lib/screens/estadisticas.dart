@@ -31,6 +31,7 @@ class _EstadisticasPantallaCompletaState
   late Future<List<Sesion>> _sesionesFuture;
   String _filtroTipo = AppConstants.tipoTodos;
   DateTimeRange? _rangoFechas;
+  bool _hasLoggedView = false;
 
   @override
   void initState() {
@@ -132,11 +133,14 @@ class _EstadisticasPantallaCompletaState
           final estadisticasCache = Provider.of<EstadisticasCache>(context, listen: false);
           final stats = estadisticasCache.getEstadisticas(sesiones);
 
-          // Log analytics after successful data load
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            final analytics = Provider.of<AnalyticsService>(context, listen: false);
-            analytics.logStatisticsViewed('all');
-          });
+          // Log analytics after successful data load (only once)
+          if (!_hasLoggedView) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              final analytics = Provider.of<AnalyticsService>(context, listen: false);
+              analytics.logStatisticsViewed('all');
+            });
+            _hasLoggedView = true;
+          }
 
           // --- OBTENER DATOS DEL CACHE ---
           final promedio = stats['promedioGeneral'] as double;

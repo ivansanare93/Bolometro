@@ -155,11 +155,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                     value: themeProvider.isDarkMode,
                                     onChanged: (val) async {
                                       themeProvider.toggleTheme(val);
-                                      final analytics = Provider.of<AnalyticsService>(
-                                        context,
-                                        listen: false,
-                                      );
-                                      await analytics.logThemeChanged(val ? 'dark' : 'light');
+                                      try {
+                                        final analytics = Provider.of<AnalyticsService>(
+                                          context,
+                                          listen: false,
+                                        );
+                                        await analytics.logThemeChanged(val ? 'dark' : 'light');
+                                      } catch (e) {
+                                        debugPrint('Error logging theme change: $e');
+                                      }
                                       if (context.mounted) Navigator.pop(context);
                                     },
                                   ),
@@ -266,11 +270,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                     );
 
                                     if (confirm == true) {
-                                      final analytics = Provider.of<AnalyticsService>(
-                                        context,
-                                        listen: false,
-                                      );
-                                      await analytics.logSignOut();
+                                      try {
+                                        final analytics = Provider.of<AnalyticsService>(
+                                          context,
+                                          listen: false,
+                                        );
+                                        await analytics.logSignOut();
+                                      } catch (e) {
+                                        debugPrint('Error logging sign out: $e');
+                                      }
                                       await authService.signOut();
                                       dataRepository.setUser(null);
                                     }

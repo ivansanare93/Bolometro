@@ -189,8 +189,12 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
         // Al seleccionar una foto local, preservar datos de Google para uso futuro
         _clearGooglePhoto = false;
       });
-      final analytics = Provider.of<AnalyticsService>(context, listen: false);
-      await analytics.logAvatarChanged();
+      try {
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        await analytics.logAvatarChanged();
+      } catch (e) {
+        debugPrint('Error logging avatar change: $e');
+      }
     }
   }
 
