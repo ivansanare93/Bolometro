@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:io';
 
 import '../models/perfil_usuario.dart';
@@ -31,23 +32,49 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
   String? _avatarPath;
   bool _clearGooglePhoto = false; // Flag para limpiar foto de Google
 
+  void _initializeDefaultValues() {
+    perfil = PerfilUsuario(nombre: '');
+    _nombreController = TextEditingController(text: '');
+    _emailController = TextEditingController(text: '');
+    _clubController = TextEditingController(text: '');
+    _bioController = TextEditingController(text: '');
+    _manoDominante = null;
+    _fechaNacimiento = null;
+    _avatarPath = null;
+  }
+
   @override
   void initState() {
     super.initState();
-    perfilBox = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
-    perfil = perfilBox.get('perfil');
-    // Si no hay perfil, crea uno por defecto
-    if (perfil == null) {
-      perfil = PerfilUsuario(nombre: '');
-      perfilBox.put('perfil', perfil!);
+    try {
+      perfilBox = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+      perfil = perfilBox.get('perfil');
+      // Si no hay perfil, crea uno por defecto
+      if (perfil == null) {
+        perfil = PerfilUsuario(nombre: '');
+        perfilBox.put('perfil', perfil!);
+      }
+      _nombreController = TextEditingController(text: perfil?.nombre ?? '');
+      _emailController = TextEditingController(text: perfil?.email ?? '');
+      _clubController = TextEditingController(text: perfil?.club ?? '');
+      _bioController = TextEditingController(text: perfil?.bio ?? '');
+      _manoDominante = perfil?.manoDominante;
+      _fechaNacimiento = perfil?.fechaNacimiento;
+      _avatarPath = perfil?.avatarPath;
+    } on HiveError catch (e) {
+      debugPrint('Error de Hive al cargar perfil: $e');
+      // Intentar abrir la box nuevamente o crear valores por defecto
+      try {
+        perfilBox = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+      } catch (_) {
+        // Si falla, será necesario recrear la box en un futuro acceso
+        debugPrint('No se pudo abrir la box de perfil');
+      }
+      _initializeDefaultValues();
+    } catch (e) {
+      debugPrint('Error inesperado al inicializar perfil: $e');
+      _initializeDefaultValues();
     }
-    _nombreController = TextEditingController(text: perfil?.nombre ?? '');
-    _emailController = TextEditingController(text: perfil?.email ?? '');
-    _clubController = TextEditingController(text: perfil?.club ?? '');
-    _bioController = TextEditingController(text: perfil?.bio ?? '');
-    _manoDominante = perfil?.manoDominante;
-    _fechaNacimiento = perfil?.fechaNacimiento;
-    _avatarPath = perfil?.avatarPath;
   }
 
   Future<void> _guardarPerfil() async {
@@ -64,47 +91,78 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       return;
     }
 
-    final nuevoPerfil = PerfilUsuario(
-      nombre: _nombreController.text.trim(),
-      email: _emailController.text.trim().isEmpty
-          ? null
-          : _emailController.text.trim(),
-      avatarPath: _avatarPath,
-      club: _clubController.text.trim().isEmpty
-          ? null
-          : _clubController.text.trim(),
-      manoDominante: _manoDominante,
-      fechaNacimiento: _fechaNacimiento,
-      bio: _bioController.text.trim().isEmpty
-          ? null
-          : _bioController.text.trim(),
-      // Preservar datos de Google si existen, excepto si se solicitó limpiar foto
-      googlePhotoUrl: _clearGooglePhoto ? null : perfil?.googlePhotoUrl,
-      googleDisplayName: perfil?.googleDisplayName,
-      isFromGoogle: perfil?.isFromGoogle ?? false,
-    );
-
-    await perfilBox.put('perfil', nuevoPerfil);
-    setState(() {
-      perfil = nuevoPerfil;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Perfil guardado correctamente'),
-        backgroundColor: Colors.green[600],
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-      ),
-    );
-
-    // Espera un poco para que se vea el mensaje y navega al Home
-    await Future.delayed(const Duration(milliseconds: 600));
-    if (mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-        (route) => false,
+    try {
+      final nuevoPerfil = PerfilUsuario(
+        nombre: _nombreController.text.trim(),
+        email: _emailController.text.trim().isEmpty
+            ? null
+            : _emailController.text.trim(),
+        avatarPath: _avatarPath,
+        club: _clubController.text.trim().isEmpty
+            ? null
+            : _clubController.text.trim(),
+        manoDominante: _manoDominante,
+        fechaNacimiento: _fechaNacimiento,
+        bio: _bioController.text.trim().isEmpty
+            ? null
+            : _bioController.text.trim(),
+        // Preservar datos de Google si existen, excepto si se solicitó limpiar foto
+        googlePhotoUrl: _clearGooglePhoto ? null : perfil?.googlePhotoUrl,
+        googleDisplayName: perfil?.googleDisplayName,
+        isFromGoogle: perfil?.isFromGoogle ?? false,
       );
+
+      await perfilBox.put('perfil', nuevoPerfil);
+      setState(() {
+        perfil = nuevoPerfil;
+      });
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Perfil guardado correctamente'),
+            backgroundColor: Colors.green[600],
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+          ),
+        );
+
+        // Espera un poco para que se vea el mensaje y navega al Home
+        await Future.delayed(const Duration(milliseconds: 600));
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+            (route) => false,
+          );
+        }
+      }
+    } on HiveError catch (e) {
+      debugPrint('Error de Hive al guardar perfil: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Error al guardar perfil. Intenta nuevamente.'),
+            backgroundColor: Colors.red[600],
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error al guardar perfil: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Error inesperado al guardar perfil'),
+            backgroundColor: Colors.red[600],
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+          ),
+        );
+      }
     }
   }
 
@@ -154,23 +212,53 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
     );
 
     if (confirm == true) {
-      await perfilBox.delete('perfil');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Perfil eliminado'),
-          backgroundColor: Colors.red[600],
-          duration: const Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-        ),
-      );
-      await Future.delayed(const Duration(milliseconds: 600));
-      if (!mounted) return;
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-        (route) => false,
-      );
+      try {
+        await perfilBox.delete('perfil');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Perfil eliminado'),
+              backgroundColor: Colors.red[600],
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+            ),
+          );
+          await Future.delayed(const Duration(milliseconds: 600));
+          if (!mounted) return;
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+            (route) => false,
+          );
+        }
+      } on HiveError catch (e) {
+        debugPrint('Error de Hive al eliminar perfil: $e');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Error al eliminar perfil. Intenta nuevamente.'),
+              backgroundColor: Colors.red[600],
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+            ),
+          );
+        }
+      } catch (e) {
+        debugPrint('Error al eliminar perfil: $e');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Error inesperado al eliminar perfil'),
+              backgroundColor: Colors.red[600],
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+            ),
+          );
+        }
+      }
     }
   }
 
