@@ -208,7 +208,7 @@ Para verificar que las correcciones funcionan correctamente:
 
 ## Compatibilidad
 
-- **Flutter SDK:** ^3.8.1
+- **Flutter SDK:** última versión estable
 - **Dart SDK:** Compatible con la versión de Flutter
 - **Android:** minSdk 23 (Android 6.0+)
 - **iOS:** Pendiente de configuración
