@@ -188,5 +188,49 @@
   "performanceSummary": "Summary of your performance",
   "viewSessions": "View sessions",
   "editMyProfile": "Edit my profile",
-  "saveChanges": "Save changes"
+  "saveChanges": "Save changes",
+  "deleteProfileMessage": "Are you sure you want to delete your profile?\nThis action cannot be undone.",
+  "signedIn": "Signed in",
+  "signOutConfirmation": "Are you sure you want to sign out? Your local data will be kept.",
+  "moreOptionsComingSoon": "More options coming soon...",
+  "welcomeUser": "Welcome, {name}!",
+  "@welcomeUser": {
+    "description": "Welcome message with user name",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "John"
+      }
+    }
+  },
+  "welcomeCreateProfile": "Welcome! First, create your profile to get started",
+  "clubLabel": "Club: {club}",
+  "@clubLabel": {
+    "description": "Club label",
+    "placeholders": {
+      "club": {
+        "type": "String",
+        "example": "Madrid Bowling"
+      }
+    }
+  },
+  "dominantHandLabel": "Dominant hand: {hand}",
+  "@dominantHandLabel": {
+    "description": "Dominant hand label",
+    "placeholders": {
+      "hand": {
+        "type": "String",
+        "example": "Right"
+      }
+    }
+  },
+  "createMyProfile": "Create my profile",
+  "profileFromGoogle": "Profile created from your Google account. You can edit it freely.",
+  "imageNotFound": "Image not found, select another.",
+  "usingGooglePhoto": "Using Google photo. Tap to change",
+  "tapToChangeImage": "Tap to change your image",
+  "enterYourName": "Enter your name",
+  "enterValidEmail": "Enter a valid email",
+  "selectDate": "Select date",
+  "aboutMe": "About me"
 }

@@ -196,8 +196,8 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(AppLocalizations.of(context)!.deleteProfileConfirmation),
-        content: const Text(
-          '¿Seguro que quieres borrar tu perfil?\nEsta acción no se puede deshacer.',
+        content: Text(
+          AppLocalizations.of(context)!.deleteProfileMessage,
         ),
         actions: [
           TextButton(
@@ -307,7 +307,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Perfil creado desde tu cuenta de Google. Puedes editarlo libremente.',
+                          AppLocalizations.of(context)!.profileFromGoogle,
                           style: TextStyle(
                             fontSize: 12,
                             color: cs.onSurface.withOpacity(0.8),
@@ -373,15 +373,15 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
                   child: Text(
-                    'Imagen no encontrada, selecciona otra.',
+                    AppLocalizations.of(context)!.imageNotFound,
                     style: TextStyle(color: Colors.red[400], fontSize: 13),
                   ),
                 ),
               const SizedBox(height: 8),
               Text(
                 showGooglePhoto 
-                    ? 'Usando foto de Google. Pulsa para cambiar' 
-                    : 'Pulsa para cambiar tu imagen',
+                    ? AppLocalizations.of(context)!.usingGooglePhoto
+                    : AppLocalizations.of(context)!.tapToChangeImage,
                 style: TextStyle(
                   fontSize: 13,
                   color: cs.onSurface.withOpacity(0.6),
@@ -397,7 +397,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                   border: const OutlineInputBorder(),
                 ),
                 validator: (v) => v == null || v.trim().isEmpty
-                    ? 'Introduce tu nombre'
+                    ? AppLocalizations.of(context)!.enterYourName
                     : null,
               ),
               const SizedBox(height: 16),
@@ -414,7 +414,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                   if (v == null || v.trim().isEmpty) return null;
                   final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
                   if (!emailRegex.hasMatch(v.trim())) {
-                    return 'Introduce un email válido';
+                    return AppLocalizations.of(context)!.enterValidEmail;
                   }
                   return null;
                 },
@@ -485,7 +485,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           child: Text(
                             _fechaNacimiento == null
-                                ? 'Seleccionar fecha'
+                                ? AppLocalizations.of(context)!.selectDate
                                 : '${_fechaNacimiento!.day}/${_fechaNacimiento!.month}/${_fechaNacimiento!.year}',
                             style: TextStyle(
                               fontSize: 16,
@@ -504,10 +504,10 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
               // Bio
               TextFormField(
                 controller: _bioController,
-                decoration: const InputDecoration(
-                  labelText: 'Sobre mí',
-                  prefixIcon: Icon(Icons.info_outline),
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.aboutMe,
+                  prefixIcon: const Icon(Icons.info_outline),
+                  border: const OutlineInputBorder(),
                 ),
                 maxLines: 2,
               ),

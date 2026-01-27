@@ -118,9 +118,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            const Text(
-                                              'Sesión iniciada',
-                                              style: TextStyle(
+                                            Text(
+                                              AppLocalizations.of(context)!.signedIn,
+                                              style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
                                               ),
                                             ),
@@ -228,8 +228,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                       context: context,
                                       builder: (context) => AlertDialog(
                                         title: Text(AppLocalizations.of(context)!.signOut),
-                                        content: const Text(
-                                          '¿Estás seguro de que deseas cerrar sesión? Tus datos locales se mantendrán.',
+                                        content: Text(
+                                          AppLocalizations.of(context)!.signOutConfirmation,
                                         ),
                                         actions: [
                                           TextButton(
@@ -258,9 +258,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ] else ...[
                                 const Divider(height: 32),
-                                const Text(
-                                  'Más opciones próximamente...',
-                                  style: TextStyle(
+                                Text(
+                                  AppLocalizations.of(context)!.moreOptionsComingSoon,
+                                  style: const TextStyle(
                                     fontSize: 14,
                                     color: Colors.grey,
                                   ),
@@ -384,8 +384,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 12),
                       Text(
                         tienePerfil
-                            ? '¡Bienvenid@, ${perfil!.nombre}!'
-                            : '¡Bienvenid@! Antes de nada, crea tu perfil para empezar',
+                            ? AppLocalizations.of(context)!.welcomeUser(perfil!.nombre)
+                            : AppLocalizations.of(context)!.welcomeCreateProfile,
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -398,7 +398,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Padding(
                           padding: const EdgeInsets.only(top: 3.0),
                           child: Text(
-                            'Club: ${perfil.club}',
+                            AppLocalizations.of(context)!.clubLabel(perfil.club!),
                             style: TextStyle(
                               fontSize: 15,
                               color: cs.primary,
@@ -409,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Padding(
                           padding: const EdgeInsets.only(top: 2.0),
                           child: Text(
-                            'Mano dominante: ${perfil.manoDominante}',
+                            AppLocalizations.of(context)!.dominantHandLabel(perfil.manoDominante!),
                             style: TextStyle(
                               fontSize: 14,
                               color: cs.primary.withOpacity(0.68),
@@ -442,7 +442,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           : ElevatedButton.icon(
                               icon: const Icon(Icons.person_add_alt_1),
                               label: Text(
-                                'Crear mi perfil',
+                                AppLocalizations.of(context)!.createMyProfile,
                                 style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               style: ElevatedButton.styleFrom(
