@@ -46,4 +46,8 @@ class PerfilUsuario extends HiveObject {
     this.googleDisplayName,
     this.isFromGoogle = false,
   });
+
+  /// Verifica si el perfil tiene una foto de Google disponible
+  bool get hasGooglePhoto => 
+      googlePhotoUrl != null && googlePhotoUrl!.isNotEmpty;
 }

@@ -188,9 +188,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
         _avatarPath != null && File(_avatarPath!).existsSync();
     
     // Mostrar foto de Google si está disponible y no hay foto local
-    final hasGooglePhoto = perfil?.googlePhotoUrl != null && 
-                          perfil!.googlePhotoUrl!.isNotEmpty;
-    final showGooglePhoto = hasGooglePhoto && !avatarFileExists;
+    final showGooglePhoto = perfil?.hasGooglePhoto == true && !avatarFileExists;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Mi perfil'), centerTitle: true),

@@ -321,9 +321,7 @@ class _HomeScreenState extends State<HomeScreen> {
               radius: 46,
               backgroundImage: FileImage(File(perfil.avatarPath!)),
             );
-          } else if (perfil != null && 
-                     perfil.googlePhotoUrl != null && 
-                     perfil.googlePhotoUrl!.isNotEmpty) {
+          } else if (perfil != null && perfil.hasGooglePhoto) {
             // Usar foto de Google con manejo de errores
             avatar = CircleAvatar(
               radius: 46,
