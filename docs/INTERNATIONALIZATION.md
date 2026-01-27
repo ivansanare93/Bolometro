@@ -1,16 +1,16 @@
-# Internationalization (i18n) Guide
+# Guía de Internacionalización (i18n)
 
-Bolometro supports multiple languages using Flutter's built-in internationalization system.
+Bolometro soporta múltiples idiomas usando el sistema de internacionalización integrado de Flutter.
 
-## Supported Languages
+## Idiomas Soportados
 
-- 🇪🇸 Spanish (es) - Default
-- 🇬🇧 English (en)
+- 🇪🇸 Español (es) - Por defecto
+- 🇬🇧 Inglés (en)
 
-## Configuration
+## Configuración
 
 ### l10n.yaml
-The l10n configuration file defines where localization files are located:
+El archivo de configuración l10n define dónde se encuentran los archivos de localización:
 
 ```yaml
 arb-dir: lib/l10n
@@ -18,71 +18,71 @@ template-arb-file: app_es.arb
 output-localization-file: app_localizations.dart
 ```
 
-### ARB Files
-Application Resource Bundle (ARB) files contain all translatable strings:
+### Archivos ARB
+Los archivos Application Resource Bundle (ARB) contienen todas las cadenas traducibles:
 
-- `lib/l10n/app_es.arb` - Spanish translations (template)
-- `lib/l10n/app_en.arb` - English translations
+- `lib/l10n/app_es.arb` - Traducciones en español (plantilla)
+- `lib/l10n/app_en.arb` - Traducciones en inglés
 
-## Using Localized Strings
+## Usar Cadenas Localizadas
 
-### In Dart Code
+### En Código Dart
 
 ```dart
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-// In a widget
+// En un widget
 Text(AppLocalizations.of(context)!.appTitle)
 
-// Common strings
+// Cadenas comunes
 AppLocalizations.of(context)!.save
 AppLocalizations.of(context)!.cancel
 AppLocalizations.of(context)!.loading
 ```
 
-### Available Translations
+### Traducciones Disponibles
 
-All available translations can be found in the ARB files. Key categories include:
+Todas las traducciones disponibles se pueden encontrar en los archivos ARB. Las categorías clave incluyen:
 
-#### Navigation
+#### Navegación
 - `home`, `sessions`, `statistics`, `profile`, `settings`
 
-#### Actions
+#### Acciones
 - `save`, `cancel`, `delete`, `edit`, `confirm`
 - `share`, `export`, `import`, `sync`
 
-#### Bowling Terms
+#### Términos de Boliche
 - `score`, `average`, `bestGame`, `totalGames`
 - `strikes`, `spares`, `frames`
 - `training`, `competition`
 
-#### Messages
+#### Mensajes
 - `loading`, `noData`, `error`
 - `saveSuccess`, `deleteSuccess`, `syncSuccess`
 - `saveError`, `deleteError`, `syncError`
 
-#### Settings
+#### Configuración
 - `darkMode`, `lightMode`, `systemMode`
 - `language`, `spanish`, `english`
 
-## Adding New Translations
+## Agregar Nuevas Traducciones
 
-### 1. Add to Spanish ARB (Template)
+### 1. Agregar al ARB en Español (Plantilla)
 
-Edit `lib/l10n/app_es.arb`:
+Edita `lib/l10n/app_es.arb`:
 
 ```json
 {
   "myNewString": "Mi Nueva Cadena",
   "@myNewString": {
-    "description": "Description of what this string is used for"
+    "description": "Descripción de para qué se usa esta cadena"
   }
 }
 ```
 
-### 2. Add to English ARB
+### 2. Agregar al ARB en Inglés
 
-Edit `lib/l10n/app_en.arb`:
+Edita `lib/l10n/app_en.arb`:
 
 ```json
 {
@@ -93,35 +93,35 @@ Edit `lib/l10n/app_en.arb`:
 }
 ```
 
-### 3. Generate Dart Files
+### 3. Generar Archivos Dart
 
 ```bash
 flutter gen-l10n
 ```
 
-Or simply run:
+O simplemente ejecuta:
 ```bash
 flutter pub get
 ```
 
-The localization files will be auto-generated in `.dart_tool/flutter_gen/gen_l10n/`.
+Los archivos de localización se generarán automáticamente en `.dart_tool/flutter_gen/gen_l10n/`.
 
-### 4. Use in Code
+### 4. Usar en Código
 
 ```dart
 Text(AppLocalizations.of(context)!.myNewString)
 ```
 
-## Strings with Parameters
+## Cadenas con Parámetros
 
-For strings that need dynamic values:
+Para cadenas que necesitan valores dinámicos:
 
-### ARB File
+### Archivo ARB
 ```json
 {
   "welcomeUser": "Bienvenido, {userName}!",
   "@welcomeUser": {
-    "description": "Welcome message with user name",
+    "description": "Mensaje de bienvenida con nombre de usuario",
     "placeholders": {
       "userName": {
         "type": "String"
@@ -131,21 +131,21 @@ For strings that need dynamic values:
 }
 ```
 
-### Usage
+### Uso
 ```dart
 Text(AppLocalizations.of(context)!.welcomeUser('Juan'))
 ```
 
-## Plural Strings
+## Cadenas Plurales
 
-For strings that change based on quantity:
+Para cadenas que cambian según la cantidad:
 
-### ARB File
+### Archivo ARB
 ```json
 {
   "gamesCount": "{count, plural, =0{No hay partidas} =1{1 partida} other{{count} partidas}}",
   "@gamesCount": {
-    "description": "Number of games",
+    "description": "Número de partidas",
     "placeholders": {
       "count": {
         "type": "int"
@@ -155,97 +155,97 @@ For strings that change based on quantity:
 }
 ```
 
-### Usage
+### Uso
 ```dart
 Text(AppLocalizations.of(context)!.gamesCount(5))
 ```
 
-## Date and Number Formatting
+## Formato de Fechas y Números
 
-Use the `intl` package for locale-aware formatting:
+Usa el paquete `intl` para formato consciente de locale:
 
 ```dart
 import 'package:intl/intl.dart';
 
-// Dates
+// Fechas
 final dateFormat = DateFormat.yMMMd(Localizations.localeOf(context).languageCode);
 final formattedDate = dateFormat.format(DateTime.now());
 
-// Numbers
+// Números
 final numberFormat = NumberFormat.decimalPattern(Localizations.localeOf(context).languageCode);
 final formattedNumber = numberFormat.format(12345.67);
 ```
 
-## Changing Language at Runtime
+## Cambiar Idioma en Tiempo de Ejecución
 
-The app uses `LanguageProvider` to manage the current locale:
+La app usa `LanguageProvider` para gestionar el locale actual:
 
 ```dart
 final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
 
-// Change to English
+// Cambiar a inglés
 languageProvider.setLocale(const Locale('en'));
 
-// Change to Spanish
+// Cambiar a español
 languageProvider.setLocale(const Locale('es'));
 ```
 
-## Adding a New Language
+## Agregar un Nuevo Idioma
 
-### 1. Create ARB File
-Create `lib/l10n/app_[locale].arb` (e.g., `app_fr.arb` for French)
+### 1. Crear Archivo ARB
+Crea `lib/l10n/app_[locale].arb` (ej., `app_fr.arb` para francés)
 
-### 2. Translate All Strings
-Copy all entries from `app_es.arb` and translate them
+### 2. Traducir Todas las Cadenas
+Copia todas las entradas de `app_es.arb` y tradúcelas
 
-### 3. Update main.dart
-Add the new locale to `supportedLocales`:
+### 3. Actualizar main.dart
+Agrega el nuevo locale a `supportedLocales`:
 
 ```dart
 supportedLocales: const [
   Locale('es'),
   Locale('en'),
-  Locale('fr'), // Add new locale
+  Locale('fr'), // Agregar nuevo locale
 ],
 ```
 
-### 4. Update Language Selector UI
-Add the new language option in the settings screen
+### 4. Actualizar UI del Selector de Idioma
+Agrega la nueva opción de idioma en la pantalla de configuración
 
-## Best Practices
+## Mejores Prácticas
 
-1. **Always use keys in English** - Makes code more readable
-2. **Add descriptions** - Helps translators understand context
-3. **Keep strings short** - UI constraints may vary by language
-4. **Test all languages** - Ensure UI doesn't break with longer/shorter text
-5. **Use gender-neutral language** - When possible
-6. **Avoid concatenation** - Use placeholders instead
-7. **Never hardcode strings** - Always use localization
+1. **Usa siempre claves en inglés** - Hace el código más legible
+2. **Agrega descripciones** - Ayuda a los traductores a entender el contexto
+3. **Mantén las cadenas cortas** - Las restricciones de UI pueden variar por idioma
+4. **Prueba todos los idiomas** - Asegúrate de que la UI no se rompa con texto más largo/corto
+5. **Usa lenguaje neutral de género** - Cuando sea posible
+6. **Evita concatenación** - Usa marcadores de posición en su lugar
+7. **Nunca hardcodees cadenas** - Usa siempre localización
 
-## Common Mistakes to Avoid
+## Errores Comunes a Evitar
 
-❌ **Don't**:
+❌ **No hacer**:
 ```dart
-Text('Guardar') // Hardcoded string
+Text('Guardar') // Cadena hardcodeada
 ```
 
-✅ **Do**:
+✅ **Hacer**:
 ```dart
 Text(AppLocalizations.of(context)!.save)
 ```
 
-❌ **Don't**:
+❌ **No hacer**:
 ```dart
-Text('Tiene ' + count.toString() + ' partidas') // Concatenation
+Text('Tiene ' + count.toString() + ' partidas') // Concatenación
 ```
 
-✅ **Do**:
+✅ **Hacer**:
 ```dart
 Text(AppLocalizations.of(context)!.gamesCount(count))
 ```
 
-## Resources
+## Recursos
 
-- [Flutter Internationalization Guide](https://docs.flutter.dev/development/accessibility-and-localization/internationalization)
-- [ARB Format Specification](https://github.com/google/app-resource-bundle)
-- [Intl Package Documentation](https://pub.dev/packages/intl)
+- [Guía de Internacionalización de Flutter](https://docs.flutter.dev/development/accessibility-and-localization/internationalization)
+- [Especificación del Formato ARB](https://github.com/google/app-resource-bundle)
+- [Documentación del Paquete Intl](https://pub.dev/packages/intl)

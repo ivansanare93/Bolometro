@@ -1,82 +1,82 @@
-# Skeleton Loaders Guide
+# Guía de Skeleton Loaders
 
-Skeleton loaders provide visual feedback while content is loading, improving perceived performance and user experience.
+Los skeleton loaders proporcionan retroalimentación visual mientras el contenido se carga, mejorando el rendimiento percibido y la experiencia del usuario.
 
-## Overview
+## Descripción General
 
-Bolometro uses the `shimmer` package to create skeleton loading effects. These are implemented in `lib/widgets/skeleton_loaders.dart`.
+Bolometro utiliza el paquete `shimmer` para crear efectos de carga tipo skeleton. Estos están implementados en `lib/widgets/skeleton_loaders.dart`.
 
-## Available Skeleton Widgets
+## Widgets Skeleton Disponibles
 
 ### 1. SessionCardSkeleton
 
-Mimics the appearance of a session card while loading.
+Imita la apariencia de una tarjeta de sesión mientras se carga.
 
-**Usage**:
+**Uso**:
 ```dart
 import 'package:bolometro/widgets/skeleton_loaders.dart';
 
-// In your widget build method
+// En el método build de tu widget
 isLoading 
   ? const SessionCardSkeleton()
   : SessionCard(session: session)
 ```
 
-**Appearance**:
-- Card container
-- Title placeholder (150px wide)
-- Subtitle placeholder (100px wide)
-- Three metric boxes in a row
+**Apariencia**:
+- Contenedor de tarjeta
+- Marcador de posición del título (150px de ancho)
+- Marcador de posición del subtítulo (100px de ancho)
+- Tres cuadros de métricas en fila
 
 ### 2. StatisticsCardSkeleton
 
-Used for loading KPI cards on the statistics screen.
+Usado para cargar tarjetas KPI en la pantalla de estadísticas.
 
-**Usage**:
+**Uso**:
 ```dart
 isLoading
   ? const StatisticsCardSkeleton()
   : StatisticsCard(
-      title: 'Average',
+      title: 'Promedio',
       value: '150',
     )
 ```
 
-**Appearance**:
-- Small card
-- Label placeholder (80px)
-- Value placeholder (120px)
+**Apariencia**:
+- Tarjeta pequeña
+- Marcador de posición de etiqueta (80px)
+- Marcador de posición de valor (120px)
 
 ### 3. ChartSkeleton
 
-Skeleton for chart components with customizable height.
+Skeleton para componentes de gráficos con altura personalizable.
 
-**Usage**:
+**Uso**:
 ```dart
-// Default height (200px)
+// Altura por defecto (200px)
 isLoading
   ? const ChartSkeleton()
   : MyChart(data: data)
 
-// Custom height
+// Altura personalizada
 isLoading
   ? const ChartSkeleton(height: 300)
   : MyChart(data: data)
 ```
 
-**Parameters**:
-- `height`: Height of the skeleton (default: 200)
+**Parámetros**:
+- `height`: Altura del skeleton (por defecto: 200)
 
-**Appearance**:
-- Card with padding
-- Title placeholder
-- Large rectangular placeholder for chart area
+**Apariencia**:
+- Tarjeta con padding
+- Marcador de posición del título
+- Marcador de posición rectangular grande para el área del gráfico
 
 ### 4. ListItemSkeleton
 
-Generic skeleton for list items.
+Skeleton genérico para elementos de lista.
 
-**Usage**:
+**Uso**:
 ```dart
 ListView.builder(
   itemCount: isLoading ? 5 : items.length,
@@ -89,13 +89,13 @@ ListView.builder(
 )
 ```
 
-**Appearance**:
-- Left square icon placeholder (60x60)
-- Two text line placeholders on the right
+**Apariencia**:
+- Marcador de posición de ícono cuadrado izquierdo (60x60)
+- Dos marcadores de posición de líneas de texto a la derecha
 
-## Implementation Examples
+## Ejemplos de Implementación
 
-### Loading Session List
+### Cargando Lista de Sesiones
 
 ```dart
 class SessionsList extends StatelessWidget {
@@ -106,7 +106,7 @@ class SessionsList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isLoading) {
       return ListView.builder(
-        itemCount: 5, // Show 5 skeleton items while loading
+        itemCount: 5, // Mostrar 5 elementos skeleton mientras se carga
         itemBuilder: (context, index) => const SessionCardSkeleton(),
       );
     }
@@ -121,7 +121,7 @@ class SessionsList extends StatelessWidget {
 }
 ```
 
-### Loading Statistics Cards
+### Cargando Tarjetas de Estadísticas
 
 ```dart
 class StatisticsScreen extends StatefulWidget {
@@ -142,7 +142,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   Future<void> _loadStatistics() async {
     setState(() => _isLoading = true);
     
-    // Simulate loading
+    // Simular carga
     await Future.delayed(const Duration(seconds: 2));
     _stats = await calculateStatistics();
     
@@ -166,14 +166,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               title: 'Mejor',
               value: _stats['best'].toString(),
             ),
-        // More cards...
+        // Más tarjetas...
       ],
     );
   }
 }
 ```
 
-### Loading Charts
+### Cargando Gráficos
 
 ```dart
 class ChartWidget extends StatefulWidget {
@@ -208,7 +208,7 @@ class _ChartWidgetState extends State<ChartWidget> {
 }
 ```
 
-### Pull-to-Refresh with Skeletons
+### Pull-to-Refresh con Skeletons
 
 ```dart
 class SessionsListScreen extends StatefulWidget {
@@ -248,9 +248,9 @@ class _SessionsListScreenState extends State<SessionsListScreen> {
 }
 ```
 
-## Customization
+## Personalización
 
-### Creating Custom Skeletons
+### Crear Skeletons Personalizados
 
 ```dart
 import 'package:flutter/material.dart';
@@ -294,9 +294,9 @@ class MyCustomSkeleton extends StatelessWidget {
 }
 ```
 
-### Dark Mode Support
+### Soporte para Modo Oscuro
 
-Skeletons automatically adapt to dark mode by using theme colors:
+Los skeletons se adaptan automáticamente al modo oscuro usando colores del tema:
 
 ```dart
 Shimmer.fromColors(
@@ -306,120 +306,120 @@ Shimmer.fromColors(
   highlightColor: Theme.of(context).brightness == Brightness.dark
     ? Colors.grey[700]!
     : Colors.grey[100]!,
-  child: // Your skeleton content
+  child: // Tu contenido skeleton
 )
 ```
 
-## Best Practices
+## Mejores Prácticas
 
-### 1. Match Real Content Size
+### 1. Coincidir con el Tamaño del Contenido Real
 
-Skeletons should closely match the size and layout of actual content:
+Los skeletons deben coincidir estrechamente con el tamaño y diseño del contenido real:
 
 ```dart
-// Bad - skeleton doesn't match real content
-const SessionCardSkeleton() // Shows 3 metrics
-SessionCard(session: session) // Shows 5 metrics
+// Mal - skeleton no coincide con contenido real
+const SessionCardSkeleton() // Muestra 3 métricas
+SessionCard(session: session) // Muestra 5 métricas
 
-// Good - skeleton matches
-const SessionCardSkeleton() // Shows 5 metrics
-SessionCard(session: session) // Shows 5 metrics
+// Bien - skeleton coincide
+const SessionCardSkeleton() // Muestra 5 métricas
+SessionCard(session: session) // Muestra 5 métricas
 ```
 
-### 2. Show Appropriate Number
+### 2. Mostrar Número Apropiado
 
-Display a reasonable number of skeleton items:
+Muestra un número razonable de elementos skeleton:
 
 ```dart
-// Bad - too many skeletons
+// Mal - demasiados skeletons
 itemCount: 100
 
-// Good - just enough to fill visible area
+// Bien - suficientes para llenar el área visible
 itemCount: 5
 ```
 
-### 3. Avoid Nested Skeletons
+### 3. Evitar Skeletons Anidados
 
-Don't nest shimmer effects:
+No anides efectos shimmer:
 
 ```dart
-// Bad
+// Mal
 Shimmer.fromColors(
   child: Shimmer.fromColors(
     child: Container(),
   ),
 )
 
-// Good
+// Bien
 Shimmer.fromColors(
   child: Container(),
 )
 ```
 
-### 4. Quick Transitions
+### 4. Transiciones Rápidas
 
-Remove skeletons as soon as data is ready:
+Remueve skeletons tan pronto como los datos estén listos:
 
 ```dart
-// Good
+// Bien
 setState(() {
   _data = loadedData;
-  _isLoading = false; // Immediately hide skeleton
+  _isLoading = false; // Ocultar skeleton inmediatamente
 });
 ```
 
-### 5. Consistent Timing
+### 5. Tiempo Consistente
 
-Use consistent loading durations across the app:
+Usa duraciones de carga consistentes en toda la app:
 
 ```dart
-// Define in app constants
+// Definir en constantes de la app
 static const Duration skeletonMinDuration = Duration(milliseconds: 300);
 static const Duration skeletonMaxDuration = Duration(seconds: 10);
 ```
 
-## Performance Tips
+## Consejos de Rendimiento
 
-### 1. Limit Shimmer Widgets
+### 1. Limitar Widgets Shimmer
 
-Too many shimmer animations can impact performance:
+Demasiadas animaciones shimmer pueden impactar el rendimiento:
 
 ```dart
-// Consider using a simple grey placeholder for off-screen items
+// Considera usar un marcador de posición gris simple para elementos fuera de pantalla
 if (index < 5) {
-  return const SessionCardSkeleton(); // Animated
+  return const SessionCardSkeleton(); // Animado
 } else {
-  return const SessionCardPlaceholder(); // Static grey box
+  return const SessionCardPlaceholder(); // Cuadro gris estático
 }
 ```
 
-### 2. Dispose Properly
+### 2. Desechar Apropiadamente
 
-Shimmer uses animation controllers that should be disposed:
+Shimmer usa controladores de animación que deben ser desechados:
 
 ```dart
-// The shimmer package handles this automatically
-// But if creating custom skeletons, ensure proper disposal
+// El paquete shimmer maneja esto automáticamente
+// Pero si creas skeletons personalizados, asegura el desechado apropiado
 ```
 
-### 3. Use const Constructors
+### 3. Usar Constructores const
 
-Always use const for skeleton widgets:
+Siempre usa const para widgets skeleton:
 
 ```dart
-// Good
+// Bien
 const SessionCardSkeleton()
 
-// Bad
+// Mal
 SessionCardSkeleton()
 ```
 
-## Testing Skeletons
+## Probar Skeletons
 
-### Visual Testing
+### Pruebas Visuales
 
 ```dart
-testWidgets('Skeleton displays correctly', (tester) async {
+testWidgets('Skeleton se muestra correctamente', (tester) async {
   await tester.pumpWidget(
     MaterialApp(
       home: Scaffold(
@@ -433,17 +433,17 @@ testWidgets('Skeleton displays correctly', (tester) async {
 });
 ```
 
-### Loading State Testing
+### Pruebas de Estado de Carga
 
 ```dart
-testWidgets('Shows skeleton while loading', (tester) async {
+testWidgets('Muestra skeleton mientras se carga', (tester) async {
   await tester.pumpWidget(MyWidget(isLoading: true));
   
   expect(find.byType(SessionCardSkeleton), findsWidgets);
   expect(find.byType(SessionCard), findsNothing);
 });
 
-testWidgets('Shows content when loaded', (tester) async {
+testWidgets('Muestra contenido cuando está cargado', (tester) async {
   await tester.pumpWidget(MyWidget(isLoading: false));
   
   expect(find.byType(SessionCardSkeleton), findsNothing);
@@ -451,8 +451,8 @@ testWidgets('Shows content when loaded', (tester) async {
 });
 ```
 
-## Resources
+## Recursos
 
-- [Shimmer Package](https://pub.dev/packages/shimmer)
-- [Flutter Performance Best Practices](https://docs.flutter.dev/perf/best-practices)
-- [Material Design - Placeholders](https://material.io/design/communication/data-formats.html#loading-data)
+- [Paquete Shimmer](https://pub.dev/packages/shimmer)
+- [Mejores Prácticas de Rendimiento de Flutter](https://docs.flutter.dev/perf/best-practices)
+- [Material Design - Marcadores de Posición](https://material.io/design/communication/data-formats.html#loading-data)

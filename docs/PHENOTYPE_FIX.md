@@ -1,10 +1,10 @@
-# Google Play Services Phenotype API Error - Fix Documentation
+# Error de API Phenotype de Google Play Services - Documentación de Corrección
 
-## Date: January 27, 2026
+## Fecha: 27 de Enero de 2026
 
-## Problem Description
+## Descripción del Problema
 
-The application was encountering the following error when attempting to save a session:
+La aplicación estaba encontrando el siguiente error al intentar guardar una sesión:
 
 ```
 W/FlagRegistrar( 3785): Failed to register com.google.android.gms.providerinstaller#com.bolometro
@@ -13,145 +13,145 @@ W/FlagRegistrar( 3785): fifm: 17: 17: API: Phenotype.API is not available on thi
 Caused by: axhr: 17: API: Phenotype.API is not available on this device. Connection failed with: ConnectionResult{statusCode=DEVELOPER_ERROR, resolution=null, message=null}
 ```
 
-## Root Cause
+## Causa Raíz
 
-The Phenotype API is an **internal** Google Play Services API used by Firebase Analytics for A/B testing and remote configuration. This API is not guaranteed to be available on all devices, particularly:
+La API Phenotype es una API **interna** de Google Play Services utilizada por Firebase Analytics para pruebas A/B y configuración remota. Esta API no está garantizada de estar disponible en todos los dispositivos, particularmente:
 
-- Devices without Google Play Services
-- Devices with outdated Google Play Services
-- Custom ROMs or modified Android builds
-- Emulators without proper Google Play Services setup
+- Dispositivos sin Google Play Services
+- Dispositivos con Google Play Services desactualizado
+- ROMs personalizadas o compilaciones de Android modificadas
+- Emuladores sin configuración apropiada de Google Play Services
 
-The error occurred because:
-1. Firebase Analytics was manually added to `android/app/build.gradle.kts`
-2. Firebase Analytics was **not actually used** anywhere in the Dart codebase
-3. The unnecessary dependency caused the app to attempt to initialize Phenotype API
-4. This initialization failed on devices without proper Google Play Services support
+El error ocurrió porque:
+1. Firebase Analytics se agregó manualmente a `android/app/build.gradle.kts`
+2. Firebase Analytics **no se usaba realmente** en ningún lugar del código Dart
+3. La dependencia innecesaria causó que la app intentara inicializar la API Phenotype
+4. Esta inicialización falló en dispositivos sin soporte apropiado de Google Play Services
 
-## Solution Implemented
+## Solución Implementada
 
-### Removed Unnecessary Firebase Analytics Dependency
+### Eliminada Dependencia Innecesaria de Firebase Analytics
 
-**File Modified:** `android/app/build.gradle.kts`
+**Archivo Modificado:** `android/app/build.gradle.kts`
 
-**Changes:**
+**Cambios:**
 ```kotlin
-// BEFORE (Causing the error)
+// ANTES (Causando el error)
 dependencies {
   implementation(platform("com.google.firebase:firebase-bom:34.0.0"))
   implementation("com.google.firebase:firebase-analytics")
 }
 
-// AFTER (Fixed)
+// DESPUÉS (Corregido)
 dependencies {
-  // Firebase dependencies are managed by FlutterFire plugins
-  // No need to manually add Firebase BoM or Analytics here
-  // The required Firebase components (Auth, Firestore) are automatically
-  // included by the firebase_auth and cloud_firestore Flutter plugins
+  // Las dependencias de Firebase son gestionadas por los plugins de FlutterFire
+  // No es necesario agregar manualmente Firebase BoM o Analytics aquí
+  // Los componentes de Firebase requeridos (Auth, Firestore) se incluyen automáticamente
+  // por los plugins de Flutter firebase_auth y cloud_firestore
 }
 ```
 
-### Why This Works
+### Por Qué Esto Funciona
 
-1. **FlutterFire Plugins Handle Dependencies**: The Flutter plugins `firebase_auth` and `cloud_firestore` (defined in `pubspec.yaml`) automatically include the necessary Firebase SDK components for Android.
+1. **Los Plugins de FlutterFire Manejan las Dependencias**: Los plugins de Flutter `firebase_auth` y `cloud_firestore` (definidos en `pubspec.yaml`) incluyen automáticamente los componentes necesarios del SDK de Firebase para Android.
 
-2. **No Manual Android Dependencies Needed**: FlutterFire's plugin architecture manages native platform dependencies, so manually adding Firebase to `build.gradle.kts` is redundant and can cause conflicts.
+2. **No se Necesitan Dependencias Manuales de Android**: La arquitectura de plugins de FlutterFire gestiona las dependencias de plataforma nativa, por lo que agregar Firebase manualmente a `build.gradle.kts` es redundante y puede causar conflictos.
 
-3. **Analytics Not Required**: The app only uses:
-   - Firebase Authentication (for user login)
-   - Cloud Firestore (for data storage)
-   - Neither of these requires Firebase Analytics or the Phenotype API
+3. **Analytics No es Requerido**: La app solo usa:
+   - Firebase Authentication (para login de usuarios)
+   - Cloud Firestore (para almacenamiento de datos)
+   - Ninguno de estos requiere Firebase Analytics o la API Phenotype
 
-## Impact
+## Impacto
 
-### What Changed
-- ✅ Removed Firebase Analytics dependency
-- ✅ Removed Firebase BoM (Bill of Materials) 
-- ✅ Cleaned up unnecessary Android-side Firebase configuration
+### Qué Cambió
+- ✅ Eliminada dependencia de Firebase Analytics
+- ✅ Eliminado Firebase BoM (Bill of Materials)
+- ✅ Limpiada configuración innecesaria de Firebase del lado de Android
 
-### What Stayed the Same
-- ✅ Firebase Authentication continues to work
-- ✅ Cloud Firestore continues to work
-- ✅ Google Sign-In continues to work
-- ✅ All app functionality preserved
+### Qué Permanece Igual
+- ✅ Firebase Authentication continúa funcionando
+- ✅ Cloud Firestore continúa funcionando
+- ✅ Google Sign-In continúa funcionando
+- ✅ Toda la funcionalidad de la app preservada
 
-### What Was Fixed
-- ✅ No more Phenotype API errors
-- ✅ No more DEVELOPER_ERROR on devices without full Google Play Services
-- ✅ Improved compatibility with various Android devices
-- ✅ Reduced app size (Analytics SDK no longer included)
+### Qué se Corrigió
+- ✅ No más errores de API Phenotype
+- ✅ No más DEVELOPER_ERROR en dispositivos sin Google Play Services completo
+- ✅ Compatibilidad mejorada con varios dispositivos Android
+- ✅ Tamaño de app reducido (SDK de Analytics ya no incluido)
 
-## Testing Recommendations
+## Recomendaciones de Prueba
 
-To verify the fix works correctly:
+Para verificar que la corrección funciona correctamente:
 
-### Test 1: Build Verification
+### Prueba 1: Verificación de Compilación
 ```bash
 cd android
 ./gradlew clean
 ./gradlew :app:assembleDebug
 ```
-**Expected Result:** Build completes without Phenotype API warnings
+**Resultado Esperado:** La compilación se completa sin advertencias de API Phenotype
 
-### Test 2: App Functionality (Device with Google Play Services)
-1. Install the updated app
-2. Test Google Sign-In
-3. Test creating/saving sessions
-4. Check logs for Phenotype warnings
+### Prueba 2: Funcionalidad de App (Dispositivo con Google Play Services)
+1. Instalar la app actualizada
+2. Probar Google Sign-In
+3. Probar crear/guardar sesiones
+4. Verificar logs para advertencias de Phenotype
 
-**Expected Result:** No Phenotype API errors in logs
+**Resultado Esperado:** No hay errores de API Phenotype en los logs
 
-### Test 3: App Functionality (Device without Google Play Services)
-1. Install on emulator/device without Google Play Services
-2. Use "Continue without login" mode
-3. Test local session creation and saving
+### Prueba 3: Funcionalidad de App (Dispositivo sin Google Play Services)
+1. Instalar en emulador/dispositivo sin Google Play Services
+2. Usar modo "Continuar sin login"
+3. Probar creación y guardado de sesión local
 
-**Expected Result:** App works in offline mode without crashes
+**Resultado Esperado:** La app funciona en modo offline sin crashes
 
-### Test 4: Firebase Features
-1. Sign in with Google account
-2. Create a session
-3. Close and reopen app
-4. Verify session syncs from Firestore
+### Prueba 4: Características de Firebase
+1. Iniciar sesión con cuenta de Google
+2. Crear una sesión
+3. Cerrar y reabrir app
+4. Verificar que la sesión se sincroniza desde Firestore
 
-**Expected Result:** All Firebase features work correctly
+**Resultado Esperado:** Todas las características de Firebase funcionan correctamente
 
-## Prevention
+## Prevención
 
-To prevent similar issues in the future:
+Para prevenir problemas similares en el futuro:
 
-1. **Don't manually add Firebase dependencies to Android build files** unless specifically required and documented
-2. **Trust FlutterFire plugins** to manage native dependencies
-3. **Only add dependencies for Firebase products actually used** in the Dart code
-4. **Test on multiple device types**, including those without Google Play Services
+1. **No agregues manualmente dependencias de Firebase a archivos de compilación de Android** a menos que sea específicamente requerido y documentado
+2. **Confía en los plugins de FlutterFire** para gestionar dependencias nativas
+3. **Solo agrega dependencias para productos de Firebase realmente usados** en el código Dart
+4. **Prueba en múltiples tipos de dispositivos**, incluyendo aquellos sin Google Play Services
 
-## Additional Notes
+## Notas Adicionales
 
-### Firebase Products Used by Bolómetro
-- ✅ `firebase_core` - Core Firebase functionality
-- ✅ `firebase_auth` - User authentication
-- ✅ `cloud_firestore` - Cloud database
-- ✅ `google_sign_in` - Google account integration
+### Productos de Firebase Usados por Bolómetro
+- ✅ `firebase_core` - Funcionalidad core de Firebase
+- ✅ `firebase_auth` - Autenticación de usuarios
+- ✅ `cloud_firestore` - Base de datos en la nube
+- ✅ `google_sign_in` - Integración con cuenta de Google
 
-### Firebase Products NOT Used
-- ❌ `firebase_analytics` - Analytics (removed)
-- ❌ `firebase_crashlytics` - Crash reporting
-- ❌ `firebase_performance` - Performance monitoring
-- ❌ `firebase_remote_config` - Remote configuration
+### Productos de Firebase NO Usados
+- ❌ `firebase_analytics` - Analytics (eliminado)
+- ❌ `firebase_crashlytics` - Reporte de crashes
+- ❌ `firebase_performance` - Monitoreo de rendimiento
+- ❌ `firebase_remote_config` - Configuración remota
 
-### Configuration Files
-- `android/app/google-services.json` - Still required for Firebase Auth and Firestore
-- `android/app/build.gradle.kts` - Now minimal, only includes google-services plugin
-- `pubspec.yaml` - Source of truth for all Firebase dependencies
+### Archivos de Configuración
+- `android/app/google-services.json` - Todavía requerido para Firebase Auth y Firestore
+- `android/app/build.gradle.kts` - Ahora mínimo, solo incluye plugin google-services
+- `pubspec.yaml` - Fuente de verdad para todas las dependencias de Firebase
 
-## References
+## Referencias
 
-- [FlutterFire Documentation](https://firebase.flutter.dev/)
-- [Firebase for Android Setup](https://firebase.google.com/docs/android/setup)
-- [Google Play Services APIs](https://developers.google.com/android/guides/overview)
+- [Documentación de FlutterFire](https://firebase.flutter.dev/)
+- [Configuración de Firebase para Android](https://firebase.google.com/docs/android/setup)
+- [APIs de Google Play Services](https://developers.google.com/android/guides/overview)
 
 ---
 
-**Author:** GitHub Copilot  
-**Version:** 1.0.0  
-**Status:** ✅ Resolved
+**Autor:** GitHub Copilot  
+**Versión:** 1.0.0  
+**Estado:** ✅ Resuelto

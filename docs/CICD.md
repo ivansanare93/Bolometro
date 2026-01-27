@@ -1,152 +1,152 @@
-# CI/CD Guide
+# Guía de CI/CD
 
-Bolometro uses GitHub Actions for Continuous Integration and Continuous Deployment.
+Bolometro utiliza GitHub Actions para Integración Continua y Despliegue Continuo.
 
-## Workflow Overview
+## Descripción General del Flujo de Trabajo
 
-The CI/CD pipeline is defined in `.github/workflows/flutter-ci.yml` and runs on:
-- Push to `main` and `develop` branches
-- Pull requests to `main` and `develop` branches
+El pipeline CI/CD está definido en `.github/workflows/flutter-ci.yml` y se ejecuta en:
+- Push a las ramas `main` y `develop`
+- Pull requests a las ramas `main` y `develop`
 
-## Pipeline Stages
+## Etapas del Pipeline
 
 ### 1. Test and Analyze
 
-**Runs on**: `ubuntu-latest`
+**Se ejecuta en**: `ubuntu-latest`
 
-**Steps**:
-1. **Checkout code** - Gets the latest code from the repository
-2. **Setup Flutter** - Installs Flutter 3.8.1 stable
-3. **Install dependencies** - Runs `flutter pub get`
-4. **Verify formatting** - Checks code formatting (continues on error)
-5. **Analyze code** - Runs `flutter analyze` to check for issues
-6. **Run tests** - Executes all tests with coverage
-7. **Upload coverage** - Sends coverage report to Codecov
+**Pasos**:
+1. **Checkout code** - Obtiene el código más reciente del repositorio
+2. **Setup Flutter** - Instala Flutter 3.8.1 stable
+3. **Install dependencies** - Ejecuta `flutter pub get`
+4. **Verify formatting** - Verifica el formato del código (continúa si hay error)
+5. **Analyze code** - Ejecuta `flutter analyze` para verificar problemas
+6. **Run tests** - Ejecuta todas las pruebas con cobertura
+7. **Upload coverage** - Envía el reporte de cobertura a Codecov
 
 ### 2. Build Android
 
-**Runs on**: `ubuntu-latest`  
-**Depends on**: Test and Analyze job
+**Se ejecuta en**: `ubuntu-latest`  
+**Depende de**: Trabajo Test and Analyze
 
-**Steps**:
+**Pasos**:
 1. **Checkout code**
 2. **Setup Flutter**
 3. **Install dependencies**
-4. **Build APK** - Creates release APK
-5. **Upload artifact** - Stores APK for download
+4. **Build APK** - Crea APK de release
+5. **Upload artifact** - Almacena APK para descarga
 
 ### 3. Build iOS
 
-**Runs on**: `macos-latest`  
-**Depends on**: Test and Analyze job
+**Se ejecuta en**: `macos-latest`  
+**Depende de**: Trabajo Test and Analyze
 
-**Steps**:
+**Pasos**:
 1. **Checkout code**
 2. **Setup Flutter**
 3. **Install dependencies**
-4. **Build iOS** - Creates iOS build without codesigning
+4. **Build iOS** - Crea compilación iOS sin codesigning
 
-## Configuration
+## Configuración
 
-### Flutter Version
+### Versión de Flutter
 
-Current version: `3.8.1`
+Versión actual: `3.8.1`
 
-To update:
+Para actualizar:
 ```yaml
 - name: Setup Flutter
   uses: subosito/flutter-action@v2
   with:
-    flutter-version: '3.10.0' # Update version here
+    flutter-version: '3.10.0' # Actualiza la versión aquí
     channel: 'stable'
 ```
 
-### Test Coverage
+### Cobertura de Pruebas
 
-Coverage is automatically uploaded to Codecov. To view:
-1. Go to your repository on GitHub
-2. Check the Codecov badge in README
-3. Click to view detailed coverage report
+La cobertura se sube automáticamente a Codecov. Para ver:
+1. Ve a tu repositorio en GitHub
+2. Verifica el badge de Codecov en README
+3. Haz clic para ver el reporte de cobertura detallado
 
-### Artifacts
+### Artefactos
 
-Build artifacts are retained for 90 days by default and can be downloaded from the Actions tab.
+Los artefactos de compilación se retienen por 90 días por defecto y pueden descargarse desde la pestaña Actions.
 
-## Local Development
+## Desarrollo Local
 
-### Before Pushing Code
+### Antes de Hacer Push de Código
 
-Run these commands locally to catch issues early:
+Ejecuta estos comandos localmente para detectar problemas temprano:
 
 ```bash
-# Format code
+# Formatear código
 dart format .
 
-# Analyze code
+# Analizar código
 flutter analyze
 
-# Run tests
+# Ejecutar pruebas
 flutter test
 
-# Run tests with coverage
+# Ejecutar pruebas con cobertura
 flutter test --coverage
 ```
 
-### Pre-commit Checks
+### Verificaciones Pre-commit
 
-Consider adding a pre-commit hook:
+Considera agregar un hook pre-commit:
 
 ```bash
-# Create .git/hooks/pre-commit
+# Crear .git/hooks/pre-commit
 #!/bin/bash
 
-echo "Running pre-commit checks..."
+echo "Ejecutando verificaciones pre-commit..."
 
-# Format check
+# Verificación de formato
 if ! dart format --output=none --set-exit-if-changed .; then
-    echo "Code formatting failed. Run: dart format ."
+    echo "Formateo de código falló. Ejecuta: dart format ."
     exit 1
 fi
 
-# Analyze
+# Analizar
 if ! flutter analyze; then
-    echo "Flutter analyze failed."
+    echo "Flutter analyze falló."
     exit 1
 fi
 
-# Tests
+# Pruebas
 if ! flutter test; then
-    echo "Tests failed."
+    echo "Las pruebas fallaron."
     exit 1
 fi
 
-echo "All checks passed!"
+echo "¡Todas las verificaciones pasaron!"
 ```
 
-Make it executable:
+Hacerlo ejecutable:
 ```bash
 chmod +x .git/hooks/pre-commit
 ```
 
-## Managing Build Failures
+## Manejo de Fallos de Compilación
 
-### Test Failures
+### Fallos de Pruebas
 
-1. Check the test logs in GitHub Actions
-2. Fix the failing tests locally
-3. Run `flutter test` to verify
-4. Push the fix
+1. Verifica los logs de pruebas en GitHub Actions
+2. Corrige las pruebas que fallan localmente
+3. Ejecuta `flutter test` para verificar
+4. Haz push de la corrección
 
-### Build Failures
+### Fallos de Compilación
 
-#### Android Build Issues
+#### Problemas de Compilación Android
 
-Common causes:
-- Gradle version incompatibility
-- SDK version mismatch
-- Missing dependencies
+Causas comunes:
+- Incompatibilidad de versión de Gradle
+- Desajuste de versión de SDK
+- Dependencias faltantes
 
-Fix:
+Solución:
 ```bash
 cd android
 ./gradlew clean
@@ -156,14 +156,14 @@ flutter pub get
 flutter build apk
 ```
 
-#### iOS Build Issues
+#### Problemas de Compilación iOS
 
-Common causes:
-- CocoaPods issues
-- Xcode version incompatibility
-- Missing certificates (not applicable for CI)
+Causas comunes:
+- Problemas con CocoaPods
+- Incompatibilidad de versión de Xcode
+- Certificados faltantes (no aplicable para CI)
 
-Fix:
+Solución:
 ```bash
 cd ios
 rm -rf Pods Podfile.lock
@@ -174,24 +174,24 @@ flutter pub get
 flutter build ios --no-codesign
 ```
 
-### Analysis Issues
+### Problemas de Análisis
 
-Flutter analyze shows warnings/errors:
+Flutter analyze muestra warnings/errores:
 
-1. Fix all errors before committing
-2. Address warnings when possible
-3. Use `// ignore: rule_name` sparingly for valid exceptions
+1. Corrige todos los errores antes de hacer commit
+2. Aborda los warnings cuando sea posible
+3. Usa `// ignore: rule_name` con moderación para excepciones válidas
 
 ```dart
 // ignore: avoid_print
-print('Debug message');
+print('Mensaje de depuración');
 ```
 
-## Adding New Workflows
+## Agregar Nuevos Flujos de Trabajo
 
-### Deploy Workflow Example
+### Ejemplo de Flujo de Trabajo de Despliegue
 
-Create `.github/workflows/deploy.yml`:
+Crea `.github/workflows/deploy.yml`:
 
 ```yaml
 name: Deploy to Production
@@ -216,54 +216,54 @@ jobs:
         run: flutter build appbundle --release
         
       - name: Deploy to Play Store
-        # Add deployment steps here
+        # Agregar pasos de despliegue aquí
 ```
 
-### Scheduled Tests
+### Pruebas Programadas
 
-Run tests nightly:
+Ejecutar pruebas nocturnas:
 
 ```yaml
 name: Nightly Tests
 
 on:
   schedule:
-    - cron: '0 2 * * *' # Runs at 2 AM UTC daily
+    - cron: '0 2 * * *' # Se ejecuta a las 2 AM UTC diariamente
 
 jobs:
   test:
-    # Same as test job in flutter-ci.yml
+    # Igual que el trabajo test en flutter-ci.yml
 ```
 
-## Secrets Management
+## Gestión de Secretos
 
-### Adding Secrets
+### Agregar Secretos
 
-1. Go to Repository Settings > Secrets and variables > Actions
-2. Click "New repository secret"
-3. Add secret name and value
+1. Ve a Configuración del Repositorio > Secrets and variables > Actions
+2. Haz clic en "New repository secret"
+3. Agrega nombre y valor del secreto
 
-### Using Secrets
+### Usar Secretos
 
 ```yaml
-- name: Step using secret
+- name: Paso usando secreto
   env:
     SECRET_KEY: ${{ secrets.SECRET_KEY }}
-  run: echo "Using secret"
+  run: echo "Usando secreto"
 ```
 
-### Common Secrets
+### Secretos Comunes
 
-For deployment, you might need:
-- `ANDROID_KEYSTORE` - Base64 encoded keystore
-- `KEYSTORE_PASSWORD` - Keystore password
-- `KEY_PASSWORD` - Key password
-- `APPLE_CERTIFICATE` - iOS certificate
-- `PROVISIONING_PROFILE` - iOS provisioning profile
+Para despliegue, podrías necesitar:
+- `ANDROID_KEYSTORE` - Keystore codificado en Base64
+- `KEYSTORE_PASSWORD` - Contraseña del keystore
+- `KEY_PASSWORD` - Contraseña de la clave
+- `APPLE_CERTIFICATE` - Certificado iOS
+- `PROVISIONING_PROFILE` - Perfil de provisioning iOS
 
-## Environment Variables
+## Variables de Entorno
 
-### Setting Environment Variables
+### Configurar Variables de Entorno
 
 ```yaml
 env:
@@ -275,20 +275,20 @@ jobs:
       TEST_ENV: 'ci'
 ```
 
-### Using in Scripts
+### Usar en Scripts
 
 ```yaml
-- name: Print environment
+- name: Imprimir entorno
   run: |
-    echo "Flutter version: $FLUTTER_VERSION"
-    echo "Test environment: $TEST_ENV"
+    echo "Versión de Flutter: $FLUTTER_VERSION"
+    echo "Entorno de prueba: $TEST_ENV"
 ```
 
-## Caching
+## Caché
 
-### Caching Dependencies
+### Cachear Dependencias
 
-Speed up builds by caching:
+Acelera las compilaciones mediante caché:
 
 ```yaml
 - name: Cache pub dependencies
@@ -300,7 +300,7 @@ Speed up builds by caching:
       ${{ runner.os }}-pub-
 ```
 
-### Caching Build Artifacts
+### Cachear Artefactos de Compilación
 
 ```yaml
 - name: Cache build artifacts
@@ -312,53 +312,53 @@ Speed up builds by caching:
     key: ${{ runner.os }}-build-${{ hashFiles('**/pubspec.lock') }}
 ```
 
-## Status Badges
+## Badges de Estado
 
-Add status badges to README:
+Agrega badges de estado al README:
 
 ```markdown
 ![Flutter CI](https://github.com/ivansanare93/Bolometro/workflows/Flutter%20CI/badge.svg)
 [![codecov](https://codecov.io/gh/ivansanare93/Bolometro/branch/main/graph/badge.svg)](https://codecov.io/gh/ivansanare93/Bolometro)
 ```
 
-## Monitoring
+## Monitoreo
 
-### GitHub Actions Dashboard
+### Dashboard de GitHub Actions
 
-- View all workflow runs
-- Download logs
-- Re-run failed jobs
-- Cancel running jobs
+- Ver todas las ejecuciones de flujo de trabajo
+- Descargar logs
+- Re-ejecutar trabajos fallidos
+- Cancelar trabajos en ejecución
 
-### Email Notifications
+### Notificaciones por Email
 
-GitHub sends email notifications on:
-- Workflow failures
-- First success after failure
+GitHub envía notificaciones por email en:
+- Fallos de flujo de trabajo
+- Primer éxito después de un fallo
 
-Configure in: Settings > Notifications
+Configurar en: Settings > Notifications
 
-## Best Practices
+## Mejores Prácticas
 
-1. **Keep workflows fast** - Use caching, parallel jobs
-2. **Fail fast** - Run tests before builds
-3. **Use matrix builds** - Test multiple Flutter versions/platforms
-4. **Keep secrets secure** - Never log secrets
-5. **Document workflows** - Add comments explaining complex steps
-6. **Version lock** - Pin action versions for reproducibility
-7. **Test locally first** - Don't rely on CI to catch basic errors
+1. **Mantén los flujos de trabajo rápidos** - Usa caché, trabajos paralelos
+2. **Falla rápido** - Ejecuta pruebas antes de compilaciones
+3. **Usa compilaciones matriciales** - Prueba múltiples versiones de Flutter/plataformas
+4. **Mantén los secretos seguros** - Nunca registres secretos en logs
+5. **Documenta los flujos de trabajo** - Agrega comentarios explicando pasos complejos
+6. **Bloquea versiones** - Fija versiones de actions para reproducibilidad
+7. **Prueba localmente primero** - No dependas del CI para detectar errores básicos
 
-## Troubleshooting
+## Solución de Problemas
 
-### Workflow Not Triggering
+### Flujo de Trabajo No se Dispara
 
-- Check branch names in `on.push.branches`
-- Verify workflow file is in `.github/workflows/`
-- Ensure YAML syntax is valid
+- Verifica nombres de ramas en `on.push.branches`
+- Verifica que el archivo de flujo de trabajo esté en `.github/workflows/`
+- Asegúrate de que la sintaxis YAML sea válida
 
-### Permission Errors
+### Errores de Permisos
 
-Add permissions to workflow:
+Agrega permisos al flujo de trabajo:
 
 ```yaml
 permissions:
@@ -366,18 +366,18 @@ permissions:
   packages: write
 ```
 
-### Timeout Issues
+### Problemas de Timeout
 
-Increase timeout:
+Aumenta el timeout:
 
 ```yaml
 jobs:
   test:
-    timeout-minutes: 30 # Default is 360
+    timeout-minutes: 30 # El valor por defecto es 360
 ```
 
-## Resources
+## Recursos
 
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [Flutter CI/CD Guide](https://docs.flutter.dev/deployment/cd)
+- [Documentación de GitHub Actions](https://docs.github.com/en/actions)
+- [Guía de CI/CD de Flutter](https://docs.flutter.dev/deployment/cd)
 - [subosito/flutter-action](https://github.com/subosito/flutter-action)
