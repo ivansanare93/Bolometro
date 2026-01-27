@@ -1,84 +1,10 @@
 # Guía de CI/CD
 
-Bolometro utiliza GitHub Actions para Integración Continua y Despliegue Continuo.
+Bolometro actualmente utiliza builds manuales para desarrollo y despliegue.
 
-## Descripción General del Flujo de Trabajo
+## Estado Actual
 
-El pipeline CI/CD está definido en `.github/workflows/flutter-ci.yml` y se ejecuta en:
-- Push a las ramas `main` y `develop`
-- Pull requests a las ramas `main` y `develop`
-
-## Etapas del Pipeline
-
-### 1. Test and Analyze
-
-**Se ejecuta en**: `ubuntu-latest`
-
-**Pasos**:
-1. **Checkout code** - Obtiene el código más reciente del repositorio
-2. **Setup Flutter** - Instala la última versión estable de Flutter
-3. **Install dependencies** - Ejecuta `flutter pub get`
-4. **Verify formatting** - Verifica el formato del código (continúa si hay error)
-5. **Analyze code** - Ejecuta `flutter analyze` para verificar problemas
-6. **Run tests** - Ejecuta todas las pruebas con cobertura
-7. **Upload coverage** - Envía el reporte de cobertura a Codecov
-
-### 2. Build Android
-
-**Se ejecuta en**: `ubuntu-latest`  
-**Depende de**: Trabajo Test and Analyze
-
-**Pasos**:
-1. **Checkout code**
-2. **Setup Flutter**
-3. **Install dependencies**
-4. **Build APK** - Crea APK de release
-5. **Upload artifact** - Almacena APK para descarga
-
-### 3. Build iOS
-
-**Se ejecuta en**: `macos-latest`  
-**Depende de**: Trabajo Test and Analyze
-
-**Pasos**:
-1. **Checkout code**
-2. **Setup Flutter**
-3. **Install dependencies**
-4. **Build iOS** - Crea compilación iOS sin codesigning
-
-## Configuración
-
-### Versión de Flutter
-
-El proyecto está configurado para usar siempre la última versión estable de Flutter.
-
-Configuración actual:
-```yaml
-- name: Setup Flutter
-  uses: subosito/flutter-action@v2
-  with:
-    channel: 'stable'
-```
-
-Si necesitas especificar una versión específica (no recomendado), puedes agregar:
-```yaml
-- name: Setup Flutter
-  uses: subosito/flutter-action@v2
-  with:
-    flutter-version: 'X.Y.Z' # Especifica una versión aquí (ej: 3.19.0)
-    channel: 'stable'
-```
-
-### Cobertura de Pruebas
-
-La cobertura se sube automáticamente a Codecov. Para ver:
-1. Ve a tu repositorio en GitHub
-2. Verifica el badge de Codecov en README
-3. Haz clic para ver el reporte de cobertura detallado
-
-### Artefactos
-
-Los artefactos de compilación se retienen por 90 días por defecto y pueden descargarse desde la pestaña Actions.
+El pipeline automatizado de CI/CD ha sido deshabilitado. Las builds se realizan manualmente usando los comandos de Flutter.
 
 ## Desarrollo Local
 
@@ -195,7 +121,40 @@ Flutter analyze muestra warnings/errores:
 print('Mensaje de depuración');
 ```
 
-## Agregar Nuevos Flujos de Trabajo
+## Agregar CI/CD en el Futuro
+
+Si deseas reactivar la automatización de CI/CD con GitHub Actions, puedes crear un nuevo archivo de workflow.
+
+### Ejemplo de Flujo de Trabajo Básico
+
+Crea `.github/workflows/flutter-ci.yml`:
+
+```yaml
+name: Flutter CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          
+      - name: Install dependencies
+        run: flutter pub get
+        
+      - name: Run tests
+        run: flutter test
+```
 
 ### Ejemplo de Flujo de Trabajo de Despliegue
 
@@ -322,7 +281,7 @@ Acelera las compilaciones mediante caché:
 
 ## Badges de Estado
 
-Agrega badges de estado al README:
+Si reactivas CI/CD, puedes agregar badges de estado al README:
 
 ```markdown
 ![Flutter CI](https://github.com/ivansanare93/Bolometro/workflows/Flutter%20CI/badge.svg)
@@ -331,7 +290,7 @@ Agrega badges de estado al README:
 
 ## Monitoreo
 
-### Dashboard de GitHub Actions
+### Dashboard de GitHub Actions (cuando esté activo)
 
 - Ver todas las ejecuciones de flujo de trabajo
 - Descargar logs
