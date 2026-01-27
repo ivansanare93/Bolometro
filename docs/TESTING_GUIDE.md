@@ -328,4 +328,4 @@ Si encuentras problemas durante las pruebas:
 
 **Última actualización:** 27 de Enero de 2026
 **Versión de la App:** 1.0.0+1
-**Flutter SDK Requerido:** ^3.8.1
+**Flutter SDK Requerido:** última versión estable

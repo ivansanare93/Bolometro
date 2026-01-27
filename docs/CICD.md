@@ -16,7 +16,7 @@ El pipeline CI/CD está definido en `.github/workflows/flutter-ci.yml` y se ejec
 
 **Pasos**:
 1. **Checkout code** - Obtiene el código más reciente del repositorio
-2. **Setup Flutter** - Instala Flutter 3.8.1 stable
+2. **Setup Flutter** - Instala la última versión estable de Flutter
 3. **Install dependencies** - Ejecuta `flutter pub get`
 4. **Verify formatting** - Verifica el formato del código (continúa si hay error)
 5. **Analyze code** - Ejecuta `flutter analyze` para verificar problemas
@@ -50,14 +50,22 @@ El pipeline CI/CD está definido en `.github/workflows/flutter-ci.yml` y se ejec
 
 ### Versión de Flutter
 
-Versión actual: `3.8.1`
+El proyecto está configurado para usar siempre la última versión estable de Flutter.
 
-Para actualizar:
+Configuración actual:
 ```yaml
 - name: Setup Flutter
   uses: subosito/flutter-action@v2
   with:
-    flutter-version: '3.10.0' # Actualiza la versión aquí
+    channel: 'stable'
+```
+
+Si necesitas especificar una versión específica (no recomendado), puedes agregar:
+```yaml
+- name: Setup Flutter
+  uses: subosito/flutter-action@v2
+  with:
+    flutter-version: 'X.Y.Z' # Especifica una versión aquí (ej: 3.19.0)
     channel: 'stable'
 ```
 
@@ -210,7 +218,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.8.1'
+          channel: 'stable'
           
       - name: Build App Bundle
         run: flutter build appbundle --release
@@ -267,7 +275,7 @@ Para despliegue, podrías necesitar:
 
 ```yaml
 env:
-  FLUTTER_VERSION: '3.8.1'
+  FLUTTER_CHANNEL: 'stable'
   
 jobs:
   test:
@@ -280,7 +288,7 @@ jobs:
 ```yaml
 - name: Imprimir entorno
   run: |
-    echo "Versión de Flutter: $FLUTTER_VERSION"
+    echo "Canal de Flutter: $FLUTTER_CHANNEL"
     echo "Entorno de prueba: $TEST_ENV"
 ```
 

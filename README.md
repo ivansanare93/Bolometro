@@ -66,7 +66,7 @@
 
 ## 🚀 Tecnologías
 
-- **Framework**: Flutter 3.8.1+
+- **Framework**: Flutter (latest stable version)
 - **Lenguaje**: Dart
 - **Base de datos**: Hive (NoSQL local)
 - **Gestión de estado**: Provider
@@ -85,8 +85,8 @@
 
 ## 🛠️ Requisitos Previos
 
-- Flutter SDK 3.8.1 o superior
-- Dart SDK 3.8.1 o superior
+- Flutter SDK (latest stable version)
+- Dart SDK (latest stable version)
 - Android Studio / Xcode (para desarrollo móvil)
 - Git
 
