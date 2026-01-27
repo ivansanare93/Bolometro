@@ -199,7 +199,7 @@ class _EstadisticasPantallaCompletaState
           final peores3 = topPeores.take(AppConstants.topNPartidas).toList();
           
           final histograma = stats['histograma'] as Map<String, int>;
-          final miniPromedios = EstadisticasUtils.promedioMovil(partidas, AppConstants.ventanaPromedioMovil);
+          final miniPromedios = stats['promedioMovil'] as List<double>;
           final sesionRecord = stats['sesionRecord'] as Sesion?;
           final sesionPeor = stats['sesionPeor'] as Sesion?;
 
