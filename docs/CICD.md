@@ -65,7 +65,7 @@ Si necesitas especificar una versión específica (no recomendado), puedes agreg
 - name: Setup Flutter
   uses: subosito/flutter-action@v2
   with:
-    flutter-version: '3.10.0' # Especifica una versión aquí
+    flutter-version: 'X.Y.Z' # Especifica una versión aquí (ej: 3.19.0)
     channel: 'stable'
 ```
 
