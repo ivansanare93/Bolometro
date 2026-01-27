@@ -173,21 +173,51 @@ class DataRepository extends ChangeNotifier {
   }
 
   /// Sincronizar datos locales a la nube
+  /// 
+  /// Sube todos los datos locales almacenados en Hive a Firestore.
+  /// Requiere que el usuario esté autenticado.
+  /// 
+  /// Lanza [Exception] si:
+  /// - El usuario no está autenticado
+  /// - Hay problemas de conectividad
+  /// - Ocurre algún error durante la sincronización
   Future<void> sincronizarANube() async {
-    if (!_isOnlineMode || _userId == null || _isSyncing) {
+    // Validar que el usuario está autenticado
+    if (_userId == null) {
+      throw Exception(
+        'No se puede sincronizar: usuario no autenticado. '
+        'Por favor, inicia sesión antes de sincronizar.'
+      );
+    }
+
+    // Evitar sincronizaciones simultáneas
+    if (_isSyncing) {
+      debugPrint('Sincronización ya en curso, ignorando nueva solicitud');
       return;
+    }
+
+    // Validar modo online
+    if (!_isOnlineMode) {
+      throw Exception(
+        'No se puede sincronizar: modo offline. '
+        'Por favor, verifica tu conexión a Internet.'
+      );
     }
 
     try {
       _isSyncing = true;
       notifyListeners();
 
-      // Obtener datos locales
+      debugPrint('Iniciando sincronización a la nube...');
+
+      // Obtener datos locales desde Hive
       final boxSesiones = Hive.box<Sesion>(AppConstants.boxSesiones);
       final sesionesLocales = boxSesiones.values.toList();
 
       final boxPerfil = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
       final perfilLocal = boxPerfil.isNotEmpty ? boxPerfil.getAt(0) : null;
+
+      debugPrint('Sincronizando ${sesionesLocales.length} sesiones y perfil...');
 
       // Sincronizar con Firestore
       await _firestoreService.sincronizarDatosLocales(
@@ -196,13 +226,35 @@ class DataRepository extends ChangeNotifier {
         perfilLocal,
       );
 
+      debugPrint('Sincronización completada exitosamente');
+      
       _isSyncing = false;
       notifyListeners();
     } catch (e) {
-      debugPrint('Error durante la sincronización: $e');
       _isSyncing = false;
       notifyListeners();
-      rethrow;
+      
+      // Proporcionar mensajes de error más específicos
+      if (e.toString().contains('network') || 
+          e.toString().contains('UNAVAILABLE') ||
+          e.toString().contains('failed to connect')) {
+        throw Exception(
+          'Error de conexión durante la sincronización. '
+          'Por favor, verifica tu conexión a Internet e intenta nuevamente.'
+        );
+      } else if (e.toString().contains('permission') || 
+                 e.toString().contains('PERMISSION_DENIED')) {
+        throw Exception(
+          'Error de permisos durante la sincronización. '
+          'Por favor, verifica que tienes los permisos necesarios en Firebase.'
+        );
+      } else {
+        debugPrint('Error durante la sincronización: $e');
+        throw Exception(
+          'Error durante la sincronización: ${e.toString()}. '
+          'Por favor, intenta nuevamente más tarde.'
+        );
+      }
     }
   }
 
