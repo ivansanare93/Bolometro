@@ -8,6 +8,7 @@ import '../repositories/data_repository.dart';
 import '../services/analytics_service.dart';
 import 'home.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../widgets/skeleton_loaders.dart';
 
 class ListaSesionesScreen extends StatefulWidget {
   const ListaSesionesScreen({super.key});
@@ -330,8 +331,8 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
                         // Mostrar indicador de carga al final
                         if (idx >= _sesionesFiltradas.length) {
                           return const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Center(child: CircularProgressIndicator()),
+                            padding: EdgeInsets.all(8.0),
+                            child: SessionCardSkeleton(),
                           );
                         }
 

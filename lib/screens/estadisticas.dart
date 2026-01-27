@@ -17,6 +17,7 @@ import '../widgets/estadisticas/mini_grafico_promedio_movil.dart';
 import '../widgets/estadisticas/histograma_puntuaciones.dart';
 import 'home.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../widgets/skeleton_loaders.dart';
 
 class EstadisticasPantallaCompleta extends StatefulWidget {
   const EstadisticasPantallaCompleta({super.key});
@@ -90,7 +91,33 @@ class _EstadisticasPantallaCompletaState
         future: _sesionesFuture,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Row(
+                    children: const [
+                      Expanded(child: StatisticsCardSkeleton()),
+                      Expanded(child: StatisticsCardSkeleton()),
+                    ],
+                  ),
+                  Row(
+                    children: const [
+                      Expanded(child: StatisticsCardSkeleton()),
+                      Expanded(child: StatisticsCardSkeleton()),
+                    ],
+                  ),
+                  Row(
+                    children: const [
+                      Expanded(child: StatisticsCardSkeleton()),
+                      Expanded(child: StatisticsCardSkeleton()),
+                    ],
+                  ),
+                  const ChartSkeleton(height: 250),
+                  const ChartSkeleton(height: 200),
+                ],
+              ),
+            );
           }
 
           // --- Filtros por tipo y fecha ---

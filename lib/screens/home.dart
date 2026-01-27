@@ -16,6 +16,7 @@ import '../services/analytics_service.dart';
 import '../repositories/data_repository.dart';
 import 'dart:io';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../widgets/skeleton_loaders.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool mostrarAppBar;
@@ -333,7 +334,10 @@ class _HomeScreenState extends State<HomeScreen> {
         future: _perfilBoxFuture,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return ListView.builder(
+              itemCount: 5,
+              itemBuilder: (context, index) => const ListItemSkeleton(),
+            );
           }
           final perfil = snapshot.data!.get('perfil');
           final tienePerfil =
