@@ -332,15 +332,9 @@ For implementation guide, see [docs/SKELETON_LOADERS.md](docs/SKELETON_LOADERS.m
 
 ## 🔄 CI/CD
 
-GitHub Actions automatically runs tests and builds on every pull request and push to main/develop branches.
+The CI/CD pipeline has been configured for manual builds. Automated builds via GitHub Actions have been removed.
 
-The pipeline includes:
-- Automated testing with coverage
-- Code analysis and linting
-- Android APK build
-- iOS build (no codesign)
-
-For CI/CD configuration details, see [docs/CICD.md](docs/CICD.md).
+For local build instructions and CI/CD configuration details, see [docs/CICD.md](docs/CICD.md).
 
 ## 📄 Licencia
 
