@@ -12,7 +12,12 @@
           "package_name": "com.bolometro"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "529847148516-bdsp6okmmbcgnuka6gsnmhoj3puadrps.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCxdg2bzNfw05MnSAK9Eqw6wrWbK2bbIUk"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "529847148516-bdsp6okmmbcgnuka6gsnmhoj3puadrps.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
