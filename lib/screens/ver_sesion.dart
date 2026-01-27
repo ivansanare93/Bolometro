@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import '../models/sesion.dart';
@@ -31,23 +32,56 @@ class _VerSesionState extends State<VerSesion> {
         builder: (_) => EditarPartidaScreen(
           partida: partidaOriginal,
           onGuardar: (partidaActualizada) async {
-            final box = Hive.box<Sesion>(AppConstants.boxSesiones);
-            final sesionIndex = box.values.toList().indexOf(sesionActual);
-            if (sesionIndex == -1) return;
+            try {
+              final box = Hive.box<Sesion>(AppConstants.boxSesiones);
+              final sesionIndex = box.values.toList().indexOf(sesionActual);
+              if (sesionIndex == -1) {
+                debugPrint('Sesión no encontrada en Hive');
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Error: sesión no encontrada'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+                return;
+              }
 
-            final nuevasPartidas = List<Partida>.from(sesionActual.partidas);
-            nuevasPartidas[index] = partidaActualizada;
+              final nuevasPartidas = List<Partida>.from(sesionActual.partidas);
+              nuevasPartidas[index] = partidaActualizada;
 
-            setState(() {
-              sesionActual = sesionActual.copyWith(partidas: nuevasPartidas);
-            });
+              setState(() {
+                sesionActual = sesionActual.copyWith(partidas: nuevasPartidas);
+              });
 
-            await box.putAt(sesionIndex, sesionActual);
+              await box.putAt(sesionIndex, sesionActual);
 
-            Navigator.pop(context); // Cierra edición
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Partida actualizada')),
-            );
+              Navigator.pop(context); // Cierra edición
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Partida actualizada')),
+              );
+            } on HiveError catch (e) {
+              debugPrint('Error de Hive al actualizar partida: $e');
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Error al guardar cambios. Intenta nuevamente.'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            } catch (e) {
+              debugPrint('Error al actualizar partida: $e');
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Error inesperado al guardar cambios'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
           },
         ),
       ),
@@ -73,22 +107,57 @@ class _VerSesionState extends State<VerSesion> {
       ),
     );
     if (confirm == true) {
-      final box = Hive.box<Sesion>(AppConstants.boxSesiones);
-      final sesionIndex = box.values.toList().indexOf(sesionActual);
-      if (sesionIndex == -1) return;
+      try {
+        final box = Hive.box<Sesion>(AppConstants.boxSesiones);
+        final sesionIndex = box.values.toList().indexOf(sesionActual);
+        if (sesionIndex == -1) {
+          debugPrint('Sesión no encontrada en Hive');
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Error: sesión no encontrada'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
 
-      final nuevasPartidas = List<Partida>.from(sesionActual.partidas)
-        ..removeAt(index);
+        final nuevasPartidas = List<Partida>.from(sesionActual.partidas)
+          ..removeAt(index);
 
-      setState(() {
-        sesionActual = sesionActual.copyWith(partidas: nuevasPartidas);
-      });
+        setState(() {
+          sesionActual = sesionActual.copyWith(partidas: nuevasPartidas);
+        });
 
-      await box.putAt(sesionIndex, sesionActual);
+        await box.putAt(sesionIndex, sesionActual);
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Partida eliminada')));
+        if (context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Partida eliminada')));
+        }
+      } on HiveError catch (e) {
+        debugPrint('Error de Hive al eliminar partida: $e');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Error al eliminar partida. Intenta nuevamente.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        debugPrint('Error al eliminar partida: $e');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Error inesperado al eliminar partida'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
