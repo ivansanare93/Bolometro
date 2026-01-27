@@ -118,7 +118,8 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
     if (img != null) {
       setState(() {
         _avatarPath = img.path;
-        _clearGooglePhoto = false; // Si se selecciona una nueva foto, no limpiar la de Google
+        // Al seleccionar una foto local, preservar datos de Google para uso futuro
+        _clearGooglePhoto = false;
       });
     }
   }
@@ -126,7 +127,8 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
   void _quitarAvatar() {
     setState(() {
       _avatarPath = null;
-      _clearGooglePhoto = true; // Marcar para limpiar foto de Google también
+      // Marcar para limpiar la foto de Google del perfil al guardar
+      _clearGooglePhoto = true;
     });
   }
 

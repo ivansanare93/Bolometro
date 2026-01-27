@@ -48,6 +48,5 @@ class PerfilUsuario extends HiveObject {
   });
 
   /// Verifica si el perfil tiene una foto de Google disponible
-  bool get hasGooglePhoto => 
-      googlePhotoUrl != null && googlePhotoUrl!.isNotEmpty;
+  bool get hasGooglePhoto => googlePhotoUrl?.isNotEmpty ?? false;
 }
