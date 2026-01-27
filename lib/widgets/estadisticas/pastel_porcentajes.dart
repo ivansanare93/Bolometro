@@ -17,35 +17,94 @@ class PastelPorcentajes extends StatelessWidget {
   Widget build(BuildContext context) {
     return RepaintBoundary(
       child: SizedBox(
-        height: 140,
-        child: PieChart(
-          PieChartData(
-            sectionsSpace: 3,
-            centerSpaceRadius: 34,
-            sections: [
-              PieChartSectionData(
-                color: Colors.blue[700],
-                value: porcentajeStrikes,
-                title: 'Strikes\n${porcentajeStrikes.toStringAsFixed(1)}%',
-                radius: 42,
-                titleStyle: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.bold),
+        height: 200,
+        child: Row(
+          children: [
+            Expanded(
+              child: PieChart(
+                PieChartData(
+                  sectionsSpace: 2,
+                  centerSpaceRadius: 30,
+                  sections: [
+                    PieChartSectionData(
+                      color: Colors.blue[700],
+                      value: porcentajeStrikes,
+                      title: '${porcentajeStrikes.toStringAsFixed(1)}%',
+                      radius: 50,
+                      titleStyle: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      badgeWidget: _buildBadge(
+                        'Strikes',
+                        Colors.blue[700]!,
+                      ),
+                      badgePositionPercentageOffset: 1.4,
+                    ),
+                    PieChartSectionData(
+                      color: Colors.green[600],
+                      value: porcentajeSpares,
+                      title: '${porcentajeSpares.toStringAsFixed(1)}%',
+                      radius: 50,
+                      titleStyle: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      badgeWidget: _buildBadge(
+                        'Spares',
+                        Colors.green[600]!,
+                      ),
+                      badgePositionPercentageOffset: 1.4,
+                    ),
+                    PieChartSectionData(
+                      color: Colors.red[400],
+                      value: porcentajeFallos,
+                      title: '${porcentajeFallos.toStringAsFixed(1)}%',
+                      radius: 50,
+                      titleStyle: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      badgeWidget: _buildBadge(
+                        'Fallos',
+                        Colors.red[400]!,
+                      ),
+                      badgePositionPercentageOffset: 1.4,
+                    ),
+                  ],
+                ),
               ),
-              PieChartSectionData(
-                color: Colors.green[600],
-                value: porcentajeSpares,
-                title: 'Spares\n${porcentajeSpares.toStringAsFixed(1)}%',
-                radius: 39,
-                titleStyle: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              PieChartSectionData(
-                color: Colors.red[400],
-                value: porcentajeFallos,
-                title: 'Fallos\n${porcentajeFallos.toStringAsFixed(1)}%',
-                radius: 37,
-                titleStyle: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-            ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBadge(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
+        ],
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          color: color,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
