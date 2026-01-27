@@ -40,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
         final perfilExistente = perfilBox.get('perfil');
         
         // Si no hay perfil o el perfil está vacío, crear uno con datos de Google
-        if (perfilExistente == null || perfilExistente.nombre.trim().isEmpty) {
+        if (perfilExistente == null || (perfilExistente.nombre.trim().isEmpty)) {
           final user = authService.user;
           if (user != null) {
             final nuevoPerfil = PerfilUsuario(

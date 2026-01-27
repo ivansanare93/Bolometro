@@ -324,11 +324,33 @@ class _HomeScreenState extends State<HomeScreen> {
           } else if (perfil != null && 
                      perfil.googlePhotoUrl != null && 
                      perfil.googlePhotoUrl!.isNotEmpty) {
-            // Usar foto de Google
+            // Usar foto de Google con manejo de errores
             avatar = CircleAvatar(
               radius: 46,
-              backgroundImage: NetworkImage(perfil.googlePhotoUrl!),
               backgroundColor: cs.primary.withOpacity(0.10),
+              child: ClipOval(
+                child: Image.network(
+                  perfil.googlePhotoUrl!,
+                  width: 92,
+                  height: 92,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    // Fallback a icono por defecto si falla la carga
+                    return Icon(Icons.person, size: 46, color: cs.primary);
+                  },
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                            : null,
+                      ),
+                    );
+                  },
+                ),
+              ),
             );
           } else {
             // Avatar por defecto

@@ -29,6 +29,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
   String? _manoDominante;
   DateTime? _fechaNacimiento;
   String? _avatarPath;
+  bool _clearGooglePhoto = false; // Flag para limpiar foto de Google
 
   @override
   void initState() {
@@ -77,8 +78,8 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       bio: _bioController.text.trim().isEmpty
           ? null
           : _bioController.text.trim(),
-      // Preservar datos de Google si existen
-      googlePhotoUrl: perfil?.googlePhotoUrl,
+      // Preservar datos de Google si existen, excepto si se solicitó limpiar foto
+      googlePhotoUrl: _clearGooglePhoto ? null : perfil?.googlePhotoUrl,
       googleDisplayName: perfil?.googleDisplayName,
       isFromGoogle: perfil?.isFromGoogle ?? false,
     );
@@ -117,6 +118,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
     if (img != null) {
       setState(() {
         _avatarPath = img.path;
+        _clearGooglePhoto = false; // Si se selecciona una nueva foto, no limpiar la de Google
       });
     }
   }
@@ -124,6 +126,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
   void _quitarAvatar() {
     setState(() {
       _avatarPath = null;
+      _clearGooglePhoto = true; // Marcar para limpiar foto de Google también
     });
   }
 
@@ -231,14 +234,40 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                 child: CircleAvatar(
                   radius: 48,
                   backgroundColor: cs.primary.withOpacity(0.09),
-                  backgroundImage: avatarFileExists
-                      ? FileImage(File(_avatarPath!))
+                  child: avatarFileExists
+                      ? ClipOval(
+                          child: Image.file(
+                            File(_avatarPath!),
+                            width: 96,
+                            height: 96,
+                            fit: BoxFit.cover,
+                          ),
+                        )
                       : showGooglePhoto
-                          ? NetworkImage(perfil!.googlePhotoUrl!) as ImageProvider
-                          : null,
-                  child: !avatarFileExists && !showGooglePhoto
-                      ? Icon(Icons.person, size: 48, color: cs.primary)
-                      : null,
+                          ? ClipOval(
+                              child: Image.network(
+                                perfil!.googlePhotoUrl!,
+                                width: 96,
+                                height: 96,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  // Fallback a icono por defecto si falla la carga
+                                  return Icon(Icons.person, size: 48, color: cs.primary);
+                                },
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Center(
+                                    child: CircularProgressIndicator(
+                                      value: loadingProgress.expectedTotalBytes != null
+                                          ? loadingProgress.cumulativeBytesLoaded /
+                                              loadingProgress.expectedTotalBytes!
+                                          : null,
+                                    ),
+                                  );
+                                },
+                              ),
+                            )
+                          : Icon(Icons.person, size: 48, color: cs.primary),
                 ),
               ),
               if (avatarFileExists || showGooglePhoto)
