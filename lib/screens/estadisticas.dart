@@ -15,6 +15,7 @@ import '../widgets/estadisticas/pastel_porcentajes.dart';
 import '../widgets/estadisticas/top_partidas_widget.dart';
 import '../widgets/estadisticas/mini_grafico_promedio_movil.dart';
 import '../widgets/estadisticas/histograma_puntuaciones.dart';
+import '../widgets/mapa_calor.dart';
 import 'home.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/skeleton_loaders.dart';
@@ -33,6 +34,12 @@ class _EstadisticasPantallaCompletaState
   String _filtroTipo = AppConstants.tipoTodos;
   DateTimeRange? _rangoFechas;
   bool _hasLoggedView = false;
+  
+  // Cache for filtered sessions to avoid recalculating on every build
+  List<Sesion>? _cachedSesiones;
+  List<Sesion>? _cachedFilteredSesiones;
+  String? _cachedFiltroTipo;
+  DateTimeRange? _cachedRangoFechas;
 
   @override
   void initState() {
@@ -52,23 +59,45 @@ class _EstadisticasPantallaCompletaState
     final dataRepository = Provider.of<DataRepository>(context, listen: false);
     _sesionesFuture = dataRepository.obtenerSesiones();
   }
+  
+  List<Sesion> _getFilteredSesiones(List<Sesion> sesiones) {
+    // Return cached result if filters haven't changed and data is the same
+    final sesionesSame = _cachedSesiones != null && 
+                         _cachedSesiones!.length == sesiones.length &&
+                         (_cachedSesiones!.isEmpty || 
+                          _cachedSesiones!.first == sesiones.first);
+    
+    if (sesionesSame &&
+        _cachedFiltroTipo == _filtroTipo &&
+        _cachedRangoFechas == _rangoFechas &&
+        _cachedFilteredSesiones != null) {
+      return _cachedFilteredSesiones!;
+    }
+    
+    // Apply filters
+    List<Sesion> filtered = sesiones;
+    if (_filtroTipo != AppConstants.tipoTodos) {
+      filtered = filtered.where((s) => s.tipo == _filtroTipo).toList();
+    }
+    if (_rangoFechas != null) {
+      filtered = EstadisticasUtils.filtrarSesionesPorFecha(
+        filtered,
+        _rangoFechas!.start,
+        _rangoFechas!.end,
+      );
+    }
+    
+    // Cache the result
+    _cachedSesiones = sesiones;
+    _cachedFiltroTipo = _filtroTipo;
+    _cachedRangoFechas = _rangoFechas;
+    _cachedFilteredSesiones = filtered;
+    
+    return filtered;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // Colores personalizados para las tarjetas en función del modo
-    final recordCardColor = isDark
-        ? AppTheme.recordCardDark.withOpacity(AppTheme.cardOpacity)
-        : AppTheme.recordCardLight;
-    final worstCardColor = isDark
-        ? AppTheme.worstCardDark.withOpacity(AppTheme.worstCardOpacity)
-        : AppTheme.worstCardLight;
-    final textCardColor = isDark
-        ? Colors.white.withOpacity(AppTheme.textCardOpacity)
-        : Colors.black87;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.fullStatistics),
@@ -121,18 +150,8 @@ class _EstadisticasPantallaCompletaState
           }
 
           // --- Filtros por tipo y fecha ---
-          List<Sesion> sesiones = snapshot.data!;
-          if (_filtroTipo != AppConstants.tipoTodos) {
-            sesiones = sesiones.where((s) => s.tipo == _filtroTipo).toList();
-          }
-          if (_rangoFechas != null) {
-            sesiones = EstadisticasUtils.filtrarSesionesPorFecha(
-              sesiones,
-              _rangoFechas!.start,
-              _rangoFechas!.end,
-            );
-          }
-
+          final sesiones = _getFilteredSesiones(snapshot.data!);
+          
           final partidas = sesiones.expand((s) => s.partidas).toList();
           if (partidas.isEmpty) {
             return Padding(
@@ -199,9 +218,22 @@ class _EstadisticasPantallaCompletaState
           final peores3 = topPeores.take(AppConstants.topNPartidas).toList();
           
           final histograma = stats['histograma'] as Map<String, int>;
-          final miniPromedios = EstadisticasUtils.promedioMovil(partidas, AppConstants.ventanaPromedioMovil);
+          final miniPromedios = stats['promedioMovil'] as List<double>;
           final sesionRecord = stats['sesionRecord'] as Sesion?;
           final sesionPeor = stats['sesionPeor'] as Sesion?;
+          
+          // Extract theme colors once to avoid repeated lookups
+          final greyColor = Colors.grey[700];
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final recordCardColor = isDark
+              ? AppTheme.recordCardDark.withOpacity(AppTheme.cardOpacity)
+              : AppTheme.recordCardLight;
+          final worstCardColor = isDark
+              ? AppTheme.worstCardDark.withOpacity(AppTheme.worstCardOpacity)
+              : AppTheme.worstCardLight;
+          final textCardColor = isDark
+              ? Colors.white.withOpacity(AppTheme.textCardOpacity)
+              : Colors.black87;
 
           return ListView(
             padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 14),
@@ -222,45 +254,47 @@ class _EstadisticasPantallaCompletaState
                 "Resumen rápido de tus puntuaciones",
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.grey[700],
+                  color: greyColor,
                   fontWeight: FontWeight.w500,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    KpiCardDinamico(
-                      label: "Promedio",
-                      value: promedio.toStringAsFixed(1),
-                      icon: Icons.bar_chart_rounded,
-                      color: Colors.blue[700]!,
-                      esSubida: promedio >= promedioUlt10, // comparación básica
-                    ),
-                    KpiCardDinamico(
-                      label: "Prom. Últ. 5",
-                      value: promedioUlt5.toStringAsFixed(1),
-                      icon: Icons.trending_up_rounded,
-                      color: Colors.purple[600]!,
-                      esSubida: promedioUlt5 > promedioUlt10,
-                    ),
-                    KpiCardDinamico(
-                      label: "Mejor",
-                      value: "$mejor",
-                      icon: Icons.emoji_events_rounded,
-                      color: Colors.green[600]!,
-                      esSubida: true,
-                    ),
-                    KpiCardDinamico(
-                      label: "Peor",
-                      value: "$peor",
-                      icon: Icons.sentiment_dissatisfied_rounded,
-                      color: Colors.red[400]!,
-                      esSubida: false,
-                    ),
-                  ],
+              RepaintBoundary(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      KpiCardDinamico(
+                        label: "Promedio",
+                        value: promedio.toStringAsFixed(1),
+                        icon: Icons.bar_chart_rounded,
+                        color: Colors.blue[700]!,
+                        esSubida: promedio >= promedioUlt10, // comparación básica
+                      ),
+                      KpiCardDinamico(
+                        label: "Prom. Últ. 5",
+                        value: promedioUlt5.toStringAsFixed(1),
+                        icon: Icons.trending_up_rounded,
+                        color: Colors.purple[600]!,
+                        esSubida: promedioUlt5 > promedioUlt10,
+                      ),
+                      KpiCardDinamico(
+                        label: "Mejor",
+                        value: "$mejor",
+                        icon: Icons.emoji_events_rounded,
+                        color: Colors.green[600]!,
+                        esSubida: true,
+                      ),
+                      KpiCardDinamico(
+                        label: "Peor",
+                        value: "$peor",
+                        icon: Icons.sentiment_dissatisfied_rounded,
+                        color: Colors.red[400]!,
+                        esSubida: false,
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
@@ -285,7 +319,7 @@ class _EstadisticasPantallaCompletaState
               const SizedBox(height: 4),
               Text(
                 "Mayor número de strikes y spares consecutivos en todas tus partidas.",
-                style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                style: TextStyle(fontSize: 12, color: greyColor),
                 textAlign: TextAlign.center,
               ),
 
@@ -294,7 +328,7 @@ class _EstadisticasPantallaCompletaState
                 "Porcentaje de Strikes, Spares y Fallos",
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.grey[700],
+                  color: greyColor,
                   fontWeight: FontWeight.w500,
                 ),
                 textAlign: TextAlign.center,
@@ -311,13 +345,20 @@ class _EstadisticasPantallaCompletaState
                 "Evolución reciente (media móvil de tus últimas 5 partidas)",
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.grey[700],
+                  color: greyColor,
                   fontWeight: FontWeight.w500,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 3),
               MiniGraficoPromedioMovil(promedios: miniPromedios),
+
+              const SizedBox(height: 18),
+              RepaintBoundary(
+                child: MapaCalorGitHub(
+                  partidasPorDia: contarPartidasPorDia(sesiones),
+                ),
+              ),
 
               const SizedBox(height: 18),
               Text(
@@ -328,7 +369,7 @@ class _EstadisticasPantallaCompletaState
               ),
               Text(
                 "Número de partidas agrupadas por rango de puntuación",
-                style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                style: TextStyle(fontSize: 12, color: greyColor),
               ),
               const SizedBox(height: 4),
               HistogramaPuntuaciones(histograma: histograma),
@@ -338,7 +379,7 @@ class _EstadisticasPantallaCompletaState
                 "Tus 3 mejores y peores partidas individuales registradas",
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.grey[700],
+                  color: greyColor,
                   fontWeight: FontWeight.w500,
                 ),
                 textAlign: TextAlign.center,
@@ -358,7 +399,7 @@ class _EstadisticasPantallaCompletaState
               const SizedBox(height: 24),
               Text(
                 "Sesión con mejor promedio (récord) y peor sesión",
-                style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                style: TextStyle(fontSize: 12, color: greyColor),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 5),

@@ -111,6 +111,9 @@ class EstadisticasCache extends ChangeNotifier {
     final topPeores =
         EstadisticasUtils.topNPartidas(partidas, AppConstants.maxPartidasTop, mejores: false);
 
+    // Calculate moving average (expensive operation, cached here)
+    final promedioMovil = EstadisticasUtils.promedioMovil(partidas, AppConstants.ventanaPromedioMovil);
+
     return {
       'porcentajes': porcentajes,
       'rachaStrikes': rachaStrikes,
@@ -127,6 +130,7 @@ class EstadisticasCache extends ChangeNotifier {
       'histograma': histograma,
       'topMejores': topMejores,
       'topPeores': topPeores,
+      'promedioMovil': promedioMovil,
       'totalPartidas': partidas.length,
       'totalSesiones': sesiones.length,
     };
@@ -150,6 +154,7 @@ class EstadisticasCache extends ChangeNotifier {
       'histograma': <String, int>{},
       'topMejores': <Partida>[],
       'topPeores': <Partida>[],
+      'promedioMovil': <double>[],
       'totalPartidas': 0,
       'totalSesiones': 0,
     };

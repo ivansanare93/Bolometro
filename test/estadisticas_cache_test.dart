@@ -212,6 +212,7 @@ void main() {
       expect(stats.containsKey('histograma'), isTrue);
       expect(stats.containsKey('topMejores'), isTrue);
       expect(stats.containsKey('topPeores'), isTrue);
+      expect(stats.containsKey('promedioMovil'), isTrue);
       expect(stats.containsKey('totalPartidas'), isTrue);
       expect(stats.containsKey('totalSesiones'), isTrue);
     });

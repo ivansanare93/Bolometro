@@ -13,6 +13,11 @@ class TopPartidasWidget extends StatelessWidget {
     required this.color,
   }) : super(key: key);
 
+  static String _formatearFecha(DateTime? fecha) {
+    if (fecha == null) return "Sin fecha";
+    return "${fecha.day.toString().padLeft(2, '0')}/${fecha.month.toString().padLeft(2, '0')}/${fecha.year}";
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -56,9 +61,6 @@ class TopPartidasWidget extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           ...partidas.map((p) {
-            final fecha = p.fecha != null
-                ? "${p.fecha!.day.toString().padLeft(2, '0')}/${p.fecha!.month.toString().padLeft(2, '0')}/${p.fecha!.year}"
-                : "Sin fecha";
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: Row(
@@ -75,7 +77,7 @@ class TopPartidasWidget extends StatelessWidget {
                   ),
                   const SizedBox(width: 14),
                   Text(
-                    fecha,
+                    _formatearFecha(p.fecha),
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
