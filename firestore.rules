@@ -10,8 +10,7 @@ service cloud.firestore {
       // Reglas para la subcolección de sesiones
       match /sesiones/{sesionId} {
         // Solo el propietario puede leer, escribir y eliminar sus sesiones
-        // Se incluye explícitamente 'list' para permitir consultas de colección (queries)
-        allow read, list, write, delete: if request.auth != null && request.auth.uid == userId;
+        allow read, write: if request.auth != null && request.auth.uid == userId;
         
         // Validaciones adicionales para escritura
         allow create: if request.auth != null 
