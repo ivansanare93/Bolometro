@@ -93,6 +93,14 @@ class AuthWrapper extends StatefulWidget {
 
 class _AuthWrapperState extends State<AuthWrapper> {
   bool _hasShownLoginScreen = false;
+  bool _skipLogin = false;
+
+  void _onContinueWithoutLogin() {
+    setState(() {
+      _skipLogin = true;
+      _hasShownLoginScreen = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,9 +112,11 @@ class _AuthWrapperState extends State<AuthWrapper> {
       dataRepository.setUser(authService.userId);
     }
 
-    // Mostrar pantalla de login solo la primera vez
-    if (!_hasShownLoginScreen && !authService.isAuthenticated) {
-      return const LoginScreen();
+    // Mostrar pantalla de login solo la primera vez si no está autenticado y no se ha saltado
+    if (!_hasShownLoginScreen && !authService.isAuthenticated && !_skipLogin) {
+      return LoginScreen(
+        onContinueWithoutLogin: _onContinueWithoutLogin,
+      );
     }
 
     // Si el usuario inicia sesión o continúa sin autenticarse, marcar como visto

@@ -273,23 +273,121 @@ service cloud.firestore {
 
 ## Solución de Problemas
 
+### Error "ApiException: 10" al iniciar sesión con Google
+
+Este es el error más común al configurar Google Sign-In. Significa que la app no está correctamente configurada en Google Cloud Console. Sigue estos pasos para solucionarlo:
+
+#### Paso 1: Obtener el SHA-1 de tu app
+
+**Para debug (desarrollo):**
+
+```bash
+cd android
+./gradlew signingReport
+```
+
+Busca en la salida la línea que dice `SHA1:` en la sección `Variant: debug`. Copia ese valor.
+
+**Alternativa usando keytool:**
+
+En Windows:
+```bash
+keytool -list -v -keystore "%USERPROFILE%\.android\debug.keystore" -alias androiddebugkey -storepass android -keypass android
+```
+
+En macOS/Linux:
+```bash
+keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
+```
+
+**Para release (producción):**
+
+Si ya tienes un keystore de release, usa:
+```bash
+keytool -list -v -keystore path/to/your/keystore.jks -alias your-alias
+```
+
+#### Paso 2: Agregar el SHA-1 a Firebase Console
+
+1. Ve a [Firebase Console](https://console.firebase.google.com/)
+2. Selecciona tu proyecto Bolómetro
+3. Ve a "Configuración del proyecto" (ícono de engranaje arriba a la izquierda)
+4. Desplázate hasta la sección "Tus apps"
+5. Selecciona tu app Android (com.bolometro)
+6. En la sección "Huellas digitales de certificados SHA", haz clic en "Agregar huella digital"
+7. Pega el SHA-1 que copiaste en el Paso 1
+8. Haz clic en "Guardar"
+
+#### Paso 3: Descargar el google-services.json actualizado
+
+1. Después de agregar el SHA-1, descarga el nuevo archivo `google-services.json`
+2. Reemplaza el archivo existente en `android/app/google-services.json`
+3. Verifica que el `package_name` en el archivo coincida con `com.bolometro`
+
+#### Paso 4: Limpiar y reconstruir la app
+
+```bash
+flutter clean
+flutter pub get
+cd android
+./gradlew clean
+cd ..
+flutter run
+```
+
+#### Paso 5: Verificar la configuración
+
+Asegúrate de que:
+
+- El `applicationId` en `android/app/build.gradle.kts` sea `com.bolometro`
+- El plugin de Google Services esté aplicado: `id("com.google.gms.google-services")`
+- El archivo `google-services.json` esté en `android/app/`
+- Firebase Authentication esté habilitado en Firebase Console (con Google como proveedor)
+
 ### "Error al iniciar sesión"
 
-- Verificar que google-services.json esté actualizado
-- Comprobar que el SHA-1 esté configurado en Firebase Console
+Si recibes un error genérico al iniciar sesión:
+
+- Verificar que google-services.json esté actualizado (ver arriba)
+- Comprobar que el SHA-1 esté configurado en Firebase Console (ver arriba)
 - Revisar que el paquete en google-services.json coincida con applicationId
+- Asegurarse de que Google Sign-In esté habilitado en Firebase Console:
+  1. Ve a Authentication > Sign-in method
+  2. Habilita "Google" como proveedor
+  3. Agrega un correo de soporte
 
 ### "Datos no se sincronizan"
 
 - Verificar conexión a Internet
 - Comprobar que el usuario esté autenticado en ajustes
 - Intentar sincronización manual desde ajustes
+- Revisar las reglas de seguridad de Firestore (ver sección "Notas de Seguridad")
 
 ### "App crashea al abrir"
 
 - Verificar que Firebase esté inicializado en main.dart
 - Comprobar que todas las dependencias estén instaladas: `flutter pub get`
-- Revisar logs de Android Studio/Xcode
+- Revisar logs de Android Studio/Xcode con `flutter logs`
+- Verificar que el archivo google-services.json sea válido (formato JSON correcto)
+
+### Modo sin conexión funciona pero Google Sign-In no
+
+Si la app funciona en modo offline pero falla al iniciar sesión con Google:
+
+1. Verifica que tengas conexión a Internet
+2. Asegúrate de que los servicios de Google Play estén actualizados en tu dispositivo
+3. Limpia el cache de la app: Ajustes > Apps > Bolómetro > Almacenamiento > Limpiar cache
+4. Desinstala y reinstala la app
+5. Intenta con una cuenta de Google diferente
+
+### Error de red o timeout
+
+Si recibes errores de red:
+
+- Verifica tu conexión a Internet
+- Asegúrate de que Firebase no esté experimentando problemas: [Estado de Firebase](https://status.firebase.google.com/)
+- Verifica que los servicios de Google Play estén funcionando
+- Intenta desactivar VPN si estás usando una
 
 ## Testing
 
