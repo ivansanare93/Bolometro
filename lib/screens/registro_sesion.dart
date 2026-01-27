@@ -311,40 +311,41 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      _modoVisual = !_modoVisual;
-                      mostrarSelectorpines = false;
-                      _actualizarTeclasDeshabilitadas(
-                        frame: _frameActivo,
-                        tiro: _tiroActivo,
-                      );
-                    });
-                  },
-                  icon: Icon(
-                    _modoVisual ? Icons.keyboard : Icons.push_pin_rounded,
-                  ),
-                  label: Text(
-                    _modoVisual
-                        ? "Cambiar a teclado clásico"
-                        : "Registrar bolos visualmente",
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _modoVisual
-                        ? Colors.orange
-                        : const Color(0xFF0077B6),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            // En un futuro activar teclado por pines
+            // const SizedBox(height: 8),
+            // Row(
+            //   children: [
+            //     ElevatedButton.icon(
+            //       onPressed: () {
+            //         setState(() {
+            //           _modoVisual = !_modoVisual;
+            //           mostrarSelectorpines = false;
+            //           _actualizarTeclasDeshabilitadas(
+            //             frame: _frameActivo,
+            //             tiro: _tiroActivo,
+            //           );
+            //         });
+            //       },
+            //       icon: Icon(
+            //         _modoVisual ? Icons.keyboard : Icons.push_pin_rounded,
+            //       ),
+            //       label: Text(
+            //         _modoVisual
+            //             ? "Cambiar a teclado clásico"
+            //             : "Registrar bolos visualmente",
+            //       ),
+            //       style: ElevatedButton.styleFrom(
+            //         backgroundColor: _modoVisual
+            //             ? Colors.orange
+            //             : const Color(0xFF0077B6),
+            //         foregroundColor: Colors.white,
+            //         shape: RoundedRectangleBorder(
+            //           borderRadius: BorderRadius.circular(12),
+            //         ),
+            //       ),
+            //     ),
+            //   ],
+            // ),
             const SizedBox(height: 8),
             MarcadorBolos(
               key: marcadorKey,
