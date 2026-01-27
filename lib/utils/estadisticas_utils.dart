@@ -22,26 +22,37 @@ class EstadisticasUtils {
 
   /// Porcentaje de strikes, spares y fallos
   static Map<String, double> calcularPorcentajes(List<List<List<String>>> partidasFrames) {
-    int totalTiros = 0;
+    int totalFrames = 0;
     int strikes = 0;
     int spares = 0;
     int fallos = 0;
 
     for (final frames in partidasFrames) {
       for (final frame in frames) {
-        for (final tiro in frame) {
-          if (tiro == AppConstants.simboloStrike) strikes++;
-          else if (tiro == AppConstants.simboloSpare) spares++;
-          else if (tiro == AppConstants.simboloFallo) fallos++;
-          totalTiros++;
+        if (frame.isEmpty) continue;
+        
+        totalFrames++;
+        
+        // Check if it's a strike (first throw is X)
+        if (frame[0] == AppConstants.simboloStrike) {
+          strikes++;
+        }
+        // Check if it's a spare (contains / symbol)
+        else if (frame.contains(AppConstants.simboloSpare)) {
+          spares++;
+        }
+        // Otherwise it's a fallo/open frame
+        else {
+          fallos++;
         }
       }
     }
-    if (totalTiros == 0) return {"strikes": 0, "spares": 0, "fallos": 0};
+    
+    if (totalFrames == 0) return {"strikes": 0, "spares": 0, "fallos": 0};
     return {
-      "strikes": (strikes / totalTiros) * 100,
-      "spares": (spares / totalTiros) * 100,
-      "fallos": (fallos / totalTiros) * 100,
+      "strikes": (strikes / totalFrames) * 100,
+      "spares": (spares / totalFrames) * 100,
+      "fallos": (fallos / totalFrames) * 100,
     };
   }
 
