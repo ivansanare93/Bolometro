@@ -18,67 +18,61 @@ class PastelPorcentajes extends StatelessWidget {
     return RepaintBoundary(
       child: SizedBox(
         height: 200,
-        child: Row(
-          children: [
-            Expanded(
-              child: PieChart(
-                PieChartData(
-                  sectionsSpace: 2,
-                  centerSpaceRadius: 30,
-                  sections: [
-                    PieChartSectionData(
-                      color: Colors.blue[700],
-                      value: porcentajeStrikes,
-                      title: '${porcentajeStrikes.toStringAsFixed(1)}%',
-                      radius: 50,
-                      titleStyle: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      badgeWidget: _buildBadge(
-                        'Strikes',
-                        Colors.blue[700]!,
-                      ),
-                      badgePositionPercentageOffset: 1.4,
-                    ),
-                    PieChartSectionData(
-                      color: Colors.green[600],
-                      value: porcentajeSpares,
-                      title: '${porcentajeSpares.toStringAsFixed(1)}%',
-                      radius: 50,
-                      titleStyle: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      badgeWidget: _buildBadge(
-                        'Spares',
-                        Colors.green[600]!,
-                      ),
-                      badgePositionPercentageOffset: 1.4,
-                    ),
-                    PieChartSectionData(
-                      color: Colors.red[400],
-                      value: porcentajeFallos,
-                      title: '${porcentajeFallos.toStringAsFixed(1)}%',
-                      radius: 50,
-                      titleStyle: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      badgeWidget: _buildBadge(
-                        'Fallos',
-                        Colors.red[400]!,
-                      ),
-                      badgePositionPercentageOffset: 1.4,
-                    ),
-                  ],
+        child: PieChart(
+          PieChartData(
+            sectionsSpace: 2,
+            centerSpaceRadius: 30,
+            sections: [
+              PieChartSectionData(
+                color: Colors.blue[700],
+                value: porcentajeStrikes,
+                title: '${porcentajeStrikes.toStringAsFixed(1)}%',
+                radius: 50,
+                titleStyle: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
                 ),
+                badgeWidget: _buildBadge(
+                  'Strikes',
+                  Colors.blue[700]!,
+                ),
+                badgePositionPercentageOffset: 1.4,
               ),
-            ),
-          ],
+              PieChartSectionData(
+                color: Colors.green[600],
+                value: porcentajeSpares,
+                title: '${porcentajeSpares.toStringAsFixed(1)}%',
+                radius: 50,
+                titleStyle: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+                badgeWidget: _buildBadge(
+                  'Spares',
+                  Colors.green[600]!,
+                ),
+                badgePositionPercentageOffset: 1.4,
+              ),
+              PieChartSectionData(
+                color: Colors.red[400],
+                value: porcentajeFallos,
+                title: '${porcentajeFallos.toStringAsFixed(1)}%',
+                radius: 50,
+                titleStyle: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+                badgeWidget: _buildBadge(
+                  'Fallos',
+                  Colors.red[400]!,
+                ),
+                badgePositionPercentageOffset: 1.4,
+              ),
+            ],
+          ),
         ),
       ),
     );
