@@ -96,25 +96,25 @@ class _EstadisticasPantallaCompletaState
               child: Column(
                 children: [
                   Row(
-                    children: const [
+                    children: [
                       Expanded(child: StatisticsCardSkeleton()),
                       Expanded(child: StatisticsCardSkeleton()),
                     ],
                   ),
                   Row(
-                    children: const [
+                    children: [
                       Expanded(child: StatisticsCardSkeleton()),
                       Expanded(child: StatisticsCardSkeleton()),
                     ],
                   ),
                   Row(
-                    children: const [
+                    children: [
                       Expanded(child: StatisticsCardSkeleton()),
                       Expanded(child: StatisticsCardSkeleton()),
                     ],
                   ),
-                  const ChartSkeleton(height: 250),
-                  const ChartSkeleton(height: 200),
+                  ChartSkeleton(height: 250),
+                  ChartSkeleton(height: 200),
                 ],
               ),
             );
