@@ -1,13 +1,24 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart'; // For PlatformException (Google Sign-In errors)
+import 'package:flutter/services.dart'; // For PlatformException (platform-specific errors including Google Sign-In)
 
 /// Servicio de autenticación que maneja el login con Google
 /// y la gestión de sesiones de usuario
 class AuthService extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+
+  // Constantes para códigos de error
+  static const String _googleSignInConfigErrorCode = '10:';
+  static const String _googleSignInConfigErrorMessage = '''Error de configuración de Google Sign-In.
+
+Por favor, verifica:
+1. El SHA-1 está registrado en Firebase Console
+2. El archivo google-services.json está actualizado
+3. El applicationId coincide con el de Firebase
+
+Consulta AUTENTICACION.md para más detalles.''';
 
   User? _user;
   bool _isLoading = false;
@@ -70,14 +81,9 @@ class AuthService extends ChangeNotifier {
       if (e.code == 'sign_in_failed') {
         // Error específico de Google Sign-In
         final String? message = e.message;
-        if (message != null && message.contains('10:')) {
+        if (message != null && message.contains(_googleSignInConfigErrorCode)) {
           // ApiException: 10 - Error de configuración
-          errorMsg = 'Error de configuración de Google Sign-In.\n\n'
-              'Por favor, verifica:\n'
-              '1. El SHA-1 está registrado en Firebase Console\n'
-              '2. El archivo google-services.json está actualizado\n'
-              '3. El applicationId coincide con el de Firebase\n\n'
-              'Consulta AUTENTICACION.md para más detalles.';
+          errorMsg = _googleSignInConfigErrorMessage;
         } else {
           errorMsg = 'Error al iniciar sesión con Google.\n'
               'Por favor, intenta nuevamente o verifica tu configuración.';
