@@ -25,8 +25,11 @@ Se ha completado la implementación de la función `sincronizarANube` en el repo
 - ✅ Uso de excepciones personalizadas para manejo de errores tipo-seguro
 
 **Funcionalidades implementadas:**
-- ✅ Iteración completa sobre datos locales en Hive (sesiones y perfil)
-- ✅ Sincronización de todas las sesiones almacenadas localmente
+- ✅ **Sincronización bidireccional inteligente** (evita re-subir sesiones eliminadas)
+- ✅ Descarga sesiones actuales de Firestore antes de sincronizar
+- ✅ Compara sesiones locales con remotas para detectar duplicados
+- ✅ Sube solo sesiones nuevas que NO existen en la nube
+- ✅ Actualiza almacenamiento local con datos de la nube (verdad única)
 - ✅ Sincronización del perfil de usuario
 - ✅ Logs detallados del progreso de sincronización
 - ✅ Manejo robusto de errores con excepciones específicas:
@@ -189,25 +192,39 @@ try {
 }
 ```
 
-## Flujo de Sincronización
+## Flujo de Sincronización (Bidireccional)
 
 1. **Validaciones previas:**
    - ✅ Usuario autenticado (`AuthenticationException` si falla)
    - ✅ Modo online activo (`OfflineModeException` si falla)
    - ✅ No hay sincronización en curso (retorna silenciosamente)
 
-2. **Obtención de datos locales:**
+2. **Descarga de datos remotos (Cloud → Local):**
+   - ✅ Obtener todas las sesiones actuales desde Firestore
+   - ✅ Crear un conjunto de IDs remotos para comparación rápida
+
+3. **Obtención de datos locales:**
    - ✅ Leer todas las sesiones de Hive
    - ✅ Leer perfil de usuario de Hive
 
-3. **Sincronización a Firestore:**
-   - ✅ Iterar sobre cada sesión
+4. **Detección de sesiones nuevas:**
+   - ✅ Comparar sesiones locales vs remotas por ID (timestamp)
+   - ✅ Filtrar solo sesiones que NO existen en Firestore
+   - ✅ Evitar re-subir sesiones eliminadas de la nube
+
+5. **Sincronización a Firestore (Local → Cloud):**
+   - ✅ Iterar solo sobre sesiones nuevas
    - ✅ Guardar sesión en Firestore (con manejo de errores individual)
    - ✅ Guardar perfil si existe
    - ✅ Logs de progreso (cada N sesiones, configurable)
 
-4. **Finalización:**
-   - ✅ Resumen de sincronización
+6. **Actualización local (Cloud → Local):**
+   - ✅ Limpiar almacenamiento local de Hive
+   - ✅ Descargar todas las sesiones actualizadas de Firestore
+   - ✅ Guardar en Hive (Firestore es la verdad única)
+
+7. **Finalización:**
+   - ✅ Resumen de sincronización con total de sesiones
    - ✅ Actualizar flag `isSyncing`
    - ✅ Notificar listeners
 
@@ -229,6 +246,14 @@ try {
 1. ✅ No iniciar sesión
 2. ✅ Intentar sincronizar
 3. ✅ Verificar `AuthenticationException` con mensaje apropiado
+
+### Pruebas de sincronización bidireccional (Nuevo)
+1. ✅ Crear sesiones localmente
+2. ✅ Autenticarse y sincronizar
+3. ✅ Eliminar sesiones desde Firebase Console
+4. ✅ Volver a sincronizar desde la app
+5. ✅ Verificar que las sesiones eliminadas NO reaparecen
+6. ✅ Verificar que el almacenamiento local se actualiza con datos de la nube
 
 ## Reglas de Seguridad de Firestore Recomendadas
 
