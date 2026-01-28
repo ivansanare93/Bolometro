@@ -389,6 +389,7 @@ class _HomeScreenState extends State<HomeScreen> {
           final perfil = snapshot.data!.get('perfil');
           final tienePerfil =
               perfil != null && (perfil.nombre.trim().isNotEmpty);
+          final authService = Provider.of<AuthService>(context, listen: false);
 
           // Avatar: comprobamos si la imagen existe realmente
           final avatarFileExists =
