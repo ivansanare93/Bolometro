@@ -31,14 +31,12 @@ class _EstadisticasPantallaCompletaState
     extends State<EstadisticasPantallaCompleta> {
   late Future<List<Sesion>> _sesionesFuture;
   String _filtroTipo = AppConstants.tipoTodos;
-  DateTimeRange? _rangoFechas;
   bool _hasLoggedView = false;
   
   // Cache for filtered sessions to avoid recalculating on every build
   List<Sesion>? _cachedSesiones;
   List<Sesion>? _cachedFilteredSesiones;
   String? _cachedFiltroTipo;
-  DateTimeRange? _cachedRangoFechas;
 
   @override
   void initState() {
@@ -68,7 +66,6 @@ class _EstadisticasPantallaCompletaState
     
     if (sesionesSame &&
         _cachedFiltroTipo == _filtroTipo &&
-        _cachedRangoFechas == _rangoFechas &&
         _cachedFilteredSesiones != null) {
       return _cachedFilteredSesiones!;
     }
@@ -78,18 +75,10 @@ class _EstadisticasPantallaCompletaState
     if (_filtroTipo != AppConstants.tipoTodos) {
       filtered = filtered.where((s) => s.tipo == _filtroTipo).toList();
     }
-    if (_rangoFechas != null) {
-      filtered = EstadisticasUtils.filtrarSesionesPorFecha(
-        filtered,
-        _rangoFechas!.start,
-        _rangoFechas!.end,
-      );
-    }
     
     // Cache the result
     _cachedSesiones = sesiones;
     _cachedFiltroTipo = _filtroTipo;
-    _cachedRangoFechas = _rangoFechas;
     _cachedFilteredSesiones = filtered;
     
     return filtered;
@@ -159,14 +148,6 @@ class _EstadisticasPantallaCompletaState
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _FiltrosEstadisticas(
-                      filtroTipo: _filtroTipo,
-                      onTipoChanged: (valor) =>
-                          setState(() => _filtroTipo = valor ?? AppConstants.tipoTodos),
-                      rangoFechas: _rangoFechas,
-                      onFechaChanged: (nuevoRango) =>
-                          setState(() => _rangoFechas = nuevoRango),
-                    ),
                     const SizedBox(height: 38),
                     Text(
                       AppLocalizations.of(context)!.noDataForStatistics,
@@ -237,14 +218,81 @@ class _EstadisticasPantallaCompletaState
           return ListView(
             padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 14),
             children: [
-              // Filtros arriba
-              _FiltrosEstadisticas(
-                filtroTipo: _filtroTipo,
-                onTipoChanged: (valor) =>
-                    setState(() => _filtroTipo = valor ?? AppConstants.tipoTodos),
-                rangoFechas: _rangoFechas,
-                onFechaChanged: (nuevoRango) =>
-                    setState(() => _rangoFechas = nuevoRango),
+              // Filtro visual optimizado
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isDark ? Theme.of(context).colorScheme.surface : Colors.grey[100],
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.primary.withOpacity(0.38),
+                      width: 1.3,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context).colorScheme.primary.withOpacity(isDark ? 0.13 : 0.06),
+                        blurRadius: 7,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                  child: Row(
+                    children: [
+                      Icon(Icons.filter_list_rounded, color: Theme.of(context).colorScheme.primary, size: 22),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Filtrar:',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.84),
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: _filtroTipo,
+                            borderRadius: BorderRadius.circular(12),
+                            isExpanded: true,
+                            icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).colorScheme.primary),
+                            dropdownColor: isDark ? Theme.of(context).colorScheme.surface : Colors.white,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            items: AppConstants.tiposSesionConTodos
+                                .map(
+                                  (tipo) => DropdownMenuItem(
+                                    value: tipo,
+                                    child: Text(
+                                      tipo,
+                                      style: TextStyle(
+                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(
+                                          tipo == _filtroTipo ? 1.0 : 0.72,
+                                        ),
+                                        fontWeight: tipo == _filtroTipo
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (v) {
+                              setState(() {
+                                _filtroTipo = v ?? AppConstants.tipoTodos;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 18),
 
@@ -465,72 +513,5 @@ class _EstadisticasPantallaCompletaState
 
   String _formatearFechaCorta(DateTime fecha) {
     return "${fecha.day.toString().padLeft(2, '0')}/${fecha.month.toString().padLeft(2, '0')}/${fecha.year}";
-  }
-}
-
-// --------------- FILTROS -------------------
-class _FiltrosEstadisticas extends StatelessWidget {
-  final String filtroTipo;
-  final ValueChanged<String?> onTipoChanged;
-  final DateTimeRange? rangoFechas;
-  final ValueChanged<DateTimeRange?> onFechaChanged;
-
-  const _FiltrosEstadisticas({
-    required this.filtroTipo,
-    required this.onTipoChanged,
-    required this.rangoFechas,
-    required this.onFechaChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        // Filtro tipo
-        DropdownButton<String>(
-          value: filtroTipo,
-          borderRadius: BorderRadius.circular(12),
-          items: AppConstants.tiposSesionConTodos
-              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-              .toList(),
-          onChanged: onTipoChanged,
-        ),
-        const SizedBox(width: 18),
-        // Filtro fecha
-        OutlinedButton.icon(
-          icon: const Icon(Icons.date_range, size: 18),
-          label: Text(
-            rangoFechas == null
-                ? 'Filtrar por fecha'
-                : "${rangoFechas!.start.day.toString().padLeft(2, '0')}/${rangoFechas!.start.month.toString().padLeft(2, '0')} - ${rangoFechas!.end.day.toString().padLeft(2, '0')}/${rangoFechas!.end.month.toString().padLeft(2, '0')}",
-            style: const TextStyle(fontSize: 14),
-          ),
-          onPressed: () async {
-            final hoy = DateTime.now();
-            final picked = await showDateRangePicker(
-              context: context,
-              initialDateRange:
-                  rangoFechas ??
-                  DateTimeRange(
-                    start: DateTime(hoy.year, hoy.month, 1),
-                    end: hoy,
-                  ),
-              firstDate: DateTime(2000, 1, 1),
-              lastDate: hoy,
-              builder: (context, child) {
-                return Theme(data: Theme.of(context), child: child!);
-              },
-            );
-            onFechaChanged(picked);
-          },
-        ),
-        if (rangoFechas != null)
-          IconButton(
-            icon: const Icon(Icons.clear, size: 17),
-            onPressed: () => onFechaChanged(null),
-            tooltip: 'Quitar filtro fecha',
-          ),
-      ],
-    );
   }
 }
