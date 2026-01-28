@@ -207,10 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   context,
                                                   listen: false,
                                                 );
-                                                await analytics.logEvent(
-                                                  name: 'language_changed',
-                                                  parameters: {'language': newLanguage},
-                                                );
+                                                await analytics.logLanguageChanged(newLanguage);
                                               } catch (e) {
                                                 debugPrint('Error logging language change: $e');
                                               }
