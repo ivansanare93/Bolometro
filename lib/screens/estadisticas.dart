@@ -93,7 +93,7 @@ class _EstadisticasPantallaCompletaState
         actions: [
           IconButton(
             icon: const Icon(Icons.home),
-            tooltip: "Inicio",
+            tooltip: AppLocalizations.of(context)!.home,
             onPressed: () {
               Navigator.pushAndRemoveUntil(
                 context,
@@ -173,7 +173,7 @@ class _EstadisticasPantallaCompletaState
                         Icon(Icons.filter_list_rounded, color: Theme.of(context).colorScheme.primary, size: 22),
                         const SizedBox(width: 10),
                         Text(
-                          'Filtrar:',
+                          AppLocalizations.of(context)!.filter,
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.84),
@@ -323,7 +323,7 @@ class _EstadisticasPantallaCompletaState
                       Icon(Icons.filter_list_rounded, color: Theme.of(context).colorScheme.primary, size: 22),
                       const SizedBox(width: 10),
                       Text(
-                        'Filtrar:',
+                        AppLocalizations.of(context)!.filter,
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           color: Theme.of(context).colorScheme.onSurface.withOpacity(0.84),
@@ -378,7 +378,7 @@ class _EstadisticasPantallaCompletaState
 
               // --- KPIs y tarjetas principales ---
               Text(
-                "Resumen rápido de tus puntuaciones",
+                AppLocalizations.of(context)!.quickScoreSummary,
                 style: TextStyle(
                   fontSize: 13,
                   color: greyColor,
@@ -393,28 +393,28 @@ class _EstadisticasPantallaCompletaState
                   child: Row(
                     children: [
                       KpiCardDinamico(
-                        label: "Promedio",
+                        label: AppLocalizations.of(context)!.average,
                         value: promedio.toStringAsFixed(1),
                         icon: Icons.bar_chart_rounded,
                         color: Colors.blue[700]!,
                         esSubida: promedio >= promedioUlt10, // comparación básica
                       ),
                       KpiCardDinamico(
-                        label: "Prom. Últ. 5",
+                        label: AppLocalizations.of(context)!.averageLast5,
                         value: promedioUlt5.toStringAsFixed(1),
                         icon: Icons.trending_up_rounded,
                         color: Colors.purple[600]!,
                         esSubida: promedioUlt5 > promedioUlt10,
                       ),
                       KpiCardDinamico(
-                        label: "Mejor",
+                        label: AppLocalizations.of(context)!.best,
                         value: "$mejor",
                         icon: Icons.emoji_events_rounded,
                         color: Colors.green[600]!,
                         esSubida: true,
                       ),
                       KpiCardDinamico(
-                        label: "Peor",
+                        label: AppLocalizations.of(context)!.worst,
                         value: "$peor",
                         icon: Icons.sentiment_dissatisfied_rounded,
                         color: Colors.red[400]!,
@@ -430,13 +430,13 @@ class _EstadisticasPantallaCompletaState
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   RachaBadge(
-                    label: "Strikes",
+                    label: AppLocalizations.of(context)!.strikes,
                     valor: rachaStrike,
                     icon: Icons.flash_on,
                     color: Colors.blue[700]!,
                   ),
                   RachaBadge(
-                    label: "Spares",
+                    label: AppLocalizations.of(context)!.spares,
                     valor: rachaSpare,
                     icon: Icons.bolt,
                     color: Colors.green[600]!,
@@ -445,14 +445,14 @@ class _EstadisticasPantallaCompletaState
               ),
               const SizedBox(height: 4),
               Text(
-                "Mayor número de strikes y spares consecutivos en todas tus partidas.",
+                AppLocalizations.of(context)!.longestStreakDescription,
                 style: TextStyle(fontSize: 12, color: greyColor),
                 textAlign: TextAlign.center,
               ),
 
               const SizedBox(height: 14),
               Text(
-                "Porcentaje de Strikes, Spares y Fallos",
+                AppLocalizations.of(context)!.percentageStrikesSparesMisses,
                 style: TextStyle(
                   fontSize: 13,
                   color: greyColor,
@@ -469,7 +469,7 @@ class _EstadisticasPantallaCompletaState
 
               const SizedBox(height: 16),
               Text(
-                "Evolución reciente (media móvil de tus últimas 5 partidas)",
+                AppLocalizations.of(context)!.recentEvolution,
                 style: TextStyle(
                   fontSize: 13,
                   color: greyColor,
@@ -482,13 +482,13 @@ class _EstadisticasPantallaCompletaState
 
               const SizedBox(height: 18),
               Text(
-                "Distribución de puntuaciones",
+                AppLocalizations.of(context)!.scoreDistribution,
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
               Text(
-                "Número de partidas agrupadas por rango de puntuación",
+                AppLocalizations.of(context)!.gamesGroupedByRange,
                 style: TextStyle(fontSize: 12, color: greyColor),
               ),
               const SizedBox(height: 4),
@@ -496,7 +496,7 @@ class _EstadisticasPantallaCompletaState
 
               const SizedBox(height: 24),
               Text(
-                "Tus 3 mejores y peores partidas individuales registradas",
+                AppLocalizations.of(context)!.topBestWorstGames,
                 style: TextStyle(
                   fontSize: 13,
                   color: greyColor,
@@ -507,18 +507,18 @@ class _EstadisticasPantallaCompletaState
               const SizedBox(height: 6),
               TopPartidasWidget(
                 partidas: top3,
-                titulo: "Top 3 Mejores Partidas",
+                titulo: AppLocalizations.of(context)!.top3BestGames,
                 color: Colors.indigo,
               ),
               TopPartidasWidget(
                 partidas: peores3,
-                titulo: "Top 3 Peores Partidas",
+                titulo: AppLocalizations.of(context)!.top3WorstGames,
                 color: Colors.red,
               ),
 
               const SizedBox(height: 24),
               Text(
-                "Sesión con mejor promedio (récord) y peor sesión",
+                AppLocalizations.of(context)!.bestWorstSessionDescription,
                 style: TextStyle(fontSize: 12, color: greyColor),
                 textAlign: TextAlign.center,
               ),
@@ -540,7 +540,7 @@ class _EstadisticasPantallaCompletaState
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            "¡Récord personal!\n${sesionRecord.partidas.length} partidas el ${_formatearFechaCorta(sesionRecord.fecha)}. Prom: ${EstadisticasUtils.promedioSesion(sesionRecord).toStringAsFixed(1)}",
+                            "${AppLocalizations.of(context)!.personalRecord}\n${AppLocalizations.of(context)!.gamesWithAverage(sesionRecord.partidas.length, _formatearFechaCorta(sesionRecord.fecha), EstadisticasUtils.promedioSesion(sesionRecord).toStringAsFixed(1))}",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: textCardColor,
@@ -572,7 +572,7 @@ class _EstadisticasPantallaCompletaState
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            "Peor sesión: ${sesionPeor.partidas.length} partidas el ${_formatearFechaCorta(sesionPeor.fecha)}. Prom: ${EstadisticasUtils.promedioSesion(sesionPeor).toStringAsFixed(1)}",
+                            "${AppLocalizations.of(context)!.worstSession} ${AppLocalizations.of(context)!.gamesWithAverage(sesionPeor.partidas.length, _formatearFechaCorta(sesionPeor.fecha), EstadisticasUtils.promedioSesion(sesionPeor).toStringAsFixed(1))}",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: textCardColor,

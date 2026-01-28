@@ -617,4 +617,98 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noDataForStatistics => 'No hay datos para mostrar estadísticas.';
+
+  @override
+  String get filter => 'Filtrar:';
+
+  @override
+  String get quickScoreSummary => 'Resumen rápido de tus puntuaciones';
+
+  @override
+  String get averageLast5 => 'Prom. Últ. 5';
+
+  @override
+  String get best => 'Mejor';
+
+  @override
+  String get worst => 'Peor';
+
+  @override
+  String get longestStreakDescription =>
+      'Mayor número de strikes y spares consecutivos en todas tus partidas.';
+
+  @override
+  String get percentageStrikesSparesMisses =>
+      'Porcentaje de Strikes, Spares y Fallos';
+
+  @override
+  String get recentEvolution =>
+      'Evolución reciente (media móvil de tus últimas 5 partidas)';
+
+  @override
+  String get scoreDistribution => 'Distribución de puntuaciones';
+
+  @override
+  String get gamesGroupedByRange =>
+      'Número de partidas agrupadas por rango de puntuación';
+
+  @override
+  String get topBestWorstGames =>
+      'Tus 3 mejores y peores partidas individuales registradas';
+
+  @override
+  String get top3BestGames => 'Top 3 Mejores Partidas';
+
+  @override
+  String get top3WorstGames => 'Top 3 Peores Partidas';
+
+  @override
+  String get bestWorstSessionDescription =>
+      'Sesión con mejor promedio (récord) y peor sesión';
+
+  @override
+  String get personalRecord => '¡Récord personal!';
+
+  @override
+  String get worstSession => 'Peor sesión:';
+
+  @override
+  String get noSessionsSaved => 'No hay sesiones guardadas.';
+
+  @override
+  String gamesCount(int count) {
+    return 'Partidas: $count';
+  }
+
+  @override
+  String get noLocation => 'Sin lugar';
+
+  @override
+  String gamesListCount(int count) {
+    return 'Partidas ($count):';
+  }
+
+  @override
+  String get noGamesRegistered => 'No hay partidas registradas';
+
+  @override
+  String gameNumber(int number) {
+    return '🎳 Partida $number';
+  }
+
+  @override
+  String get editTooltip => 'Editar';
+
+  @override
+  String get deleteTooltip => 'Eliminar';
+
+  @override
+  String points(int points) {
+    return 'Puntos: $points';
+  }
+
+  @override
+  String gamesWithAverage(int count, String date, String average) {
+    return '$count partidas el $date. Prom: $average';
+  }
 }
