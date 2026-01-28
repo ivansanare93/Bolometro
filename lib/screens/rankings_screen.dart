@@ -7,6 +7,7 @@ import '../repositories/data_repository.dart';
 import '../utils/estadisticas_utils.dart';
 import '../models/sesion.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../l10n/app_localizations.dart';
 
 /// Pantalla de rankings entre amigos
 class RankingsScreen extends StatefulWidget {
@@ -135,21 +136,22 @@ class _RankingsScreenState extends State<RankingsScreen> {
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
     final userId = authService.userId;
+    final localizations = AppLocalizations.of(context)!;
 
     if (userId == null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Rankings'),
+          title: Text(localizations.rankings),
         ),
-        body: const Center(
-          child: Text('Debes iniciar sesión para ver rankings'),
+        body: Center(
+          child: Text(localizations.loginRequiredMessage),
         ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Rankings'),
+        title: Text(localizations.rankings),
         actions: [
           PopupMenuButton<String>(
             icon: const Icon(Icons.filter_list),
@@ -158,11 +160,11 @@ class _RankingsScreenState extends State<RankingsScreen> {
               setState(() => _selectedPeriod = value);
               _loadRankings();
             },
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: 'Todo', child: Text('Todo el tiempo')),
-              PopupMenuItem(value: 'Última semana', child: Text('Última semana')),
-              PopupMenuItem(value: 'Último mes', child: Text('Último mes')),
-              PopupMenuItem(value: 'Últimos 3 meses', child: Text('Últimos 3 meses')),
+            itemBuilder: (context) => [
+              PopupMenuItem(value: 'Todo', child: Text(localizations.allTime)),
+              PopupMenuItem(value: 'Última semana', child: Text(localizations.lastWeek)),
+              PopupMenuItem(value: 'Último mes', child: Text(localizations.lastMonth)),
+              PopupMenuItem(value: 'Últimos 3 meses', child: Text(localizations.last3Months)),
             ],
           ),
         ],
@@ -179,6 +181,7 @@ class _RankingsScreenState extends State<RankingsScreen> {
   }
 
   Widget _buildEmptyState() {
+    final localizations = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -190,7 +193,7 @@ class _RankingsScreenState extends State<RankingsScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'No hay datos para mostrar',
+            localizations.noRankingData,
             style: TextStyle(
               fontSize: 18,
               color: Colors.grey[600],
@@ -198,7 +201,7 @@ class _RankingsScreenState extends State<RankingsScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Añade amigos para comparar estadísticas',
+            localizations.addFriendsToCompare,
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[500],
@@ -221,6 +224,7 @@ class _RankingsScreenState extends State<RankingsScreen> {
   }
 
   Widget _buildRankingCard(Map<String, dynamic> ranking, int index) {
+    final localizations = AppLocalizations.of(context)!;
     final posicion = ranking['posicion'] as int;
     final nombre = ranking['nombre'] as String;
     final photoUrl = ranking['photoUrl'] as String?;
@@ -310,7 +314,7 @@ class _RankingsScreenState extends State<RankingsScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            'TÚ',
+                            localizations.you,
                             style: TextStyle(
                               color: colorScheme.onPrimary,
                               fontSize: 12,

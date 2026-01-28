@@ -613,8 +613,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     Card(
                       child: ListTile(
                         leading: const Text('👥', style: TextStyle(fontSize: 32)),
-                        title: const Text('Amigos'),
-                        subtitle: const Text('Gestiona tus amigos y solicitudes'),
+                        title: Text(localizations.friends),
+                        subtitle: Text(localizations.manageFriends),
                         onTap: () {
                           Navigator.push(
                             context,
@@ -628,8 +628,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     Card(
                       child: ListTile(
                         leading: const Text('🏆', style: TextStyle(fontSize: 32)),
-                        title: const Text('Rankings'),
-                        subtitle: const Text('Compárate con tus amigos'),
+                        title: Text(localizations.rankings),
+                        subtitle: Text(localizations.compareWithFriends),
                         onTap: () {
                           Navigator.push(
                             context,

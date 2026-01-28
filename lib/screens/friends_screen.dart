@@ -35,26 +35,27 @@ class _FriendsScreenState extends State<FriendsScreen>
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
     final userId = authService.userId;
+    final localizations = AppLocalizations.of(context)!;
 
     if (userId == null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Amigos'),
+          title: Text(localizations.friends),
         ),
-        body: const Center(
-          child: Text('Debes iniciar sesión para ver amigos'),
+        body: Center(
+          child: Text(localizations.loginRequiredMessage),
         ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Amigos'),
+        title: Text(localizations.friends),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(icon: Icon(Icons.people), text: 'Mis Amigos'),
-            Tab(icon: Icon(Icons.person_add), text: 'Solicitudes'),
+          tabs: [
+            Tab(icon: const Icon(Icons.people), text: localizations.myFriends),
+            Tab(icon: const Icon(Icons.person_add), text: localizations.friendRequests),
           ],
         ),
       ),
@@ -68,12 +69,14 @@ class _FriendsScreenState extends State<FriendsScreen>
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddFriendDialog(context, userId),
         icon: const Icon(Icons.person_add),
-        label: const Text('Añadir Amigo'),
+        label: Text(localizations.addFriend),
       ),
     );
   }
 
   Widget _buildFriendsList(String userId) {
+    final localizations = AppLocalizations.of(context)!;
+    
     return StreamBuilder<List<Friend>>(
       stream: _friendsService.streamAmigos(userId),
       builder: (context, snapshot) {
@@ -83,7 +86,7 @@ class _FriendsScreenState extends State<FriendsScreen>
 
         if (snapshot.hasError) {
           return Center(
-            child: Text('Error: ${snapshot.error}'),
+            child: Text('${localizations.error}: ${snapshot.error}'),
           );
         }
 
@@ -101,7 +104,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'No tienes amigos aún',
+                  localizations.noFriendsYet,
                   style: TextStyle(
                     fontSize: 18,
                     color: Colors.grey[600],
@@ -109,7 +112,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Añade amigos para comparar tus estadísticas',
+                  localizations.addFriendsToCompare,
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[500],
@@ -158,13 +161,13 @@ class _FriendsScreenState extends State<FriendsScreen>
         ),
         trailing: PopupMenuButton(
           itemBuilder: (context) => [
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'remove',
               child: Row(
                 children: [
-                  Icon(Icons.person_remove, color: Colors.red),
-                  SizedBox(width: 8),
-                  Text('Eliminar amigo'),
+                  const Icon(Icons.person_remove, color: Colors.red),
+                  const SizedBox(width: 8),
+                  Text(AppLocalizations.of(context)!.removeFriend),
                 ],
               ),
             ),
@@ -180,6 +183,8 @@ class _FriendsScreenState extends State<FriendsScreen>
   }
 
   Widget _buildFriendRequests(String userId) {
+    final localizations = AppLocalizations.of(context)!;
+    
     return StreamBuilder<List<FriendRequest>>(
       stream: _friendsService.streamSolicitudesPendientes(userId),
       builder: (context, snapshot) {
@@ -189,7 +194,7 @@ class _FriendsScreenState extends State<FriendsScreen>
 
         if (snapshot.hasError) {
           return Center(
-            child: Text('Error: ${snapshot.error}'),
+            child: Text('${localizations.error}: ${snapshot.error}'),
           );
         }
 
@@ -207,7 +212,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'No tienes solicitudes pendientes',
+                  localizations.noPendingRequests,
                   style: TextStyle(
                     fontSize: 18,
                     color: Colors.grey[600],
@@ -248,7 +253,7 @@ class _FriendsScreenState extends State<FriendsScreen>
             if (request.fromUserEmail != null) Text(request.fromUserEmail!),
             const SizedBox(height: 4),
             Text(
-              'Hace ${_getTimeAgo(request.createdAt)}',
+              _getTimeAgo(request.createdAt),
               style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
             ),
           ],
@@ -273,22 +278,23 @@ class _FriendsScreenState extends State<FriendsScreen>
   void _showAddFriendDialog(BuildContext context, String userId) {
     final emailController = TextEditingController();
     final authService = Provider.of<AuthService>(context, listen: false);
+    final localizations = AppLocalizations.of(context)!;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Añadir Amigo'),
+        title: Text(localizations.addFriend),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Busca un amigo por su correo electrónico'),
+            Text(localizations.searchFriend),
             const SizedBox(height: 16),
             TextField(
               controller: emailController,
-              decoration: const InputDecoration(
-                labelText: 'Correo electrónico',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.email),
+              decoration: InputDecoration(
+                labelText: localizations.email,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.email),
               ),
               keyboardType: TextInputType.emailAddress,
             ),
@@ -297,14 +303,23 @@ class _FriendsScreenState extends State<FriendsScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text(localizations.cancel),
           ),
           ElevatedButton(
             onPressed: () async {
               final email = emailController.text.trim();
               if (email.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Ingresa un correo electrónico')),
+                  SnackBar(content: Text(localizations.enterEmail)),
+                );
+                return;
+              }
+
+              // Validate email format
+              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+              if (!emailRegex.hasMatch(email)) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(localizations.enterValidEmail)),
                 );
                 return;
               }
@@ -317,7 +332,7 @@ class _FriendsScreenState extends State<FriendsScreen>
               if (user == null) {
                 if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Usuario no encontrado')),
+                  SnackBar(content: Text(localizations.userNotFound)),
                 );
                 return;
               }
@@ -338,17 +353,17 @@ class _FriendsScreenState extends State<FriendsScreen>
 
               if (success) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Solicitud de amistad enviada')),
+                  SnackBar(
+                      content: Text(localizations.friendRequestSent)),
                 );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('No se pudo enviar la solicitud')),
+                  SnackBar(
+                      content: Text(localizations.couldNotSendRequest)),
                 );
               }
             },
-            child: const Text('Enviar Solicitud'),
+            child: Text(localizations.sendRequest),
           ),
         ],
       ),
@@ -356,6 +371,7 @@ class _FriendsScreenState extends State<FriendsScreen>
   }
 
   Future<void> _acceptRequest(FriendRequest request, String userId) async {
+    final localizations = AppLocalizations.of(context)!;
     final success = await _friendsService.aceptarSolicitudAmistad(
       userId,
       request,
@@ -365,16 +381,17 @@ class _FriendsScreenState extends State<FriendsScreen>
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Solicitud aceptada')),
+        SnackBar(content: Text(localizations.requestAccepted)),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al aceptar solicitud')),
+        SnackBar(content: Text('${localizations.error} al aceptar solicitud')),
       );
     }
   }
 
   Future<void> _rejectRequest(FriendRequest request, String userId) async {
+    final localizations = AppLocalizations.of(context)!;
     final success = await _friendsService.rechazarSolicitudAmistad(
       userId,
       request.requestId,
@@ -384,26 +401,27 @@ class _FriendsScreenState extends State<FriendsScreen>
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Solicitud rechazada')),
+        SnackBar(content: Text(localizations.requestRejected)),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al rechazar solicitud')),
+        SnackBar(content: Text('${localizations.error} al rechazar solicitud')),
       );
     }
   }
 
   void _confirmRemoveFriend(Friend friend, String userId) {
+    final localizations = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Eliminar Amigo'),
+        title: Text(localizations.removeFriend),
         content:
-            Text('¿Estás seguro de que deseas eliminar a ${friend.nombre}?'),
+            Text(localizations.confirmRemoveFriend.replaceAll('{name}', friend.nombre)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text(localizations.cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -421,15 +439,15 @@ class _FriendsScreenState extends State<FriendsScreen>
 
               if (success) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Amigo eliminado')),
+                  SnackBar(content: Text(localizations.friendRemoved)),
                 );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Error al eliminar amigo')),
+                  SnackBar(content: Text('${localizations.error} al eliminar amigo')),
                 );
               }
             },
-            child: const Text('Eliminar'),
+            child: Text(localizations.delete),
           ),
         ],
       ),
@@ -440,13 +458,13 @@ class _FriendsScreenState extends State<FriendsScreen>
     final difference = DateTime.now().difference(dateTime);
 
     if (difference.inDays > 0) {
-      return '${difference.inDays} ${difference.inDays == 1 ? 'día' : 'días'}';
+      return 'Hace ${difference.inDays} ${difference.inDays == 1 ? 'día' : 'días'}';
     } else if (difference.inHours > 0) {
-      return '${difference.inHours} ${difference.inHours == 1 ? 'hora' : 'horas'}';
+      return 'Hace ${difference.inHours} ${difference.inHours == 1 ? 'hora' : 'horas'}';
     } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} ${difference.inMinutes == 1 ? 'minuto' : 'minutos'}';
+      return 'Hace ${difference.inMinutes} ${difference.inMinutes == 1 ? 'minuto' : 'minutos'}';
     } else {
-      return 'menos de un minuto';
+      return 'Hace menos de un minuto';
     }
   }
 }
