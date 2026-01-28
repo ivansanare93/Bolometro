@@ -28,6 +28,8 @@ class AppConstants {
   // ===== Nombres de Boxes de Hive =====
   static const String boxSesiones = 'sesiones';
   static const String boxPerfilUsuario = 'perfilUsuario';
+  static const String boxAmigos = 'amigos';
+  static const String boxSolicitudesAmistad = 'solicitudes_amistad';
 
   // ===== Configuración de UI =====
   static const double cardBorderRadius = 12.0;

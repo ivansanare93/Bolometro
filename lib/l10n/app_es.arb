@@ -320,5 +320,119 @@
         "example": "180.5"
       }
     }
+  },
+  "friends": "Amigos",
+  "@friends": {
+    "description": "Título de la pantalla de amigos"
+  },
+  "myFriends": "Mis Amigos",
+  "@myFriends": {
+    "description": "Pestaña de mis amigos"
+  },
+  "friendRequests": "Solicitudes",
+  "@friendRequests": {
+    "description": "Pestaña de solicitudes de amistad"
+  },
+  "addFriend": "Añadir Amigo",
+  "@addFriend": {
+    "description": "Botón para añadir un amigo"
+  },
+  "searchFriend": "Buscar amigo por correo electrónico",
+  "@searchFriend": {
+    "description": "Descripción de búsqueda de amigos"
+  },
+  "sendRequest": "Enviar Solicitud",
+  "@sendRequest": {
+    "description": "Botón para enviar solicitud de amistad"
+  },
+  "userNotFound": "Usuario no encontrado",
+  "@userNotFound": {
+    "description": "Mensaje cuando no se encuentra un usuario"
+  },
+  "friendRequestSent": "Solicitud de amistad enviada",
+  "@friendRequestSent": {
+    "description": "Mensaje de éxito al enviar solicitud"
+  },
+  "couldNotSendRequest": "No se pudo enviar la solicitud",
+  "@couldNotSendRequest": {
+    "description": "Mensaje de error al enviar solicitud"
+  },
+  "noFriendsYet": "No tienes amigos aún",
+  "@noFriendsYet": {
+    "description": "Mensaje cuando no hay amigos"
+  },
+  "addFriendsToCompare": "Añade amigos para comparar tus estadísticas",
+  "@addFriendsToCompare": {
+    "description": "Descripción de funcionalidad de amigos"
+  },
+  "noPendingRequests": "No tienes solicitudes pendientes",
+  "@noPendingRequests": {
+    "description": "Mensaje cuando no hay solicitudes pendientes"
+  },
+  "requestAccepted": "Solicitud aceptada",
+  "@requestAccepted": {
+    "description": "Mensaje de éxito al aceptar solicitud"
+  },
+  "requestRejected": "Solicitud rechazada",
+  "@requestRejected": {
+    "description": "Mensaje de éxito al rechazar solicitud"
+  },
+  "removeFriend": "Eliminar amigo",
+  "@removeFriend": {
+    "description": "Opción para eliminar un amigo"
+  },
+  "confirmRemoveFriend": "¿Estás seguro de que deseas eliminar a {name}?",
+  "@confirmRemoveFriend": {
+    "description": "Confirmación para eliminar amigo",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Juan"
+      }
+    }
+  },
+  "friendRemoved": "Amigo eliminado",
+  "@friendRemoved": {
+    "description": "Mensaje de éxito al eliminar amigo"
+  },
+  "rankings": "Rankings",
+  "@rankings": {
+    "description": "Título de la pantalla de rankings"
+  },
+  "compareWithFriends": "Compárate con tus amigos",
+  "@compareWithFriends": {
+    "description": "Descripción de rankings"
+  },
+  "allTime": "Todo el tiempo",
+  "@allTime": {
+    "description": "Filtro de todo el tiempo"
+  },
+  "lastWeek": "Última semana",
+  "@lastWeek": {
+    "description": "Filtro de última semana"
+  },
+  "lastMonth": "Último mes",
+  "@lastMonth": {
+    "description": "Filtro de último mes"
+  },
+  "last3Months": "Últimos 3 meses",
+  "@last3Months": {
+    "description": "Filtro de últimos 3 meses"
+  },
+  "noRankingData": "No hay datos para mostrar",
+  "@noRankingData": {
+    "description": "Mensaje cuando no hay datos de ranking"
+  },
+  "manageFriends": "Gestiona tus amigos y solicitudes",
+  "@manageFriends": {
+    "description": "Descripción de gestión de amigos"
+  },
+  "enterEmail": "Ingresa un correo electrónico",
+  "@enterEmail": {
+    "description": "Mensaje de validación de email"
+  },
+  "you": "TÚ",
+  "@you": {
+    "description": "Indicador de usuario actual en rankings"
   }
 }

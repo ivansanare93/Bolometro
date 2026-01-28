@@ -320,5 +320,32 @@
         "example": "180.5"
       }
     }
-  }
+  },
+  "friends": "Friends",
+  "myFriends": "My Friends",
+  "friendRequests": "Requests",
+  "addFriend": "Add Friend",
+  "searchFriend": "Search for a friend by email",
+  "sendRequest": "Send Request",
+  "userNotFound": "User not found",
+  "friendRequestSent": "Friend request sent",
+  "couldNotSendRequest": "Could not send request",
+  "noFriendsYet": "You don't have any friends yet",
+  "addFriendsToCompare": "Add friends to compare your statistics",
+  "noPendingRequests": "You have no pending requests",
+  "requestAccepted": "Request accepted",
+  "requestRejected": "Request rejected",
+  "removeFriend": "Remove friend",
+  "confirmRemoveFriend": "Are you sure you want to remove {name}?",
+  "friendRemoved": "Friend removed",
+  "rankings": "Rankings",
+  "compareWithFriends": "Compare yourself with your friends",
+  "allTime": "All time",
+  "lastWeek": "Last week",
+  "lastMonth": "Last month",
+  "last3Months": "Last 3 months",
+  "noRankingData": "No data to display",
+  "manageFriends": "Manage your friends and requests",
+  "enterEmail": "Enter an email address",
+  "you": "YOU"
 }

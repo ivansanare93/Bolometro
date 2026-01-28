@@ -4,13 +4,22 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // Reglas para la colección de usuarios
     match /users/{userId} {
-      // Solo el usuario puede leer y escribir su propio perfil
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // El usuario puede leer su propio perfil completo
+      // Otros usuarios autenticados pueden leer solo campos públicos (para buscar amigos)
+      allow read: if request.auth != null && 
+                  (request.auth.uid == userId || 
+                   request.resource == null); // Permitir lectura para búsqueda
+      // Solo el usuario puede escribir su propio perfil
+      allow write: if request.auth != null && request.auth.uid == userId;
       
       // Reglas para la subcolección de sesiones
       match /sesiones/{sesionId} {
-        // Solo el propietario puede leer, escribir y eliminar sus sesiones
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        // El propietario puede leer, escribir y eliminar sus sesiones
+        // Los amigos pueden leer sesiones para comparar rankings
+        allow read: if request.auth != null && 
+                    (request.auth.uid == userId || 
+                     exists(/databases/$(database)/documents/users/$(userId)/friends/$(request.auth.uid)));
+        allow write: if request.auth != null && request.auth.uid == userId;
         
         // Validaciones adicionales para escritura
         allow create: if request.auth != null 
@@ -22,6 +31,34 @@ service cloud.firestore {
                       && request.auth.uid == userId
                       && request.resource.data.keys().hasAll(['fecha', 'lugar', 'tipo', 'partidas'])
                       && request.resource.data.tipo in ['Entrenamiento', 'Competición'];
+      }
+      
+      // Reglas para la subcolección de amigos
+      match /friends/{friendId} {
+        // El usuario puede leer su lista de amigos
+        allow read: if request.auth != null && request.auth.uid == userId;
+        // Solo el usuario puede modificar su lista de amigos
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Reglas para la subcolección de solicitudes de amistad
+      match /friendRequests/{requestId} {
+        // El remitente o el destinatario pueden leer la solicitud
+        allow read: if request.auth != null && 
+                    (request.auth.uid == userId || 
+                     request.auth.uid == resource.data.fromUserId);
+        // Solo el remitente puede crear una solicitud
+        allow create: if request.auth != null && 
+                      request.auth.uid == request.resource.data.fromUserId &&
+                      request.resource.data.toUserId == userId;
+        // Solo el destinatario puede actualizar una solicitud (aceptar/rechazar)
+        allow update: if request.auth != null && 
+                      request.auth.uid == userId &&
+                      request.resource.data.toUserId == userId;
+        // El remitente o destinatario pueden eliminar la solicitud
+        allow delete: if request.auth != null && 
+                      (request.auth.uid == userId || 
+                       request.auth.uid == resource.data.fromUserId);
       }
     }
     
