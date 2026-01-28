@@ -155,17 +155,17 @@ void main() {
       final partidasFrames = [
         // Game 1: 9 strikes + 1 spare in 10th frame (10 frames total)
         [
-          ...List.generate(9, (i) => [AppConstants.simboloStrike]),
+          ...List.generate(9, (i) => [AppConstants.simboloStrike] as List<String>),
           ['7', AppConstants.simboloSpare, AppConstants.simboloStrike],
         ],
         // Game 2: 10 spares
         [
-          ...List.generate(9, (i) => ['5', AppConstants.simboloSpare]),
+          ...List.generate(9, (i) => ['5', AppConstants.simboloSpare] as List<String>),
           ['5', AppConstants.simboloSpare, '5'],
         ],
         // Game 3: 10 open frames
         [
-          ...List.generate(9, (i) => ['6', '3']),
+          ...List.generate(9, (i) => ['6', '3'] as List<String>),
           ['6', '3'], // 10th frame with open frame (no bonus)
         ],
       ];
@@ -184,7 +184,7 @@ void main() {
       final partidasFrames = [
         [
           // Frames 1-9: single strikes
-          ...List.generate(9, (i) => [AppConstants.simboloStrike]),
+          ...List.generate(9, (i) => [AppConstants.simboloStrike] as List<String>),
           // Frame 10: strike with two bonus strikes
           [AppConstants.simboloStrike, AppConstants.simboloStrike, AppConstants.simboloStrike],
         ],
@@ -204,7 +204,7 @@ void main() {
       final partidasFrames = [
         [
           // Frames 1-9: spares
-          ...List.generate(9, (i) => ['7', AppConstants.simboloSpare]),
+          ...List.generate(9, (i) => ['7', AppConstants.simboloSpare] as List<String>),
           // Frame 10: spare with bonus strike
           ['7', AppConstants.simboloSpare, AppConstants.simboloStrike],
         ],
