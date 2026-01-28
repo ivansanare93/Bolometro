@@ -34,6 +34,14 @@
 - Soporte para frames especiales (strike, spare, décimo frame)
 - Notas y observaciones para cada sesión
 
+### 👥 Sistema de Amigos y Rankings
+- **Gestión de amistades**: Busca y añade amigos por correo electrónico
+- **Solicitudes de amistad**: Acepta o rechaza solicitudes de amistad
+- **Rankings entre amigos**: Compara tus estadísticas con tus amigos
+- **Clasificación automática**: Rankings ordenados por promedio de puntuación
+- **Filtros de periodo**: Compara estadísticas por semana, mes o trimestre
+- **Visualización de medallas**: Los 3 primeros lugares destacados con medallas
+
 ### 📊 Estadísticas Avanzadas
 - **KPIs dinámicos**: promedio, mejor partida, total de partidas
 - **Análisis de rachas**: strikes y spares consecutivos
@@ -232,6 +240,25 @@ lib/
 2. Explora tus KPIs: promedio, mejor partida, rachas
 3. Filtra por tipo de sesión o rango de fechas
 4. Revisa gráficos de evolución y distribución
+
+### Gestionar Amigos y Rankings
+
+1. **Añadir Amigos**:
+   - Ve a la pantalla "Amigos" desde el menú principal
+   - Toca el botón "Añadir Amigo"
+   - Busca a tu amigo por correo electrónico
+   - Envía la solicitud de amistad
+
+2. **Aceptar Solicitudes**:
+   - Ve a la pestaña "Solicitudes" en la pantalla de amigos
+   - Revisa las solicitudes pendientes
+   - Acepta o rechaza según prefieras
+
+3. **Ver Rankings**:
+   - Ve a la pantalla "Rankings" desde el menú principal
+   - Compara tus estadísticas con las de tus amigos
+   - Filtra por periodo (semana, mes, trimestre o todo el tiempo)
+   - Visualiza tu posición en el ranking
 
 ### Sincronizar Datos (Usuario Autenticado)
 
