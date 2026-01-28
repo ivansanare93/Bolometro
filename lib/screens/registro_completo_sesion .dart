@@ -10,6 +10,7 @@ import '../utils/app_constants.dart';
 import '../repositories/data_repository.dart';
 import '../services/analytics_service.dart';
 import '../l10n/app_localizations.dart';
+import 'home.dart';
 
 class RegistroCompletoSesionScreen extends StatefulWidget {
   const RegistroCompletoSesionScreen({super.key});
@@ -90,7 +91,10 @@ class _RegistroCompletoSesionScreenState
     );
 
     try {
-      final dataRepository = Provider.of<DataRepository>(context, listen: false);
+      final dataRepository = Provider.of<DataRepository>(
+        context,
+        listen: false,
+      );
       await dataRepository.guardarSesion(nuevaSesion);
 
       final analytics = Provider.of<AnalyticsService>(context, listen: false);
@@ -98,7 +102,9 @@ class _RegistroCompletoSesionScreenState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.sessionSavedSuccess)),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.sessionSavedSuccess),
+          ),
         );
         Navigator.pop(context);
       }
@@ -107,7 +113,9 @@ class _RegistroCompletoSesionScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.sessionSaveErrorMessage),
+            content: Text(
+              AppLocalizations.of(context)!.sessionSaveErrorMessage,
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -118,7 +126,22 @@ class _RegistroCompletoSesionScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.registerSession)),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.registerSession),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.home),
+            tooltip: "Inicio",
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -134,8 +157,9 @@ class _RegistroCompletoSesionScreenState
             const SizedBox(height: 16),
             SelectorTipoPartida(
               value: _tipo,
-              onChanged: (value) =>
-                  setState(() => _tipo = value ?? AppConstants.tipoEntrenamiento),
+              onChanged: (value) => setState(
+                () => _tipo = value ?? AppConstants.tipoEntrenamiento,
+              ),
             ),
             const SizedBox(height: 24),
             Row(
