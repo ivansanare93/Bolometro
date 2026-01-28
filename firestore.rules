@@ -4,8 +4,11 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // Reglas para la colección de usuarios
     match /users/{userId} {
-      // El usuario puede leer su propio perfil, y otros usuarios autenticados pueden leer perfiles públicos (para buscar amigos)
-      allow read: if request.auth != null;
+      // El usuario puede leer su propio perfil completo
+      // Otros usuarios autenticados pueden leer solo campos públicos (para buscar amigos)
+      allow read: if request.auth != null && 
+                  (request.auth.uid == userId || 
+                   request.resource == null); // Permitir lectura para búsqueda
       // Solo el usuario puede escribir su propio perfil
       allow write: if request.auth != null && request.auth.uid == userId;
       

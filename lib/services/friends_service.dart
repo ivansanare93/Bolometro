@@ -123,8 +123,9 @@ class FriendsService {
           errorMsg.contains('network')) {
         throw NetworkException(
             'Error de red al enviar solicitud. Verifica tu conexión.');
+      } else {
+        return false;
       }
-      return false;
     }
   }
 
@@ -210,8 +211,9 @@ class FriendsService {
           errorMsg.contains('network')) {
         throw NetworkException(
             'Error de red al aceptar solicitud. Verifica tu conexión.');
+      } else {
+        return false;
       }
-      return false;
     }
   }
 
