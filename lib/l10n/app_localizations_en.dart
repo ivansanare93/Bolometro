@@ -611,4 +611,98 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noDataForStatistics => 'No data to display statistics.';
+
+  @override
+  String get filter => 'Filter:';
+
+  @override
+  String get quickScoreSummary => 'Quick summary of your scores';
+
+  @override
+  String get averageLast5 => 'Avg. Last 5';
+
+  @override
+  String get best => 'Best';
+
+  @override
+  String get worst => 'Worst';
+
+  @override
+  String get longestStreakDescription =>
+      'Longest consecutive strikes and spares in all your games.';
+
+  @override
+  String get percentageStrikesSparesMisses =>
+      'Percentage of Strikes, Spares and Misses';
+
+  @override
+  String get recentEvolution =>
+      'Recent evolution (moving average of your last 5 games)';
+
+  @override
+  String get scoreDistribution => 'Score distribution';
+
+  @override
+  String get gamesGroupedByRange =>
+      'Number of games grouped by score range';
+
+  @override
+  String get topBestWorstGames =>
+      'Your top 3 best and worst individual games recorded';
+
+  @override
+  String get top3BestGames => 'Top 3 Best Games';
+
+  @override
+  String get top3WorstGames => 'Top 3 Worst Games';
+
+  @override
+  String get bestWorstSessionDescription =>
+      'Session with best average (record) and worst session';
+
+  @override
+  String get personalRecord => 'Personal record!';
+
+  @override
+  String get worstSession => 'Worst session:';
+
+  @override
+  String get noSessionsSaved => 'No sessions saved.';
+
+  @override
+  String gamesCount(int count) {
+    return 'Games: $count';
+  }
+
+  @override
+  String get noLocation => 'No location';
+
+  @override
+  String gamesListCount(int count) {
+    return 'Games ($count):';
+  }
+
+  @override
+  String get noGamesRegistered => 'No games registered';
+
+  @override
+  String gameNumber(int number) {
+    return '🎳 Game $number';
+  }
+
+  @override
+  String get editTooltip => 'Edit';
+
+  @override
+  String get deleteTooltip => 'Delete';
+
+  @override
+  String points(int points) {
+    return 'Points: $points';
+  }
+
+  @override
+  String gamesWithAverage(int count, String date, String average) {
+    return '$count games on $date. Avg: $average';
+  }
 }

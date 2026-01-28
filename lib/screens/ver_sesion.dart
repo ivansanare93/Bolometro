@@ -219,12 +219,12 @@ class _VerSesionState extends State<VerSesion> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          '${sesionActual.tipo} • ${sesionActual.lugar.isNotEmpty ? sesionActual.lugar : "Sin lugar"}',
+          '${sesionActual.tipo} • ${sesionActual.lugar.isNotEmpty ? sesionActual.lugar : AppLocalizations.of(context)!.noLocation}',
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.home),
-            tooltip: "Inicio",
+            tooltip: AppLocalizations.of(context)!.home,
             onPressed: () {
               Navigator.pushAndRemoveUntil(
                 context,
@@ -302,17 +302,17 @@ class _VerSesionState extends State<VerSesion> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _KpiSmall(
-                        title: "Promedio",
+                        title: AppLocalizations.of(context)!.average,
                         value: promedio,
                         color: Colors.blue[700]!,
                       ),
                       _KpiSmall(
-                        title: "Mejor",
+                        title: AppLocalizations.of(context)!.best,
                         value: mejor,
                         color: Colors.green[700]!,
                       ),
                       _KpiSmall(
-                        title: "Peor",
+                        title: AppLocalizations.of(context)!.worst,
                         value: peor,
                         color: Colors.red[400]!,
                       ),
@@ -325,7 +325,7 @@ class _VerSesionState extends State<VerSesion> {
 
           // PARTIDAS
           Text(
-            'Partidas (${sesionActual.partidas.length}):',
+            AppLocalizations.of(context)!.gamesListCount(sesionActual.partidas.length),
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -334,7 +334,7 @@ class _VerSesionState extends State<VerSesion> {
           if (sesionActual.partidas.isEmpty)
             Center(
               child: Text(
-                "No hay partidas registradas",
+                AppLocalizations.of(context)!.noGamesRegistered,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
@@ -355,13 +355,13 @@ class _VerSesionState extends State<VerSesion> {
                     Row(
                       children: [
                         Text(
-                          '🎳 Partida ${idx + 1}',
+                          AppLocalizations.of(context)!.gameNumber(idx + 1),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         const Spacer(),
                         IconButton(
                           icon: const Icon(Icons.edit, color: Colors.blue),
-                          tooltip: 'Editar',
+                          tooltip: AppLocalizations.of(context)!.editTooltip,
                           onPressed: () => _editarPartida(idx),
                         ),
                         IconButton(
@@ -369,7 +369,7 @@ class _VerSesionState extends State<VerSesion> {
                             Icons.delete_outline,
                             color: Colors.red,
                           ),
-                          tooltip: 'Eliminar',
+                          tooltip: AppLocalizations.of(context)!.deleteTooltip,
                           onPressed: () => _eliminarPartida(idx),
                         ),
                       ],
@@ -380,7 +380,7 @@ class _VerSesionState extends State<VerSesion> {
                         Icon(Icons.scoreboard, size: 20, color: colorTipo),
                         const SizedBox(width: 5),
                         Text(
-                          'Puntos: ${partida.total}',
+                          AppLocalizations.of(context)!.points(partida.total),
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             color: colorTipo,

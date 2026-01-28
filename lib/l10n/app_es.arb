@@ -236,5 +236,89 @@
   "deleteSessionConfirmation": "¿Seguro que deseas eliminar esta sesión?",
   "syncing": "Sincronizando...",
   "saveDataToCloud": "Guardar datos en la nube",
-  "noDataForStatistics": "No hay datos para mostrar estadísticas."
+  "noDataForStatistics": "No hay datos para mostrar estadísticas.",
+  "home": "Inicio",
+  "filter": "Filtrar:",
+  "quickScoreSummary": "Resumen rápido de tus puntuaciones",
+  "average": "Promedio",
+  "averageLast5": "Prom. Últ. 5",
+  "best": "Mejor",
+  "worst": "Peor",
+  "strikes": "Strikes",
+  "spares": "Spares",
+  "longestStreakDescription": "Mayor número de strikes y spares consecutivos en todas tus partidas.",
+  "percentageStrikesSparesMisses": "Porcentaje de Strikes, Spares y Fallos",
+  "recentEvolution": "Evolución reciente (media móvil de tus últimas 5 partidas)",
+  "scoreDistribution": "Distribución de puntuaciones",
+  "gamesGroupedByRange": "Número de partidas agrupadas por rango de puntuación",
+  "topBestWorstGames": "Tus 3 mejores y peores partidas individuales registradas",
+  "top3BestGames": "Top 3 Mejores Partidas",
+  "top3WorstGames": "Top 3 Peores Partidas",
+  "bestWorstSessionDescription": "Sesión con mejor promedio (récord) y peor sesión",
+  "personalRecord": "¡Récord personal!",
+  "worstSession": "Peor sesión:",
+  "noSessionsSaved": "No hay sesiones guardadas.",
+  "location": "Lugar",
+  "gamesCount": "Partidas: {count}",
+  "@gamesCount": {
+    "description": "Contador de partidas",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "noLocation": "Sin lugar",
+  "gamesListCount": "Partidas ({count}):",
+  "@gamesListCount": {
+    "description": "Lista de partidas con contador",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "noGamesRegistered": "No hay partidas registradas",
+  "gameNumber": "🎳 Partida {number}",
+  "@gameNumber": {
+    "description": "Número de partida",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "editTooltip": "Editar",
+  "deleteTooltip": "Eliminar",
+  "points": "Puntos: {points}",
+  "@points": {
+    "description": "Puntos de una partida",
+    "placeholders": {
+      "points": {
+        "type": "int",
+        "example": "150"
+      }
+    }
+  },
+  "gamesWithAverage": "{count} partidas el {date}. Prom: {average}",
+  "@gamesWithAverage": {
+    "description": "Descripción de sesión con promedio",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      },
+      "date": {
+        "type": "String",
+        "example": "01/01/2023"
+      },
+      "average": {
+        "type": "String",
+        "example": "180.5"
+      }
+    }
+  }
 }
