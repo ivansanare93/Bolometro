@@ -146,96 +146,97 @@ class _EstadisticasPantallaCompletaState
           final isDark = Theme.of(context).brightness == Brightness.dark;
           
           if (partidas.isEmpty) {
-            return Padding(
-              padding: const EdgeInsets.all(24),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Filtro visual optimizado
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: isDark ? Theme.of(context).colorScheme.surface : Colors.grey[100],
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.primary.withOpacity(0.38),
-                            width: 1.3,
+            return Column(
+              children: [
+                // Filtro visual optimizado - Fixed at the top
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? Theme.of(context).colorScheme.surface : Colors.grey[100],
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.38),
+                        width: 1.3,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(context).colorScheme.primary.withOpacity(isDark ? 0.13 : 0.06),
+                          blurRadius: 7,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                    child: Row(
+                      children: [
+                        Icon(Icons.filter_list_rounded, color: Theme.of(context).colorScheme.primary, size: 22),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Filtrar:',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.84),
+                            fontSize: 16,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Theme.of(context).colorScheme.primary.withOpacity(isDark ? 0.13 : 0.06),
-                              blurRadius: 7,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-                        child: Row(
-                          children: [
-                            Icon(Icons.filter_list_rounded, color: Theme.of(context).colorScheme.primary, size: 22),
-                            const SizedBox(width: 10),
-                            Text(
-                              'Filtrar:',
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: _filtroTipo,
+                              borderRadius: BorderRadius.circular(12),
+                              isExpanded: true,
+                              icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).colorScheme.primary),
+                              dropdownColor: isDark ? Theme.of(context).colorScheme.surface : Colors.white,
                               style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontSize: 15,
                                 fontWeight: FontWeight.w600,
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.84),
-                                fontSize: 16,
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: _filtroTipo,
-                                  borderRadius: BorderRadius.circular(12),
-                                  isExpanded: true,
-                                  icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).colorScheme.primary),
-                                  dropdownColor: isDark ? Theme.of(context).colorScheme.surface : Colors.white,
-                                  style: TextStyle(
-                                    color: Theme.of(context).colorScheme.onSurface,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  items: AppConstants.tiposSesionConTodos
-                                      .map(
-                                        (tipo) => DropdownMenuItem(
-                                          value: tipo,
-                                          child: Text(
-                                            tipo,
-                                            style: TextStyle(
-                                              color: Theme.of(context).colorScheme.onSurface.withOpacity(
-                                                tipo == _filtroTipo ? 1.0 : 0.72,
-                                              ),
-                                              fontWeight: tipo == _filtroTipo
-                                                  ? FontWeight.bold
-                                                  : FontWeight.normal,
-                                            ),
+                              items: AppConstants.tiposSesionConTodos
+                                  .map(
+                                    (tipo) => DropdownMenuItem(
+                                      value: tipo,
+                                      child: Text(
+                                        tipo,
+                                        style: TextStyle(
+                                          color: Theme.of(context).colorScheme.onSurface.withOpacity(
+                                            tipo == _filtroTipo ? 1.0 : 0.72,
                                           ),
+                                          fontWeight: tipo == _filtroTipo
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
                                         ),
-                                      )
-                                      .toList(),
-                                  onChanged: (v) {
-                                    setState(() {
-                                      _filtroTipo = v ?? AppConstants.tipoTodos;
-                                    });
-                                  },
-                                ),
-                              ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (v) {
+                                setState(() {
+                                  _filtroTipo = v ?? AppConstants.tipoTodos;
+                                });
+                              },
                             ),
-                          ],
+                          ),
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Centered "no data" message
+                Expanded(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(
+                        AppLocalizations.of(context)!.noDataForStatistics,
+                        style: const TextStyle(fontSize: 17),
                       ),
                     ),
-                    const SizedBox(height: 38),
-                    Text(
-                      AppLocalizations.of(context)!.noDataForStatistics,
-                      style: const TextStyle(fontSize: 17),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             );
           }
 
