@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/sesion.dart';
 import '../widgets/sesion_card.dart';
-import '../screens/ver_sesion.dart';
+import 'ver_sesion.dart';
 import '../utils/app_constants.dart';
 import '../repositories/data_repository.dart';
 import '../services/analytics_service.dart';
