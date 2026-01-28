@@ -275,5 +275,81 @@ void main() {
       // expect(porcentajes['spares'], equals(20.0));
       // expect(porcentajes['fallos'], equals(50.0));
     });
+
+    test('promedioMovil should return empty list when fewer than windowSize games', () {
+      // Arrange - Only 3 games, window size is 5
+      final partidas = [
+        Partida(fecha: DateTime(2024, 1, 1), total: 100, frames: []),
+        Partida(fecha: DateTime(2024, 1, 2), total: 120, frames: []),
+        Partida(fecha: DateTime(2024, 1, 3), total: 140, frames: []),
+      ];
+
+      // Act
+      final result = EstadisticasUtils.promedioMovil(partidas, 5);
+
+      // Assert
+      expect(result, isEmpty);
+    });
+
+    test('promedioMovil should return 2 points when exactly windowSize games', () {
+      // Arrange - Exactly 5 games
+      final partidas = [
+        Partida(fecha: DateTime(2024, 1, 1), total: 100, frames: []),
+        Partida(fecha: DateTime(2024, 1, 2), total: 120, frames: []),
+        Partida(fecha: DateTime(2024, 1, 3), total: 140, frames: []),
+        Partida(fecha: DateTime(2024, 1, 4), total: 160, frames: []),
+        Partida(fecha: DateTime(2024, 1, 5), total: 180, frames: []),
+      ];
+
+      // Act
+      final result = EstadisticasUtils.promedioMovil(partidas, 5);
+
+      // Assert - Should have 2 points (duplicated to ensure chart renders)
+      expect(result.length, equals(2));
+      expect(result[0], equals(140.0)); // Average of 100,120,140,160,180
+      expect(result[1], equals(140.0)); // Duplicated value
+    });
+
+    test('promedioMovil should return correct number of points for more than windowSize games', () {
+      // Arrange - 7 games
+      final partidas = [
+        Partida(fecha: DateTime(2024, 1, 1), total: 100, frames: []),
+        Partida(fecha: DateTime(2024, 1, 2), total: 110, frames: []),
+        Partida(fecha: DateTime(2024, 1, 3), total: 120, frames: []),
+        Partida(fecha: DateTime(2024, 1, 4), total: 130, frames: []),
+        Partida(fecha: DateTime(2024, 1, 5), total: 140, frames: []),
+        Partida(fecha: DateTime(2024, 1, 6), total: 150, frames: []),
+        Partida(fecha: DateTime(2024, 1, 7), total: 160, frames: []),
+      ];
+
+      // Act
+      final result = EstadisticasUtils.promedioMovil(partidas, 5);
+
+      // Assert - Should have 3 points (indices 0-4, 1-5, 2-6)
+      expect(result.length, equals(3));
+      expect(result[0], equals(120.0)); // Average of 100,110,120,130,140
+      expect(result[1], equals(130.0)); // Average of 110,120,130,140,150
+      expect(result[2], equals(140.0)); // Average of 120,130,140,150,160
+    });
+
+    test('promedioMovil should calculate correct moving average values', () {
+      // Arrange - 6 games with predictable scores
+      final partidas = [
+        Partida(fecha: DateTime(2024, 1, 1), total: 100, frames: []),
+        Partida(fecha: DateTime(2024, 1, 2), total: 100, frames: []),
+        Partida(fecha: DateTime(2024, 1, 3), total: 100, frames: []),
+        Partida(fecha: DateTime(2024, 1, 4), total: 100, frames: []),
+        Partida(fecha: DateTime(2024, 1, 5), total: 100, frames: []),
+        Partida(fecha: DateTime(2024, 1, 6), total: 200, frames: []),
+      ];
+
+      // Act
+      final result = EstadisticasUtils.promedioMovil(partidas, 5);
+
+      // Assert - Should have 2 points
+      expect(result.length, equals(2));
+      expect(result[0], equals(100.0)); // Average of first 5: all 100s
+      expect(result[1], equals(120.0)); // Average of last 5: four 100s and one 200
+    });
   });
 }
