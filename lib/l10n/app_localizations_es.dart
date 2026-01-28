@@ -619,9 +619,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noDataForStatistics => 'No hay datos para mostrar estadísticas.';
 
   @override
-  String get filter => 'Filtrar:';
-
-  @override
   String get quickScoreSummary => 'Resumen rápido de tus puntuaciones';
 
   @override

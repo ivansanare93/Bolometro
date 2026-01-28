@@ -1280,12 +1280,6 @@ abstract class AppLocalizations {
   /// **'No hay datos para mostrar estadísticas.'**
   String get noDataForStatistics;
 
-  /// No description provided for @filter.
-  ///
-  /// In es, this message translates to:
-  /// **'Filtrar:'**
-  String get filter;
-
   /// No description provided for @quickScoreSummary.
   ///
   /// In es, this message translates to:
