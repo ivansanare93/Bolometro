@@ -3,6 +3,8 @@ import 'registro_sesion.dart';
 import 'estadisticas.dart';
 import 'lista_sesiones.dart';
 import '../screens/perfil_usuario.dart';
+import '../screens/friends_screen.dart';
+import '../screens/rankings_screen.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
@@ -606,6 +608,39 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     ),
                   ),
+                  // Solo mostrar Friends y Rankings si el usuario está autenticado
+                  if (authService.isAuthenticated) ...[
+                    Card(
+                      child: ListTile(
+                        leading: const Text('👥', style: TextStyle(fontSize: 32)),
+                        title: const Text('Amigos'),
+                        subtitle: const Text('Gestiona tus amigos y solicitudes'),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const FriendsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
+                        leading: const Text('🏆', style: TextStyle(fontSize: 32)),
+                        title: const Text('Rankings'),
+                        subtitle: const Text('Compárate con tus amigos'),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const RankingsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ],
               ],
             ),
