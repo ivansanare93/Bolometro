@@ -93,11 +93,20 @@ class EstadisticasUtils {
   static List<double> promedioMovil(List<Partida> partidas, int windowSize) {
     List<double> promedios = [];
     if (partidas.length < windowSize) return promedios;
+    
+    // Calculate moving averages for all valid windows
     for (int i = 0; i <= partidas.length - windowSize; i++) {
       final window = partidas.sublist(i, i + windowSize);
       final promedio = window.map((p) => p.total).reduce((a, b) => a + b) / window.length;
       promedios.add(promedio);
     }
+    
+    // If we only have 1 data point (exactly windowSize games), duplicate it
+    // to ensure the chart has at least 2 points to render a line
+    if (promedios.length == 1) {
+      promedios.add(promedios[0]);
+    }
+    
     return promedios;
   }
 
