@@ -201,17 +201,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                         onChanged: (String? newLanguage) async {
                                           if (newLanguage != null) {
                                             await languageProvider.setLocale(Locale(newLanguage));
-                                            try {
-                                              final analytics = Provider.of<AnalyticsService>(
-                                                context,
-                                                listen: false,
-                                              );
-                                              await analytics.logEvent(
-                                                name: 'language_changed',
-                                                parameters: {'language': newLanguage},
-                                              );
-                                            } catch (e) {
-                                              debugPrint('Error logging language change: $e');
+                                            if (context.mounted) {
+                                              try {
+                                                final analytics = Provider.of<AnalyticsService>(
+                                                  context,
+                                                  listen: false,
+                                                );
+                                                await analytics.logEvent(
+                                                  name: 'language_changed',
+                                                  parameters: {'language': newLanguage},
+                                                );
+                                              } catch (e) {
+                                                debugPrint('Error logging language change: $e');
+                                              }
                                             }
                                           }
                                         },
