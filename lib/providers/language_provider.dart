@@ -4,12 +4,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 class LanguageProvider extends ChangeNotifier {
   Locale _locale = const Locale('es');
   bool _isInitialized = false;
+  late Future<void> _initializationFuture;
 
   Locale get locale => _locale;
   bool get isInitialized => _isInitialized;
+  Future<void> get initializationFuture => _initializationFuture;
 
   LanguageProvider() {
-    _loadLanguagePreference();
+    _initializationFuture = _loadLanguagePreference();
   }
 
   Future<void> _loadLanguagePreference() async {
@@ -28,15 +30,18 @@ class LanguageProvider extends ChangeNotifier {
   }
 
   Future<void> setLocale(Locale locale) async {
-    _locale = locale;
-    notifyListeners();
-    
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('language_code', locale.languageCode);
+      // Only update state after successful persistence
+      _locale = locale;
+      notifyListeners();
     } catch (e) {
-      // Log error but don't crash - the locale change is already applied in memory
+      // Log error and don't change the locale if persistence fails
       debugPrint('Error saving language preference: $e');
+      // Optionally, you could still update the locale for the current session:
+      // _locale = locale;
+      // notifyListeners();
     }
   }
 }

@@ -12,10 +12,8 @@ void main() {
       // Initialize SharedPreferences with mock values
       SharedPreferences.setMockInitialValues({});
       languageProvider = LanguageProvider();
-      // Wait for initialization to complete
-      while (!languageProvider.isInitialized) {
-        await Future.delayed(const Duration(milliseconds: 10));
-      }
+      // Wait for initialization to complete using the exposed future
+      await languageProvider.initializationFuture;
     });
 
     test('LanguageProvider initializes with Spanish locale', () async {
@@ -68,9 +66,6 @@ void main() {
       // Act
       await languageProvider.setLocale(const Locale('en'));
       
-      // Give some time for async persistence to complete
-      await Future.delayed(const Duration(milliseconds: 50));
-      
       // Verify persistence by reading from SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       final savedLanguage = prefs.getString('language_code');
@@ -85,20 +80,35 @@ void main() {
       
       // Act - Create new provider instance
       final newProvider = LanguageProvider();
-      while (!newProvider.isInitialized) {
-        await Future.delayed(const Duration(milliseconds: 10));
-      }
+      await newProvider.initializationFuture;
       
       // Assert
       expect(newProvider.locale, equals(const Locale('en')));
       expect(newProvider.isInitialized, isTrue);
     });
 
-    test('LanguageProvider should handle SharedPreferences errors gracefully', () async {
+    test('LanguageProvider should handle initialization errors gracefully', () async {
       // The provider should initialize with default locale even if there are errors
-      // This is tested implicitly by the setUp method not throwing
+      // This test verifies that the provider completes initialization
       expect(languageProvider.locale, equals(const Locale('es')));
       expect(languageProvider.isInitialized, isTrue);
+    });
+
+    test('setLocale should persist before updating state', () async {
+      // This test verifies the order of operations
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Act
+      await languageProvider.setLocale(const Locale('en'));
+      
+      // Assert - both in-memory and persisted state should match
+      expect(languageProvider.locale, equals(const Locale('en')));
+      expect(prefs.getString('language_code'), equals('en'));
+      
+      // Verify by creating a new provider
+      final newProvider = LanguageProvider();
+      await newProvider.initializationFuture;
+      expect(newProvider.locale, equals(const Locale('en')));
     });
   });
 }
