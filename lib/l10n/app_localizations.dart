@@ -185,7 +185,7 @@ abstract class AppLocalizations {
   /// No description provided for @location.
   ///
   /// In es, this message translates to:
-  /// **'Ubicación'**
+  /// **'Lugar'**
   String get location;
 
   /// No description provided for @notes.
@@ -671,7 +671,7 @@ abstract class AppLocalizations {
   /// No description provided for @filter.
   ///
   /// In es, this message translates to:
-  /// **'Filtrar'**
+  /// **'Filtrar:'**
   String get filter;
 
   /// No description provided for @sort.
@@ -1376,7 +1376,7 @@ abstract class AppLocalizations {
   /// **'No hay sesiones guardadas.'**
   String get noSessionsSaved;
 
-  /// No description provided for @gamesCount.
+  /// Contador de partidas
   ///
   /// In es, this message translates to:
   /// **'Partidas: {count}'**
@@ -1388,7 +1388,7 @@ abstract class AppLocalizations {
   /// **'Sin lugar'**
   String get noLocation;
 
-  /// No description provided for @gamesListCount.
+  /// Lista de partidas con contador
   ///
   /// In es, this message translates to:
   /// **'Partidas ({count}):'**
@@ -1400,7 +1400,7 @@ abstract class AppLocalizations {
   /// **'No hay partidas registradas'**
   String get noGamesRegistered;
 
-  /// No description provided for @gameNumber.
+  /// Número de partida
   ///
   /// In es, this message translates to:
   /// **'🎳 Partida {number}'**
@@ -1418,13 +1418,13 @@ abstract class AppLocalizations {
   /// **'Eliminar'**
   String get deleteTooltip;
 
-  /// No description provided for @points.
+  /// Puntos de una partida
   ///
   /// In es, this message translates to:
   /// **'Puntos: {points}'**
   String points(int points);
 
-  /// No description provided for @gamesWithAverage.
+  /// Descripción de sesión con promedio
   ///
   /// In es, this message translates to:
   /// **'{count} partidas el {date}. Prom: {average}'**

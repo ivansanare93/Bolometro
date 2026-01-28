@@ -51,7 +51,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get date => 'Fecha';
 
   @override
-  String get location => 'Ubicación';
+  String get location => 'Lugar';
 
   @override
   String get notes => 'Notas';
@@ -295,7 +295,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get search => 'Buscar';
 
   @override
-  String get filter => 'Filtrar';
+  String get filter => 'Filtrar:';
 
   @override
   String get sort => 'Ordenar';

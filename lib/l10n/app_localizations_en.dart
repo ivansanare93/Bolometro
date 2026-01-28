@@ -294,7 +294,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get search => 'Search';
 
   @override
-  String get filter => 'Filter';
+  String get filter => 'Filter:';
 
   @override
   String get sort => 'Sort';
@@ -640,8 +640,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scoreDistribution => 'Score distribution';
 
   @override
-  String get gamesGroupedByRange =>
-      'Number of games grouped by score range';
+  String get gamesGroupedByRange => 'Number of games grouped by score range';
 
   @override
   String get topBestWorstGames =>
