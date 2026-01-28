@@ -1429,6 +1429,168 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{count} partidas el {date}. Prom: {average}'**
   String gamesWithAverage(int count, String date, String average);
+
+  /// Título de la pantalla de amigos
+  ///
+  /// In es, this message translates to:
+  /// **'Amigos'**
+  String get friends;
+
+  /// Pestaña de mis amigos
+  ///
+  /// In es, this message translates to:
+  /// **'Mis Amigos'**
+  String get myFriends;
+
+  /// Pestaña de solicitudes de amistad
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitudes'**
+  String get friendRequests;
+
+  /// Botón para añadir un amigo
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir Amigo'**
+  String get addFriend;
+
+  /// Descripción de búsqueda de amigos
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar amigo por correo electrónico'**
+  String get searchFriend;
+
+  /// Botón para enviar solicitud de amistad
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar Solicitud'**
+  String get sendRequest;
+
+  /// Mensaje cuando no se encuentra un usuario
+  ///
+  /// In es, this message translates to:
+  /// **'Usuario no encontrado'**
+  String get userNotFound;
+
+  /// Mensaje de éxito al enviar solicitud
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitud de amistad enviada'**
+  String get friendRequestSent;
+
+  /// Mensaje de error al enviar solicitud
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo enviar la solicitud'**
+  String get couldNotSendRequest;
+
+  /// Mensaje cuando no hay amigos
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes amigos aún'**
+  String get noFriendsYet;
+
+  /// Descripción de funcionalidad de amigos
+  ///
+  /// In es, this message translates to:
+  /// **'Añade amigos para comparar tus estadísticas'**
+  String get addFriendsToCompare;
+
+  /// Mensaje cuando no hay solicitudes pendientes
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes solicitudes pendientes'**
+  String get noPendingRequests;
+
+  /// Mensaje de éxito al aceptar solicitud
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitud aceptada'**
+  String get requestAccepted;
+
+  /// Mensaje de éxito al rechazar solicitud
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitud rechazada'**
+  String get requestRejected;
+
+  /// Opción para eliminar un amigo
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar amigo'**
+  String get removeFriend;
+
+  /// Confirmación para eliminar amigo
+  ///
+  /// In es, this message translates to:
+  /// **'¿Estás seguro de que deseas eliminar a {name}?'**
+  String confirmRemoveFriend(String name);
+
+  /// Mensaje de éxito al eliminar amigo
+  ///
+  /// In es, this message translates to:
+  /// **'Amigo eliminado'**
+  String get friendRemoved;
+
+  /// Título de la pantalla de rankings
+  ///
+  /// In es, this message translates to:
+  /// **'Rankings'**
+  String get rankings;
+
+  /// Descripción de rankings
+  ///
+  /// In es, this message translates to:
+  /// **'Compárate con tus amigos'**
+  String get compareWithFriends;
+
+  /// Filtro de todo el tiempo
+  ///
+  /// In es, this message translates to:
+  /// **'Todo el tiempo'**
+  String get allTime;
+
+  /// Filtro de última semana
+  ///
+  /// In es, this message translates to:
+  /// **'Última semana'**
+  String get lastWeek;
+
+  /// Filtro de último mes
+  ///
+  /// In es, this message translates to:
+  /// **'Último mes'**
+  String get lastMonth;
+
+  /// Filtro de últimos 3 meses
+  ///
+  /// In es, this message translates to:
+  /// **'Últimos 3 meses'**
+  String get last3Months;
+
+  /// Mensaje cuando no hay datos de ranking
+  ///
+  /// In es, this message translates to:
+  /// **'No hay datos para mostrar'**
+  String get noRankingData;
+
+  /// Descripción de gestión de amigos
+  ///
+  /// In es, this message translates to:
+  /// **'Gestiona tus amigos y solicitudes'**
+  String get manageFriends;
+
+  /// Mensaje de validación de email
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa un correo electrónico'**
+  String get enterEmail;
+
+  /// Indicador de usuario actual en rankings
+  ///
+  /// In es, this message translates to:
+  /// **'TÚ'**
+  String get you;
 }
 
 class _AppLocalizationsDelegate

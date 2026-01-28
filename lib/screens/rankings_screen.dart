@@ -123,12 +123,12 @@ class _RankingsScreenState extends State<RankingsScreen> {
       };
     }
 
-    final kpis = EstadisticasUtils.calcularKPIs(sesionesFiltradas);
+    final estadisticas = EstadisticasUtils.calcularEstadisticas(sesionesFiltradas);
 
     return {
-      'totalPartidas': kpis['totalPartidas'] ?? 0,
-      'promedioGeneral': kpis['promedioGeneral'] ?? 0.0,
-      'mejorPartida': kpis['mejorPartida'] ?? 0,
+      'totalPartidas': estadisticas['totalPartidas'] ?? 0,
+      'promedioGeneral': estadisticas['promedio'] ?? 0.0,
+      'mejorPartida': estadisticas['mejorPartida'] ?? 0,
     };
   }
 

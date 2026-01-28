@@ -708,4 +708,87 @@ class AppLocalizationsEs extends AppLocalizations {
   String gamesWithAverage(int count, String date, String average) {
     return '$count partidas el $date. Prom: $average';
   }
+
+  @override
+  String get friends => 'Amigos';
+
+  @override
+  String get myFriends => 'Mis Amigos';
+
+  @override
+  String get friendRequests => 'Solicitudes';
+
+  @override
+  String get addFriend => 'Añadir Amigo';
+
+  @override
+  String get searchFriend => 'Buscar amigo por correo electrónico';
+
+  @override
+  String get sendRequest => 'Enviar Solicitud';
+
+  @override
+  String get userNotFound => 'Usuario no encontrado';
+
+  @override
+  String get friendRequestSent => 'Solicitud de amistad enviada';
+
+  @override
+  String get couldNotSendRequest => 'No se pudo enviar la solicitud';
+
+  @override
+  String get noFriendsYet => 'No tienes amigos aún';
+
+  @override
+  String get addFriendsToCompare => 'Añade amigos para comparar tus estadísticas';
+
+  @override
+  String get noPendingRequests => 'No tienes solicitudes pendientes';
+
+  @override
+  String get requestAccepted => 'Solicitud aceptada';
+
+  @override
+  String get requestRejected => 'Solicitud rechazada';
+
+  @override
+  String get removeFriend => 'Eliminar amigo';
+
+  @override
+  String confirmRemoveFriend(String name) {
+    return '¿Estás seguro de que deseas eliminar a $name?';
+  }
+
+  @override
+  String get friendRemoved => 'Amigo eliminado';
+
+  @override
+  String get rankings => 'Rankings';
+
+  @override
+  String get compareWithFriends => 'Compárate con tus amigos';
+
+  @override
+  String get allTime => 'Todo el tiempo';
+
+  @override
+  String get lastWeek => 'Última semana';
+
+  @override
+  String get lastMonth => 'Último mes';
+
+  @override
+  String get last3Months => 'Últimos 3 meses';
+
+  @override
+  String get noRankingData => 'No hay datos para mostrar';
+
+  @override
+  String get manageFriends => 'Gestiona tus amigos y solicitudes';
+
+  @override
+  String get enterEmail => 'Ingresa un correo electrónico';
+
+  @override
+  String get you => 'TÚ';
 }
