@@ -222,7 +222,7 @@ void main() {
     test('calcularPorcentajes should handle all open frames', () {
       // Arrange
       final partidasFrames = [
-        List.generate(10, (i) => ['5', '4']),
+        List<List<String>>.generate(10, (i) => ['5', '4']),
       ];
 
       // Act
