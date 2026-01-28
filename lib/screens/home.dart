@@ -10,7 +10,7 @@ import 'lista_sesiones.dart';
 import 'perfil_usuario.dart';
 import 'friends_screen.dart';
 import 'rankings_screen.dart';
-import 'registro_completo_sesion .dart';
+import 'registro_completo_sesion.dart';
 import '../providers/theme_provider.dart';
 import '../providers/language_provider.dart';
 import '../models/perfil_usuario.dart';
