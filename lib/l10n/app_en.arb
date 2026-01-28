@@ -270,9 +270,6 @@
     }
   },
   "noLocation": "No location",
-  "averageLabel": "Average",
-  "bestLabel": "Best",
-  "worstLabel": "Worst",
   "gamesListCount": "Games ({count}):",
   "@gamesListCount": {
     "description": "Games list with counter",

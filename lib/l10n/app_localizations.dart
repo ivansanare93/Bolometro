@@ -1394,24 +1394,6 @@ abstract class AppLocalizations {
   /// **'Sin lugar'**
   String get noLocation;
 
-  /// No description provided for @averageLabel.
-  ///
-  /// In es, this message translates to:
-  /// **'Promedio'**
-  String get averageLabel;
-
-  /// No description provided for @bestLabel.
-  ///
-  /// In es, this message translates to:
-  /// **'Mejor'**
-  String get bestLabel;
-
-  /// No description provided for @worstLabel.
-  ///
-  /// In es, this message translates to:
-  /// **'Peor'**
-  String get worstLabel;
-
   /// No description provided for @gamesListCount.
   ///
   /// In es, this message translates to:

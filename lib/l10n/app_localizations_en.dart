@@ -678,15 +678,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noLocation => 'No location';
 
   @override
-  String get averageLabel => 'Average';
-
-  @override
-  String get bestLabel => 'Best';
-
-  @override
-  String get worstLabel => 'Worst';
-
-  @override
   String gamesListCount(int count) {
     return 'Games ($count):';
   }

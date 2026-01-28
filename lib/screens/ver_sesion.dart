@@ -302,17 +302,17 @@ class _VerSesionState extends State<VerSesion> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _KpiSmall(
-                        title: AppLocalizations.of(context)!.averageLabel,
+                        title: AppLocalizations.of(context)!.average,
                         value: promedio,
                         color: Colors.blue[700]!,
                       ),
                       _KpiSmall(
-                        title: AppLocalizations.of(context)!.bestLabel,
+                        title: AppLocalizations.of(context)!.best,
                         value: mejor,
                         color: Colors.green[700]!,
                       ),
                       _KpiSmall(
-                        title: AppLocalizations.of(context)!.worstLabel,
+                        title: AppLocalizations.of(context)!.worst,
                         value: peor,
                         color: Colors.red[400]!,
                       ),

@@ -270,9 +270,6 @@
     }
   },
   "noLocation": "Sin lugar",
-  "averageLabel": "Promedio",
-  "bestLabel": "Mejor",
-  "worstLabel": "Peor",
   "gamesListCount": "Partidas ({count}):",
   "@gamesListCount": {
     "description": "Lista de partidas con contador",
