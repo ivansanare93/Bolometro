@@ -1279,6 +1279,180 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No hay datos para mostrar estadísticas.'**
   String get noDataForStatistics;
+
+  /// No description provided for @filter.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar:'**
+  String get filter;
+
+  /// No description provided for @quickScoreSummary.
+  ///
+  /// In es, this message translates to:
+  /// **'Resumen rápido de tus puntuaciones'**
+  String get quickScoreSummary;
+
+  /// No description provided for @averageLast5.
+  ///
+  /// In es, this message translates to:
+  /// **'Prom. Últ. 5'**
+  String get averageLast5;
+
+  /// No description provided for @best.
+  ///
+  /// In es, this message translates to:
+  /// **'Mejor'**
+  String get best;
+
+  /// No description provided for @worst.
+  ///
+  /// In es, this message translates to:
+  /// **'Peor'**
+  String get worst;
+
+  /// No description provided for @longestStreakDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Mayor número de strikes y spares consecutivos en todas tus partidas.'**
+  String get longestStreakDescription;
+
+  /// No description provided for @percentageStrikesSparesMisses.
+  ///
+  /// In es, this message translates to:
+  /// **'Porcentaje de Strikes, Spares y Fallos'**
+  String get percentageStrikesSparesMisses;
+
+  /// No description provided for @recentEvolution.
+  ///
+  /// In es, this message translates to:
+  /// **'Evolución reciente (media móvil de tus últimas 5 partidas)'**
+  String get recentEvolution;
+
+  /// No description provided for @scoreDistribution.
+  ///
+  /// In es, this message translates to:
+  /// **'Distribución de puntuaciones'**
+  String get scoreDistribution;
+
+  /// No description provided for @gamesGroupedByRange.
+  ///
+  /// In es, this message translates to:
+  /// **'Número de partidas agrupadas por rango de puntuación'**
+  String get gamesGroupedByRange;
+
+  /// No description provided for @topBestWorstGames.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus 3 mejores y peores partidas individuales registradas'**
+  String get topBestWorstGames;
+
+  /// No description provided for @top3BestGames.
+  ///
+  /// In es, this message translates to:
+  /// **'Top 3 Mejores Partidas'**
+  String get top3BestGames;
+
+  /// No description provided for @top3WorstGames.
+  ///
+  /// In es, this message translates to:
+  /// **'Top 3 Peores Partidas'**
+  String get top3WorstGames;
+
+  /// No description provided for @bestWorstSessionDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Sesión con mejor promedio (récord) y peor sesión'**
+  String get bestWorstSessionDescription;
+
+  /// No description provided for @personalRecord.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Récord personal!'**
+  String get personalRecord;
+
+  /// No description provided for @worstSession.
+  ///
+  /// In es, this message translates to:
+  /// **'Peor sesión:'**
+  String get worstSession;
+
+  /// No description provided for @noSessionsSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay sesiones guardadas.'**
+  String get noSessionsSaved;
+
+  /// No description provided for @gamesCount.
+  ///
+  /// In es, this message translates to:
+  /// **'Partidas: {count}'**
+  String gamesCount(int count);
+
+  /// No description provided for @noLocation.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin lugar'**
+  String get noLocation;
+
+  /// No description provided for @averageLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Promedio'**
+  String get averageLabel;
+
+  /// No description provided for @bestLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Mejor'**
+  String get bestLabel;
+
+  /// No description provided for @worstLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Peor'**
+  String get worstLabel;
+
+  /// No description provided for @gamesListCount.
+  ///
+  /// In es, this message translates to:
+  /// **'Partidas ({count}):'**
+  String gamesListCount(int count);
+
+  /// No description provided for @noGamesRegistered.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay partidas registradas'**
+  String get noGamesRegistered;
+
+  /// No description provided for @gameNumber.
+  ///
+  /// In es, this message translates to:
+  /// **'🎳 Partida {number}'**
+  String gameNumber(int number);
+
+  /// No description provided for @editTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar'**
+  String get editTooltip;
+
+  /// No description provided for @deleteTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar'**
+  String get deleteTooltip;
+
+  /// No description provided for @points.
+  ///
+  /// In es, this message translates to:
+  /// **'Puntos: {points}'**
+  String points(int points);
+
+  /// No description provided for @gamesWithAverage.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} partidas el {date}. Prom: {average}'**
+  String gamesWithAverage(int count, String date, String average);
 }
 
 class _AppLocalizationsDelegate

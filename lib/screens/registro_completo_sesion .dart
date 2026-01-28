@@ -125,9 +125,9 @@ class _RegistroCompletoSesionScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextFormField(
-              decoration: const InputDecoration(
-                labelText: 'Lugar',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.location,
+                border: const OutlineInputBorder(),
               ),
               onChanged: (v) => _lugar = v,
             ),
@@ -142,7 +142,7 @@ class _RegistroCompletoSesionScreenState
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Partidas: ${_partidas.length}',
+                  AppLocalizations.of(context)!.gamesCount(_partidas.length),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 ElevatedButton.icon(

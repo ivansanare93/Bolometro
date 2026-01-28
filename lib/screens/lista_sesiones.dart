@@ -212,7 +212,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.home),
-            tooltip: "Inicio",
+            tooltip: AppLocalizations.of(context)!.home,
             onPressed: () {
               Navigator.pushAndRemoveUntil(
                 context,
@@ -250,7 +250,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
                   Icon(Icons.filter_list_rounded, color: cs.primary, size: 22),
                   const SizedBox(width: 10),
                   Text(
-                    'Filtrar:',
+                    AppLocalizations.of(context)!.filter,
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       color: cs.onSurface.withOpacity(0.84),
@@ -316,7 +316,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'No hay sesiones guardadas.',
+                          AppLocalizations.of(context)!.noSessionsSaved,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ],

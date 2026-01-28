@@ -236,5 +236,92 @@
   "deleteSessionConfirmation": "Are you sure you want to delete this session?",
   "syncing": "Syncing...",
   "saveDataToCloud": "Save data to cloud",
-  "noDataForStatistics": "No data to display statistics."
+  "noDataForStatistics": "No data to display statistics.",
+  "home": "Home",
+  "filter": "Filter:",
+  "quickScoreSummary": "Quick summary of your scores",
+  "average": "Average",
+  "averageLast5": "Avg. Last 5",
+  "best": "Best",
+  "worst": "Worst",
+  "strikes": "Strikes",
+  "spares": "Spares",
+  "longestStreakDescription": "Longest consecutive strikes and spares in all your games.",
+  "percentageStrikesSparesMisses": "Percentage of Strikes, Spares and Misses",
+  "recentEvolution": "Recent evolution (moving average of your last 5 games)",
+  "scoreDistribution": "Score distribution",
+  "gamesGroupedByRange": "Number of games grouped by score range",
+  "topBestWorstGames": "Your top 3 best and worst individual games recorded",
+  "top3BestGames": "Top 3 Best Games",
+  "top3WorstGames": "Top 3 Worst Games",
+  "bestWorstSessionDescription": "Session with best average (record) and worst session",
+  "personalRecord": "Personal record!",
+  "worstSession": "Worst session:",
+  "noSessionsSaved": "No sessions saved.",
+  "location": "Location",
+  "gamesCount": "Games: {count}",
+  "@gamesCount": {
+    "description": "Games counter",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "noLocation": "No location",
+  "averageLabel": "Average",
+  "bestLabel": "Best",
+  "worstLabel": "Worst",
+  "gamesListCount": "Games ({count}):",
+  "@gamesListCount": {
+    "description": "Games list with counter",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "noGamesRegistered": "No games registered",
+  "gameNumber": "🎳 Game {number}",
+  "@gameNumber": {
+    "description": "Game number",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "editTooltip": "Edit",
+  "deleteTooltip": "Delete",
+  "points": "Points: {points}",
+  "@points": {
+    "description": "Game points",
+    "placeholders": {
+      "points": {
+        "type": "int",
+        "example": "150"
+      }
+    }
+  },
+  "gamesWithAverage": "{count} games on {date}. Avg: {average}",
+  "@gamesWithAverage": {
+    "description": "Session description with average",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      },
+      "date": {
+        "type": "String",
+        "example": "01/01/2023"
+      },
+      "average": {
+        "type": "String",
+        "example": "180.5"
+      }
+    }
+  }
 }
