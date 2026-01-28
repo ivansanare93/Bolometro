@@ -701,4 +701,87 @@ class AppLocalizationsEn extends AppLocalizations {
   String gamesWithAverage(int count, String date, String average) {
     return '$count games on $date. Avg: $average';
   }
+
+  @override
+  String get friends => 'Friends';
+
+  @override
+  String get myFriends => 'My Friends';
+
+  @override
+  String get friendRequests => 'Requests';
+
+  @override
+  String get addFriend => 'Add Friend';
+
+  @override
+  String get searchFriend => 'Search for a friend by email';
+
+  @override
+  String get sendRequest => 'Send Request';
+
+  @override
+  String get userNotFound => 'User not found';
+
+  @override
+  String get friendRequestSent => 'Friend request sent';
+
+  @override
+  String get couldNotSendRequest => 'Could not send request';
+
+  @override
+  String get noFriendsYet => 'You don\'t have any friends yet';
+
+  @override
+  String get addFriendsToCompare => 'Add friends to compare your statistics';
+
+  @override
+  String get noPendingRequests => 'You have no pending requests';
+
+  @override
+  String get requestAccepted => 'Request accepted';
+
+  @override
+  String get requestRejected => 'Request rejected';
+
+  @override
+  String get removeFriend => 'Remove friend';
+
+  @override
+  String confirmRemoveFriend(String name) {
+    return 'Are you sure you want to remove $name?';
+  }
+
+  @override
+  String get friendRemoved => 'Friend removed';
+
+  @override
+  String get rankings => 'Rankings';
+
+  @override
+  String get compareWithFriends => 'Compare yourself with your friends';
+
+  @override
+  String get allTime => 'All time';
+
+  @override
+  String get lastWeek => 'Last week';
+
+  @override
+  String get lastMonth => 'Last month';
+
+  @override
+  String get last3Months => 'Last 3 months';
+
+  @override
+  String get noRankingData => 'No data to display';
+
+  @override
+  String get manageFriends => 'Manage your friends and requests';
+
+  @override
+  String get enterEmail => 'Enter an email address';
+
+  @override
+  String get you => 'YOU';
 }

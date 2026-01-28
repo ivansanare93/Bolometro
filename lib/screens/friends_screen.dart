@@ -417,7 +417,7 @@ class _FriendsScreenState extends State<FriendsScreen>
       builder: (context) => AlertDialog(
         title: Text(localizations.removeFriend),
         content:
-            Text(localizations.confirmRemoveFriend.replaceAll('{name}', friend.nombre)),
+            Text(localizations.confirmRemoveFriend(friend.nombre)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
