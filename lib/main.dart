@@ -11,6 +11,8 @@ import 'utils/app_constants.dart';
 
 import 'models/partida.dart';
 import 'models/sesion.dart';
+import 'models/friend.dart';
+import 'models/friend_request.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'screens/home.dart';
@@ -39,6 +41,8 @@ void main() async {
   Hive.registerAdapter(PartidaAdapter());
   Hive.registerAdapter(SesionAdapter());
   Hive.registerAdapter(PerfilUsuarioAdapter());
+  Hive.registerAdapter(FriendAdapter());
+  Hive.registerAdapter(FriendRequestAdapter());
   await Hive.openBox<Sesion>(AppConstants.boxSesiones);
   await Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
 
