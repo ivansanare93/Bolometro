@@ -6,6 +6,7 @@ import '../screens/perfil_usuario.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
+import '../providers/language_provider.dart';
 import 'registro_completo_sesion .dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:hive/hive.dart';
@@ -173,6 +174,51 @@ class _HomeScreenState extends State<HomeScreen> {
                                     },
                                   ),
                                 ],
+                              ),
+                              
+                              const SizedBox(height: 16),
+                              
+                              // Language selection
+                              Consumer<LanguageProvider>(
+                                builder: (context, languageProvider, _) {
+                                  return Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(AppLocalizations.of(context)!.language),
+                                      DropdownButton<String>(
+                                        value: languageProvider.locale.languageCode,
+                                        items: [
+                                          DropdownMenuItem(
+                                            value: 'es',
+                                            child: Text(AppLocalizations.of(context)!.spanish),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'en',
+                                            child: Text(AppLocalizations.of(context)!.english),
+                                          ),
+                                        ],
+                                        onChanged: (String? newLanguage) async {
+                                          if (newLanguage != null) {
+                                            await languageProvider.setLocale(Locale(newLanguage));
+                                            try {
+                                              final analytics = Provider.of<AnalyticsService>(
+                                                context,
+                                                listen: false,
+                                              );
+                                              await analytics.logEvent(
+                                                name: 'language_changed',
+                                                parameters: {'language': newLanguage},
+                                              );
+                                            } catch (e) {
+                                              debugPrint('Error logging language change: $e');
+                                            }
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
                               ),
                               
                               if (authService.isAuthenticated) ...[
