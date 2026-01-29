@@ -36,7 +36,7 @@ class AppTheme {
       ),
     ),
     
-    tabBarTheme: const TabBarTheme(
+    tabBarTheme: const TabBarThemeData(
       labelColor: Colors.white,
       unselectedLabelColor: Colors.white70,
       indicatorColor: Colors.white,
@@ -93,7 +93,7 @@ class AppTheme {
       titleTextStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
     ),
     
-    tabBarTheme: const TabBarTheme(
+    tabBarTheme: const TabBarThemeData(
       labelColor: Colors.white,
       unselectedLabelColor: Colors.white60,
       indicatorColor: Color(0xFF00B4D8),
