@@ -916,4 +916,20 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get achievementSpares100Desc => 'Consigue 100 spares';
+
+  @override
+  String get resetProgress => 'Restablecer Progreso (Dev)';
+
+  @override
+  String get resetProgressDesc => 'Restablecer logros y niveles';
+
+  @override
+  String get resetProgressConfirmation =>
+      '¿Seguro que deseas restablecer todos los logros y niveles? Esta acción no se puede deshacer.';
+
+  @override
+  String get resetProgressSuccess => 'Progreso restablecido correctamente';
+
+  @override
+  String get resetProgressError => 'Error al restablecer progreso';
 }

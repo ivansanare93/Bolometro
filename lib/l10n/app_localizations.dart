@@ -1837,6 +1837,36 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Consigue 100 spares'**
   String get achievementSpares100Desc;
+
+  /// No description provided for @resetProgress.
+  ///
+  /// In es, this message translates to:
+  /// **'Restablecer Progreso (Dev)'**
+  String get resetProgress;
+
+  /// No description provided for @resetProgressDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Restablecer logros y niveles'**
+  String get resetProgressDesc;
+
+  /// No description provided for @resetProgressConfirmation.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Seguro que deseas restablecer todos los logros y niveles? Esta acción no se puede deshacer.'**
+  String get resetProgressConfirmation;
+
+  /// No description provided for @resetProgressSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Progreso restablecido correctamente'**
+  String get resetProgressSuccess;
+
+  /// No description provided for @resetProgressError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al restablecer progreso'**
+  String get resetProgressError;
 }
 
 class _AppLocalizationsDelegate
