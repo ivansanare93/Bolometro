@@ -9,6 +9,7 @@ import '../widgets/selector_tipo_partida.dart';
 import '../utils/app_constants.dart';
 import '../repositories/data_repository.dart';
 import '../services/analytics_service.dart';
+import '../services/achievement_service.dart';
 import '../l10n/app_localizations.dart';
 import 'home.dart';
 
@@ -100,6 +101,43 @@ class _RegistroCompletoSesionScreenState
       final analytics = Provider.of<AnalyticsService>(context, listen: false);
       await analytics.logSessionCreated(_tipo);
 
+      // Verificar y desbloquear logros
+      final achievementService = Provider.of<AchievementService>(context, listen: false);
+      final newAchievements = await achievementService.checkAndUnlockAchievements();
+      
+      // Mostrar notificación de logros desbloqueados
+      if (newAchievements.isNotEmpty && mounted) {
+        final l10n = AppLocalizations.of(context);
+        for (var achievement in newAchievements) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.emoji_events, color: Colors.amber),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          l10n!.achievementUnlocked,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(_getAchievementName(l10n, achievement.id) + ' (+${achievement.xpReward} XP)'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+          await Future.delayed(const Duration(milliseconds: 300));
+        }
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -121,6 +159,27 @@ class _RegistroCompletoSesionScreenState
         );
       }
     }
+  }
+
+  String _getAchievementName(AppLocalizations l10n, String achievementId) {
+    final nameMap = {
+      'first_game': l10n.achievementFirstGameName,
+      'games_10': l10n.achievementGames10Name,
+      'games_50': l10n.achievementGames50Name,
+      'games_100': l10n.achievementGames100Name,
+      'strikes_10': l10n.achievementStrikes10Name,
+      'strikes_50': l10n.achievementStrikes50Name,
+      'strikes_100': l10n.achievementStrikes100Name,
+      'score_150': l10n.achievementScore150Name,
+      'score_200': l10n.achievementScore200Name,
+      'score_250': l10n.achievementScore250Name,
+      'perfect_game': l10n.achievementPerfectGameName,
+      'streak_3': l10n.achievementStreak3Name,
+      'streak_5': l10n.achievementStreak5Name,
+      'spares_20': l10n.achievementSpares20Name,
+      'spares_100': l10n.achievementSpares100Name,
+    };
+    return nameMap[achievementId] ?? achievementId;
   }
 
   @override

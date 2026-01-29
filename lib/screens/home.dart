@@ -10,6 +10,7 @@ import 'lista_sesiones.dart';
 import 'perfil_usuario.dart';
 import 'friends_screen.dart';
 import 'rankings_screen.dart';
+import 'achievements_screen.dart';
 import 'registro_completo_sesion.dart';
 import '../providers/theme_provider.dart';
 import '../providers/language_provider.dart';
@@ -604,6 +605,21 @@ class _HomeScreenState extends State<HomeScreen> {
                           MaterialPageRoute(
                             builder: (_) =>
                                 const EstadisticasPantallaCompleta(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      leading: const Text('🏅', style: TextStyle(fontSize: 32)),
+                      title: Text(AppLocalizations.of(context)!.achievements),
+                      subtitle: Text(AppLocalizations.of(context)!.levelsAndAchievements),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AchievementsScreen(),
                           ),
                         );
                       },

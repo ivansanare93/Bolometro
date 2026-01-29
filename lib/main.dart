@@ -13,6 +13,8 @@ import 'models/partida.dart';
 import 'models/sesion.dart';
 import 'models/friend.dart';
 import 'models/friend_request.dart';
+import 'models/achievement.dart';
+import 'models/user_progress.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'screens/home.dart';
@@ -22,6 +24,7 @@ import 'screens/login_screen.dart';
 import 'models/perfil_usuario.dart';
 import 'services/auth_service.dart';
 import 'services/analytics_service.dart';
+import 'services/achievement_service.dart';
 import 'repositories/data_repository.dart';
 import 'utils/estadisticas_cache.dart';
 
@@ -43,6 +46,10 @@ void main() async {
   Hive.registerAdapter(PerfilUsuarioAdapter());
   Hive.registerAdapter(FriendAdapter());
   Hive.registerAdapter(FriendRequestAdapter());
+  Hive.registerAdapter(AchievementAdapter());
+  Hive.registerAdapter(AchievementTypeAdapter());
+  Hive.registerAdapter(AchievementRarityAdapter());
+  Hive.registerAdapter(UserProgressAdapter());
   await Hive.openBox<Sesion>(AppConstants.boxSesiones);
   await Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
 
@@ -54,6 +61,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (_) => DataRepository()),
         ChangeNotifierProvider(create: (_) => EstadisticasCache()),
+        ChangeNotifierProvider(create: (_) => AchievementService()),
         Provider(create: (_) => AnalyticsService()),
       ],
       child: const BolosApp(),
