@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 
 part 'user_progress.g.dart';
 
-@HiveType(typeId: 12)
+@HiveType(typeId: 17)
 class UserProgress extends HiveObject {
   @HiveField(0)
   int experiencePoints; // XP total acumulado

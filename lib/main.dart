@@ -41,15 +41,34 @@ void main() async {
   /*await Hive.deleteBoxFromDisk('partidas');
   await Hive.deleteBoxFromDisk('sesiones');*/
 
-  Hive.registerAdapter(PartidaAdapter());
-  Hive.registerAdapter(SesionAdapter());
-  Hive.registerAdapter(PerfilUsuarioAdapter());
-  Hive.registerAdapter(FriendAdapter());
-  Hive.registerAdapter(FriendRequestAdapter());
-  Hive.registerAdapter(AchievementAdapter());
-  Hive.registerAdapter(AchievementTypeAdapter());
-  Hive.registerAdapter(AchievementRarityAdapter());
-  Hive.registerAdapter(UserProgressAdapter());
+  // Registrar adapters solo si no están ya registrados
+  if (!Hive.isAdapterRegistered(0)) {
+    Hive.registerAdapter(PartidaAdapter());
+  }
+  if (!Hive.isAdapterRegistered(1)) {
+    Hive.registerAdapter(SesionAdapter());
+  }
+  if (!Hive.isAdapterRegistered(10)) {
+    Hive.registerAdapter(PerfilUsuarioAdapter());
+  }
+  if (!Hive.isAdapterRegistered(15)) {
+    Hive.registerAdapter(FriendAdapter());
+  }
+  if (!Hive.isAdapterRegistered(16)) {
+    Hive.registerAdapter(FriendRequestAdapter());
+  }
+  if (!Hive.isAdapterRegistered(11)) {
+    Hive.registerAdapter(AchievementAdapter());
+  }
+  if (!Hive.isAdapterRegistered(13)) {
+    Hive.registerAdapter(AchievementTypeAdapter());
+  }
+  if (!Hive.isAdapterRegistered(14)) {
+    Hive.registerAdapter(AchievementRarityAdapter());
+  }
+  if (!Hive.isAdapterRegistered(17)) {
+    Hive.registerAdapter(UserProgressAdapter());
+  }
   await Hive.openBox<Sesion>(AppConstants.boxSesiones);
   await Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
 

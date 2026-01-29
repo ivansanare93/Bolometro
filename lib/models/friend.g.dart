@@ -8,7 +8,7 @@ part of 'friend.dart';
 
 class FriendAdapter extends TypeAdapter<Friend> {
   @override
-  final int typeId = 11;
+  final int typeId = 15;
 
   @override
   Friend read(BinaryReader reader) {

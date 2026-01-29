@@ -3,7 +3,7 @@ import 'package:hive/hive.dart';
 part 'friend.g.dart';
 
 /// Representa un amigo en el sistema
-@HiveType(typeId: 11)
+@HiveType(typeId: 15)
 class Friend extends HiveObject {
   @HiveField(0)
   String userId; // Firebase UID del amigo
