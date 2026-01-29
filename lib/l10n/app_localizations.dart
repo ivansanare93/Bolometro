@@ -1591,6 +1591,252 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'TÚ'**
   String get you;
+
+  /// Título de la pantalla de logros
+  ///
+  /// In es, this message translates to:
+  /// **'Logros'**
+  String get achievements;
+
+  /// Subtítulo de la pantalla de logros
+  ///
+  /// In es, this message translates to:
+  /// **'Niveles y medallas'**
+  String get levelsAndAchievements;
+
+  /// Nivel del usuario
+  ///
+  /// In es, this message translates to:
+  /// **'Nivel'**
+  String get level;
+
+  /// Sección de logros desbloqueados
+  ///
+  /// In es, this message translates to:
+  /// **'Logros Desbloqueados'**
+  String get unlockedAchievements;
+
+  /// Sección de logros bloqueados
+  ///
+  /// In es, this message translates to:
+  /// **'Logros Bloqueados'**
+  String get lockedAchievements;
+
+  /// Rareza común
+  ///
+  /// In es, this message translates to:
+  /// **'Común'**
+  String get common;
+
+  /// Rareza rara
+  ///
+  /// In es, this message translates to:
+  /// **'Raro'**
+  String get rare;
+
+  /// Rareza épica
+  ///
+  /// In es, this message translates to:
+  /// **'Épico'**
+  String get epic;
+
+  /// Rareza legendaria
+  ///
+  /// In es, this message translates to:
+  /// **'Legendario'**
+  String get legendary;
+
+  /// Mensaje cuando no hay datos
+  ///
+  /// In es, this message translates to:
+  /// **'No hay datos disponibles'**
+  String get noDataAvailable;
+
+  /// Notificación de logro desbloqueado
+  ///
+  /// In es, this message translates to:
+  /// **'¡Logro Desbloqueado!'**
+  String get achievementUnlocked;
+
+  /// No description provided for @achievementFirstGameName.
+  ///
+  /// In es, this message translates to:
+  /// **'Primera Partida'**
+  String get achievementFirstGameName;
+
+  /// No description provided for @achievementFirstGameDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Juega tu primera partida'**
+  String get achievementFirstGameDesc;
+
+  /// No description provided for @achievementGames10Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Principiante'**
+  String get achievementGames10Name;
+
+  /// No description provided for @achievementGames10Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Juega 10 partidas'**
+  String get achievementGames10Desc;
+
+  /// No description provided for @achievementGames50Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Entusiasta'**
+  String get achievementGames50Name;
+
+  /// No description provided for @achievementGames50Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Juega 50 partidas'**
+  String get achievementGames50Desc;
+
+  /// No description provided for @achievementGames100Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Veterano'**
+  String get achievementGames100Name;
+
+  /// No description provided for @achievementGames100Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Juega 100 partidas'**
+  String get achievementGames100Desc;
+
+  /// No description provided for @achievementStrikes10Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Primeros Strikes'**
+  String get achievementStrikes10Name;
+
+  /// No description provided for @achievementStrikes10Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 10 strikes'**
+  String get achievementStrikes10Desc;
+
+  /// No description provided for @achievementStrikes50Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Maestro del Strike'**
+  String get achievementStrikes50Name;
+
+  /// No description provided for @achievementStrikes50Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 50 strikes'**
+  String get achievementStrikes50Desc;
+
+  /// No description provided for @achievementStrikes100Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Leyenda del Strike'**
+  String get achievementStrikes100Name;
+
+  /// No description provided for @achievementStrikes100Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 100 strikes'**
+  String get achievementStrikes100Desc;
+
+  /// No description provided for @achievementScore150Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Puntuación Alta'**
+  String get achievementScore150Name;
+
+  /// No description provided for @achievementScore150Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 150 puntos en una partida'**
+  String get achievementScore150Desc;
+
+  /// No description provided for @achievementScore200Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Puntuación Estelar'**
+  String get achievementScore200Name;
+
+  /// No description provided for @achievementScore200Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 200 puntos en una partida'**
+  String get achievementScore200Desc;
+
+  /// No description provided for @achievementScore250Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Puntuación Legendaria'**
+  String get achievementScore250Name;
+
+  /// No description provided for @achievementScore250Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 250 puntos en una partida'**
+  String get achievementScore250Desc;
+
+  /// No description provided for @achievementPerfectGameName.
+  ///
+  /// In es, this message translates to:
+  /// **'Partida Perfecta'**
+  String get achievementPerfectGameName;
+
+  /// No description provided for @achievementPerfectGameDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 300 puntos (partida perfecta)'**
+  String get achievementPerfectGameDesc;
+
+  /// No description provided for @achievementStreak3Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Triple Strike'**
+  String get achievementStreak3Name;
+
+  /// No description provided for @achievementStreak3Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 3 strikes consecutivos'**
+  String get achievementStreak3Desc;
+
+  /// No description provided for @achievementStreak5Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Racha Épica'**
+  String get achievementStreak5Name;
+
+  /// No description provided for @achievementStreak5Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 5 strikes consecutivos'**
+  String get achievementStreak5Desc;
+
+  /// No description provided for @achievementSpares20Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Experto en Spares'**
+  String get achievementSpares20Name;
+
+  /// No description provided for @achievementSpares20Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 20 spares'**
+  String get achievementSpares20Desc;
+
+  /// No description provided for @achievementSpares100Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Maestro del Spare'**
+  String get achievementSpares100Name;
+
+  /// No description provided for @achievementSpares100Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 100 spares'**
+  String get achievementSpares100Desc;
 }
 
 class _AppLocalizationsDelegate

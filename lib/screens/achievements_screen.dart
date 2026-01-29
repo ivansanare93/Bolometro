@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/achievement_service.dart';
 import '../models/achievement.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../l10n/app_localizations.dart';
 
 /// Pantalla de logros y progreso del usuario
 class AchievementsScreen extends StatefulWidget {
@@ -392,7 +392,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   IconData _getIconData(String iconName) {
     // Mapear nombres de iconos a IconData
     final iconMap = <String, IconData>{
-      'sports_bowling': Icons.sports_bowling,
+      'sports_bowling': Icons.sports,
       'looks_one': Icons.looks_one,
       'looks_5': Icons.looks_5,
       'military_tech': Icons.military_tech,

@@ -740,7 +740,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noFriendsYet => 'No tienes amigos aún';
 
   @override
-  String get addFriendsToCompare => 'Añade amigos para comparar tus estadísticas';
+  String get addFriendsToCompare =>
+      'Añade amigos para comparar tus estadísticas';
 
   @override
   String get noPendingRequests => 'No tienes solicitudes pendientes';
@@ -791,4 +792,128 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get you => 'TÚ';
+
+  @override
+  String get achievements => 'Logros';
+
+  @override
+  String get levelsAndAchievements => 'Niveles y medallas';
+
+  @override
+  String get level => 'Nivel';
+
+  @override
+  String get unlockedAchievements => 'Logros Desbloqueados';
+
+  @override
+  String get lockedAchievements => 'Logros Bloqueados';
+
+  @override
+  String get common => 'Común';
+
+  @override
+  String get rare => 'Raro';
+
+  @override
+  String get epic => 'Épico';
+
+  @override
+  String get legendary => 'Legendario';
+
+  @override
+  String get noDataAvailable => 'No hay datos disponibles';
+
+  @override
+  String get achievementUnlocked => '¡Logro Desbloqueado!';
+
+  @override
+  String get achievementFirstGameName => 'Primera Partida';
+
+  @override
+  String get achievementFirstGameDesc => 'Juega tu primera partida';
+
+  @override
+  String get achievementGames10Name => 'Principiante';
+
+  @override
+  String get achievementGames10Desc => 'Juega 10 partidas';
+
+  @override
+  String get achievementGames50Name => 'Entusiasta';
+
+  @override
+  String get achievementGames50Desc => 'Juega 50 partidas';
+
+  @override
+  String get achievementGames100Name => 'Veterano';
+
+  @override
+  String get achievementGames100Desc => 'Juega 100 partidas';
+
+  @override
+  String get achievementStrikes10Name => 'Primeros Strikes';
+
+  @override
+  String get achievementStrikes10Desc => 'Consigue 10 strikes';
+
+  @override
+  String get achievementStrikes50Name => 'Maestro del Strike';
+
+  @override
+  String get achievementStrikes50Desc => 'Consigue 50 strikes';
+
+  @override
+  String get achievementStrikes100Name => 'Leyenda del Strike';
+
+  @override
+  String get achievementStrikes100Desc => 'Consigue 100 strikes';
+
+  @override
+  String get achievementScore150Name => 'Puntuación Alta';
+
+  @override
+  String get achievementScore150Desc => 'Consigue 150 puntos en una partida';
+
+  @override
+  String get achievementScore200Name => 'Puntuación Estelar';
+
+  @override
+  String get achievementScore200Desc => 'Consigue 200 puntos en una partida';
+
+  @override
+  String get achievementScore250Name => 'Puntuación Legendaria';
+
+  @override
+  String get achievementScore250Desc => 'Consigue 250 puntos en una partida';
+
+  @override
+  String get achievementPerfectGameName => 'Partida Perfecta';
+
+  @override
+  String get achievementPerfectGameDesc =>
+      'Consigue 300 puntos (partida perfecta)';
+
+  @override
+  String get achievementStreak3Name => 'Triple Strike';
+
+  @override
+  String get achievementStreak3Desc => 'Consigue 3 strikes consecutivos';
+
+  @override
+  String get achievementStreak5Name => 'Racha Épica';
+
+  @override
+  String get achievementStreak5Desc => 'Consigue 5 strikes consecutivos';
+
+  @override
+  String get achievementSpares20Name => 'Experto en Spares';
+
+  @override
+  String get achievementSpares20Desc => 'Consigue 20 spares';
+
+  @override
+  String get achievementSpares100Name => 'Maestro del Spare';
+
+  @override
+  String get achievementSpares100Desc => 'Consigue 100 spares';
 }

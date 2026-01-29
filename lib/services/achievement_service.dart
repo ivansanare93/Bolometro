@@ -248,21 +248,21 @@ class AchievementService extends ChangeNotifier {
           // Contar strikes y spares
           int currentStreak = 0;
           for (var frame in partida.frames) {
-            if (frame.primerTiro == 10) {
+            if (frame.first == 10) {
               totalStrikes++;
               currentStreak++;
               maxStreak = maxStreak > currentStreak ? maxStreak : currentStreak;
             } else {
               currentStreak = 0;
-              if (frame.primerTiro + frame.segundoTiro == 10) {
+              if (frame.first + frame.last == 10) {
                 totalSpares++;
               }
             }
           }
           
           // Puntuación máxima
-          if (partida.puntuacionTotal > maxScore) {
-            maxScore = partida.puntuacionTotal;
+          if (partida.total > maxScore) {
+            maxScore = partida.total;
           }
         }
       }
