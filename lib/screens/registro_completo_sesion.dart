@@ -9,6 +9,7 @@ import '../widgets/selector_tipo_partida.dart';
 import '../utils/app_constants.dart';
 import '../repositories/data_repository.dart';
 import '../services/analytics_service.dart';
+import '../services/achievement_service.dart';
 import '../l10n/app_localizations.dart';
 import 'home.dart';
 
@@ -99,6 +100,42 @@ class _RegistroCompletoSesionScreenState
 
       final analytics = Provider.of<AnalyticsService>(context, listen: false);
       await analytics.logSessionCreated(_tipo);
+
+      // Verificar y desbloquear logros
+      final achievementService = Provider.of<AchievementService>(context, listen: false);
+      final newAchievements = await achievementService.checkAndUnlockAchievements();
+      
+      // Mostrar notificación de logros desbloqueados
+      if (newAchievements.isNotEmpty && mounted) {
+        for (var achievement in newAchievements) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.emoji_events, color: Colors.amber),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          '¡Logro Desbloqueado!',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text('${achievement.nameKey.split('.')[1].replaceAll('_', ' ').toUpperCase()} (+${achievement.xpReward} XP)'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+          await Future.delayed(const Duration(milliseconds: 300));
+        }
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

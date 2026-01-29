@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/sesion.dart';
 import '../models/perfil_usuario.dart';
+import '../models/user_progress.dart';
+import '../models/achievement.dart';
 import '../utils/app_constants.dart';
 import '../exceptions/sync_exceptions.dart';
 
@@ -18,6 +20,16 @@ class FirestoreService {
   /// Obtener referencia al documento de perfil del usuario
   DocumentReference _getPerfilDocument(String userId) {
     return _firestore.collection('users').doc(userId);
+  }
+
+  /// Obtener referencia al documento de progreso del usuario
+  DocumentReference _getProgressDocument(String userId) {
+    return _firestore.collection('users').doc(userId).collection('gamification').doc('progress');
+  }
+
+  /// Obtener referencia a la colección de logros del usuario
+  CollectionReference _getAchievementsCollection(String userId) {
+    return _firestore.collection('users').doc(userId).collection('gamification').doc('progress').collection('achievements');
   }
 
   /// Guardar o actualizar una sesión en Firestore
@@ -277,6 +289,82 @@ class FirestoreService {
       }
     } catch (e) {
       debugPrint('Error crítico durante la sincronización: $e');
+      rethrow;
+    }
+  }
+
+  /// Guardar progreso del usuario en Firestore
+  Future<void> guardarProgreso(String userId, UserProgress progress) async {
+    try {
+      await _getProgressDocument(userId).set(
+        progress.toJson(),
+        SetOptions(merge: true),
+      );
+      debugPrint('Progreso guardado en Firestore');
+    } catch (e) {
+      debugPrint('Error al guardar progreso en Firestore: $e');
+      rethrow;
+    }
+  }
+
+  /// Obtener progreso del usuario desde Firestore
+  Future<UserProgress?> obtenerProgreso(String userId) async {
+    try {
+      final doc = await _getProgressDocument(userId).get();
+      if (doc.exists) {
+        return UserProgress.fromJson(doc.data() as Map<String, dynamic>);
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error al obtener progreso desde Firestore: $e');
+      return null;
+    }
+  }
+
+  /// Guardar logro en Firestore
+  Future<void> guardarLogro(String userId, Achievement achievement) async {
+    try {
+      await _getAchievementsCollection(userId)
+          .doc(achievement.id)
+          .set(achievement.toJson(), SetOptions(merge: true));
+      debugPrint('Logro guardado en Firestore: ${achievement.id}');
+    } catch (e) {
+      debugPrint('Error al guardar logro en Firestore: $e');
+      rethrow;
+    }
+  }
+
+  /// Obtener logros desde Firestore
+  Future<List<Achievement>> obtenerLogros(String userId) async {
+    try {
+      final querySnapshot = await _getAchievementsCollection(userId).get();
+      return querySnapshot.docs
+          .map((doc) => Achievement.fromJson(doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      debugPrint('Error al obtener logros desde Firestore: $e');
+      return [];
+    }
+  }
+
+  /// Sincronizar todos los datos de gamificación
+  Future<void> sincronizarGamificacion(
+    String userId,
+    UserProgress progress,
+    List<Achievement> achievements,
+  ) async {
+    try {
+      // Guardar progreso
+      await guardarProgreso(userId, progress);
+
+      // Guardar logros
+      for (var achievement in achievements) {
+        await guardarLogro(userId, achievement);
+      }
+
+      debugPrint('Gamificación sincronizada en Firestore');
+    } catch (e) {
+      debugPrint('Error al sincronizar gamificación: $e');
       rethrow;
     }
   }

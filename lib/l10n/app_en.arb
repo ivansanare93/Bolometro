@@ -347,5 +347,15 @@
   "noRankingData": "No data to display",
   "manageFriends": "Manage your friends and requests",
   "enterEmail": "Enter an email address",
-  "you": "YOU"
+  "you": "YOU",
+  "achievements": "Achievements",
+  "levelsAndAchievements": "Levels and medals",
+  "level": "Level",
+  "unlockedAchievements": "Unlocked Achievements",
+  "lockedAchievements": "Locked Achievements",
+  "common": "Common",
+  "rare": "Rare",
+  "epic": "Epic",
+  "legendary": "Legendary",
+  "noDataAvailable": "No data available"
 }

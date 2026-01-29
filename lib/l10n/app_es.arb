@@ -434,5 +434,45 @@
   "you": "TÚ",
   "@you": {
     "description": "Indicador de usuario actual en rankings"
+  },
+  "achievements": "Logros",
+  "@achievements": {
+    "description": "Título de la pantalla de logros"
+  },
+  "levelsAndAchievements": "Niveles y medallas",
+  "@levelsAndAchievements": {
+    "description": "Subtítulo de la pantalla de logros"
+  },
+  "level": "Nivel",
+  "@level": {
+    "description": "Nivel del usuario"
+  },
+  "unlockedAchievements": "Logros Desbloqueados",
+  "@unlockedAchievements": {
+    "description": "Sección de logros desbloqueados"
+  },
+  "lockedAchievements": "Logros Bloqueados",
+  "@lockedAchievements": {
+    "description": "Sección de logros bloqueados"
+  },
+  "common": "Común",
+  "@common": {
+    "description": "Rareza común"
+  },
+  "rare": "Raro",
+  "@rare": {
+    "description": "Rareza rara"
+  },
+  "epic": "Épico",
+  "@epic": {
+    "description": "Rareza épica"
+  },
+  "legendary": "Legendario",
+  "@legendary": {
+    "description": "Rareza legendaria"
+  },
+  "noDataAvailable": "No hay datos disponibles",
+  "@noDataAvailable": {
+    "description": "Mensaje cuando no hay datos"
   }
 }

@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import '../models/perfil_usuario.dart';
 import '../utils/app_constants.dart';
 import '../services/analytics_service.dart';
+import '../services/achievement_service.dart';
 import 'home.dart';
 
 class PerfilUsuarioScreen extends StatefulWidget {
@@ -336,47 +337,83 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                     ],
                   ),
                 ),
-              // Avatar
-              GestureDetector(
-                onTap: _seleccionarAvatar,
-                child: CircleAvatar(
-                  radius: 48,
-                  backgroundColor: cs.primary.withOpacity(0.09),
-                  child: avatarFileExists
-                      ? ClipOval(
-                          child: Image.file(
-                            File(_avatarPath!),
-                            width: 96,
-                            height: 96,
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                      : showGooglePhoto
+              // Avatar and Level Badge
+              Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  GestureDetector(
+                    onTap: _seleccionarAvatar,
+                    child: CircleAvatar(
+                      radius: 48,
+                      backgroundColor: cs.primary.withOpacity(0.09),
+                      child: avatarFileExists
                           ? ClipOval(
-                              child: Image.network(
-                                perfil!.googlePhotoUrl!,
+                              child: Image.file(
+                                File(_avatarPath!),
                                 width: 96,
                                 height: 96,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  // Fallback a icono por defecto si falla la carga
-                                  return Icon(Icons.person, size: 48, color: cs.primary);
-                                },
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Center(
-                                    child: CircularProgressIndicator(
-                                      value: loadingProgress.expectedTotalBytes != null
-                                          ? loadingProgress.cumulativeBytesLoaded /
-                                              loadingProgress.expectedTotalBytes!
-                                          : null,
-                                    ),
-                                  );
-                                },
                               ),
                             )
-                          : Icon(Icons.person, size: 48, color: cs.primary),
-                ),
+                          : showGooglePhoto
+                              ? ClipOval(
+                                  child: Image.network(
+                                    perfil!.googlePhotoUrl!,
+                                    width: 96,
+                                    height: 96,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      // Fallback a icono por defecto si falla la carga
+                                      return Icon(Icons.person, size: 48, color: cs.primary);
+                                    },
+                                    loadingBuilder: (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Center(
+                                        child: CircularProgressIndicator(
+                                          value: loadingProgress.expectedTotalBytes != null
+                                              ? loadingProgress.cumulativeBytesLoaded /
+                                                  loadingProgress.expectedTotalBytes!
+                                              : null,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                )
+                              : Icon(Icons.person, size: 48, color: cs.primary),
+                    ),
+                  ),
+                  // Level badge
+                  Consumer<AchievementService>(
+                    builder: (context, achievementService, child) {
+                      final level = achievementService.userProgress?.currentLevel ?? 1;
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [cs.primary, cs.primaryContainer],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.star, size: 14, color: Colors.white),
+                            const SizedBox(width: 4),
+                            Text(
+                              '$level',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
               if (avatarFileExists || showGooglePhoto)
                 TextButton.icon(
