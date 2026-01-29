@@ -453,15 +453,21 @@ class AchievementService extends ChangeNotifier {
     }
     debugPrint('Logros guardados: $achievementsSaved/${_achievements.length}');
     
-    // Notificar cambios
-    debugPrint('Notificando listeners...');
-    notifyListeners();
-    
     debugPrint('Estado después del reset:');
     debugPrint('  - Nivel actual: ${_userProgress?.currentLevel}');
     debugPrint('  - XP total: ${_userProgress?.experiencePoints}');
     debugPrint('  - Logros desbloqueados: ${_userProgress?.unlockedAchievementIds.length ?? 0}');
     debugPrint('  - Total de logros: ${_achievements.length}');
+    
+    // Marcar servicio como no inicializado para forzar recarga desde Hive
+    // IMPORTANTE: Esto debe hacerse ANTES de notificar listeners para evitar condiciones de carrera
+    debugPrint('Marcando servicio como no inicializado para forzar recarga...');
+    _isInitialized = false;
+    
+    // Notificar cambios DESPUÉS de marcar como no inicializado
+    debugPrint('Notificando listeners...');
+    notifyListeners();
+    
     debugPrint('=== FIN DE RESETEO DE PROGRESO ===');
   }
 }
