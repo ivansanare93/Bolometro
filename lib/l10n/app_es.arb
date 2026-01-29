@@ -508,5 +508,21 @@
   "achievementSpares20Name": "Experto en Spares",
   "achievementSpares20Desc": "Consigue 20 spares",
   "achievementSpares100Name": "Maestro del Spare",
-  "achievementSpares100Desc": "Consigue 100 spares"
+  "achievementSpares100Desc": "Consigue 100 spares",
+  "resetProgress": "Restablecer Progreso (Dev)",
+  "@resetProgress": {
+    "description": "Opción para restablecer logros y niveles en desarrollo"
+  },
+  "resetProgressDesc": "Restablecer logros y niveles",
+  "@resetProgressDesc": {
+    "description": "Descripción de la opción de restablecer"
+  },
+  "resetProgressConfirmation": "¿Seguro que deseas restablecer todos los logros y niveles? Esta acción no se puede deshacer.",
+  "@resetProgressConfirmation": {
+    "description": "Confirmación para restablecer progreso"
+  },
+  "resetProgressSuccess": "Progreso restablecido correctamente",
+  "@resetProgressSuccess": {
+    "description": "Mensaje de éxito al restablecer progreso"
+  }
 }
