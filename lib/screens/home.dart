@@ -342,80 +342,80 @@ class _HomeScreenState extends State<HomeScreen> {
                                     }
                                   },
                                 ),
-                                const Divider(height: 32),
-                                ListTile(
-                                  leading: const Icon(
-                                    Icons.refresh,
-                                    color: Colors.orange,
-                                  ),
-                                  title: Text(
-                                    AppLocalizations.of(context)!.resetProgress,
-                                    style: const TextStyle(color: Colors.orange),
-                                  ),
-                                  subtitle: Text(
-                                    AppLocalizations.of(context)!.resetProgressDesc,
-                                    style: const TextStyle(fontSize: 12),
-                                  ),
-                                  onTap: () async {
-                                    Navigator.pop(context);
-                                    final confirm = await showDialog<bool>(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: Text(AppLocalizations.of(context)!.resetProgress),
-                                        content: Text(
-                                          AppLocalizations.of(context)!.resetProgressConfirmation,
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, false),
-                                            child: Text(AppLocalizations.of(context)!.cancel),
-                                          ),
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, true),
-                                            child: Text(
-                                              AppLocalizations.of(context)!.confirm,
-                                              style:
-                                                  const TextStyle(color: Colors.orange),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
+                                // const Divider(height: 32),
+                                // ListTile(
+                                //   leading: const Icon(
+                                //     Icons.refresh,
+                                //     color: Colors.orange,
+                                //   ),
+                                //   title: Text(
+                                //     AppLocalizations.of(context)!.resetProgress,
+                                //     style: const TextStyle(color: Colors.orange),
+                                //   ),
+                                //   subtitle: Text(
+                                //     AppLocalizations.of(context)!.resetProgressDesc,
+                                //     style: const TextStyle(fontSize: 12),
+                                //   ),
+                                //   onTap: () async {
+                                //     Navigator.pop(context);
+                                //     final confirm = await showDialog<bool>(
+                                //       context: context,
+                                //       builder: (context) => AlertDialog(
+                                //         title: Text(AppLocalizations.of(context)!.resetProgress),
+                                //         content: Text(
+                                //           AppLocalizations.of(context)!.resetProgressConfirmation,
+                                //         ),
+                                //         actions: [
+                                //           TextButton(
+                                //             onPressed: () =>
+                                //                 Navigator.pop(context, false),
+                                //             child: Text(AppLocalizations.of(context)!.cancel),
+                                //           ),
+                                //           TextButton(
+                                //             onPressed: () =>
+                                //                 Navigator.pop(context, true),
+                                //             child: Text(
+                                //               AppLocalizations.of(context)!.confirm,
+                                //               style:
+                                //                   const TextStyle(color: Colors.orange),
+                                //             ),
+                                //           ),
+                                //         ],
+                                //       ),
+                                //     );
 
-                                    if (confirm == true) {
-                                      try {
-                                        debugPrint('[UI] Usuario confirmó reseteo de progreso');
-                                        await achievementService.resetProgress();
-                                        debugPrint('[UI] Reseteo de progreso completado exitosamente');
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                AppLocalizations.of(context)!.resetProgressSuccess,
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                      } catch (e) {
-                                        debugPrint('[UI] Error al resetear progreso: $e');
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                '${AppLocalizations.of(context)!.resetProgressError}: ${e.toString()}',
-                                              ),
-                                              backgroundColor: Colors.red,
-                                            ),
-                                          );
-                                        }
-                                      }
-                                    }
-                                  },
-                                ),
+                                //     if (confirm == true) {
+                                //       try {
+                                //         debugPrint('[UI] Usuario confirmó reseteo de progreso');
+                                //         await achievementService.resetProgress();
+                                //         debugPrint('[UI] Reseteo de progreso completado exitosamente');
+                                //         if (context.mounted) {
+                                //           ScaffoldMessenger.of(context)
+                                //               .showSnackBar(
+                                //             SnackBar(
+                                //               content: Text(
+                                //                 AppLocalizations.of(context)!.resetProgressSuccess,
+                                //               ),
+                                //             ),
+                                //           );
+                                //         }
+                                //       } catch (e) {
+                                //         debugPrint('[UI] Error al resetear progreso: $e');
+                                //         if (context.mounted) {
+                                //           ScaffoldMessenger.of(context)
+                                //               .showSnackBar(
+                                //             SnackBar(
+                                //               content: Text(
+                                //                 '${AppLocalizations.of(context)!.resetProgressError}: ${e.toString()}',
+                                //               ),
+                                //               backgroundColor: Colors.red,
+                                //             ),
+                                //           );
+                                //         }
+                                //       }
+                                //     }
+                                //   },
+                                // ),
                               ] else ...[
                                 const Divider(height: 32),
                                 Text(
