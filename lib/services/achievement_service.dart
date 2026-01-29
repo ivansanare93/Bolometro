@@ -462,6 +462,11 @@ class AchievementService extends ChangeNotifier {
     debugPrint('  - XP total: ${_userProgress?.experiencePoints}');
     debugPrint('  - Logros desbloqueados: ${_userProgress?.unlockedAchievementIds.length ?? 0}');
     debugPrint('  - Total de logros: ${_achievements.length}');
+    
+    // Marcar servicio como no inicializado para forzar recarga desde Hive
+    debugPrint('Marcando servicio como no inicializado para forzar recarga...');
+    _isInitialized = false;
+    
     debugPrint('=== FIN DE RESETEO DE PROGRESO ===');
   }
 }
