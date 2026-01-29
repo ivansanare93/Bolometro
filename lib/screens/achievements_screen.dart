@@ -59,7 +59,12 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                 final unlockedAchievements = achievements
                     .where((a) => a.isUnlocked)
                     .toList()
-                  ..sort((a, b) => b.unlockedAt!.compareTo(a.unlockedAt!));
+                  ..sort((a, b) {
+                    if (a.unlockedAt == null && b.unlockedAt == null) return 0;
+                    if (a.unlockedAt == null) return 1;
+                    if (b.unlockedAt == null) return -1;
+                    return b.unlockedAt!.compareTo(a.unlockedAt!);
+                  });
                 
                 final lockedAchievements = achievements
                     .where((a) => !a.isUnlocked)
@@ -408,12 +413,42 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   }
 
   String _getLocalizedText(AppLocalizations? l10n, String key) {
-    // Por ahora, devolver el key como texto
-    // En una implementación completa, esto usaría las traducciones
-    final parts = key.split('.');
-    if (parts.length >= 3) {
-      return parts[1].replaceAll('_', ' ').toUpperCase();
-    }
-    return key;
+    if (l10n == null) return key;
+    
+    // Map achievement keys to localized strings
+    final achievementMap = {
+      'achievement.first_game.name': l10n.achievementFirstGameName,
+      'achievement.first_game.description': l10n.achievementFirstGameDesc,
+      'achievement.games_10.name': l10n.achievementGames10Name,
+      'achievement.games_10.description': l10n.achievementGames10Desc,
+      'achievement.games_50.name': l10n.achievementGames50Name,
+      'achievement.games_50.description': l10n.achievementGames50Desc,
+      'achievement.games_100.name': l10n.achievementGames100Name,
+      'achievement.games_100.description': l10n.achievementGames100Desc,
+      'achievement.strikes_10.name': l10n.achievementStrikes10Name,
+      'achievement.strikes_10.description': l10n.achievementStrikes10Desc,
+      'achievement.strikes_50.name': l10n.achievementStrikes50Name,
+      'achievement.strikes_50.description': l10n.achievementStrikes50Desc,
+      'achievement.strikes_100.name': l10n.achievementStrikes100Name,
+      'achievement.strikes_100.description': l10n.achievementStrikes100Desc,
+      'achievement.score_150.name': l10n.achievementScore150Name,
+      'achievement.score_150.description': l10n.achievementScore150Desc,
+      'achievement.score_200.name': l10n.achievementScore200Name,
+      'achievement.score_200.description': l10n.achievementScore200Desc,
+      'achievement.score_250.name': l10n.achievementScore250Name,
+      'achievement.score_250.description': l10n.achievementScore250Desc,
+      'achievement.perfect_game.name': l10n.achievementPerfectGameName,
+      'achievement.perfect_game.description': l10n.achievementPerfectGameDesc,
+      'achievement.streak_3.name': l10n.achievementStreak3Name,
+      'achievement.streak_3.description': l10n.achievementStreak3Desc,
+      'achievement.streak_5.name': l10n.achievementStreak5Name,
+      'achievement.streak_5.description': l10n.achievementStreak5Desc,
+      'achievement.spares_20.name': l10n.achievementSpares20Name,
+      'achievement.spares_20.description': l10n.achievementSpares20Desc,
+      'achievement.spares_100.name': l10n.achievementSpares100Name,
+      'achievement.spares_100.description': l10n.achievementSpares100Desc,
+    };
+    
+    return achievementMap[key] ?? key;
   }
 }

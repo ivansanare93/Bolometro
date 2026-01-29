@@ -354,13 +354,27 @@ class FirestoreService {
     List<Achievement> achievements,
   ) async {
     try {
-      // Guardar progreso
-      await guardarProgreso(userId, progress);
+      // Usar batch para operaciones atómicas
+      final batch = _firestore.batch();
 
-      // Guardar logros
+      // Guardar progreso
+      batch.set(
+        _getProgressDocument(userId),
+        progress.toJson(),
+        SetOptions(merge: true),
+      );
+
+      // Guardar logros en batch
       for (var achievement in achievements) {
-        await guardarLogro(userId, achievement);
+        batch.set(
+          _getAchievementsCollection(userId).doc(achievement.id),
+          achievement.toJson(),
+          SetOptions(merge: true),
+        );
       }
+
+      // Ejecutar todas las operaciones
+      await batch.commit();
 
       debugPrint('Gamificación sincronizada en Firestore');
     } catch (e) {

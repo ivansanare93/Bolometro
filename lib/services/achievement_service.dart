@@ -40,15 +40,16 @@ class AchievementService extends ChangeNotifier {
 
       // Cargar estado de logros desde Hive
       final achievementsBox = await Hive.openBox<Achievement>('achievements');
-      if (achievementsBox.isEmpty) {
-        // Primera vez: guardar todos los logros
-        for (var achievement in _achievements.values) {
-          await achievementsBox.put(achievement.id, achievement);
-        }
-      } else {
-        // Cargar logros guardados
-        for (var achievement in achievementsBox.values) {
-          _achievements[achievement.id] = achievement;
+      
+      // Merge new achievements with existing ones
+      for (var newAchievement in _achievements.values) {
+        final existingAchievement = achievementsBox.get(newAchievement.id);
+        if (existingAchievement != null) {
+          // Use existing achievement to preserve progress
+          _achievements[newAchievement.id] = existingAchievement;
+        } else {
+          // Save new achievement
+          await achievementsBox.put(newAchievement.id, newAchievement);
         }
       }
 
@@ -320,7 +321,10 @@ class AchievementService extends ChangeNotifier {
           shouldUnlock = progress >= achievement.targetValue;
           break;
         
-        default:
+        case AchievementType.consistency:
+        case AchievementType.dedication:
+          // These types are not yet implemented
+          // TODO: Implement consistency and dedication achievement logic
           break;
       }
 

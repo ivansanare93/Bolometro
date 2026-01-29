@@ -107,6 +107,7 @@ class _RegistroCompletoSesionScreenState
       
       // Mostrar notificación de logros desbloqueados
       if (newAchievements.isNotEmpty && mounted) {
+        final l10n = AppLocalizations.of(context);
         for (var achievement in newAchievements) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -119,11 +120,11 @@ class _RegistroCompletoSesionScreenState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text(
-                          '¡Logro Desbloqueado!',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                        Text(
+                          l10n!.achievementUnlocked,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        Text('${achievement.nameKey.split('.')[1].replaceAll('_', ' ').toUpperCase()} (+${achievement.xpReward} XP)'),
+                        Text(_getAchievementName(l10n, achievement.id) + ' (+${achievement.xpReward} XP)'),
                       ],
                     ),
                   ),
@@ -158,6 +159,27 @@ class _RegistroCompletoSesionScreenState
         );
       }
     }
+  }
+
+  String _getAchievementName(AppLocalizations l10n, String achievementId) {
+    final nameMap = {
+      'first_game': l10n.achievementFirstGameName,
+      'games_10': l10n.achievementGames10Name,
+      'games_50': l10n.achievementGames50Name,
+      'games_100': l10n.achievementGames100Name,
+      'strikes_10': l10n.achievementStrikes10Name,
+      'strikes_50': l10n.achievementStrikes50Name,
+      'strikes_100': l10n.achievementStrikes100Name,
+      'score_150': l10n.achievementScore150Name,
+      'score_200': l10n.achievementScore200Name,
+      'score_250': l10n.achievementScore250Name,
+      'perfect_game': l10n.achievementPerfectGameName,
+      'streak_3': l10n.achievementStreak3Name,
+      'streak_5': l10n.achievementStreak5Name,
+      'spares_20': l10n.achievementSpares20Name,
+      'spares_100': l10n.achievementSpares100Name,
+    };
+    return nameMap[achievementId] ?? achievementId;
   }
 
   @override

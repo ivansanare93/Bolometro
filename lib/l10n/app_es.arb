@@ -474,5 +474,39 @@
   "noDataAvailable": "No hay datos disponibles",
   "@noDataAvailable": {
     "description": "Mensaje cuando no hay datos"
-  }
+  },
+  "achievementUnlocked": "¡Logro Desbloqueado!",
+  "@achievementUnlocked": {
+    "description": "Notificación de logro desbloqueado"
+  },
+  "achievementFirstGameName": "Primera Partida",
+  "achievementFirstGameDesc": "Juega tu primera partida",
+  "achievementGames10Name": "Principiante",
+  "achievementGames10Desc": "Juega 10 partidas",
+  "achievementGames50Name": "Entusiasta",
+  "achievementGames50Desc": "Juega 50 partidas",
+  "achievementGames100Name": "Veterano",
+  "achievementGames100Desc": "Juega 100 partidas",
+  "achievementStrikes10Name": "Primeros Strikes",
+  "achievementStrikes10Desc": "Consigue 10 strikes",
+  "achievementStrikes50Name": "Maestro del Strike",
+  "achievementStrikes50Desc": "Consigue 50 strikes",
+  "achievementStrikes100Name": "Leyenda del Strike",
+  "achievementStrikes100Desc": "Consigue 100 strikes",
+  "achievementScore150Name": "Puntuación Alta",
+  "achievementScore150Desc": "Consigue 150 puntos en una partida",
+  "achievementScore200Name": "Puntuación Estelar",
+  "achievementScore200Desc": "Consigue 200 puntos en una partida",
+  "achievementScore250Name": "Puntuación Legendaria",
+  "achievementScore250Desc": "Consigue 250 puntos en una partida",
+  "achievementPerfectGameName": "Partida Perfecta",
+  "achievementPerfectGameDesc": "Consigue 300 puntos (partida perfecta)",
+  "achievementStreak3Name": "Triple Strike",
+  "achievementStreak3Desc": "Consigue 3 strikes consecutivos",
+  "achievementStreak5Name": "Racha Épica",
+  "achievementStreak5Desc": "Consigue 5 strikes consecutivos",
+  "achievementSpares20Name": "Experto en Spares",
+  "achievementSpares20Desc": "Consigue 20 spares",
+  "achievementSpares100Name": "Maestro del Spare",
+  "achievementSpares100Desc": "Consigue 100 spares"
 }
