@@ -10,7 +10,7 @@ enum FriendRequestStatus {
 }
 
 /// Representa una solicitud de amistad
-@HiveType(typeId: 12)
+@HiveType(typeId: 16)
 class FriendRequest extends HiveObject {
   @HiveField(0)
   String requestId; // ID único de la solicitud
