@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'dart:io';
 import 'package:bolometro/services/achievement_service.dart';
 import 'package:bolometro/models/achievement.dart';
 import 'package:bolometro/models/user_progress.dart';
@@ -9,10 +9,12 @@ import 'package:bolometro/models/user_progress.dart';
 void main() {
   group('AchievementService Reset', () {
     late AchievementService achievementService;
+    late String testPath;
 
     setUpAll(() async {
-      // Initialize Hive for testing
-      await Hive.initFlutter();
+      // Initialize Hive with a temporary directory for testing
+      testPath = '${Directory.systemTemp.path}/hive_test_${DateTime.now().millisecondsSinceEpoch}';
+      await Hive.init(testPath);
       
       // Register adapters if not already registered (using generated adapters)
       if (!Hive.isAdapterRegistered(11)) {
@@ -34,8 +36,10 @@ void main() {
       await Hive.deleteBoxFromDisk('userProgress');
       await Hive.deleteBoxFromDisk('achievements');
       
-      // Get singleton instance
+      // Get singleton instance and ensure it starts fresh
       achievementService = AchievementService();
+      // Note: The singleton pattern means we can't truly reset it,
+      // but we can ensure Hive boxes are clean for each test
     });
 
     tearDown(() async {
@@ -49,6 +53,25 @@ void main() {
       
       await Hive.deleteBoxFromDisk('userProgress');
       await Hive.deleteBoxFromDisk('achievements');
+      
+      // Reset the singleton state by calling resetProgress to ensure clean state
+      // between tests (this addresses singleton isolation issues)
+      if (achievementService.isInitialized) {
+        await achievementService.resetProgress();
+      }
+    });
+
+    tearDownAll(() async {
+      // Clean up test directory after all tests
+      await Hive.close();
+      try {
+        final dir = Directory(testPath);
+        if (await dir.exists()) {
+          await dir.delete(recursive: true);
+        }
+      } catch (e) {
+        // Ignore cleanup errors
+      }
     });
 
     test('resetProgress should clear all achievements and user progress', () async {
