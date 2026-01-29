@@ -93,6 +93,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           context,
                           listen: false,
                         );
+                        final achievementService = Provider.of<AchievementService>(
+                          context,
+                          listen: false,
+                        );
 
                         return SingleChildScrollView(
                           child: Padding(
@@ -382,10 +386,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
                                     if (confirm == true) {
                                       try {
-                                        final achievementService = Provider.of<AchievementService>(
-                                          context,
-                                          listen: false,
-                                        );
                                         await achievementService.resetProgress();
                                         if (context.mounted) {
                                           ScaffoldMessenger.of(context)
@@ -403,7 +403,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               .showSnackBar(
                                             SnackBar(
                                               content: Text(
-                                                'Error: ${e.toString()}',
+                                                '${AppLocalizations.of(context)!.resetProgressError}: ${e.toString()}',
                                               ),
                                               backgroundColor: Colors.red,
                                             ),

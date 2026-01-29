@@ -404,5 +404,9 @@
   "resetProgressSuccess": "Progress reset successfully",
   "@resetProgressSuccess": {
     "description": "Success message when resetting progress"
+  },
+  "resetProgressError": "Error resetting progress",
+  "@resetProgressError": {
+    "description": "Error message when resetting progress"
   }
 }

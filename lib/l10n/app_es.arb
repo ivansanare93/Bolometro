@@ -524,5 +524,9 @@
   "resetProgressSuccess": "Progreso restablecido correctamente",
   "@resetProgressSuccess": {
     "description": "Mensaje de éxito al restablecer progreso"
+  },
+  "resetProgressError": "Error al restablecer progreso",
+  "@resetProgressError": {
+    "description": "Mensaje de error al restablecer progreso"
   }
 }
