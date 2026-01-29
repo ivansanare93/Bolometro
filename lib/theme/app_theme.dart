@@ -35,6 +35,13 @@ class AppTheme {
         color: Colors.white,
       ),
     ),
+    
+    tabBarTheme: const TabBarTheme(
+      labelColor: Colors.white,
+      unselectedLabelColor: Colors.white70,
+      indicatorColor: Colors.white,
+      indicatorSize: TabBarIndicatorSize.tab,
+    ),
     cardTheme: CardThemeData(
       color: Colors.white,
       elevation: 3,
@@ -84,6 +91,13 @@ class AppTheme {
       foregroundColor: Colors.white,
       elevation: 2,
       titleTextStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    ),
+    
+    tabBarTheme: const TabBarTheme(
+      labelColor: Colors.white,
+      unselectedLabelColor: Colors.white60,
+      indicatorColor: Color(0xFF00B4D8),
+      indicatorSize: TabBarIndicatorSize.tab,
     ),
 
     cardTheme: CardThemeData(
