@@ -388,5 +388,25 @@
   "achievementSpares20Name": "Spare Expert",
   "achievementSpares20Desc": "Get 20 spares",
   "achievementSpares100Name": "Spare Master",
-  "achievementSpares100Desc": "Get 100 spares"
+  "achievementSpares100Desc": "Get 100 spares",
+  "resetProgress": "Reset Progress (Dev)",
+  "@resetProgress": {
+    "description": "Option to reset achievements and levels in development"
+  },
+  "resetProgressDesc": "Reset achievements and levels",
+  "@resetProgressDesc": {
+    "description": "Description of the reset option"
+  },
+  "resetProgressConfirmation": "Are you sure you want to reset all achievements and levels? This action cannot be undone.",
+  "@resetProgressConfirmation": {
+    "description": "Confirmation to reset progress"
+  },
+  "resetProgressSuccess": "Progress reset successfully",
+  "@resetProgressSuccess": {
+    "description": "Success message when resetting progress"
+  },
+  "resetProgressError": "Error resetting progress",
+  "@resetProgressError": {
+    "description": "Error message when resetting progress"
+  }
 }

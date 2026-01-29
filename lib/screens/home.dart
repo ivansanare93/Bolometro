@@ -18,6 +18,7 @@ import '../models/perfil_usuario.dart';
 import '../utils/app_constants.dart';
 import '../services/auth_service.dart';
 import '../services/analytics_service.dart';
+import '../services/achievement_service.dart';
 import '../repositories/data_repository.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/skeleton_loaders.dart';
@@ -89,6 +90,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           listen: false,
                         );
                         final dataRepository = Provider.of<DataRepository>(
+                          context,
+                          listen: false,
+                        );
+                        final achievementService = Provider.of<AchievementService>(
                           context,
                           listen: false,
                         );
@@ -334,6 +339,77 @@ class _HomeScreenState extends State<HomeScreen> {
                                       }
                                       await authService.signOut();
                                       dataRepository.setUser(null);
+                                    }
+                                  },
+                                ),
+                                const Divider(height: 32),
+                                ListTile(
+                                  leading: const Icon(
+                                    Icons.refresh,
+                                    color: Colors.orange,
+                                  ),
+                                  title: Text(
+                                    AppLocalizations.of(context)!.resetProgress,
+                                    style: const TextStyle(color: Colors.orange),
+                                  ),
+                                  subtitle: Text(
+                                    AppLocalizations.of(context)!.resetProgressDesc,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  onTap: () async {
+                                    Navigator.pop(context);
+                                    final confirm = await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: Text(AppLocalizations.of(context)!.resetProgress),
+                                        content: Text(
+                                          AppLocalizations.of(context)!.resetProgressConfirmation,
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, false),
+                                            child: Text(AppLocalizations.of(context)!.cancel),
+                                          ),
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, true),
+                                            child: Text(
+                                              AppLocalizations.of(context)!.confirm,
+                                              style:
+                                                  const TextStyle(color: Colors.orange),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+
+                                    if (confirm == true) {
+                                      try {
+                                        await achievementService.resetProgress();
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                AppLocalizations.of(context)!.resetProgressSuccess,
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                '${AppLocalizations.of(context)!.resetProgressError}: ${e.toString()}',
+                                              ),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                        }
+                                      }
                                     }
                                   },
                                 ),
