@@ -8,7 +8,7 @@ part of 'friend_request.dart';
 
 class FriendRequestAdapter extends TypeAdapter<FriendRequest> {
   @override
-  final int typeId = 12;
+  final int typeId = 16;
 
   @override
   FriendRequest read(BinaryReader reader) {

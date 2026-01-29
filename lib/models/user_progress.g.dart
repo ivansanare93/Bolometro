@@ -8,7 +8,7 @@ part of 'user_progress.dart';
 
 class UserProgressAdapter extends TypeAdapter<UserProgress> {
   @override
-  final int typeId = 12;
+  final int typeId = 17;
 
   @override
   UserProgress read(BinaryReader reader) {
