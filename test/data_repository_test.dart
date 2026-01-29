@@ -28,7 +28,7 @@ void main() {
       if (!Hive.isAdapterRegistered(1)) {
         Hive.registerAdapter(SesionAdapter());
       }
-      if (!Hive.isAdapterRegistered(2)) {
+      if (!Hive.isAdapterRegistered(10)) {
         Hive.registerAdapter(PerfilUsuarioAdapter());
       }
 
@@ -141,7 +141,7 @@ void main() {
       // Inicializar Hive para tests
       Hive.init('test_hive_perfil');
       
-      if (!Hive.isAdapterRegistered(2)) {
+      if (!Hive.isAdapterRegistered(10)) {
         Hive.registerAdapter(PerfilUsuarioAdapter());
       }
 
