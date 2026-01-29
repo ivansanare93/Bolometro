@@ -386,7 +386,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                                     if (confirm == true) {
                                       try {
+                                        debugPrint('[UI] Usuario confirmó reseteo de progreso');
                                         await achievementService.resetProgress();
+                                        debugPrint('[UI] Reseteo de progreso completado exitosamente');
                                         if (context.mounted) {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
@@ -398,6 +400,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           );
                                         }
                                       } catch (e) {
+                                        debugPrint('[UI] Error al resetear progreso: $e');
                                         if (context.mounted) {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(

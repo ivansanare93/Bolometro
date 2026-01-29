@@ -409,20 +409,59 @@ class AchievementService extends ChangeNotifier {
 
   /// Resetea el progreso (solo para desarrollo/testing)
   Future<void> resetProgress() async {
-    _userProgress = UserProgress();
+    debugPrint('=== INICIO DE RESETEO DE PROGRESO ===');
     
+    // Log estado actual antes del reset
+    debugPrint('Estado antes del reset:');
+    debugPrint('  - Nivel actual: ${_userProgress?.currentLevel}');
+    debugPrint('  - XP total: ${_userProgress?.experiencePoints}');
+    debugPrint('  - Logros desbloqueados: ${_userProgress?.unlockedAchievementIds.length ?? 0}');
+    debugPrint('  - Total de logros: ${_achievements.length}');
+    
+    // Resetear progreso del usuario
+    debugPrint('Creando nuevo UserProgress...');
+    _userProgress = UserProgress();
+    debugPrint('UserProgress creado - Nivel: ${_userProgress?.currentLevel}, XP: ${_userProgress?.experiencePoints}');
+    
+    // Limpiar y guardar en Hive
+    debugPrint('Limpiando progressBox de Hive...');
     final progressBox = Hive.box<UserProgress>('userProgress');
+    final itemsBeforeClear = progressBox.length;
     await progressBox.clear();
+    debugPrint('ProgressBox limpiado (items eliminados: $itemsBeforeClear)');
+    
+    debugPrint('Guardando nuevo progreso en Hive...');
     await progressBox.add(_userProgress!);
+    debugPrint('Nuevo progreso guardado en Hive (items en box: ${progressBox.length})');
     
     // Resetear logros
+    debugPrint('Reinicializando logros...');
     _initializeAchievements();
+    debugPrint('Logros reinicializados (total: ${_achievements.length})');
+    
+    debugPrint('Limpiando achievementsBox de Hive...');
     final achievementsBox = Hive.box<Achievement>('achievements');
+    final achievementsBeforeClear = achievementsBox.length;
     await achievementsBox.clear();
+    debugPrint('AchievementsBox limpiado (items eliminados: $achievementsBeforeClear)');
+    
+    debugPrint('Guardando logros reinicializados en Hive...');
+    int achievementsSaved = 0;
     for (var achievement in _achievements.values) {
       await achievementsBox.put(achievement.id, achievement);
+      achievementsSaved++;
     }
+    debugPrint('Logros guardados: $achievementsSaved/${_achievements.length}');
     
+    // Notificar cambios
+    debugPrint('Notificando listeners...');
     notifyListeners();
+    
+    debugPrint('Estado después del reset:');
+    debugPrint('  - Nivel actual: ${_userProgress?.currentLevel}');
+    debugPrint('  - XP total: ${_userProgress?.experiencePoints}');
+    debugPrint('  - Logros desbloqueados: ${_userProgress?.unlockedAchievementIds.length ?? 0}');
+    debugPrint('  - Total de logros: ${_achievements.length}');
+    debugPrint('=== FIN DE RESETEO DE PROGRESO ===');
   }
 }
