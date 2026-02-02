@@ -121,6 +121,8 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     ThemeData theme,
     AppLocalizations? l10n,
   ) {
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -130,7 +132,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
           gradient: LinearGradient(
             colors: [
               theme.colorScheme.primary,
-              theme.colorScheme.primaryContainer,
+              isDark ? theme.colorScheme.primaryContainer : theme.colorScheme.primary.withOpacity(0.85),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -148,7 +150,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withOpacity(isDark ? 0.3 : 0.15),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -183,6 +185,13 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
               style: theme.textTheme.titleLarge?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
+                shadows: isDark ? null : [
+                  Shadow(
+                    color: Colors.black.withOpacity(0.2),
+                    offset: const Offset(0, 1),
+                    blurRadius: 2,
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 8),
@@ -197,13 +206,13 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                     Text(
                       '${l10n?.level ?? 'Level'} ${userProgress.currentLevel}',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.white70,
+                        color: isDark ? Colors.white70 : Colors.white.withOpacity(0.9),
                       ),
                     ),
                     Text(
                       '${l10n?.level ?? 'Level'} ${userProgress.currentLevel + 1}',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.white70,
+                        color: isDark ? Colors.white70 : Colors.white.withOpacity(0.9),
                       ),
                     ),
                   ],
@@ -214,7 +223,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                   child: LinearProgressIndicator(
                     value: userProgress.progressToNextLevel / 100,
                     minHeight: 12,
-                    backgroundColor: Colors.white30,
+                    backgroundColor: isDark ? Colors.white30 : Colors.white.withOpacity(0.35),
                     valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 ),
@@ -223,7 +232,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                   child: Text(
                     '${userProgress.xpInCurrentLevel} / ${userProgress.xpForNextLevel - userProgress.xpForCurrentLevel} XP',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: Colors.white70,
+                      color: isDark ? Colors.white70 : Colors.white.withOpacity(0.9),
                     ),
                   ),
                 ),
@@ -241,7 +250,16 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     AppLocalizations? l10n,
     bool isUnlocked,
   ) {
-    final rarityColor = _getRarityColor(achievement.rarity);
+    final rarityColor = _getRarityColor(achievement.rarity, theme);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    // Improved colors for light mode
+    final lockedBorderColor = isDark ? Colors.grey.shade700 : Colors.grey.shade400;
+    final lockedBgColor = isDark ? Colors.grey.shade800 : Colors.grey.shade100;
+    final lockedIconColor = isDark ? Colors.grey.shade600 : Colors.grey.shade500;
+    final lockedTextColor = isDark ? Colors.grey.shade400 : Colors.grey.shade700;
+    final lockedSubTextColor = isDark ? Colors.grey.shade500 : Colors.grey.shade600;
+    final progressBgColor = isDark ? Colors.grey.shade700 : Colors.grey.shade300;
     
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -249,12 +267,12 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: isUnlocked ? rarityColor : Colors.grey.shade300,
+          color: isUnlocked ? rarityColor : lockedBorderColor,
           width: isUnlocked ? 2 : 1,
         ),
       ),
       child: Opacity(
-        opacity: isUnlocked ? 1.0 : 0.6,
+        opacity: isUnlocked ? 1.0 : 0.65,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -264,12 +282,12 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: isUnlocked ? rarityColor.withOpacity(0.2) : Colors.grey.shade200,
+                  color: isUnlocked ? rarityColor.withOpacity(0.2) : lockedBgColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   _getIconData(achievement.icon),
-                  color: isUnlocked ? rarityColor : Colors.grey,
+                  color: isUnlocked ? rarityColor : lockedIconColor,
                   size: 32,
                 ),
               ),
@@ -284,14 +302,14 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                       _getLocalizedText(l10n, achievement.nameKey),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: isUnlocked ? null : Colors.grey,
+                        color: isUnlocked ? null : lockedTextColor,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       _getLocalizedText(l10n, achievement.descriptionKey),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: isUnlocked ? Colors.grey.shade700 : Colors.grey,
+                        color: isUnlocked ? (isDark ? Colors.grey.shade400 : Colors.grey.shade700) : lockedSubTextColor,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -300,12 +318,12 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                     if (isUnlocked)
                       Row(
                         children: [
-                          Icon(Icons.star, color: Colors.amber, size: 16),
+                          Icon(Icons.star, color: isDark ? Colors.amber.shade400 : Colors.amber.shade800, size: 16),
                           const SizedBox(width: 4),
                           Text(
                             '+${achievement.xpReward} XP',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: Colors.amber.shade700,
+                              color: isDark ? Colors.amber.shade400 : Colors.amber.shade800,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -329,13 +347,13 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                               Text(
                                 '${achievement.currentProgress} / ${achievement.targetValue}',
                                 style: theme.textTheme.bodySmall?.copyWith(
-                                  color: Colors.grey.shade600,
+                                  color: lockedSubTextColor,
                                 ),
                               ),
                               Text(
                                 '${achievement.progressPercentage.toStringAsFixed(0)}%',
                                 style: theme.textTheme.bodySmall?.copyWith(
-                                  color: Colors.grey.shade600,
+                                  color: lockedSubTextColor,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -347,7 +365,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                             child: LinearProgressIndicator(
                               value: achievement.progressPercentage / 100,
                               minHeight: 6,
-                              backgroundColor: Colors.grey.shade300,
+                              backgroundColor: progressBgColor,
                               valueColor: AlwaysStoppedAnimation<Color>(rarityColor),
                             ),
                           ),
@@ -363,16 +381,18 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     );
   }
 
-  Color _getRarityColor(AchievementRarity rarity) {
+  Color _getRarityColor(AchievementRarity rarity, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
+    
     switch (rarity) {
       case AchievementRarity.common:
-        return Colors.grey.shade600;
+        return isDark ? Colors.grey.shade400 : Colors.grey.shade700;
       case AchievementRarity.rare:
-        return Colors.blue.shade600;
+        return isDark ? Colors.blue.shade400 : Colors.blue.shade700;
       case AchievementRarity.epic:
-        return Colors.purple.shade600;
+        return isDark ? Colors.purple.shade400 : Colors.purple.shade700;
       case AchievementRarity.legendary:
-        return Colors.amber.shade700;
+        return isDark ? Colors.amber.shade400 : Colors.amber.shade800;
     }
   }
 
