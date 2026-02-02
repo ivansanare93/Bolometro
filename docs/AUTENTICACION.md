@@ -402,6 +402,6 @@ Para probar el flujo completo:
 
 ---
 
-**Última actualización**: Enero 2026
+**Última actualización**: 2026-01-26
 **Versión**: 1.0.0
 **Autor**: Sistema de autenticación implementado para Bolómetro
