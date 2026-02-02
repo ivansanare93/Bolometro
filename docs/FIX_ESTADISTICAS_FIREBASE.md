@@ -1,4 +1,4 @@
-# Fix: Sincronización de Estadísticas con Firebase
+# Corrección: Estadísticas con Firebase
 
 ## Problema Identificado
 

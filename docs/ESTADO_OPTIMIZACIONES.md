@@ -1,6 +1,6 @@
 # 📊 Estado de Optimizaciones - Bolómetro
 
-**Fecha de revisión**: 27 de Enero de 2026  
+**Fecha de revisión**: 2026-01-27  
 **Progreso general**: ✅ **70% Completado** (14/20 items completos)
 
 ---

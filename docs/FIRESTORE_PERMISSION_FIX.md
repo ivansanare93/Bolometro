@@ -4,7 +4,7 @@
 
 Si ves el siguiente error en la consola:
 
-```
+```text
 I/flutter ( 5353): Error al obtener sesiones paginadas desde Firestore: 
 [cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.
 ```
@@ -140,7 +140,7 @@ Las reglas de Firestore funcionan así:
 
 ### Ruta de Datos en Firestore
 
-```
+```text
 /users/{userId}                    <- Documento del usuario (perfil)
   /sesiones/{sesionId}             <- Subcolección de sesiones
     - fecha: DateTime (ISO8601)
