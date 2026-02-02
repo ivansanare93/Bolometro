@@ -286,6 +286,9 @@ Las contribuciones son bienvenidas. Para cambios importantes:
 
 ### Guías de Contribución
 
+Para información detallada sobre cómo contribuir, consulta [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Puntos clave:
 - Sigue las convenciones de código de Dart/Flutter
 - Ejecuta `flutter analyze` antes de hacer commit
 - Añade tests para nuevas funcionalidades
@@ -362,6 +365,10 @@ For implementation guide, see [docs/SKELETON_LOADERS.md](docs/SKELETON_LOADERS.m
 The CI/CD pipeline has been configured for manual builds. Automated builds via GitHub Actions have been removed.
 
 For local build instructions and CI/CD configuration details, see [docs/CICD.md](docs/CICD.md).
+
+## 📝 Historial de Cambios
+
+Para ver el historial completo de cambios y versiones del proyecto, consulta [CHANGELOG.md](CHANGELOG.md).
 
 ## 📄 Licencia
 
