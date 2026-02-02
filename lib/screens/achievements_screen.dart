@@ -253,7 +253,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     final rarityColor = _getRarityColor(achievement.rarity, theme);
     final isDark = theme.brightness == Brightness.dark;
     
-    // Colores mejorados para modo claro
+    // Improved colors for light mode
     final lockedBorderColor = isDark ? Colors.grey.shade700 : Colors.grey.shade400;
     final lockedBgColor = isDark ? Colors.grey.shade800 : Colors.grey.shade100;
     final lockedIconColor = isDark ? Colors.grey.shade600 : Colors.grey.shade500;
@@ -318,7 +318,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                     if (isUnlocked)
                       Row(
                         children: [
-                          Icon(Icons.star, color: isDark ? Colors.amber.shade400 : Colors.amber.shade700, size: 16),
+                          Icon(Icons.star, color: isDark ? Colors.amber.shade400 : Colors.amber.shade800, size: 16),
                           const SizedBox(width: 4),
                           Text(
                             '+${achievement.xpReward} XP',
