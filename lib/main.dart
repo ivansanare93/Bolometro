@@ -151,6 +151,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
     // Detect when the user logs out (userId changes from something to null)
     if (_previousUserId != null && authService.userId == null) {
+      // Update previous user ID first to prevent multiple callbacks
+      _previousUserId = authService.userId;
       // User logged out, reset flags to allow new login
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
@@ -158,8 +160,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
           _skipLogin = false;
         });
       });
+    } else {
+      // Update previous user ID for normal state changes
+      _previousUserId = authService.userId;
     }
-    _previousUserId = authService.userId;
 
     // Sincronizar estado de autenticación con el repositorio
     if (authService.isAuthenticated && authService.userId != null) {
