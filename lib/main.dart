@@ -135,6 +135,7 @@ class AuthWrapper extends StatefulWidget {
 class _AuthWrapperState extends State<AuthWrapper> {
   bool _hasShownLoginScreen = false;
   bool _skipLogin = false;
+  String? _previousUserId;
 
   void _onContinueWithoutLogin() {
     setState(() {
@@ -147,6 +148,22 @@ class _AuthWrapperState extends State<AuthWrapper> {
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
     final dataRepository = Provider.of<DataRepository>(context, listen: false);
+
+    // Detect when the user logs out (userId changes from something to null)
+    if (_previousUserId != null && authService.userId == null) {
+      // Update previous user ID first to prevent multiple callbacks
+      _previousUserId = authService.userId;
+      // User logged out, reset flags to allow new login
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _hasShownLoginScreen = false;
+          _skipLogin = false;
+        });
+      });
+    } else {
+      // Update previous user ID for normal state changes
+      _previousUserId = authService.userId;
+    }
 
     // Sincronizar estado de autenticación con el repositorio
     if (authService.isAuthenticated && authService.userId != null) {
