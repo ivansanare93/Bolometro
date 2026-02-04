@@ -34,6 +34,9 @@ class PerfilUsuario extends HiveObject {
   @HiveField(9)
   bool isFromGoogle; // Indica si el perfil fue creado desde Google
 
+  @HiveField(10)
+  String? friendCode; // Código único para agregar amigos
+
   PerfilUsuario({
     required this.nombre,
     this.email,
@@ -45,6 +48,7 @@ class PerfilUsuario extends HiveObject {
     this.googlePhotoUrl,
     this.googleDisplayName,
     this.isFromGoogle = false,
+    this.friendCode,
   });
 
   /// Verifica si el perfil tiene una foto de Google disponible

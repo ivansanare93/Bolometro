@@ -276,7 +276,7 @@ class _FriendsScreenState extends State<FriendsScreen>
   }
 
   void _showAddFriendDialog(BuildContext context, String userId) {
-    final emailController = TextEditingController();
+    final friendCodeController = TextEditingController();
     final authService = Provider.of<AuthService>(context, listen: false);
     final localizations = AppLocalizations.of(context)!;
 
@@ -290,13 +290,13 @@ class _FriendsScreenState extends State<FriendsScreen>
             Text(localizations.searchFriend),
             const SizedBox(height: 16),
             TextField(
-              controller: emailController,
+              controller: friendCodeController,
               decoration: InputDecoration(
-                labelText: localizations.email,
+                labelText: localizations.friendCode,
                 border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.email),
+                prefixIcon: const Icon(Icons.tag),
               ),
-              keyboardType: TextInputType.emailAddress,
+              textCapitalization: TextCapitalization.characters,
             ),
           ],
         ),
@@ -307,27 +307,18 @@ class _FriendsScreenState extends State<FriendsScreen>
           ),
           ElevatedButton(
             onPressed: () async {
-              final email = emailController.text.trim();
-              if (email.isEmpty) {
+              final friendCode = friendCodeController.text.trim().toUpperCase();
+              if (friendCode.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(localizations.enterEmail)),
-                );
-                return;
-              }
-
-              // Validate email format
-              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-              if (!emailRegex.hasMatch(email)) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(localizations.enterValidEmail)),
+                  SnackBar(content: Text(localizations.enterFriendCode)),
                 );
                 return;
               }
 
               Navigator.pop(context);
 
-              // Buscar usuario
-              final user = await _friendsService.buscarUsuarioPorEmail(email);
+              // Buscar usuario por código de amigo
+              final user = await _friendsService.buscarUsuarioPorCodigoAmigo(friendCode);
 
               if (user == null) {
                 if (!context.mounted) return;

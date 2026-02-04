@@ -337,9 +337,29 @@
   "@addFriend": {
     "description": "Botón para añadir un amigo"
   },
-  "searchFriend": "Buscar amigo por correo electrónico",
+  "searchFriend": "Ingresa el código de amigo del usuario",
   "@searchFriend": {
     "description": "Descripción de búsqueda de amigos"
+  },
+  "friendCode": "Código de Amigo",
+  "@friendCode": {
+    "description": "Etiqueta para el código de amigo"
+  },
+  "yourFriendCode": "Tu Código de Amigo",
+  "@yourFriendCode": {
+    "description": "Etiqueta para mostrar el código de amigo del usuario"
+  },
+  "copyFriendCode": "Copiar Código",
+  "@copyFriendCode": {
+    "description": "Botón para copiar código de amigo"
+  },
+  "friendCodeCopied": "Código de amigo copiado al portapapeles",
+  "@friendCodeCopied": {
+    "description": "Mensaje al copiar código de amigo"
+  },
+  "enterFriendCode": "Ingresa un código de amigo",
+  "@enterFriendCode": {
+    "description": "Mensaje de validación de código de amigo"
   },
   "sendRequest": "Enviar Solicitud",
   "@sendRequest": {
