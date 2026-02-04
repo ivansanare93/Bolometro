@@ -155,3 +155,4 @@ void main() {
       expect(perfil.friendCode, equals('NEW12345'));
     });
   });
+}
