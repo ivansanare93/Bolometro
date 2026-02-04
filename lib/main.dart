@@ -149,11 +149,15 @@ class _AuthWrapperState extends State<AuthWrapper> {
     final authService = Provider.of<AuthService>(context);
     final dataRepository = Provider.of<DataRepository>(context, listen: false);
 
-    // Detectar cuando el usuario cierra sesión (userId cambia de algo a null)
+    // Detect when the user logs out (userId changes from something to null)
     if (_previousUserId != null && authService.userId == null) {
-      // Usuario cerró sesión, resetear los flags para permitir nuevo login
-      _hasShownLoginScreen = false;
-      _skipLogin = false;
+      // User logged out, reset flags to allow new login
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _hasShownLoginScreen = false;
+          _skipLogin = false;
+        });
+      });
     }
     _previousUserId = authService.userId;
 
