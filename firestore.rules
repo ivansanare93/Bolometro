@@ -2,18 +2,16 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Permitir consultas a la colección de usuarios para búsqueda por email
-    match /users/{document=**} {
-      // Permitir queries (list) solo para búsquedas específicas por email
-      allow list: if request.auth != null && 
-                     request.query.limit <= 1;
-    }
-    
     // Reglas para la colección de usuarios
     match /users/{userId} {
+      // Permitir consultas a la colección de usuarios para búsqueda por email
+      // Solo queries limitadas (list) para búsquedas de 1 resultado
+      allow list: if request.auth != null && 
+                     request.query.limit <= 1;
+      
       // El usuario puede leer su propio perfil completo
       // Otros usuarios autenticados pueden leer perfiles para buscar amigos
-      allow read: if request.auth != null;
+      allow get: if request.auth != null;
       // Solo el usuario puede escribir su propio perfil
       allow write: if request.auth != null && request.auth.uid == userId;
       
