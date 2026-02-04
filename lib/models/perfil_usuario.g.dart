@@ -27,13 +27,14 @@ class PerfilUsuarioAdapter extends TypeAdapter<PerfilUsuario> {
       googlePhotoUrl: fields[7] as String?,
       googleDisplayName: fields[8] as String?,
       isFromGoogle: fields[9] as bool? ?? false,
+      friendCode: fields[10] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, PerfilUsuario obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.nombre)
       ..writeByte(1)
@@ -53,7 +54,9 @@ class PerfilUsuarioAdapter extends TypeAdapter<PerfilUsuario> {
       ..writeByte(8)
       ..write(obj.googleDisplayName)
       ..writeByte(9)
-      ..write(obj.isFromGoogle);
+      ..write(obj.isFromGoogle)
+      ..writeByte(10)
+      ..write(obj.friendCode);
   }
 
   @override

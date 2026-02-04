@@ -11,6 +11,8 @@ import '../models/perfil_usuario.dart';
 import '../utils/app_constants.dart';
 import '../services/analytics_service.dart';
 import '../services/achievement_service.dart';
+import '../services/auth_service.dart';
+import '../services/firestore_service.dart';
 import 'home.dart';
 
 class PerfilUsuarioScreen extends StatefulWidget {
@@ -57,6 +59,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       } catch (e) {
         debugPrint('Error logging screen view: $e');
       }
+      _ensureFriendCode();
     });
     try {
       perfilBox = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
@@ -86,6 +89,33 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
     } catch (e) {
       debugPrint('Error inesperado al inicializar perfil: $e');
       _initializeDefaultValues();
+    }
+  }
+
+  Future<void> _ensureFriendCode() async {
+    try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final userId = authService.userId;
+      
+      if (userId == null) return; // No hacer nada si no hay usuario autenticado
+      
+      if (perfil?.friendCode?.isEmpty ?? true) {
+        final firestoreService = FirestoreService();
+        final friendCode = await firestoreService.generarCodigoAmigoUnico();
+        
+        final updatedPerfil = perfil!.copyWith(friendCode: friendCode);
+        
+        await perfilBox.put('perfil', updatedPerfil);
+        await firestoreService.guardarPerfil(userId, updatedPerfil);
+        
+        setState(() {
+          perfil = updatedPerfil;
+        });
+        
+        debugPrint('Código de amigo generado: $friendCode');
+      }
+    } catch (e) {
+      debugPrint('Error al generar código de amigo: $e');
     }
   }
 
@@ -122,6 +152,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
         googlePhotoUrl: _clearGooglePhoto ? null : perfil?.googlePhotoUrl,
         googleDisplayName: perfil?.googleDisplayName,
         isFromGoogle: perfil?.isFromGoogle ?? false,
+        friendCode: perfil?.friendCode, // Preservar el código de amigo
       );
 
       await perfilBox.put('perfil', nuevoPerfil);
@@ -475,6 +506,40 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                   return null;
                 },
               ),
+              const SizedBox(height: 16),
+              // Código de Amigo (solo lectura)
+              if (perfil?.friendCode != null)
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: cs.outline),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: ListTile(
+                    leading: const Icon(Icons.tag),
+                    title: Text(AppLocalizations.of(context)!.yourFriendCode),
+                    subtitle: Text(
+                      perfil!.friendCode!,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.copy),
+                      tooltip: AppLocalizations.of(context)!.copyFriendCode,
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: perfil!.friendCode!));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(AppLocalizations.of(context)!.friendCodeCopied),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
               const SizedBox(height: 16),
               // Club
               TextFormField(

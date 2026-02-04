@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:math';
 import '../models/sesion.dart';
 import '../models/perfil_usuario.dart';
 import '../models/user_progress.dart';
@@ -11,6 +12,58 @@ import '../exceptions/sync_exceptions.dart';
 /// Maneja la sincronización de datos del usuario en la nube
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  /// Genera un código de amigo único de 8 caracteres
+  String _generarCodigoAmigo() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Sin caracteres confusos
+    final random = Random();
+    return String.fromCharCodes(
+      Iterable.generate(
+        8,
+        (_) => chars.codeUnitAt(random.nextInt(chars.length)),
+      ),
+    );
+  }
+
+  /// Verifica si un código de amigo ya existe en la base de datos
+  Future<bool> _codigoAmigoExiste(String friendCode) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('users')
+          .where('perfil.friendCode', isEqualTo: friendCode)
+          .limit(1)
+          .get();
+      
+      return querySnapshot.docs.isNotEmpty;
+    } catch (e) {
+      debugPrint('Error al verificar código de amigo: $e');
+      return false;
+    }
+  }
+
+  /// Genera un código de amigo único verificando que no exista
+  Future<String> generarCodigoAmigoUnico() async {
+    String codigo;
+    bool existe;
+    int intentos = 0;
+    const maxIntentos = 10; // Límite de intentos para evitar bucles infinitos
+    
+    do {
+      codigo = _generarCodigoAmigo();
+      existe = await _codigoAmigoExiste(codigo);
+      intentos++;
+      
+      if (intentos >= maxIntentos) {
+        debugPrint('Se alcanzó el límite de intentos al generar código de amigo');
+        // Si hay muchas colisiones, agregar timestamp para garantizar unicidad
+        final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+        codigo = '${_generarCodigoAmigo().substring(0, 6)}${timestamp.substring(timestamp.length - 2)}';
+        break;
+      }
+    } while (existe);
+    
+    return codigo;
+  }
 
   /// Obtener referencia a la colección de sesiones del usuario
   CollectionReference _getSesionesCollection(String userId) {
@@ -147,6 +200,7 @@ class FirestoreService {
         'manoDominante': perfil.manoDominante,
         'fechaNacimiento': perfil.fechaNacimiento?.toIso8601String(),
         'bio': perfil.bio,
+        'friendCode': perfil.friendCode,
       };
 
       // Firestore creará automáticamente el documento si no existe
@@ -204,6 +258,7 @@ class FirestoreService {
             ? DateTime.parse(perfilData['fechaNacimiento'])
             : null,
         bio: perfilData['bio'],
+        friendCode: perfilData['friendCode'],
       );
     } catch (e) {
       debugPrint('Error al obtener perfil desde Firestore: $e');

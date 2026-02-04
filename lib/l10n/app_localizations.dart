@@ -1457,8 +1457,38 @@ abstract class AppLocalizations {
   /// Descripción de búsqueda de amigos
   ///
   /// In es, this message translates to:
-  /// **'Buscar amigo por correo electrónico'**
+  /// **'Ingresa el código de amigo del usuario'**
   String get searchFriend;
+
+  /// Etiqueta para el código de amigo
+  ///
+  /// In es, this message translates to:
+  /// **'Código de Amigo'**
+  String get friendCode;
+
+  /// Etiqueta para mostrar el código de amigo del usuario
+  ///
+  /// In es, this message translates to:
+  /// **'Tu Código de Amigo'**
+  String get yourFriendCode;
+
+  /// Botón para copiar código de amigo
+  ///
+  /// In es, this message translates to:
+  /// **'Copiar Código'**
+  String get copyFriendCode;
+
+  /// Mensaje al copiar código de amigo
+  ///
+  /// In es, this message translates to:
+  /// **'Código de amigo copiado al portapapeles'**
+  String get friendCodeCopied;
+
+  /// Mensaje de validación de código de amigo
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa un código de amigo'**
+  String get enterFriendCode;
 
   /// Botón para enviar solicitud de amistad
   ///

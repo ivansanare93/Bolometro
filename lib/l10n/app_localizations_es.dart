@@ -722,7 +722,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String get addFriend => 'Añadir Amigo';
 
   @override
-  String get searchFriend => 'Buscar amigo por correo electrónico';
+  String get searchFriend => 'Ingresa el código de amigo del usuario';
+
+  @override
+  String get friendCode => 'Código de Amigo';
+
+  @override
+  String get yourFriendCode => 'Tu Código de Amigo';
+
+  @override
+  String get copyFriendCode => 'Copiar Código';
+
+  @override
+  String get friendCodeCopied => 'Código de amigo copiado al portapapeles';
+
+  @override
+  String get enterFriendCode => 'Ingresa un código de amigo';
 
   @override
   String get sendRequest => 'Enviar Solicitud';

@@ -56,6 +56,41 @@ class FriendsService {
     }
   }
 
+  /// Buscar un usuario por código de amigo
+  /// Devuelve información básica del usuario si existe
+  Future<Map<String, dynamic>?> buscarUsuarioPorCodigoAmigo(String friendCode) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('users')
+          .where('perfil.friendCode', isEqualTo: friendCode)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        return null;
+      }
+
+      final doc = querySnapshot.docs.first;
+      final data = doc.data();
+      final perfil = data['perfil'] as Map<String, dynamic>?;
+
+      if (perfil == null) {
+        return null;
+      }
+
+      return {
+        'userId': doc.id,
+        'nombre': perfil['nombre'] ?? '',
+        'email': perfil['email'],
+        'photoUrl': perfil['avatarPath'],
+        'friendCode': perfil['friendCode'],
+      };
+    } catch (e) {
+      debugPrint('Error al buscar usuario por código de amigo: $e');
+      return null;
+    }
+  }
+
   /// Enviar solicitud de amistad
   /// Crea una solicitud en la colección del destinatario
   Future<bool> enviarSolicitudAmistad({
