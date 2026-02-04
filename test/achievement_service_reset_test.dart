@@ -14,7 +14,7 @@ void main() {
     setUpAll(() async {
       // Initialize Hive with a temporary directory for testing
       testPath = '${Directory.systemTemp.path}/hive_test_${DateTime.now().millisecondsSinceEpoch}';
-      await Hive.init(testPath);
+      //await Hive.init(testPath);
       
       // Register adapters if not already registered (using generated adapters)
       if (!Hive.isAdapterRegistered(11)) {
