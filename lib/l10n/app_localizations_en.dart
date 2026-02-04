@@ -715,7 +715,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addFriend => 'Add Friend';
 
   @override
-  String get searchFriend => 'Search for a friend by email';
+  String get searchFriend => 'Enter the user\'s friend code';
+
+  @override
+  String get friendCode => 'Friend Code';
+
+  @override
+  String get yourFriendCode => 'Your Friend Code';
+
+  @override
+  String get copyFriendCode => 'Copy Code';
+
+  @override
+  String get friendCodeCopied => 'Friend code copied to clipboard';
+
+  @override
+  String get enterFriendCode => 'Enter a friend code';
 
   @override
   String get sendRequest => 'Send Request';

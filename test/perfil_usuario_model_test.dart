@@ -21,6 +21,7 @@ void main() {
       expect(perfil.googlePhotoUrl, isNull);
       expect(perfil.googleDisplayName, isNull);
       expect(perfil.isFromGoogle, isFalse);
+      expect(perfil.friendCode, isNull);
     });
 
     test('PerfilUsuario should be created with all fields', () {
@@ -39,6 +40,7 @@ void main() {
         googlePhotoUrl: 'https://example.com/photo.jpg',
         googleDisplayName: 'Juan P.',
         isFromGoogle: true,
+        friendCode: 'ABC12345',
       );
 
       // Assert
@@ -52,6 +54,7 @@ void main() {
       expect(perfil.googlePhotoUrl, equals('https://example.com/photo.jpg'));
       expect(perfil.googleDisplayName, equals('Juan P.'));
       expect(perfil.isFromGoogle, isTrue);
+      expect(perfil.friendCode, equals('ABC12345'));
     });
 
     test('PerfilUsuario with Google profile should have correct flags', () {
@@ -126,5 +129,29 @@ void main() {
       expect(perfil.email, equals('new@example.com'));
       expect(perfil.club, equals('New Club'));
     });
+
+    test('PerfilUsuario should handle friend code correctly', () {
+      // Act
+      final perfil = PerfilUsuario(
+        nombre: 'User with Code',
+        friendCode: 'XYZ78901',
+      );
+
+      // Assert
+      expect(perfil.friendCode, equals('XYZ78901'));
+      expect(perfil.friendCode, isNotNull);
+    });
+
+    test('PerfilUsuario can be updated with friend code', () {
+      // Arrange
+      final perfil = PerfilUsuario(
+        nombre: 'User without Code',
+      );
+
+      // Act
+      perfil.friendCode = 'NEW12345';
+
+      // Assert
+      expect(perfil.friendCode, equals('NEW12345'));
+    });
   });
-}
