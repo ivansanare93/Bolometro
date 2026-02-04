@@ -99,23 +99,11 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       
       if (userId == null) return; // No hacer nada si no hay usuario autenticado
       
-      if (perfil?.friendCode == null || perfil!.friendCode!.isEmpty) {
+      if (perfil?.friendCode?.isEmpty ?? true) {
         final firestoreService = FirestoreService();
         final friendCode = await firestoreService.generarCodigoAmigoUnico();
         
-        final updatedPerfil = PerfilUsuario(
-          nombre: perfil!.nombre,
-          email: perfil!.email,
-          avatarPath: perfil!.avatarPath,
-          club: perfil!.club,
-          manoDominante: perfil!.manoDominante,
-          fechaNacimiento: perfil!.fechaNacimiento,
-          bio: perfil!.bio,
-          googlePhotoUrl: perfil!.googlePhotoUrl,
-          googleDisplayName: perfil!.googleDisplayName,
-          isFromGoogle: perfil!.isFromGoogle,
-          friendCode: friendCode,
-        );
+        final updatedPerfil = perfil!.copyWith(friendCode: friendCode);
         
         await perfilBox.put('perfil', updatedPerfil);
         await firestoreService.guardarPerfil(userId, updatedPerfil);

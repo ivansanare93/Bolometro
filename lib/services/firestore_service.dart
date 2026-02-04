@@ -45,10 +45,21 @@ class FirestoreService {
   Future<String> generarCodigoAmigoUnico() async {
     String codigo;
     bool existe;
+    int intentos = 0;
+    const maxIntentos = 10; // Límite de intentos para evitar bucles infinitos
     
     do {
       codigo = _generarCodigoAmigo();
       existe = await _codigoAmigoExiste(codigo);
+      intentos++;
+      
+      if (intentos >= maxIntentos) {
+        debugPrint('Se alcanzó el límite de intentos al generar código de amigo');
+        // Si hay muchas colisiones, agregar timestamp para garantizar unicidad
+        final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+        codigo = '${_generarCodigoAmigo().substring(0, 6)}${timestamp.substring(timestamp.length - 2)}';
+        break;
+      }
     } while (existe);
     
     return codigo;
