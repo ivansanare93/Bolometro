@@ -106,7 +106,10 @@ users/{userId}/
 
 #### Reglas de Firestore
 - **Perfiles**: Los usuarios pueden leer su propio perfil completo; otros usuarios autenticados solo pueden leer datos públicos
-- **Amigos**: Solo el propietario puede gestionar su lista de amigos
+- **Amigos**: 
+  - Solo el propietario puede gestionar su lista de amigos
+  - **EXCEPCIÓN**: Al aceptar una solicitud de amistad, el destinatario puede agregar una entrada en la colección de amigos del remitente para crear la relación bidireccional
+  - Validación: Solo se permite si el documento que se crea corresponde al usuario autenticado
 - **Solicitudes**: Solo el remitente puede crear; solo el destinatario puede actualizar
 - **Sesiones**: Los amigos pueden leer sesiones para rankings
 
