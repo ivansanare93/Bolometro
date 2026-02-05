@@ -49,6 +49,12 @@ service cloud.firestore {
         allow create: if request.auth != null && 
                       request.auth.uid == friendId &&
                       request.resource.data.userId == request.auth.uid;
+        // Permitir eliminar un amigo de forma bidireccional:
+        // Un usuario puede eliminar su propia entrada (donde su userId está 
+        // almacenado en el documento) de la colección de amigos de otro usuario
+        allow delete: if request.auth != null && 
+                      request.auth.uid == friendId &&
+                      resource.data.userId == request.auth.uid;
       }
       
       // Reglas para la subcolección de solicitudes de amistad
