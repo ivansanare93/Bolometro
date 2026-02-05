@@ -42,6 +42,13 @@ service cloud.firestore {
         allow read: if request.auth != null && request.auth.uid == userId;
         // Solo el usuario puede modificar su lista de amigos
         allow write: if request.auth != null && request.auth.uid == userId;
+        // Permitir agregar un amigo cuando se acepta una solicitud de amistad:
+        // El usuario que acepta (request.auth.uid = friendId) puede escribir 
+        // en la colección de amigos del remitente (userId) si el documento 
+        // que está creando corresponde al usuario autenticado
+        allow create: if request.auth != null && 
+                      request.auth.uid == friendId &&
+                      request.resource.data.userId == request.auth.uid;
       }
       
       // Reglas para la subcolección de solicitudes de amistad
