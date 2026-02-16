@@ -11,8 +11,8 @@ void main() {
       themeProvider = ThemeProvider();
     });
 
-    test('ThemeProvider initializes with system theme mode', () {
-      expect(themeProvider.themeMode, equals(ThemeMode.system));
+    test('ThemeProvider initializes with dark theme mode', () {
+      expect(themeProvider.themeMode, equals(ThemeMode.dark));
     });
 
     test('setThemeMode should update theme mode', () {
