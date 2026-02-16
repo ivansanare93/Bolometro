@@ -201,6 +201,9 @@ class FirestoreService {
         'fechaNacimiento': perfil.fechaNacimiento?.toIso8601String(),
         'bio': perfil.bio,
         'friendCode': perfil.friendCode,
+        'googlePhotoUrl': perfil.googlePhotoUrl,
+        'googleDisplayName': perfil.googleDisplayName,
+        'isFromGoogle': perfil.isFromGoogle,
       };
 
       // Firestore creará automáticamente el documento si no existe
@@ -259,6 +262,9 @@ class FirestoreService {
             : null,
         bio: perfilData['bio'],
         friendCode: perfilData['friendCode'],
+        googlePhotoUrl: perfilData['googlePhotoUrl'],
+        googleDisplayName: perfilData['googleDisplayName'],
+        isFromGoogle: perfilData['isFromGoogle'] ?? false,
       );
     } catch (e) {
       debugPrint('Error al obtener perfil desde Firestore: $e');
