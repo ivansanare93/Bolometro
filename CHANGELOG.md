@@ -5,6 +5,36 @@ Todos los cambios notables del proyecto Bolómetro se documentarán en este arch
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 
+## [1.0.3] - 2026-02-16
+
+### Agregado
+- **Rankings por Categorías Adicionales**: Ahora puedes clasificar amigos por múltiples métricas
+  - Promedio de puntuación
+  - Porcentaje de strikes
+  - Porcentaje de spares
+  - Mejor partida
+  - Consistencia (desviación estándar - menor es mejor)
+- **Gráficos Comparativos entre Amigos**: Nuevas visualizaciones para comparar rendimiento
+  - Gráfico de barras comparativo para estadísticas principales
+  - Gráfico de líneas para tendencia de puntuaciones
+  - Gráficos de pastel para distribución de strikes/spares/fallos
+  - Pantalla dedicada de comparación accesible desde el ranking
+- **Estadísticas Extendidas**: Nuevos cálculos en `EstadisticasUtils`
+  - Porcentaje de strikes
+  - Porcentaje de spares
+  - Métrica de consistencia (desviación estándar)
+- **Localización**: Nuevas traducciones para las funcionalidades añadidas en español e inglés
+
+### Mejorado
+- `FriendsService.obtenerEstadisticasAmigo()` ahora incluye estadísticas extendidas
+- `rankings_screen.dart` con selector de categorías y botones de comparación
+- Interfaz de rankings con indicadores visuales mejorados para categorías destacadas
+
+### Técnico
+- Nuevo widget `comparison_chart.dart` con gráficos comparativos reutilizables
+- Nueva pantalla `comparison_screen.dart` para visualización detallada de comparaciones
+- Método `calcularEstadisticasExtendidas()` añadido a `EstadisticasUtils`
+
 ## [No Publicado]
 
 ### Agregado
