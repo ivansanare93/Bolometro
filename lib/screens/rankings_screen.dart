@@ -394,16 +394,17 @@ class _RankingsScreenState extends State<RankingsScreen> {
                     ),
                     const SizedBox(height: 8),
                     // Estadísticas - mostrar basado en categoría seleccionada
-                    Wrap(
-                      spacing: 0,
-                      runSpacing: 4,
-                      children: _buildCategoryStats(
-                        totalPartidas,
-                        promedioGeneral,
-                        mejorPartida,
-                        strikesPercent,
-                        sparesPercent,
-                        consistencia,
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: _buildCategoryStats(
+                          totalPartidas,
+                          promedioGeneral,
+                          mejorPartida,
+                          strikesPercent,
+                          sparesPercent,
+                          consistencia,
+                        ),
                       ),
                     ),
                   ],
