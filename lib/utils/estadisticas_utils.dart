@@ -252,7 +252,7 @@ class EstadisticasUtils {
       sumaDiferenciasCuadrado += diferencia * diferencia;
     }
     final consistencia = todasPartidas.length > 1
-        ? (sumaDiferenciasCuadrado / todasPartidas.length).sqrt()
+        ? sqrt(sumaDiferenciasCuadrado / todasPartidas.length)
         : 0.0;
 
     return {
