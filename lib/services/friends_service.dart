@@ -1,3 +1,4 @@
+import 'dart:math' show sqrt;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/friend.dart';
@@ -323,7 +324,7 @@ class FriendsService {
   }
 
   /// Obtener estadísticas de un amigo para rankings
-  /// Lee las sesiones del amigo y calcula estadísticas básicas
+  /// Lee las sesiones del amigo y calcula estadísticas básicas y extendidas
   Future<Map<String, dynamic>?> obtenerEstadisticasAmigo(
       String friendId) async {
     try {
@@ -339,12 +340,19 @@ class FriendsService {
           'totalPartidas': 0,
           'promedioGeneral': 0.0,
           'mejorPartida': 0,
+          'strikesPercent': 0.0,
+          'sparesPercent': 0.0,
+          'consistencia': 0.0,
         };
       }
 
       int totalPartidas = 0;
       int sumaTotal = 0;
       int mejorPartida = 0;
+      List<int> puntuaciones = [];
+      int totalFrames = 0;
+      int strikes = 0;
+      int spares = 0;
 
       for (final doc in sesionesSnapshot.docs) {
         final data = doc.data();
@@ -353,11 +361,33 @@ class FriendsService {
         if (partidas != null) {
           for (final partidaData in partidas) {
             final puntuacionTotal = partidaData['puntuacionTotal'] as int?;
+            final frames = partidaData['frames'] as List<dynamic>?;
+            
             if (puntuacionTotal != null) {
               totalPartidas++;
               sumaTotal += puntuacionTotal;
+              puntuaciones.add(puntuacionTotal);
               if (puntuacionTotal > mejorPartida) {
                 mejorPartida = puntuacionTotal;
+              }
+            }
+
+            // Calcular strikes y spares de los frames
+            if (frames != null) {
+              for (final frame in frames) {
+                if (frame is List) {
+                  totalFrames++;
+                  if (frame.isNotEmpty) {
+                    // Check for strike
+                    if (frame[0] == 'X') {
+                      strikes++;
+                    }
+                    // Check for spare
+                    else if (frame.contains('/')) {
+                      spares++;
+                    }
+                  }
+                }
               }
             }
           }
@@ -367,11 +397,29 @@ class FriendsService {
       final promedioGeneral =
           totalPartidas > 0 ? sumaTotal / totalPartidas : 0.0;
 
+      // Calcular porcentajes
+      final strikesPercent = totalFrames > 0 ? (strikes / totalFrames) * 100 : 0.0;
+      final sparesPercent = totalFrames > 0 ? (spares / totalFrames) * 100 : 0.0;
+
+      // Calcular consistencia (desviación estándar)
+      double consistencia = 0.0;
+      if (puntuaciones.length > 1) {
+        double sumaDiferenciasCuadrado = 0;
+        for (final puntuacion in puntuaciones) {
+          final diferencia = puntuacion - promedioGeneral;
+          sumaDiferenciasCuadrado += diferencia * diferencia;
+        }
+        consistencia = (sumaDiferenciasCuadrado / puntuaciones.length).sqrt();
+      }
+
       return {
         'userId': friendId,
         'totalPartidas': totalPartidas,
         'promedioGeneral': promedioGeneral,
         'mejorPartida': mejorPartida,
+        'strikesPercent': strikesPercent,
+        'sparesPercent': sparesPercent,
+        'consistencia': consistencia,
       };
     } catch (e) {
       debugPrint('Error al obtener estadísticas del amigo: $e');
