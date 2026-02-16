@@ -423,7 +423,6 @@ class _RankingsScreenState extends State<RankingsScreen> {
         ),
       ),
     );
-    );
   }
 
   List<Widget> _buildCategoryStats(
