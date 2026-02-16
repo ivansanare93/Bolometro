@@ -41,6 +41,9 @@ y este proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 - Documentación completa de todos los sistemas
 - CHANGELOG.md para seguimiento de versiones
 
+### Corregido
+- Layout de estadísticas en rankings: los badges ahora se muestran en una línea horizontal con scroll en lugar de dividirse en múltiples líneas
+
 ## [1.0.0] - 2026-02-02
 
 ### Agregado
