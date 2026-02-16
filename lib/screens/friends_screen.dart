@@ -147,18 +147,12 @@ class _FriendsScreenState extends State<FriendsScreen>
               : null,
         ),
         title: Text(friend.nombre),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (friend.email != null) Text(friend.email!),
-            const SizedBox(height: 4),
-            if (friend.totalPartidas != null && friend.promedioGeneral != null)
-              Text(
+        subtitle: friend.totalPartidas != null && friend.promedioGeneral != null
+            ? Text(
                 '${friend.totalPartidas} partidas • Promedio: ${friend.promedioGeneral!.toStringAsFixed(1)}',
                 style: const TextStyle(fontSize: 12),
-              ),
-          ],
-        ),
+              )
+            : null,
         trailing: PopupMenuButton(
           itemBuilder: (context) => [
             PopupMenuItem(
@@ -247,16 +241,9 @@ class _FriendsScreenState extends State<FriendsScreen>
               : null,
         ),
         title: Text(request.fromUserName),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (request.fromUserEmail != null) Text(request.fromUserEmail!),
-            const SizedBox(height: 4),
-            Text(
-              _getTimeAgo(request.createdAt),
-              style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
-            ),
-          ],
+        subtitle: Text(
+          _getTimeAgo(request.createdAt),
+          style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
