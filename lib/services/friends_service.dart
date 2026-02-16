@@ -379,7 +379,7 @@ class FriendsService {
                 List<String> frame;
                 if (frameData is String) {
                   // New format: frame is stored as comma-separated string
-                  frame = frameData.split(',').where((s) => s.isNotEmpty).toList();
+                  frame = frameData.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
                 } else if (frameData is List) {
                   // Old format: frame is already a List
                   frame = List<String>.from(frameData.map((x) => x.toString()));
