@@ -39,6 +39,10 @@
   "totalGames": "Total de Partidas",
   "strikes": "Strikes",
   "spares": "Spares",
+  "misses": "Fallos",
+  "@misses": {
+    "description": "Frames con fallos/abiertos"
+  },
   "frames": "Frames",
   "frame": "Frame",
   "firstBall": "Primera Bola",
@@ -576,5 +580,69 @@
   "notificationFriendRequestAcceptedTitle": "Solicitud aceptada",
   "@notificationFriendRequestAcceptedTitle": {
     "description": "Título para notificación de solicitud aceptada"
+  },
+  "rankingCategory": "Categoría de Ranking",
+  "@rankingCategory": {
+    "description": "Etiqueta para selector de categoría de ranking"
+  },
+  "categoryAverage": "Promedio",
+  "@categoryAverage": {
+    "description": "Categoría de ranking por promedio"
+  },
+  "categoryStrikesPercent": "% Strikes",
+  "@categoryStrikesPercent": {
+    "description": "Categoría de ranking por porcentaje de strikes"
+  },
+  "categorySparesPercent": "% Spares",
+  "@categorySparesPercent": {
+    "description": "Categoría de ranking por porcentaje de spares"
+  },
+  "categoryBestGame": "Mejor Partida",
+  "@categoryBestGame": {
+    "description": "Categoría de ranking por mejor partida"
+  },
+  "categoryConsistency": "Consistencia",
+  "@categoryConsistency": {
+    "description": "Categoría de ranking por consistencia (menor desviación estándar)"
+  },
+  "compareWithFriend": "Comparar con Amigo",
+  "@compareWithFriend": {
+    "description": "Botón para comparar estadísticas con un amigo"
+  },
+  "comparison": "Comparación",
+  "@comparison": {
+    "description": "Título para pantalla de comparación"
+  },
+  "selectFriendToCompare": "Selecciona un amigo para comparar",
+  "@selectFriendToCompare": {
+    "description": "Mensaje para seleccionar amigo"
+  },
+  "statisticsComparison": "Comparación de Estadísticas",
+  "@statisticsComparison": {
+    "description": "Título de comparación de estadísticas"
+  },
+  "scoresTrend": "Tendencia de Puntuaciones",
+  "@scoresTrend": {
+    "description": "Título para gráfico de tendencia de puntuaciones"
+  },
+  "trendChartUnavailable": "Gráfico de tendencia disponible solo con datos de partidas individuales",
+  "@trendChartUnavailable": {
+    "description": "Mensaje cuando no hay datos de partidas individuales para el gráfico de tendencia"
+  },
+  "you": "Tú",
+  "@you": {
+    "description": "Indicador de usuario actual"
+  },
+  "vsComparison": "vs",
+  "@vsComparison": {
+    "description": "Separador para comparaciones"
+  },
+  "consistency": "Consistencia",
+  "@consistency": {
+    "description": "Métrica de consistencia"
+  },
+  "lowerIsBetter": "Menor es mejor",
+  "@lowerIsBetter": {
+    "description": "Indicador de que valores menores son mejores"
   }
 }

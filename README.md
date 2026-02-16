@@ -47,9 +47,14 @@
 - **Gestión de Amistades**: Busca y añade amigos por correo electrónico
 - **Solicitudes de Amistad**: Acepta o rechaza solicitudes de amistad
 - **Rankings entre Amigos**: Compara tus estadísticas con tus amigos
-- **Clasificación Automática**: Rankings ordenados por promedio de puntuación
-- **Filtros de Periodo**: Compara estadísticas por semana, mes o trimestre
+- **Múltiples Categorías de Ranking**: Rankings por promedio, mejor partida, % de strikes, % de spares y consistencia
+- **Clasificación Automática**: Rankings ordenados por la métrica seleccionada
+- **Filtros de Periodo**: Compara estadísticas por semana, mes, trimestre o todo el tiempo
 - **Visualización de Medallas**: Los 3 primeros lugares destacados con medallas (oro, plata, bronce)
+- **Gráficos Comparativos**: Compara tu rendimiento con el de tus amigos mediante gráficos visuales
+  - Comparación de estadísticas clave (promedio, mejor partida, strikes%, spares%)
+  - Tendencia de puntuaciones a lo largo del tiempo
+  - Distribución de strikes/spares/fallos (gráficos de pastel)
 
 ### 📊 Estadísticas Avanzadas
 - **KPIs dinámicos**: promedio, mejor partida, total de partidas
@@ -283,9 +288,15 @@ lib/
 
 3. **Ver Rankings**:
    - Ve a la pantalla "Rankings" desde el menú principal
-   - Compara tus estadísticas con las de tus amigos
+   - Selecciona la categoría de ranking que deseas ver:
+     - Promedio: Ordenado por puntuación promedio
+     - % Strikes: Ordenado por porcentaje de strikes
+     - % Spares: Ordenado por porcentaje de spares
+     - Mejor Partida: Ordenado por la mejor puntuación
+     - Consistencia: Ordenado por menor desviación estándar (más consistente)
    - Filtra por periodo (semana, mes, trimestre o todo el tiempo)
    - Visualiza tu posición en el ranking con medallas para los 3 primeros lugares
+   - Toca en cualquier amigo o usa el botón de comparar para ver gráficos comparativos detallados
 
 ### Ver tus Logros y Nivel
 
@@ -502,6 +513,8 @@ Si ves errores de autenticación con Google, consulta el archivo [`AUTENTICACION
 **Características Recientes**:
 - Sistema de gamificación completo con 15 logros y sistema de niveles
 - Sistema social de amigos y rankings comparativos
+- **Rankings por categorías adicionales** (Promedio, Strikes%, Spares%, Mejor Partida, Consistencia)
+- **Gráficos comparativos entre amigos** (estadísticas, tendencias, distribuciones)
 - Mejoras de colores en modo claro para pantalla de logros
 - Optimizaciones de rendimiento y cache
 - Internacionalización completa (ES/EN)
@@ -509,9 +522,8 @@ Si ves errores de autenticación con Google, consulta el archivo [`AUTENTICACION
 
 **Próximas Mejoras**:
 - Notificaciones push para solicitudes de amistad
-- Rankings por categorías adicionales
-- Gráficos comparativos entre amigos
 - Más logros y desafíos especiales
+- Análisis avanzados de patrones de juego
 
 ---
 

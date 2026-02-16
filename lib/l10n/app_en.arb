@@ -39,6 +39,10 @@
   "totalGames": "Total Games",
   "strikes": "Strikes",
   "spares": "Spares",
+  "misses": "Misses",
+  "@misses": {
+    "description": "Open frames/misses"
+  },
   "frames": "Frames",
   "frame": "Frame",
   "firstBall": "First Ball",
@@ -441,5 +445,69 @@
   "notificationFriendRequestAcceptedTitle": "Request accepted",
   "@notificationFriendRequestAcceptedTitle": {
     "description": "Title for accepted request notification"
+  },
+  "rankingCategory": "Ranking Category",
+  "@rankingCategory": {
+    "description": "Label for ranking category selector"
+  },
+  "categoryAverage": "Average",
+  "@categoryAverage": {
+    "description": "Ranking category by average score"
+  },
+  "categoryStrikesPercent": "% Strikes",
+  "@categoryStrikesPercent": {
+    "description": "Ranking category by strikes percentage"
+  },
+  "categorySparesPercent": "% Spares",
+  "@categorySparesPercent": {
+    "description": "Ranking category by spares percentage"
+  },
+  "categoryBestGame": "Best Game",
+  "@categoryBestGame": {
+    "description": "Ranking category by best game"
+  },
+  "categoryConsistency": "Consistency",
+  "@categoryConsistency": {
+    "description": "Ranking category by consistency (lower standard deviation)"
+  },
+  "compareWithFriend": "Compare with Friend",
+  "@compareWithFriend": {
+    "description": "Button to compare stats with a friend"
+  },
+  "comparison": "Comparison",
+  "@comparison": {
+    "description": "Title for comparison screen"
+  },
+  "selectFriendToCompare": "Select a friend to compare",
+  "@selectFriendToCompare": {
+    "description": "Message to select friend for comparison"
+  },
+  "statisticsComparison": "Statistics Comparison",
+  "@statisticsComparison": {
+    "description": "Title for statistics comparison"
+  },
+  "scoresTrend": "Scores Trend",
+  "@scoresTrend": {
+    "description": "Title for scores trend chart"
+  },
+  "trendChartUnavailable": "Trend chart available only with individual game data",
+  "@trendChartUnavailable": {
+    "description": "Message when individual game data is not available for trend chart"
+  },
+  "you": "You",
+  "@you": {
+    "description": "Current user indicator"
+  },
+  "vsComparison": "vs",
+  "@vsComparison": {
+    "description": "Separator for comparisons"
+  },
+  "consistency": "Consistency",
+  "@consistency": {
+    "description": "Consistency metric"
+  },
+  "lowerIsBetter": "Lower is better",
+  "@lowerIsBetter": {
+    "description": "Indicator that lower values are better"
   }
 }

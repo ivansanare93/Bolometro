@@ -1,3 +1,4 @@
+import 'dart:math' show sqrt;
 import '../models/sesion.dart';
 import '../models/partida.dart';
 import 'app_constants.dart';
@@ -201,5 +202,64 @@ class EstadisticasUtils {
       todasPartidas.addAll(sesion.partidas);
     }
     return calcularHistograma(todasPartidas);
+  }
+
+  /// Calcula estadísticas extendidas incluyendo porcentajes y consistencia
+  /// 
+  /// Retorna un Map con todas las estadísticas básicas más:
+  /// - 'strikesPercent': double - Porcentaje de frames con strike
+  /// - 'sparesPercent': double - Porcentaje de frames con spare
+  /// - 'consistencia': double - Desviación estándar de las puntuaciones (menor = más consistente)
+  static Map<String, dynamic> calcularEstadisticasExtendidas(List<Sesion> sesiones) {
+    final estadisticasBasicas = calcularEstadisticas(sesiones);
+    
+    if (sesiones.isEmpty) {
+      return {
+        ...estadisticasBasicas,
+        'strikesPercent': 0.0,
+        'sparesPercent': 0.0,
+        'consistencia': 0.0,
+      };
+    }
+
+    final todasPartidas = <Partida>[];
+    final todosFrames = <List<String>>[];
+    
+    for (final sesion in sesiones) {
+      todasPartidas.addAll(sesion.partidas);
+      for (final partida in sesion.partidas) {
+        todosFrames.addAll(partida.frames);
+      }
+    }
+
+    if (todasPartidas.isEmpty) {
+      return {
+        ...estadisticasBasicas,
+        'strikesPercent': 0.0,
+        'sparesPercent': 0.0,
+        'consistencia': 0.0,
+      };
+    }
+
+    // Calcular porcentajes de strikes y spares
+    final porcentajes = calcularPorcentajes([todosFrames]);
+    
+    // Calcular consistencia (desviación estándar)
+    final promedio = estadisticasBasicas['promedio'] as double;
+    double sumaDiferenciasCuadrado = 0;
+    for (final partida in todasPartidas) {
+      final diferencia = partida.total - promedio;
+      sumaDiferenciasCuadrado += diferencia * diferencia;
+    }
+    final consistencia = todasPartidas.length > 1
+        ? (sumaDiferenciasCuadrado / todasPartidas.length).sqrt()
+        : 0.0;
+
+    return {
+      ...estadisticasBasicas,
+      'strikesPercent': porcentajes['strikes'] ?? 0.0,
+      'sparesPercent': porcentajes['spares'] ?? 0.0,
+      'consistencia': consistencia,
+    };
   }
 }
