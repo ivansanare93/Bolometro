@@ -390,6 +390,14 @@ class _RankingsScreenState extends State<RankingsScreen> {
                               ),
                             ),
                           ),
+                        if (!esUsuarioActual)
+                          IconButton(
+                            icon: const Icon(Icons.compare_arrows),
+                            tooltip: localizations.compareWithFriend,
+                            onPressed: () => _showCompareDialog(ranking),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -410,13 +418,6 @@ class _RankingsScreenState extends State<RankingsScreen> {
                   ],
                 ),
               ),
-              // Botón de comparar (solo para otros usuarios)
-              if (!esUsuarioActual)
-                IconButton(
-                  icon: const Icon(Icons.compare_arrows),
-                  tooltip: localizations.compareWithFriend,
-                  onPressed: () => _showCompareDialog(ranking),
-                ),
             ],
           ),
         ),
