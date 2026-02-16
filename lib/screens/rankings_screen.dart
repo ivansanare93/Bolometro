@@ -8,6 +8,7 @@ import '../utils/estadisticas_utils.dart';
 import '../models/sesion.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/safe_network_image.dart';
 import 'comparison_screen.dart';
 
 /// Pantalla de rankings entre amigos
@@ -346,15 +347,10 @@ class _RankingsScreenState extends State<RankingsScreen> {
               ),
               const SizedBox(width: 16),
               // Avatar
-              CircleAvatar(
+              SafeNetworkImage(
+                photoUrl: photoUrl,
+                fallbackText: nombre,
                 radius: 30,
-                backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
-                child: photoUrl == null
-                    ? Text(
-                        nombre[0].toUpperCase(),
-                        style: const TextStyle(fontSize: 24),
-                      )
-                    : null,
               ),
               const SizedBox(width: 16),
               // Información

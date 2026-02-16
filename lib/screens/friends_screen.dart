@@ -5,6 +5,8 @@ import '../models/friend_request.dart';
 import '../services/auth_service.dart';
 import '../services/friends_service.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/url_utils.dart';
+import '../widgets/safe_network_image.dart';
 
 /// Pantalla de gestión de amigos
 class FriendsScreen extends StatefulWidget {
@@ -138,13 +140,9 @@ class _FriendsScreenState extends State<FriendsScreen>
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
-        leading: CircleAvatar(
-          backgroundImage: friend.photoUrl != null
-              ? NetworkImage(friend.photoUrl!)
-              : null,
-          child: friend.photoUrl == null
-              ? Text(friend.nombre[0].toUpperCase())
-              : null,
+        leading: SafeNetworkImage(
+          photoUrl: friend.photoUrl,
+          fallbackText: friend.nombre,
         ),
         title: Text(friend.nombre),
         subtitle: friend.totalPartidas != null && friend.promedioGeneral != null
@@ -232,13 +230,9 @@ class _FriendsScreenState extends State<FriendsScreen>
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
-        leading: CircleAvatar(
-          backgroundImage: request.fromUserPhotoUrl != null
-              ? NetworkImage(request.fromUserPhotoUrl!)
-              : null,
-          child: request.fromUserPhotoUrl == null
-              ? Text(request.fromUserName[0].toUpperCase())
-              : null,
+        leading: SafeNetworkImage(
+          photoUrl: request.fromUserPhotoUrl,
+          fallbackText: request.fromUserName,
         ),
         title: Text(request.fromUserName),
         subtitle: Text(
@@ -323,7 +317,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                 fromUserId: currentUser.uid,
                 fromUserName: currentUser.displayName ?? 'Usuario',
                 fromUserEmail: currentUser.email,
-                fromUserPhotoUrl: currentUser.photoURL,
+                fromUserPhotoUrl: UrlUtils.sanitizePhotoUrl(currentUser.photoURL),
                 toUserId: user['userId'],
               );
 

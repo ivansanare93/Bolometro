@@ -5,6 +5,7 @@ import '../models/friend.dart';
 import '../models/friend_request.dart';
 import '../models/perfil_usuario.dart';
 import '../exceptions/sync_exceptions.dart';
+import '../utils/url_utils.dart';
 import 'notification_service.dart';
 
 /// Servicio para gestionar amistades en Firestore
@@ -51,7 +52,7 @@ class FriendsService {
         'userId': doc.id,
         'nombre': perfil['nombre'] ?? '',
         'email': perfil['email'] ?? email,
-        'photoUrl': perfil['googlePhotoUrl'],
+        'photoUrl': UrlUtils.sanitizePhotoUrl(perfil['googlePhotoUrl']),
       };
     } catch (e) {
       debugPrint('Error al buscar usuario por email: $e');
@@ -85,7 +86,7 @@ class FriendsService {
         'userId': doc.id,
         'nombre': perfil['nombre'] ?? '',
         'email': perfil['email'],
-        'photoUrl': perfil['googlePhotoUrl'],
+        'photoUrl': UrlUtils.sanitizePhotoUrl(perfil['googlePhotoUrl']),
         'friendCode': perfil['friendCode'],
       };
     } catch (e) {
@@ -213,7 +214,7 @@ class FriendsService {
         userId: request.fromUserId,
         nombre: request.fromUserName,
         email: request.fromUserEmail,
-        photoUrl: request.fromUserPhotoUrl,
+        photoUrl: UrlUtils.sanitizePhotoUrl(request.fromUserPhotoUrl),
         fechaAmistad: DateTime.now(),
       );
 
@@ -232,7 +233,7 @@ class FriendsService {
         userId: userId,
         nombre: currentUserPerfil?['nombre'] ?? '',
         email: currentUserPerfil?['email'],
-        photoUrl: currentUserPerfil?['googlePhotoUrl'],
+        photoUrl: UrlUtils.sanitizePhotoUrl(currentUserPerfil?['googlePhotoUrl']),
         fechaAmistad: DateTime.now(),
       );
 
