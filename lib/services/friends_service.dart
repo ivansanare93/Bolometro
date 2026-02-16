@@ -360,7 +360,7 @@ class FriendsService {
 
         if (partidas != null) {
           for (final partidaData in partidas) {
-            final puntuacionTotal = partidaData['puntuacionTotal'] as int?;
+            final puntuacionTotal = partidaData['total'] as int?;
             final frames = partidaData['frames'] as List<dynamic>?;
             
             if (puntuacionTotal != null) {
