@@ -548,5 +548,33 @@
   "resetProgressError": "Error al restablecer progreso",
   "@resetProgressError": {
     "description": "Mensaje de error al restablecer progreso"
+  },
+  "notificationFriendRequest": "{userName} te ha enviado una solicitud de amistad",
+  "@notificationFriendRequest": {
+    "description": "Notificación de solicitud de amistad recibida",
+    "placeholders": {
+      "userName": {
+        "type": "String",
+        "example": "Juan"
+      }
+    }
+  },
+  "notificationFriendRequestAccepted": "{userName} aceptó tu solicitud de amistad",
+  "@notificationFriendRequestAccepted": {
+    "description": "Notificación de solicitud de amistad aceptada",
+    "placeholders": {
+      "userName": {
+        "type": "String",
+        "example": "María"
+      }
+    }
+  },
+  "notificationFriendRequestTitle": "Nueva solicitud de amistad",
+  "@notificationFriendRequestTitle": {
+    "description": "Título para notificación de solicitud de amistad"
+  },
+  "notificationFriendRequestAcceptedTitle": "Solicitud aceptada",
+  "@notificationFriendRequestAcceptedTitle": {
+    "description": "Título para notificación de solicitud aceptada"
   }
 }
