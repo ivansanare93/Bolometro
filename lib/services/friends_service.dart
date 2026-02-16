@@ -387,8 +387,9 @@ class FriendsService {
                   continue;
                 }
                 
-                totalFrames++;
+                // Only count frames that have actual data
                 if (frame.isNotEmpty) {
+                  totalFrames++;
                   // Check for strike
                   if (frame[0] == 'X') {
                     strikes++;
