@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'l10n/app_localizations.dart';
 
 import 'theme/app_theme.dart';
@@ -25,6 +26,7 @@ import 'models/perfil_usuario.dart';
 import 'services/auth_service.dart';
 import 'services/analytics_service.dart';
 import 'services/achievement_service.dart';
+import 'services/notification_service.dart';
 import 'repositories/data_repository.dart';
 import 'utils/estadisticas_cache.dart';
 
@@ -33,6 +35,9 @@ void main() async {
   
   // Inicializar Firebase
   await Firebase.initializeApp();
+  
+  // Configurar manejador de mensajes en segundo plano
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   
   // Inicializar Hive
   await Hive.initFlutter();
@@ -136,12 +141,22 @@ class _AuthWrapperState extends State<AuthWrapper> {
   bool _hasShownLoginScreen = false;
   bool _skipLogin = false;
   String? _previousUserId;
+  bool _notificationsInitialized = false;
 
   void _onContinueWithoutLogin() {
     setState(() {
       _skipLogin = true;
       _hasShownLoginScreen = true;
     });
+  }
+
+  Future<void> _initializeNotifications(String userId) async {
+    if (!_notificationsInitialized) {
+      final notificationService = NotificationService();
+      await notificationService.initialize();
+      await notificationService.saveUserToken(userId);
+      _notificationsInitialized = true;
+    }
   }
 
   @override
@@ -153,6 +168,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     if (_previousUserId != null && authService.userId == null) {
       // Update previous user ID first to prevent multiple callbacks
       _previousUserId = authService.userId;
+      _notificationsInitialized = false;
       // User logged out, reset flags to allow new login
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
@@ -168,6 +184,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
     // Sincronizar estado de autenticación con el repositorio
     if (authService.isAuthenticated && authService.userId != null) {
       dataRepository.setUser(authService.userId);
+      // Inicializar notificaciones para usuario autenticado
+      _initializeNotifications(authService.userId!);
     }
 
     // Mostrar pantalla de login solo la primera vez si no está autenticado y no se ha saltado

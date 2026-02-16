@@ -4,10 +4,12 @@ import '../models/friend.dart';
 import '../models/friend_request.dart';
 import '../models/perfil_usuario.dart';
 import '../exceptions/sync_exceptions.dart';
+import 'notification_service.dart';
 
 /// Servicio para gestionar amistades en Firestore
 class FriendsService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final NotificationService _notificationService = NotificationService();
 
   /// Obtener referencia a la colección de amigos del usuario
   CollectionReference _getFriendsCollection(String userId) {
@@ -145,6 +147,13 @@ class FriendsService {
           .doc(requestId)
           .set(request.toJson());
 
+      // Enviar notificación push al destinatario
+      await _notificationService.sendFriendRequestNotification(
+        toUserId: toUserId,
+        fromUserName: fromUserName,
+        requestId: requestId,
+      );
+
       debugPrint('Solicitud de amistad enviada: $requestId');
       return true;
     } catch (e) {
@@ -232,6 +241,12 @@ class FriendsService {
       );
 
       await batch.commit();
+
+      // Enviar notificación push al usuario que envió la solicitud
+      await _notificationService.sendFriendRequestAcceptedNotification(
+        toUserId: request.fromUserId,
+        acceptedByUserName: currentUserPerfil?['nombre'] ?? 'Un usuario',
+      );
 
       debugPrint('Solicitud de amistad aceptada: ${request.requestId}');
       return true;
