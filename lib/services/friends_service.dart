@@ -51,7 +51,7 @@ class FriendsService {
         'userId': doc.id,
         'nombre': perfil['nombre'] ?? '',
         'email': perfil['email'] ?? email,
-        'photoUrl': perfil['avatarPath'],
+        'photoUrl': perfil['googlePhotoUrl'],
       };
     } catch (e) {
       debugPrint('Error al buscar usuario por email: $e');
@@ -85,7 +85,7 @@ class FriendsService {
         'userId': doc.id,
         'nombre': perfil['nombre'] ?? '',
         'email': perfil['email'],
-        'photoUrl': perfil['avatarPath'],
+        'photoUrl': perfil['googlePhotoUrl'],
         'friendCode': perfil['friendCode'],
       };
     } catch (e) {
@@ -232,7 +232,7 @@ class FriendsService {
         userId: userId,
         nombre: currentUserPerfil?['nombre'] ?? '',
         email: currentUserPerfil?['email'],
-        photoUrl: currentUserPerfil?['avatarPath'],
+        photoUrl: currentUserPerfil?['googlePhotoUrl'],
         fechaAmistad: DateTime.now(),
       );
 
