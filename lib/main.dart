@@ -142,6 +142,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   bool _skipLogin = false;
   String? _previousUserId;
   bool _notificationsInitialized = false;
+  bool _initializingNotifications = false;
 
   void _onContinueWithoutLogin() {
     setState(() {
@@ -151,11 +152,16 @@ class _AuthWrapperState extends State<AuthWrapper> {
   }
 
   Future<void> _initializeNotifications(String userId) async {
-    if (!_notificationsInitialized) {
-      final notificationService = NotificationService();
-      await notificationService.initialize();
-      await notificationService.saveUserToken(userId);
-      _notificationsInitialized = true;
+    if (!_notificationsInitialized && !_initializingNotifications) {
+      _initializingNotifications = true;
+      try {
+        final notificationService = NotificationService();
+        await notificationService.initialize();
+        await notificationService.saveUserToken(userId);
+        _notificationsInitialized = true;
+      } finally {
+        _initializingNotifications = false;
+      }
     }
   }
 

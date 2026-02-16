@@ -13,6 +13,8 @@ class NotificationService {
 
   String? _fcmToken;
   String? get fcmToken => _fcmToken;
+  
+  String? _currentUserId;
 
   /// Inicializar el servicio de notificaciones
   Future<void> initialize() async {
@@ -36,6 +38,10 @@ class NotificationService {
         _messaging.onTokenRefresh.listen((newToken) {
           _fcmToken = newToken;
           debugPrint('FCM Token actualizado: $newToken');
+          // Actualizar el token en Firestore si hay un usuario autenticado
+          if (_currentUserId != null) {
+            saveUserToken(_currentUserId!);
+          }
         });
 
         // Configurar manejadores de mensajes
@@ -83,6 +89,7 @@ class NotificationService {
     }
 
     try {
+      _currentUserId = userId;
       await _firestore.collection('users').doc(userId).update({
         'fcmToken': _fcmToken,
         'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
@@ -96,6 +103,7 @@ class NotificationService {
   /// Eliminar el token FCM del usuario de Firestore
   Future<void> deleteUserToken(String userId) async {
     try {
+      _currentUserId = null;
       await _firestore.collection('users').doc(userId).update({
         'fcmToken': FieldValue.delete(),
         'fcmTokenUpdatedAt': FieldValue.delete(),
