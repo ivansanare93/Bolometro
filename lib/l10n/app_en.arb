@@ -39,6 +39,10 @@
   "totalGames": "Total Games",
   "strikes": "Strikes",
   "spares": "Spares",
+  "misses": "Misses",
+  "@misses": {
+    "description": "Open frames/misses"
+  },
   "frames": "Frames",
   "frame": "Frame",
   "firstBall": "First Ball",
@@ -485,6 +489,10 @@
   "scoresTrend": "Scores Trend",
   "@scoresTrend": {
     "description": "Title for scores trend chart"
+  },
+  "trendChartUnavailable": "Trend chart available only with individual game data",
+  "@trendChartUnavailable": {
+    "description": "Message when individual game data is not available for trend chart"
   },
   "you": "You",
   "@you": {

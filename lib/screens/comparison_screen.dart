@@ -63,9 +63,10 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
       _friendStats = await _friendsService.obtenerEstadisticasAmigo(widget.friend.userId);
       
       // Obtener puntuaciones del amigo (si están disponibles)
-      // Por ahora, usamos datos simulados ya que no tenemos acceso a las partidas del amigo
-      // En una implementación real, necesitaríamos una API para obtener estas partidas
-      _friendScores = List.generate(20, (index) => 150.0 + (index * 2)); // Datos simulados
+      // TODO: Implementar API para obtener partidas individuales del amigo desde Firestore
+      // Por ahora, el gráfico de tendencia no mostrará datos reales del amigo
+      // ya que solo tenemos acceso a estadísticas agregadas, no a partidas individuales
+      _friendScores = []; // Sin datos de partidas individuales disponibles
 
       setState(() => _isLoading = false);
     } catch (e) {
@@ -240,6 +241,9 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
   }
 
   Widget _buildScoresTrendChart(AppLocalizations localizations, String myName) {
+    // Only show chart if we have data for both users
+    final hasData = _myScores.isNotEmpty && _friendScores.isNotEmpty;
+    
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -254,14 +258,29 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            ComparisonLineChart(
-              user1Name: myName,
-              user2Name: widget.friend.nombre,
-              user1Scores: _myScores,
-              user2Scores: _friendScores,
-              user1Color: Colors.blue,
-              user2Color: Colors.orange,
-            ),
+            if (!hasData)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Text(
+                    localizations.trendChartUnavailable,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              )
+            else
+              ComparisonLineChart(
+                user1Name: myName,
+                user2Name: widget.friend.nombre,
+                user1Scores: _myScores,
+                user2Scores: _friendScores,
+                user1Color: Colors.blue,
+                user2Color: Colors.orange,
+              ),
           ],
         ),
       ),
@@ -310,7 +329,7 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
                 const SizedBox(width: 16),
                 _buildLegendItem(localizations.spares, Colors.purple),
                 const SizedBox(width: 16),
-                _buildLegendItem('Fallos', Colors.grey),
+                _buildLegendItem(localizations.misses, Colors.grey),
               ],
             ),
           ],

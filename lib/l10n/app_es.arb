@@ -39,6 +39,10 @@
   "totalGames": "Total de Partidas",
   "strikes": "Strikes",
   "spares": "Spares",
+  "misses": "Fallos",
+  "@misses": {
+    "description": "Frames con fallos/abiertos"
+  },
   "frames": "Frames",
   "frame": "Frame",
   "firstBall": "Primera Bola",
@@ -620,6 +624,10 @@
   "scoresTrend": "Tendencia de Puntuaciones",
   "@scoresTrend": {
     "description": "Título para gráfico de tendencia de puntuaciones"
+  },
+  "trendChartUnavailable": "Gráfico de tendencia disponible solo con datos de partidas individuales",
+  "@trendChartUnavailable": {
+    "description": "Mensaje cuando no hay datos de partidas individuales para el gráfico de tendencia"
   },
   "you": "Tú",
   "@you": {
