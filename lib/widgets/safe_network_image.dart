@@ -23,7 +23,7 @@ class SafeNetworkImage extends StatelessWidget {
     return CircleAvatar(
       radius: radius,
       backgroundImage: sanitizedUrl != null 
-          ? NetworkImage(sanitizedUrl) as ImageProvider
+          ? NetworkImage(sanitizedUrl)
           : null,
       child: sanitizedUrl == null && fallbackText.isNotEmpty
           ? Text(fallbackText[0].toUpperCase())
