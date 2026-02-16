@@ -34,13 +34,22 @@
 - Soporte para frames especiales (strike, spare, décimo frame)
 - Notas y observaciones para cada sesión
 
+### 🏆 Sistema de Gamificación
+- **15 Logros Únicos**: Desbloquea logros jugando y mejorando
+- **Sistema de Niveles**: Gana XP y sube de nivel con cada logro desbloqueado
+- **4 Niveles de Rareza**: Común, Raro, Épico y Legendario
+- **Seguimiento de Progreso**: Visualiza tu progreso hacia cada logro
+- **Notificaciones de Logros**: Recibe notificaciones al desbloquear logros
+- **Insignia de Nivel**: Muestra tu nivel actual en tu perfil
+- **Barra de Progreso**: Visualiza tu avance hacia el siguiente nivel
+
 ### 👥 Sistema de Amigos y Rankings
-- **Gestión de amistades**: Busca y añade amigos por correo electrónico
-- **Solicitudes de amistad**: Acepta o rechaza solicitudes de amistad
-- **Rankings entre amigos**: Compara tus estadísticas con tus amigos
-- **Clasificación automática**: Rankings ordenados por promedio de puntuación
-- **Filtros de periodo**: Compara estadísticas por semana, mes o trimestre
-- **Visualización de medallas**: Los 3 primeros lugares destacados con medallas
+- **Gestión de Amistades**: Busca y añade amigos por correo electrónico
+- **Solicitudes de Amistad**: Acepta o rechaza solicitudes de amistad
+- **Rankings entre Amigos**: Compara tus estadísticas con tus amigos
+- **Clasificación Automática**: Rankings ordenados por promedio de puntuación
+- **Filtros de Periodo**: Compara estadísticas por semana, mes o trimestre
+- **Visualización de Medallas**: Los 3 primeros lugares destacados con medallas (oro, plata, bronce)
 
 ### 📊 Estadísticas Avanzadas
 - **KPIs dinámicos**: promedio, mejor partida, total de partidas
@@ -157,7 +166,11 @@ lib/
 ├── models/                   # Modelos de datos (Hive)
 │   ├── partida.dart         # Modelo de partida individual
 │   ├── sesion.dart          # Modelo de sesión (conjunto de partidas)
-│   └── perfil_usuario.dart  # Modelo de perfil de usuario
+│   ├── perfil_usuario.dart  # Modelo de perfil de usuario
+│   ├── achievement.dart     # Modelo de logros
+│   ├── user_progress.dart   # Modelo de progreso del usuario
+│   ├── friend.dart          # Modelo de amigo
+│   └── friend_request.dart  # Modelo de solicitud de amistad
 ├── screens/                  # Pantallas principales
 │   ├── home.dart            # Pantalla principal con navegación
 │   ├── login_screen.dart    # Pantalla de inicio de sesión
@@ -167,15 +180,22 @@ lib/
 │   ├── ver_sesion.dart      # Detalles de una sesión
 │   ├── editar_partida.dart  # Edición de partida
 │   ├── estadisticas.dart    # Dashboard de estadísticas
-│   └── perfil_usuario.dart  # Gestión de perfil
+│   ├── perfil_usuario.dart  # Gestión de perfil
+│   ├── achievements_screen.dart # Pantalla de logros y niveles
+│   ├── friends_screen.dart  # Gestión de amigos
+│   └── rankings_screen.dart # Rankings entre amigos
 ├── services/                # Servicios de backend
 │   ├── auth_service.dart    # Autenticación con Google
-│   └── firestore_service.dart # Sincronización con Firestore
+│   ├── firestore_service.dart # Sincronización con Firestore
+│   ├── analytics_service.dart # Analíticas con Firebase
+│   ├── achievement_service.dart # Lógica de gamificación
+│   └── friends_service.dart # Gestión de amigos
 ├── repositories/            # Capa de acceso a datos
 │   └── data_repository.dart # Abstracción de Hive y Firestore
 ├── widgets/                 # Componentes reutilizables
 │   ├── marcador_bolos.dart  # Marcador de bolos
 │   ├── teclado_selector_pins.dart # Teclado para seleccionar pines
+│   ├── skeleton_loaders.dart # Skeleton loaders para carga
 │   ├── estadisticas/        # Widgets de estadísticas
 │   └── ...
 ├── providers/               # Gestión de estado
@@ -185,9 +205,13 @@ lib/
 │   ├── estadisticas_utils.dart # Cálculos estadísticos
 │   ├── estadisticas_cache.dart # Cache de estadísticas
 │   ├── registro_tiros_utils.dart # Lógica de registro de tiros
-│   └── database_utils.dart  # Utilidades de base de datos
-└── theme/                   # Configuración de temas
-    └── app_theme.dart       # Temas claro y oscuro
+│   ├── database_utils.dart  # Utilidades de base de datos
+│   └── app_constants.dart   # Constantes de la aplicación
+├── theme/                   # Configuración de temas
+│   └── app_theme.dart       # Temas claro y oscuro
+└── l10n/                    # Localización
+    ├── app_es.arb          # Traducciones en español
+    └── app_en.arb          # Traducciones en inglés
 ```
 
 ### Patrón de Diseño
@@ -201,10 +225,13 @@ lib/
 ### Optimizaciones Implementadas
 
 - ✅ **Lazy Loading**: Carga paginada de sesiones (20 por página)
-- ✅ **Cache de Estadísticas**: Cálculos optimizados con invalidación inteligente
+- ✅ **Cache de Estadísticas**: Cálculos optimizados con invalidación inteligente (expiración de 5 minutos)
 - ✅ **Manejo Robusto de Errores**: Try-catch en todos los accesos a base de datos
-- ✅ **Pull-to-Refresh**: Actualización manual de datos
-- ✅ **Sincronización en la Nube**: Backup automático con Firebase
+- ✅ **Pull-to-Refresh**: Actualización manual de datos en todas las listas
+- ✅ **Sincronización en la Nube**: Backup automático con Firebase Firestore
+- ✅ **Skeleton Loaders**: Indicadores de carga mejorados con efecto shimmer
+- ✅ **Batch Writes**: Escrituras por lotes en Firestore para eficiencia
+- ✅ **Gamificación Offline**: Sistema de logros funciona sin internet
 
 ## 📖 Guía de Uso
 
@@ -258,7 +285,29 @@ lib/
    - Ve a la pantalla "Rankings" desde el menú principal
    - Compara tus estadísticas con las de tus amigos
    - Filtra por periodo (semana, mes, trimestre o todo el tiempo)
-   - Visualiza tu posición en el ranking
+   - Visualiza tu posición en el ranking con medallas para los 3 primeros lugares
+
+### Ver tus Logros y Nivel
+
+1. **Acceder a Logros**:
+   - Ve a la pantalla "Logros" desde el menú principal
+   - Visualiza tu nivel actual y XP total
+   - Ve tu progreso hacia el siguiente nivel
+
+2. **Desbloquear Logros**:
+   - Juega partidas y alcanza hitos específicos
+   - Recibe notificaciones cuando desbloqueas logros
+   - Gana XP y sube de nivel automáticamente
+   - Revisa el progreso de logros bloqueados
+
+3. **Categorías de Logros**:
+   - Primeros Pasos: Comienza tu viaje
+   - Partidas Jugadas: Alcanza hitos de partidas
+   - Strikes: Consigue múltiples strikes
+   - Puntuaciones Altas: Alcanza puntuaciones específicas
+   - Partida Perfecta: Logra los 300 puntos
+   - Rachas: Consigue strikes consecutivos
+   - Spares: Acumula spares
 
 ### Sincronizar Datos (Usuario Autenticado)
 
@@ -293,8 +342,32 @@ Puntos clave:
 - Ejecuta `flutter analyze` antes de hacer commit
 - Añade tests para nuevas funcionalidades
 - Actualiza la documentación según sea necesario
+- Verifica que los tests pasen con `flutter test`
+
+### Documentación Adicional
+
+El proyecto cuenta con documentación técnica extensa:
+
+**Sistemas Principales**:
+- [docs/GAMIFICATION.md](docs/GAMIFICATION.md) - Sistema de logros y niveles
+- [docs/FRIENDS_SYSTEM.md](docs/FRIENDS_SYSTEM.md) - Sistema de amigos y rankings
+- [docs/ANALYTICS.md](docs/ANALYTICS.md) - Firebase Analytics
+- [docs/INTERNATIONALIZATION.md](docs/INTERNATIONALIZATION.md) - Internacionalización
+
+**Implementación Técnica**:
+- [docs/OPTIMIZACIONES.md](docs/OPTIMIZACIONES.md) - Optimizaciones de rendimiento
+- [docs/AUTENTICACION.md](docs/AUTENTICACION.md) - Configuración de autenticación
+- [docs/SINCRONIZACION_IMPLEMENTACION.md](docs/SINCRONIZACION_IMPLEMENTACION.md) - Sincronización en la nube
+- [docs/SKELETON_LOADERS.md](docs/SKELETON_LOADERS.md) - Skeleton loaders
+- [docs/TESTING.md](docs/TESTING.md) - Guía de testing
+
+**Solución de Problemas**:
+- [docs/FIRESTORE_PERMISSION_FIX.md](docs/FIRESTORE_PERMISSION_FIX.md) - Permisos de Firestore
+- [docs/FIXES_IMPLEMENTADOS.md](docs/FIXES_IMPLEMENTADOS.md) - Correcciones implementadas
 
 ## 🧪 Testing
+
+Bolómetro incluye cobertura de pruebas completa:
 
 ```bash
 # Ejecutar todos los tests
@@ -304,71 +377,77 @@ flutter test
 flutter test --coverage
 ```
 
-## 🧪 Testing
+Para información detallada, consulta [docs/TESTING.md](docs/TESTING.md).
 
-Bolometro includes comprehensive test coverage:
+### Cobertura de Tests
 
-```bash
-# Ejecutar todos los tests
-flutter test
+- ✅ Pruebas unitarias para modelos (Partida, Sesion, PerfilUsuario, Achievement, UserProgress, Friend, FriendRequest)
+- ✅ Pruebas unitarias para proveedores (Theme, Language)
+- ✅ Pruebas unitarias para servicios (Analytics, Auth, Firestore)
+- ✅ Pruebas unitarias para utilidades (Statistics, Cache)
+- ✅ Pruebas de widgets para componentes
+- ✅ Framework de pruebas de integración
 
-# Ejecutar con cobertura
-flutter test --coverage
-```
+## 🌍 Internacionalización
 
-For detailed information, see [docs/TESTING.md](docs/TESTING.md).
+La aplicación soporta múltiples idiomas:
 
-### Test Coverage
+- 🇪🇸 **Español** (Por defecto)
+- 🇬🇧 **Inglés**
 
-- ✅ Unit tests for models (Partida, Sesion, PerfilUsuario)
-- ✅ Unit tests for providers (Theme, Language)
-- ✅ Unit tests for services (Analytics, Auth, Firestore)
-- ✅ Unit tests for utilities (Statistics, Cache)
-- ✅ Widget tests for components
-- ✅ Integration test framework
+El idioma puede cambiarse en la pantalla de Ajustes. Para detalles de implementación, consulta [docs/INTERNATIONALIZATION.md](docs/INTERNATIONALIZATION.md).
 
-## 🌍 Internationalization
+## 📊 Analíticas
 
-The app supports multiple languages:
+Firebase Analytics está integrado para rastrear el comportamiento del usuario y mejorar la aplicación. Eventos clave rastreados:
 
-- 🇪🇸 **Spanish** (Default)
-- 🇬🇧 **English**
+- Creación/edición/eliminación de sesiones y partidas
+- Visualización y filtrado de estadísticas
+- Autenticación y sincronización de usuarios
+- Cambios de tema e idioma
+- Desbloqueo de logros y progreso de niveles
+- Gestión de amigos y solicitudes
+- Visualización de rankings
 
-Language can be changed in the Settings screen. For implementation details, see [docs/INTERNATIONALIZATION.md](docs/INTERNATIONALIZATION.md).
+Para documentación completa de analíticas, consulta [docs/ANALYTICS.md](docs/ANALYTICS.md).
 
-## 📊 Analytics
-
-Firebase Analytics is integrated to track user behavior and improve the app. Key events tracked:
-
-- Session and game creation/editing/deletion
-- Statistics viewing and filtering
-- User authentication and sync
-- Theme and language changes
-
-For full analytics documentation, see [docs/ANALYTICS.md](docs/ANALYTICS.md).
-
-## 🎨 UI Components
+## 🎨 Componentes de UI
 
 ### Skeleton Loaders
 
-The app uses skeleton loaders to improve perceived performance while data is loading:
+La aplicación utiliza skeleton loaders para mejorar el rendimiento percibido mientras se cargan los datos:
 
-- Session card skeletons
-- Statistics card skeletons
-- Chart skeletons
-- List item skeletons
+- Skeletons de tarjetas de sesión
+- Skeletons de tarjetas de estadísticas
+- Skeletons de gráficos
+- Skeletons de elementos de lista
 
-For implementation guide, see [docs/SKELETON_LOADERS.md](docs/SKELETON_LOADERS.md).
+Para la guía de implementación, consulta [docs/SKELETON_LOADERS.md](docs/SKELETON_LOADERS.md).
 
 ## 🔄 CI/CD
 
-The CI/CD pipeline has been configured for manual builds. Automated builds via GitHub Actions have been removed.
+El pipeline de CI/CD ha sido configurado para compilaciones manuales. Las compilaciones automáticas mediante GitHub Actions han sido eliminadas.
 
-For local build instructions and CI/CD configuration details, see [docs/CICD.md](docs/CICD.md).
+Para instrucciones de compilación local y detalles de configuración de CI/CD, consulta [docs/CICD.md](docs/CICD.md).
 
 ## 📝 Historial de Cambios
 
 Para ver el historial completo de cambios y versiones del proyecto, consulta [CHANGELOG.md](CHANGELOG.md).
+
+### Versión Actual: 1.0.2
+
+**Características Principales**:
+- ✅ Sistema de gamificación completo (15 logros únicos con sistema de niveles)
+- ✅ Sistema de amigos y rankings (búsqueda, solicitudes, comparación de estadísticas)
+- ✅ Autenticación con Google Sign-In y sincronización en la nube
+- ✅ Internacionalización completa (Español e Inglés)
+- ✅ Firebase Analytics integrado para seguimiento de uso
+- ✅ Skeleton loaders para mejor experiencia de usuario
+- ✅ Testing comprehensivo (modelos, servicios, widgets)
+- ✅ Optimizaciones de rendimiento (lazy loading, cache, batch writes)
+- ✅ Modo offline completo con sincronización automática
+
+**Documentación Técnica**: 26+ documentos técnicos en el directorio [docs/](docs/)
 
 ## 📄 Licencia
 
@@ -404,9 +483,35 @@ Si ves errores de autenticación con Google, consulta el archivo [`AUTENTICACION
 
 ## 🙏 Agradecimientos
 
-- Comunidad de Flutter
-- Paquetes de código abierto utilizados
+- Comunidad de Flutter por el excelente framework
+- Paquetes de código abierto utilizados en este proyecto:
+  - Hive para almacenamiento local eficiente
+  - FL Chart para visualizaciones de datos
+  - Firebase para backend y analíticas
+  - Shimmer para skeleton loaders
+  - Provider para gestión de estado
 - Jugadores de bolos que inspiraron esta aplicación
+- Contribuidores y testers que ayudaron a mejorar Bolómetro
+
+## 🚀 Estado del Proyecto
+
+**Versión Actual**: 1.0.2  
+**Estado**: ✅ En Producción  
+**Última Actualización**: Febrero 2026
+
+**Características Recientes**:
+- Sistema de gamificación completo con 15 logros y sistema de niveles
+- Sistema social de amigos y rankings comparativos
+- Mejoras de colores en modo claro para pantalla de logros
+- Optimizaciones de rendimiento y cache
+- Internacionalización completa (ES/EN)
+- Documentación técnica exhaustiva (26+ documentos)
+
+**Próximas Mejoras**:
+- Notificaciones push para solicitudes de amistad
+- Rankings por categorías adicionales
+- Gráficos comparativos entre amigos
+- Más logros y desafíos especiales
 
 ---
 
