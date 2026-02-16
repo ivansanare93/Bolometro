@@ -90,6 +90,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get spares => 'Spares';
 
   @override
+  String get misses => 'Misses';
+
+  @override
   String get frames => 'Frames';
 
   @override
@@ -798,7 +801,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterEmail => 'Enter an email address';
 
   @override
-  String get you => 'YOU';
+  String get you => 'You';
 
   @override
   String get achievements => 'Achievements';
@@ -938,4 +941,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get resetProgressError => 'Error resetting progress';
+
+  @override
+  String notificationFriendRequest(String userName) {
+    return '$userName has sent you a friend request';
+  }
+
+  @override
+  String notificationFriendRequestAccepted(String userName) {
+    return '$userName accepted your friend request';
+  }
+
+  @override
+  String get notificationFriendRequestTitle => 'New friend request';
+
+  @override
+  String get notificationFriendRequestAcceptedTitle => 'Request accepted';
+
+  @override
+  String get rankingCategory => 'Ranking Category';
+
+  @override
+  String get categoryAverage => 'Average';
+
+  @override
+  String get categoryStrikesPercent => '% Strikes';
+
+  @override
+  String get categorySparesPercent => '% Spares';
+
+  @override
+  String get categoryBestGame => 'Best Game';
+
+  @override
+  String get categoryConsistency => 'Consistency';
+
+  @override
+  String get compareWithFriend => 'Compare with Friend';
+
+  @override
+  String get comparison => 'Comparison';
+
+  @override
+  String get selectFriendToCompare => 'Select a friend to compare';
+
+  @override
+  String get statisticsComparison => 'Statistics Comparison';
+
+  @override
+  String get scoresTrend => 'Scores Trend';
+
+  @override
+  String get trendChartUnavailable =>
+      'Trend chart available only with individual game data';
+
+  @override
+  String get vsComparison => 'vs';
+
+  @override
+  String get consistency => 'Consistency';
+
+  @override
+  String get lowerIsBetter => 'Lower is better';
 }

@@ -260,6 +260,12 @@ abstract class AppLocalizations {
   /// **'Spares'**
   String get spares;
 
+  /// Frames con fallos/abiertos
+  ///
+  /// In es, this message translates to:
+  /// **'Fallos'**
+  String get misses;
+
   /// No description provided for @frames.
   ///
   /// In es, this message translates to:
@@ -1616,10 +1622,10 @@ abstract class AppLocalizations {
   /// **'Ingresa un correo electrónico'**
   String get enterEmail;
 
-  /// Indicador de usuario actual en rankings
+  /// Indicador de usuario actual
   ///
   /// In es, this message translates to:
-  /// **'TÚ'**
+  /// **'Tú'**
   String get you;
 
   /// Título de la pantalla de logros
@@ -1897,6 +1903,120 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Error al restablecer progreso'**
   String get resetProgressError;
+
+  /// Notificación de solicitud de amistad recibida
+  ///
+  /// In es, this message translates to:
+  /// **'{userName} te ha enviado una solicitud de amistad'**
+  String notificationFriendRequest(String userName);
+
+  /// Notificación de solicitud de amistad aceptada
+  ///
+  /// In es, this message translates to:
+  /// **'{userName} aceptó tu solicitud de amistad'**
+  String notificationFriendRequestAccepted(String userName);
+
+  /// Título para notificación de solicitud de amistad
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva solicitud de amistad'**
+  String get notificationFriendRequestTitle;
+
+  /// Título para notificación de solicitud aceptada
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitud aceptada'**
+  String get notificationFriendRequestAcceptedTitle;
+
+  /// Etiqueta para selector de categoría de ranking
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría de Ranking'**
+  String get rankingCategory;
+
+  /// Categoría de ranking por promedio
+  ///
+  /// In es, this message translates to:
+  /// **'Promedio'**
+  String get categoryAverage;
+
+  /// Categoría de ranking por porcentaje de strikes
+  ///
+  /// In es, this message translates to:
+  /// **'% Strikes'**
+  String get categoryStrikesPercent;
+
+  /// Categoría de ranking por porcentaje de spares
+  ///
+  /// In es, this message translates to:
+  /// **'% Spares'**
+  String get categorySparesPercent;
+
+  /// Categoría de ranking por mejor partida
+  ///
+  /// In es, this message translates to:
+  /// **'Mejor Partida'**
+  String get categoryBestGame;
+
+  /// Categoría de ranking por consistencia (menor desviación estándar)
+  ///
+  /// In es, this message translates to:
+  /// **'Consistencia'**
+  String get categoryConsistency;
+
+  /// Botón para comparar estadísticas con un amigo
+  ///
+  /// In es, this message translates to:
+  /// **'Comparar con Amigo'**
+  String get compareWithFriend;
+
+  /// Título para pantalla de comparación
+  ///
+  /// In es, this message translates to:
+  /// **'Comparación'**
+  String get comparison;
+
+  /// Mensaje para seleccionar amigo
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona un amigo para comparar'**
+  String get selectFriendToCompare;
+
+  /// Título de comparación de estadísticas
+  ///
+  /// In es, this message translates to:
+  /// **'Comparación de Estadísticas'**
+  String get statisticsComparison;
+
+  /// Título para gráfico de tendencia de puntuaciones
+  ///
+  /// In es, this message translates to:
+  /// **'Tendencia de Puntuaciones'**
+  String get scoresTrend;
+
+  /// Mensaje cuando no hay datos de partidas individuales para el gráfico de tendencia
+  ///
+  /// In es, this message translates to:
+  /// **'Gráfico de tendencia disponible solo con datos de partidas individuales'**
+  String get trendChartUnavailable;
+
+  /// Separador para comparaciones
+  ///
+  /// In es, this message translates to:
+  /// **'vs'**
+  String get vsComparison;
+
+  /// Métrica de consistencia
+  ///
+  /// In es, this message translates to:
+  /// **'Consistencia'**
+  String get consistency;
+
+  /// Indicador de que valores menores son mejores
+  ///
+  /// In es, this message translates to:
+  /// **'Menor es mejor'**
+  String get lowerIsBetter;
 }
 
 class _AppLocalizationsDelegate

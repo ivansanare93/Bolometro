@@ -90,6 +90,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get spares => 'Spares';
 
   @override
+  String get misses => 'Fallos';
+
+  @override
   String get frames => 'Frames';
 
   @override
@@ -806,7 +809,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get enterEmail => 'Ingresa un correo electrónico';
 
   @override
-  String get you => 'TÚ';
+  String get you => 'Tú';
 
   @override
   String get achievements => 'Logros';
@@ -947,4 +950,66 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get resetProgressError => 'Error al restablecer progreso';
+
+  @override
+  String notificationFriendRequest(String userName) {
+    return '$userName te ha enviado una solicitud de amistad';
+  }
+
+  @override
+  String notificationFriendRequestAccepted(String userName) {
+    return '$userName aceptó tu solicitud de amistad';
+  }
+
+  @override
+  String get notificationFriendRequestTitle => 'Nueva solicitud de amistad';
+
+  @override
+  String get notificationFriendRequestAcceptedTitle => 'Solicitud aceptada';
+
+  @override
+  String get rankingCategory => 'Categoría de Ranking';
+
+  @override
+  String get categoryAverage => 'Promedio';
+
+  @override
+  String get categoryStrikesPercent => '% Strikes';
+
+  @override
+  String get categorySparesPercent => '% Spares';
+
+  @override
+  String get categoryBestGame => 'Mejor Partida';
+
+  @override
+  String get categoryConsistency => 'Consistencia';
+
+  @override
+  String get compareWithFriend => 'Comparar con Amigo';
+
+  @override
+  String get comparison => 'Comparación';
+
+  @override
+  String get selectFriendToCompare => 'Selecciona un amigo para comparar';
+
+  @override
+  String get statisticsComparison => 'Comparación de Estadísticas';
+
+  @override
+  String get scoresTrend => 'Tendencia de Puntuaciones';
+
+  @override
+  String get trendChartUnavailable =>
+      'Gráfico de tendencia disponible solo con datos de partidas individuales';
+
+  @override
+  String get vsComparison => 'vs';
+
+  @override
+  String get consistency => 'Consistencia';
+
+  @override
+  String get lowerIsBetter => 'Menor es mejor';
 }
