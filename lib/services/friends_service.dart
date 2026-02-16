@@ -409,7 +409,7 @@ class FriendsService {
           final diferencia = puntuacion - promedioGeneral;
           sumaDiferenciasCuadrado += diferencia * diferencia;
         }
-        consistencia = (sumaDiferenciasCuadrado / puntuaciones.length).sqrt();
+        consistencia = sqrt(sumaDiferenciasCuadrado / puntuaciones.length);
       }
 
       return {
