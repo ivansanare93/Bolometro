@@ -6,6 +6,7 @@ import '../models/perfil_usuario.dart';
 import '../models/user_progress.dart';
 import '../models/achievement.dart';
 import '../utils/app_constants.dart';
+import '../utils/url_utils.dart';
 import '../exceptions/sync_exceptions.dart';
 
 /// Servicio para interactuar con Firestore
@@ -201,7 +202,7 @@ class FirestoreService {
         'fechaNacimiento': perfil.fechaNacimiento?.toIso8601String(),
         'bio': perfil.bio,
         'friendCode': perfil.friendCode,
-        'googlePhotoUrl': perfil.googlePhotoUrl,
+        'googlePhotoUrl': UrlUtils.sanitizePhotoUrl(perfil.googlePhotoUrl),
         'googleDisplayName': perfil.googleDisplayName,
         'isFromGoogle': perfil.isFromGoogle,
       };

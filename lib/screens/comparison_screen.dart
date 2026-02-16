@@ -8,6 +8,7 @@ import '../services/friends_service.dart';
 import '../repositories/data_repository.dart';
 import '../utils/estadisticas_utils.dart';
 import '../widgets/comparison_chart.dart';
+import '../widgets/safe_network_image.dart';
 import '../l10n/app_localizations.dart';
 
 /// Pantalla de comparación detallada entre el usuario actual y un amigo
@@ -169,15 +170,10 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
   Widget _buildUserColumn(String name, String? photoUrl, String label) {
     return Column(
       children: [
-        CircleAvatar(
+        SafeNetworkImage(
+          photoUrl: photoUrl,
+          fallbackText: name,
           radius: 40,
-          backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
-          child: photoUrl == null
-              ? Text(
-                  name[0].toUpperCase(),
-                  style: const TextStyle(fontSize: 24),
-                )
-              : null,
         ),
         const SizedBox(height: 8),
         Text(
