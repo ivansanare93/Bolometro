@@ -53,6 +53,7 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
       for (final sesion in misSesiones) {
         misPartidas.addAll(sesion.partidas);
       }
+      // Sort by date ascending (oldest first), with null dates first
       misPartidas.sort((a, b) {
         if (a.fecha == null && b.fecha == null) return 0;
         if (a.fecha == null) return -1;
