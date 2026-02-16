@@ -413,5 +413,33 @@
   "resetProgressError": "Error resetting progress",
   "@resetProgressError": {
     "description": "Error message when resetting progress"
+  },
+  "notificationFriendRequest": "{userName} has sent you a friend request",
+  "@notificationFriendRequest": {
+    "description": "Notification for received friend request",
+    "placeholders": {
+      "userName": {
+        "type": "String",
+        "example": "John"
+      }
+    }
+  },
+  "notificationFriendRequestAccepted": "{userName} accepted your friend request",
+  "@notificationFriendRequestAccepted": {
+    "description": "Notification for accepted friend request",
+    "placeholders": {
+      "userName": {
+        "type": "String",
+        "example": "Mary"
+      }
+    }
+  },
+  "notificationFriendRequestTitle": "New friend request",
+  "@notificationFriendRequestTitle": {
+    "description": "Title for friend request notification"
+  },
+  "notificationFriendRequestAcceptedTitle": "Request accepted",
+  "@notificationFriendRequestAcceptedTitle": {
+    "description": "Title for accepted request notification"
   }
 }
