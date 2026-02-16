@@ -53,7 +53,12 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
       for (final sesion in misSesiones) {
         misPartidas.addAll(sesion.partidas);
       }
-      misPartidas.sort((a, b) => a.fecha.compareTo(b.fecha));
+      misPartidas.sort((a, b) {
+        if (a.fecha == null && b.fecha == null) return 0;
+        if (a.fecha == null) return -1;
+        if (b.fecha == null) return 1;
+        return a.fecha!.compareTo(b.fecha!);
+      });
       _myScores = misPartidas
           .take(20)
           .map((p) => p.total.toDouble())
