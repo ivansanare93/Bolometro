@@ -61,19 +61,19 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
         if (b.fecha == null) return 1;
         return a.fecha!.compareTo(b.fecha!);
       });
-      _myScores = misPartidas
-          .take(20)
+      // Take the last 20 games (most recent)
+      final ultimasPartidas = misPartidas.length > 20
+          ? misPartidas.sublist(misPartidas.length - 20)
+          : misPartidas;
+      _myScores = ultimasPartidas
           .map((p) => p.total.toDouble())
           .toList();
 
       // Obtener estadísticas del amigo
       _friendStats = await _friendsService.obtenerEstadisticasAmigo(widget.friend.userId);
       
-      // Obtener puntuaciones del amigo (si están disponibles)
-      // TODO: Implementar API para obtener partidas individuales del amigo desde Firestore
-      // Por ahora, el gráfico de tendencia no mostrará datos reales del amigo
-      // ya que solo tenemos acceso a estadísticas agregadas, no a partidas individuales
-      _friendScores = []; // Sin datos de partidas individuales disponibles
+      // Obtener puntuaciones del amigo para el gráfico de tendencia
+      _friendScores = await _friendsService.obtenerPuntuacionesAmigo(widget.friend.userId, limit: 20);
 
       setState(() => _isLoading = false);
     } catch (e) {
@@ -243,8 +243,8 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
   }
 
   Widget _buildScoresTrendChart(AppLocalizations localizations, String myName) {
-    // Only show chart if we have data for both users
-    final hasData = _myScores.isNotEmpty && _friendScores.isNotEmpty;
+    // Show chart if we have data for at least one user
+    final hasData = _myScores.isNotEmpty || _friendScores.isNotEmpty;
     
     return Card(
       child: Padding(
