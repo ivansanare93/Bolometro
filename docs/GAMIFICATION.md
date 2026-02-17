@@ -8,7 +8,7 @@ This document describes the gamification system implemented for Bolometro, fulfi
 
 ### 1. Achievement System (Logros y Medallas)
 
-The system includes 15 unique achievements across multiple categories:
+The system includes 29 unique achievements across multiple categories:
 
 #### Categories and Achievements
 
@@ -19,16 +19,21 @@ The system includes 15 unique achievements across multiple categories:
 - `games_10`: Play 10 games (100 XP, Common)
 - `games_50`: Play 50 games (250 XP, Rare)
 - `games_100`: Play 100 games (500 XP, Epic)
+- `games_250`: Play 250 games (750 XP, Epic)
+- `games_500`: Play 500 games (1000 XP, Legendary)
 
 **Strikes**
 - `strikes_10`: Get 10 strikes (75 XP, Common)
 - `strikes_50`: Get 50 strikes (200 XP, Rare)
 - `strikes_100`: Get 100 strikes (400 XP, Epic)
+- `strikes_250`: Get 250 strikes (600 XP, Epic)
+- `strikes_500`: Get 500 strikes (1000 XP, Legendary)
 
 **High Scores**
 - `score_150`: Score 150 points in a game (100 XP, Common)
 - `score_200`: Score 200 points in a game (250 XP, Rare)
 - `score_250`: Score 250 points in a game (500 XP, Epic)
+- `score_275`: Score 275 points in a game (750 XP, Epic)
 
 **Perfect Game**
 - `perfect_game`: Score 300 points (1000 XP, Legendary)
@@ -36,10 +41,23 @@ The system includes 15 unique achievements across multiple categories:
 **Streaks**
 - `streak_3`: Get 3 consecutive strikes (150 XP, Rare)
 - `streak_5`: Get 5 consecutive strikes (300 XP, Epic)
+- `streak_7`: Get 7 consecutive strikes (500 XP, Epic)
+- `streak_10`: Get 10 consecutive strikes (800 XP, Legendary)
 
 **Spares**
 - `spares_20`: Get 20 spares (75 XP, Common)
 - `spares_100`: Get 100 spares (200 XP, Rare)
+- `spares_250`: Get 250 spares (400 XP, Epic)
+- `spares_500`: Get 500 spares (600 XP, Epic)
+
+**Consistency**
+- `consistency_5`: Play 5 consecutive games with similar scores (±15 points) (200 XP, Rare)
+- `consistency_10`: Play 10 consecutive games with similar scores (±15 points) (500 XP, Epic)
+
+**Dedication**
+- `dedication_7`: Play at least once on 7 different days (300 XP, Rare)
+- `dedication_30`: Play at least once on 30 different days (600 XP, Epic)
+- `dedication_100`: Play at least once on 100 different days (1000 XP, Legendary)
 
 #### Rarity System
 
@@ -302,14 +320,14 @@ Coverage includes:
 
 Potential additions (not in current scope):
 
-1. **Consistency Achievements**: Track consistency over time
-2. **Dedication Achievements**: Track days/weeks of activity
-3. **Social Achievements**: Compare with friends
-4. **Seasonal Achievements**: Time-limited special achievements
-5. **Achievement Categories**: Filter by category
-6. **Leaderboards**: Compare levels with friends
-7. **Rewards**: Unlock themes, avatars, or features
-8. **Statistics**: Detailed achievement progress analytics
+1. **Special Challenges**: Time-limited special achievements
+2. **Social Achievements**: Compare with friends
+3. **Seasonal Achievements**: Time-limited special achievements
+4. **Achievement Categories**: Filter by category
+5. **Leaderboards**: Compare levels with friends
+6. **Rewards**: Unlock themes, avatars, or features
+7. **Statistics**: Detailed achievement progress analytics
+8. **Daily/Weekly Challenges**: Rotating challenges with special rewards
 
 ## Files Modified/Created
 
@@ -336,8 +354,15 @@ Potential additions (not in current scope):
 
 The gamification system successfully implements both requested features:
 
-✅ **Logros y Medallas**: Complete achievement system with 15 unique achievements, progress tracking, and rewards
+✅ **Logros y Medallas**: Complete achievement system with 29 unique achievements, progress tracking, and rewards
 
 ✅ **Sistema de niveles**: XP-based level system with visual progression, badges, and automatic level-ups
+
+✅ **Más logros y desafíos especiales**: Extended achievement system with:
+- 14 additional achievements (from 15 to 29 total)
+- Advanced tier achievements for games played, strikes, spares, and high scores
+- Consistency achievements for maintaining similar performance
+- Dedication achievements for long-term engagement
+- Higher XP rewards for harder achievements
 
 The implementation follows Flutter best practices, integrates seamlessly with the existing codebase, and provides a motivating experience for users to track their bowling progress.
