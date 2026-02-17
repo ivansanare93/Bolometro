@@ -35,13 +35,15 @@
 - Notas y observaciones para cada sesión
 
 ### 🏆 Sistema de Gamificación
-- **15 Logros Únicos**: Desbloquea logros jugando y mejorando
+- **29 Logros Únicos**: Desbloquea logros jugando y mejorando
 - **Sistema de Niveles**: Gana XP y sube de nivel con cada logro desbloqueado
 - **4 Niveles de Rareza**: Común, Raro, Épico y Legendario
 - **Seguimiento de Progreso**: Visualiza tu progreso hacia cada logro
 - **Notificaciones de Logros**: Recibe notificaciones al desbloquear logros
 - **Insignia de Nivel**: Muestra tu nivel actual en tu perfil
 - **Barra de Progreso**: Visualiza tu avance hacia el siguiente nivel
+- **Logros de Consistencia**: Recompensas por mantener un rendimiento estable
+- **Logros de Dedicación**: Reconocimiento por jugar regularmente
 
 ### 👥 Sistema de Amigos y Rankings
 - **Gestión de Amistades**: Busca y añade amigos por correo electrónico o código de amigo

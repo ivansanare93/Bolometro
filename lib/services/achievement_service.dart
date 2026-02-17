@@ -106,6 +106,26 @@ class AchievementService extends ChangeNotifier {
         rarity: AchievementRarity.epic,
         targetValue: 100,
       ),
+      'games_250': Achievement(
+        id: 'games_250',
+        nameKey: 'achievement.games_250.name',
+        descriptionKey: 'achievement.games_250.description',
+        icon: 'workspace_premium',
+        xpReward: 750,
+        type: AchievementType.gamesPlayed,
+        rarity: AchievementRarity.epic,
+        targetValue: 250,
+      ),
+      'games_500': Achievement(
+        id: 'games_500',
+        nameKey: 'achievement.games_500.name',
+        descriptionKey: 'achievement.games_500.description',
+        icon: 'diamond',
+        xpReward: 1000,
+        type: AchievementType.gamesPlayed,
+        rarity: AchievementRarity.legendary,
+        targetValue: 500,
+      ),
 
       // Strikes
       'strikes_10': Achievement(
@@ -138,6 +158,26 @@ class AchievementService extends ChangeNotifier {
         rarity: AchievementRarity.epic,
         targetValue: 100,
       ),
+      'strikes_250': Achievement(
+        id: 'strikes_250',
+        nameKey: 'achievement.strikes_250.name',
+        descriptionKey: 'achievement.strikes_250.description',
+        icon: 'flash_auto',
+        xpReward: 600,
+        type: AchievementType.strike,
+        rarity: AchievementRarity.epic,
+        targetValue: 250,
+      ),
+      'strikes_500': Achievement(
+        id: 'strikes_500',
+        nameKey: 'achievement.strikes_500.name',
+        descriptionKey: 'achievement.strikes_500.description',
+        icon: 'thunderstorm',
+        xpReward: 1000,
+        type: AchievementType.strike,
+        rarity: AchievementRarity.legendary,
+        targetValue: 500,
+      ),
 
       // Puntuación alta
       'score_150': Achievement(
@@ -169,6 +209,16 @@ class AchievementService extends ChangeNotifier {
         type: AchievementType.highScore,
         rarity: AchievementRarity.epic,
         targetValue: 250,
+      ),
+      'score_275': Achievement(
+        id: 'score_275',
+        nameKey: 'achievement.score_275.name',
+        descriptionKey: 'achievement.score_275.description',
+        icon: 'auto_awesome',
+        xpReward: 750,
+        type: AchievementType.highScore,
+        rarity: AchievementRarity.epic,
+        targetValue: 275,
       ),
 
       // Partida perfecta
@@ -204,6 +254,26 @@ class AchievementService extends ChangeNotifier {
         rarity: AchievementRarity.epic,
         targetValue: 5,
       ),
+      'streak_7': Achievement(
+        id: 'streak_7',
+        nameKey: 'achievement.streak_7.name',
+        descriptionKey: 'achievement.streak_7.description',
+        icon: 'flame',
+        xpReward: 500,
+        type: AchievementType.streak,
+        rarity: AchievementRarity.epic,
+        targetValue: 7,
+      ),
+      'streak_10': Achievement(
+        id: 'streak_10',
+        nameKey: 'achievement.streak_10.name',
+        descriptionKey: 'achievement.streak_10.description',
+        icon: 'fireplace',
+        xpReward: 800,
+        type: AchievementType.streak,
+        rarity: AchievementRarity.legendary,
+        targetValue: 10,
+      ),
 
       // Spares
       'spares_20': Achievement(
@@ -226,6 +296,80 @@ class AchievementService extends ChangeNotifier {
         rarity: AchievementRarity.rare,
         targetValue: 100,
       ),
+      'spares_250': Achievement(
+        id: 'spares_250',
+        nameKey: 'achievement.spares_250.name',
+        descriptionKey: 'achievement.spares_250.description',
+        icon: 'check_circle_outline',
+        xpReward: 400,
+        type: AchievementType.spare,
+        rarity: AchievementRarity.epic,
+        targetValue: 250,
+      ),
+      'spares_500': Achievement(
+        id: 'spares_500',
+        nameKey: 'achievement.spares_500.name',
+        descriptionKey: 'achievement.spares_500.description',
+        icon: 'verified_user',
+        xpReward: 600,
+        type: AchievementType.spare,
+        rarity: AchievementRarity.epic,
+        targetValue: 500,
+      ),
+
+      // Logros especiales de consistencia
+      'consistency_5': Achievement(
+        id: 'consistency_5',
+        nameKey: 'achievement.consistency_5.name',
+        descriptionKey: 'achievement.consistency_5.description',
+        icon: 'trending_flat',
+        xpReward: 200,
+        type: AchievementType.consistency,
+        rarity: AchievementRarity.rare,
+        targetValue: 5,
+      ),
+      'consistency_10': Achievement(
+        id: 'consistency_10',
+        nameKey: 'achievement.consistency_10.name',
+        descriptionKey: 'achievement.consistency_10.description',
+        icon: 'equalizer',
+        xpReward: 500,
+        type: AchievementType.consistency,
+        rarity: AchievementRarity.epic,
+        targetValue: 10,
+      ),
+
+      // Logros de dedicación
+      'dedication_7': Achievement(
+        id: 'dedication_7',
+        nameKey: 'achievement.dedication_7.name',
+        descriptionKey: 'achievement.dedication_7.description',
+        icon: 'event_repeat',
+        xpReward: 300,
+        type: AchievementType.dedication,
+        rarity: AchievementRarity.rare,
+        targetValue: 7,
+      ),
+      'dedication_30': Achievement(
+        id: 'dedication_30',
+        nameKey: 'achievement.dedication_30.name',
+        descriptionKey: 'achievement.dedication_30.description',
+        icon: 'calendar_month',
+        xpReward: 600,
+        type: AchievementType.dedication,
+        rarity: AchievementRarity.epic,
+        targetValue: 30,
+      ),
+      'dedication_100': Achievement(
+        id: 'dedication_100',
+        nameKey: 'achievement.dedication_100.name',
+        descriptionKey: 'achievement.dedication_100.description',
+        icon: 'celebration',
+        xpReward: 1000,
+        type: AchievementType.dedication,
+        rarity: AchievementRarity.legendary,
+        targetValue: 100,
+      ),
     };
   }
 
@@ -240,10 +384,24 @@ class AchievementService extends ChangeNotifier {
       int totalSpares = 0;
       int maxScore = 0;
       int maxStreak = 0;
+      
+      // Para calcular consistencia: partidas con puntuación similar (±15 puntos)
+      List<int> allScores = [];
+      
+      // Para calcular dedicación: días únicos con sesiones
+      Set<String> uniqueDays = {};
 
       for (var sesion in sesiones) {
+        // Añadir día único para tracking de dedicación
+        final day = sesion.fecha.day.toString().padLeft(2, '0');
+        final month = sesion.fecha.month.toString().padLeft(2, '0');
+        final year = sesion.fecha.year;
+        final dayKey = '$year-$month-$day';
+        uniqueDays.add(dayKey);
+        
         for (var partida in sesion.partidas) {
           totalGames++;
+          allScores.add(partida.total);
           
           // Contar strikes y spares
           int currentStreak = 0;
@@ -266,6 +424,23 @@ class AchievementService extends ChangeNotifier {
           }
         }
       }
+      
+      // Calcular consistencia: contar secuencias de partidas con puntuaciones similares
+      int maxConsistency = 0;
+      if (allScores.length >= 2) {
+        int currentConsistency = 1;
+        for (int i = 1; i < allScores.length; i++) {
+          // Partidas consistentes si la diferencia es menor a 15 puntos
+          if ((allScores[i] - allScores[i-1]).abs() <= 15) {
+            currentConsistency++;
+            if (currentConsistency > maxConsistency) {
+              maxConsistency = currentConsistency;
+            }
+          } else {
+            currentConsistency = 1;
+          }
+        }
+      }
 
       return {
         'totalGames': totalGames,
@@ -273,6 +448,8 @@ class AchievementService extends ChangeNotifier {
         'totalSpares': totalSpares,
         'maxScore': maxScore,
         'maxStreak': maxStreak,
+        'maxConsistency': maxConsistency,
+        'daysPlayed': uniqueDays.length,
       };
     } catch (e) {
       debugPrint('Error al calcular estadísticas: $e');
@@ -322,9 +499,13 @@ class AchievementService extends ChangeNotifier {
           break;
         
         case AchievementType.consistency:
+          progress = stats['maxConsistency'] ?? 0;
+          shouldUnlock = progress >= achievement.targetValue;
+          break;
+        
         case AchievementType.dedication:
-          // These types are not yet implemented
-          // TODO: Implement consistency and dedication achievement logic
+          progress = stats['daysPlayed'] ?? 0;
+          shouldUnlock = progress >= achievement.targetValue;
           break;
       }
 
