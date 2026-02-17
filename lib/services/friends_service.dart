@@ -464,4 +464,80 @@ class FriendsService {
           .toList();
     });
   }
+
+  /// Obtener últimas puntuaciones individuales de un amigo para el gráfico de tendencia
+  /// Devuelve una lista con las últimas [limit] puntuaciones ordenadas cronológicamente
+  Future<List<double>> obtenerPuntuacionesAmigo(
+      String friendId, {int limit = 20}) async {
+    try {
+      final sesionesSnapshot = await _firestore
+          .collection('users')
+          .doc(friendId)
+          .collection('sesiones')
+          .get();
+
+      if (sesionesSnapshot.docs.isEmpty) {
+        return [];
+      }
+
+      // Recopilar todas las partidas con sus fechas
+      List<Map<String, dynamic>> partidasConFecha = [];
+
+      for (final doc in sesionesSnapshot.docs) {
+        final data = doc.data();
+        final partidas = data['partidas'] as List<dynamic>?;
+        
+        if (partidas != null) {
+          for (final partidaData in partidas) {
+            final puntuacionTotal = partidaData['total'] as int?;
+            final fecha = partidaData['fecha'];
+            
+            if (puntuacionTotal != null) {
+              DateTime? fechaPartida;
+              if (fecha != null) {
+                if (fecha is Timestamp) {
+                  fechaPartida = fecha.toDate();
+                } else if (fecha is int) {
+                  fechaPartida = DateTime.fromMillisecondsSinceEpoch(fecha);
+                }
+              }
+              
+              partidasConFecha.add({
+                'puntuacion': puntuacionTotal,
+                'fecha': fechaPartida,
+              });
+            }
+          }
+        }
+      }
+
+      if (partidasConFecha.isEmpty) {
+        return [];
+      }
+
+      // Ordenar por fecha ascendente (más antigua primero), partidas sin fecha van primero
+      partidasConFecha.sort((a, b) {
+        final fechaA = a['fecha'] as DateTime?;
+        final fechaB = b['fecha'] as DateTime?;
+        
+        if (fechaA == null && fechaB == null) return 0;
+        if (fechaA == null) return -1;
+        if (fechaB == null) return 1;
+        return fechaA.compareTo(fechaB);
+      });
+
+      // Tomar las últimas [limit] partidas (más recientes)
+      final ultimasPartidas = partidasConFecha.length > limit
+          ? partidasConFecha.sublist(partidasConFecha.length - limit)
+          : partidasConFecha;
+
+      // Extraer solo las puntuaciones
+      return ultimasPartidas
+          .map<double>((p) => (p['puntuacion'] as int).toDouble())
+          .toList();
+    } catch (e) {
+      debugPrint('Error al obtener puntuaciones del amigo: $e');
+      return [];
+    }
+  }
 }
