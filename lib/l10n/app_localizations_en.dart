@@ -951,6 +951,90 @@ class AppLocalizationsEn extends AppLocalizations {
   String get achievementSpares100Desc => 'Get 100 spares';
 
   @override
+  String get achievementGames250Name => 'Professional';
+
+  @override
+  String get achievementGames250Desc => 'Play 250 games';
+
+  @override
+  String get achievementGames500Name => 'Supreme Master';
+
+  @override
+  String get achievementGames500Desc => 'Play 500 games';
+
+  @override
+  String get achievementStrikes250Name => 'Strike Storm';
+
+  @override
+  String get achievementStrikes250Desc => 'Get 250 strikes';
+
+  @override
+  String get achievementStrikes500Name => 'Strike God';
+
+  @override
+  String get achievementStrikes500Desc => 'Get 500 strikes';
+
+  @override
+  String get achievementScore275Name => 'Almost Perfect';
+
+  @override
+  String get achievementScore275Desc => 'Score 275 points in a game';
+
+  @override
+  String get achievementSpares250Name => 'Spare Legend';
+
+  @override
+  String get achievementSpares250Desc => 'Get 250 spares';
+
+  @override
+  String get achievementSpares500Name => 'Spare God';
+
+  @override
+  String get achievementSpares500Desc => 'Get 500 spares';
+
+  @override
+  String get achievementStreak7Name => 'Fire Streak';
+
+  @override
+  String get achievementStreak7Desc => 'Get 7 consecutive strikes';
+
+  @override
+  String get achievementStreak10Name => 'Unstoppable Streak';
+
+  @override
+  String get achievementStreak10Desc => 'Get 10 consecutive strikes';
+
+  @override
+  String get achievementConsistency5Name => 'Consistent Player';
+
+  @override
+  String get achievementConsistency5Desc => 'Play 5 consecutive games with similar scores (±15 points)';
+
+  @override
+  String get achievementConsistency10Name => 'Precision Machine';
+
+  @override
+  String get achievementConsistency10Desc => 'Play 10 consecutive games with similar scores (±15 points)';
+
+  @override
+  String get achievementDedication7Name => 'Active Week';
+
+  @override
+  String get achievementDedication7Desc => 'Play at least once on 7 different days';
+
+  @override
+  String get achievementDedication30Name => 'Dedicated Month';
+
+  @override
+  String get achievementDedication30Desc => 'Play at least once on 30 different days';
+
+  @override
+  String get achievementDedication100Name => 'Legendary Dedication';
+
+  @override
+  String get achievementDedication100Desc => 'Play at least once on 100 different days';
+
+  @override
   String get resetProgress => 'Reset Progress (Dev)';
 
   @override

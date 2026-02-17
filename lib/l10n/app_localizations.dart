@@ -1922,6 +1922,174 @@ abstract class AppLocalizations {
   /// **'Consigue 100 spares'**
   String get achievementSpares100Desc;
 
+  /// No description provided for @achievementGames250Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Profesional'**
+  String get achievementGames250Name;
+
+  /// No description provided for @achievementGames250Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Juega 250 partidas'**
+  String get achievementGames250Desc;
+
+  /// No description provided for @achievementGames500Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Maestro Supremo'**
+  String get achievementGames500Name;
+
+  /// No description provided for @achievementGames500Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Juega 500 partidas'**
+  String get achievementGames500Desc;
+
+  /// No description provided for @achievementStrikes250Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Tormenta de Strikes'**
+  String get achievementStrikes250Name;
+
+  /// No description provided for @achievementStrikes250Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 250 strikes'**
+  String get achievementStrikes250Desc;
+
+  /// No description provided for @achievementStrikes500Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Dios del Strike'**
+  String get achievementStrikes500Name;
+
+  /// No description provided for @achievementStrikes500Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 500 strikes'**
+  String get achievementStrikes500Desc;
+
+  /// No description provided for @achievementScore275Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Casi Perfecto'**
+  String get achievementScore275Name;
+
+  /// No description provided for @achievementScore275Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 275 puntos en una partida'**
+  String get achievementScore275Desc;
+
+  /// No description provided for @achievementSpares250Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Leyenda del Spare'**
+  String get achievementSpares250Name;
+
+  /// No description provided for @achievementSpares250Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 250 spares'**
+  String get achievementSpares250Desc;
+
+  /// No description provided for @achievementSpares500Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Dios del Spare'**
+  String get achievementSpares500Name;
+
+  /// No description provided for @achievementSpares500Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 500 spares'**
+  String get achievementSpares500Desc;
+
+  /// No description provided for @achievementStreak7Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Racha de Fuego'**
+  String get achievementStreak7Name;
+
+  /// No description provided for @achievementStreak7Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 7 strikes consecutivos'**
+  String get achievementStreak7Desc;
+
+  /// No description provided for @achievementStreak10Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Racha Imparable'**
+  String get achievementStreak10Name;
+
+  /// No description provided for @achievementStreak10Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 10 strikes consecutivos'**
+  String get achievementStreak10Desc;
+
+  /// No description provided for @achievementConsistency5Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Jugador Consistente'**
+  String get achievementConsistency5Name;
+
+  /// No description provided for @achievementConsistency5Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Juega 5 partidas consecutivas con puntuaciones similares (±15 puntos)'**
+  String get achievementConsistency5Desc;
+
+  /// No description provided for @achievementConsistency10Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Máquina de Precisión'**
+  String get achievementConsistency10Name;
+
+  /// No description provided for @achievementConsistency10Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Juega 10 partidas consecutivas con puntuaciones similares (±15 puntos)'**
+  String get achievementConsistency10Desc;
+
+  /// No description provided for @achievementDedication7Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Semana Activa'**
+  String get achievementDedication7Name;
+
+  /// No description provided for @achievementDedication7Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Juega al menos una vez durante 7 días diferentes'**
+  String get achievementDedication7Desc;
+
+  /// No description provided for @achievementDedication30Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Mes Dedicado'**
+  String get achievementDedication30Name;
+
+  /// No description provided for @achievementDedication30Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Juega al menos una vez durante 30 días diferentes'**
+  String get achievementDedication30Desc;
+
+  /// No description provided for @achievementDedication100Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Dedicación Legendaria'**
+  String get achievementDedication100Name;
+
+  /// No description provided for @achievementDedication100Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Juega al menos una vez durante 100 días diferentes'**
+  String get achievementDedication100Desc;
+
   /// Opción para restablecer logros y niveles en desarrollo
   ///
   /// In es, this message translates to:
