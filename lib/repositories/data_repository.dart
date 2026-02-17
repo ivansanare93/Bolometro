@@ -316,7 +316,7 @@ class DataRepository extends ChangeNotifier {
   }
 
   /// Descargar datos desde la nube al almacenamiento local
-  /// Sobrescribe los datos locales con los de la nube
+  /// Sobrescribir los datos locales con los de la nube
   Future<void> descargarDesdeNube() async {
     if (!_isOnlineMode || _userId == null) {
       return;
