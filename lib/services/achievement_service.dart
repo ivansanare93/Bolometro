@@ -385,15 +385,18 @@ class AchievementService extends ChangeNotifier {
       int maxScore = 0;
       int maxStreak = 0;
       
-      // Para calcular consistencia: partidas con puntuación similar (±10 puntos)
+      // Para calcular consistencia: partidas con puntuación similar (±15 puntos)
       List<int> allScores = [];
       
       // Para calcular dedicación: días únicos con sesiones
       Set<String> uniqueDays = {};
 
       for (var sesion in sesiones) {
-        // Añadir día único (formato YYYY-MM-DD)
-        final dayKey = '${sesion.fecha.year}-${sesion.fecha.month.toString().padLeft(2, '0')}-${sesion.fecha.day.toString().padLeft(2, '0')}';
+        // Añadir día único para tracking de dedicación
+        final day = sesion.fecha.day.toString().padLeft(2, '0');
+        final month = sesion.fecha.month.toString().padLeft(2, '0');
+        final year = sesion.fecha.year;
+        final dayKey = '$year-$month-$day';
         uniqueDays.add(dayKey);
         
         for (var partida in sesion.partidas) {
