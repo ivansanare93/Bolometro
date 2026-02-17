@@ -43,6 +43,10 @@ y este proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 
 ### Corregido
 - Layout de estadísticas en rankings: los badges ahora se muestran en una línea horizontal con scroll en lugar de dividirse en múltiples líneas
+- **Gráfico de tendencia de puntuaciones en pantalla de comparación**: Ahora muestra correctamente los datos de ambos usuarios
+  - Corregido bug que mostraba las primeras 20 partidas en lugar de las últimas 20 (más recientes)
+  - Implementado método `obtenerPuntuacionesAmigo()` en `FriendsService` para obtener puntuaciones individuales del amigo
+  - El gráfico ahora se muestra si al menos un usuario tiene datos (anteriormente requería datos de ambos)
 
 ## [1.0.0] - 2026-02-02
 
