@@ -1982,30 +1982,6 @@ abstract class AppLocalizations {
   /// **'Consigue 275 puntos en una partida'**
   String get achievementScore275Desc;
 
-  /// No description provided for @achievementSpares250Name.
-  ///
-  /// In es, this message translates to:
-  /// **'Leyenda del Spare'**
-  String get achievementSpares250Name;
-
-  /// No description provided for @achievementSpares250Desc.
-  ///
-  /// In es, this message translates to:
-  /// **'Consigue 250 spares'**
-  String get achievementSpares250Desc;
-
-  /// No description provided for @achievementSpares500Name.
-  ///
-  /// In es, this message translates to:
-  /// **'Dios del Spare'**
-  String get achievementSpares500Name;
-
-  /// No description provided for @achievementSpares500Desc.
-  ///
-  /// In es, this message translates to:
-  /// **'Consigue 500 spares'**
-  String get achievementSpares500Desc;
-
   /// No description provided for @achievementStreak7Name.
   ///
   /// In es, this message translates to:
@@ -2029,6 +2005,30 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Consigue 10 strikes consecutivos'**
   String get achievementStreak10Desc;
+
+  /// No description provided for @achievementSpares250Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Leyenda del Spare'**
+  String get achievementSpares250Name;
+
+  /// No description provided for @achievementSpares250Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 250 spares'**
+  String get achievementSpares250Desc;
+
+  /// No description provided for @achievementSpares500Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Dios del Spare'**
+  String get achievementSpares500Name;
+
+  /// No description provided for @achievementSpares500Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Consigue 500 spares'**
+  String get achievementSpares500Desc;
 
   /// No description provided for @achievementConsistency5Name.
   ///

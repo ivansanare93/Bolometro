@@ -634,7 +634,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get uploadToCloudDesc => 'Sobrescribir la nube con los datos locales';
 
   @override
-  String get downloadFromCloudDesc => 'Sobrescribir los datos locales con los de la nube';
+  String get downloadFromCloudDesc =>
+      'Sobrescribir los datos locales con los de la nube';
 
   @override
   String get smartSyncDesc => 'Combinar datos locales y de la nube';
@@ -990,18 +991,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get achievementScore275Desc => 'Consigue 275 puntos en una partida';
 
   @override
-  String get achievementSpares250Name => 'Leyenda del Spare';
-
-  @override
-  String get achievementSpares250Desc => 'Consigue 250 spares';
-
-  @override
-  String get achievementSpares500Name => 'Dios del Spare';
-
-  @override
-  String get achievementSpares500Desc => 'Consigue 500 spares';
-
-  @override
   String get achievementStreak7Name => 'Racha de Fuego';
 
   @override
@@ -1014,34 +1003,51 @@ class AppLocalizationsEs extends AppLocalizations {
   String get achievementStreak10Desc => 'Consigue 10 strikes consecutivos';
 
   @override
+  String get achievementSpares250Name => 'Leyenda del Spare';
+
+  @override
+  String get achievementSpares250Desc => 'Consigue 250 spares';
+
+  @override
+  String get achievementSpares500Name => 'Dios del Spare';
+
+  @override
+  String get achievementSpares500Desc => 'Consigue 500 spares';
+
+  @override
   String get achievementConsistency5Name => 'Jugador Consistente';
 
   @override
-  String get achievementConsistency5Desc => 'Juega 5 partidas consecutivas con puntuaciones similares (±15 puntos)';
+  String get achievementConsistency5Desc =>
+      'Juega 5 partidas consecutivas con puntuaciones similares (±15 puntos)';
 
   @override
   String get achievementConsistency10Name => 'Máquina de Precisión';
 
   @override
-  String get achievementConsistency10Desc => 'Juega 10 partidas consecutivas con puntuaciones similares (±15 puntos)';
+  String get achievementConsistency10Desc =>
+      'Juega 10 partidas consecutivas con puntuaciones similares (±15 puntos)';
 
   @override
   String get achievementDedication7Name => 'Semana Activa';
 
   @override
-  String get achievementDedication7Desc => 'Juega al menos una vez durante 7 días diferentes';
+  String get achievementDedication7Desc =>
+      'Juega al menos una vez durante 7 días diferentes';
 
   @override
   String get achievementDedication30Name => 'Mes Dedicado';
 
   @override
-  String get achievementDedication30Desc => 'Juega al menos una vez durante 30 días diferentes';
+  String get achievementDedication30Desc =>
+      'Juega al menos una vez durante 30 días diferentes';
 
   @override
   String get achievementDedication100Name => 'Dedicación Legendaria';
 
   @override
-  String get achievementDedication100Desc => 'Juega al menos una vez durante 100 días diferentes';
+  String get achievementDedication100Desc =>
+      'Juega al menos una vez durante 100 días diferentes';
 
   @override
   String get resetProgress => 'Restablecer Progreso (Dev)';
