@@ -619,6 +619,30 @@ class AppLocalizationsEs extends AppLocalizations {
   String get saveDataToCloud => 'Guardar datos en la nube';
 
   @override
+  String get syncDirection => 'Dirección de sincronización';
+
+  @override
+  String get uploadToCloud => 'Subir a la nube';
+
+  @override
+  String get downloadFromCloud => 'Descargar desde la nube';
+
+  @override
+  String get smartSync => 'Sincronización inteligente';
+
+  @override
+  String get uploadToCloudDesc => 'Sobrescribir la nube con los datos locales';
+
+  @override
+  String get downloadFromCloudDesc => 'Sobrescribir los datos locales con los de la nube';
+
+  @override
+  String get smartSyncDesc => 'Combinar datos locales y de la nube';
+
+  @override
+  String get selectSyncDirection => 'Selecciona el tipo de sincronización';
+
+  @override
   String get noDataForStatistics => 'No hay datos para mostrar estadísticas.';
 
   @override

@@ -613,6 +613,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saveDataToCloud => 'Save data to cloud';
 
   @override
+  String get syncDirection => 'Sync direction';
+
+  @override
+  String get uploadToCloud => 'Upload to cloud';
+
+  @override
+  String get downloadFromCloud => 'Download from cloud';
+
+  @override
+  String get smartSync => 'Smart sync';
+
+  @override
+  String get uploadToCloudDesc => 'Overwrite cloud with local data';
+
+  @override
+  String get downloadFromCloudDesc => 'Overwrite local data with cloud data';
+
+  @override
+  String get smartSyncDesc => 'Merge local and cloud data';
+
+  @override
+  String get selectSyncDirection => 'Select sync type';
+
+  @override
   String get noDataForStatistics => 'No data to display statistics.';
 
   @override
