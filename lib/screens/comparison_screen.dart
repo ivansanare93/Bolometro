@@ -10,6 +10,7 @@ import '../utils/estadisticas_utils.dart';
 import '../widgets/comparison_chart.dart';
 import '../widgets/safe_network_image.dart';
 import '../l10n/app_localizations.dart';
+import 'home.dart';
 
 /// Pantalla de comparación detallada entre el usuario actual y un amigo
 class ComparisonScreen extends StatefulWidget {
@@ -91,6 +92,19 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(localizations.comparison),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.home),
+            tooltip: localizations.home,
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

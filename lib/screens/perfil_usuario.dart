@@ -333,7 +333,23 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
     final showGooglePhoto = perfil?.hasGooglePhoto == true && !avatarFileExists;
 
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.myProfile), centerTitle: true),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.myProfile),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.home),
+            tooltip: AppLocalizations.of(context)!.home,
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(18),
         child: Form(
