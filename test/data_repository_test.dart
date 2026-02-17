@@ -83,7 +83,7 @@ void main() {
       );
     });
 
-    test('descargarDesdeNube debe lanzar AuthenticationException si no hay usuario autenticado', () async {
+    test('descargarDesdeNube debe retornar sin error si no hay usuario autenticado', () async {
       // Arrange: no configurar usuario
       
       // Act & Assert - el método debe retornar sin lanzar excepción pero no hacer nada

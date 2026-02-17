@@ -365,7 +365,7 @@ class DataRepository extends ChangeNotifier {
   }
 
   /// Subir todos los datos locales a la nube
-  /// Sobrescribe completamente los datos de la nube con los datos locales
+  /// Sobrescribir completamente los datos de la nube con los datos locales
   /// 
   /// Este método es útil cuando el usuario quiere guardar su estado local actual,
   /// incluyendo sesiones eliminadas (que no estarán en la nube después de la subida).
