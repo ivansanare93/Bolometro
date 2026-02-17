@@ -10,6 +10,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/safe_network_image.dart';
 import 'comparison_screen.dart';
+import 'home.dart';
 
 /// Pantalla de rankings entre amigos
 class RankingsScreen extends StatefulWidget {
@@ -177,6 +178,19 @@ class _RankingsScreenState extends State<RankingsScreen> {
       return Scaffold(
         appBar: AppBar(
           title: Text(localizations.rankings),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.home),
+              tooltip: localizations.home,
+              onPressed: () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const HomeScreen()),
+                  (route) => false,
+                );
+              },
+            ),
+          ],
         ),
         body: Center(
           child: Text(localizations.loginRequiredMessage),
@@ -234,6 +248,17 @@ class _RankingsScreenState extends State<RankingsScreen> {
               PopupMenuItem(value: 'Último mes', child: Text(localizations.lastMonth)),
               PopupMenuItem(value: 'Últimos 3 meses', child: Text(localizations.last3Months)),
             ],
+          ),
+          IconButton(
+            icon: const Icon(Icons.home),
+            tooltip: localizations.home,
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                (route) => false,
+              );
+            },
           ),
         ],
       ),

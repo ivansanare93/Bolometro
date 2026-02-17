@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../services/achievement_service.dart';
 import '../models/achievement.dart';
 import '../l10n/app_localizations.dart';
+import 'home.dart';
 
 /// Pantalla de logros y progreso del usuario
 class AchievementsScreen extends StatefulWidget {
@@ -41,6 +42,19 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       appBar: AppBar(
         title: Text(l10n?.achievements ?? 'Achievements'),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.home),
+            tooltip: l10n?.home ?? 'Home',
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

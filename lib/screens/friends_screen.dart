@@ -7,6 +7,7 @@ import '../services/friends_service.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/url_utils.dart';
 import '../widgets/safe_network_image.dart';
+import 'home.dart';
 
 /// Pantalla de gestión de amigos
 class FriendsScreen extends StatefulWidget {
@@ -43,6 +44,19 @@ class _FriendsScreenState extends State<FriendsScreen>
       return Scaffold(
         appBar: AppBar(
           title: Text(localizations.friends),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.home),
+              tooltip: localizations.home,
+              onPressed: () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const HomeScreen()),
+                  (route) => false,
+                );
+              },
+            ),
+          ],
         ),
         body: Center(
           child: Text(localizations.loginRequiredMessage),
@@ -60,6 +74,19 @@ class _FriendsScreenState extends State<FriendsScreen>
             Tab(icon: const Icon(Icons.person_add), text: localizations.friendRequests),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.home),
+            tooltip: localizations.home,
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
       ),
       body: TabBarView(
         controller: _tabController,
