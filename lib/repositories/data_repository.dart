@@ -316,12 +316,24 @@ class DataRepository extends ChangeNotifier {
   }
 
   /// Descargar datos desde la nube al almacenamiento local
+  /// Sobrescribe los datos locales con los de la nube
   Future<void> descargarDesdeNube() async {
     if (!_isOnlineMode || _userId == null) {
       return;
     }
 
+    // Evitar sincronizaciones simultáneas
+    if (_isSyncing) {
+      debugPrint('Sincronización ya en curso, ignorando nueva solicitud');
+      return;
+    }
+
     try {
+      _isSyncing = true;
+      notifyListeners();
+
+      debugPrint('Descargando datos desde la nube...');
+
       // Obtener sesiones desde Firestore
       final sesionesRemotas = await _firestoreService.obtenerSesiones(_userId!);
       
@@ -340,10 +352,122 @@ class DataRepository extends ChangeNotifier {
         await boxPerfil.add(perfilRemoto);
       }
 
+      debugPrint('Descarga completada: ${sesionesRemotas.length} sesiones');
+
+      _isSyncing = false;
       notifyListeners();
     } catch (e) {
+      _isSyncing = false;
+      notifyListeners();
       debugPrint('Error al descargar desde la nube: $e');
       rethrow;
+    }
+  }
+
+  /// Subir todos los datos locales a la nube
+  /// Sobrescribe completamente los datos de la nube con los datos locales
+  /// 
+  /// Este método es útil cuando el usuario quiere guardar su estado local actual,
+  /// incluyendo sesiones eliminadas (que no estarán en la nube después de la subida).
+  /// 
+  /// Requiere que el usuario esté autenticado.
+  /// 
+  /// Lanza:
+  /// - [AuthenticationException] si el usuario no está autenticado
+  /// - [OfflineModeException] si no hay conexión
+  /// - [SyncException] para otros errores de sincronización
+  Future<void> subirANube() async {
+    // Validar que el usuario está autenticado
+    if (_userId == null) {
+      throw AuthenticationException(
+        'No se puede sincronizar: usuario no autenticado. '
+        'Por favor, inicia sesión antes de sincronizar.'
+      );
+    }
+
+    // Evitar sincronizaciones simultáneas
+    if (_isSyncing) {
+      debugPrint('Sincronización ya en curso, ignorando nueva solicitud');
+      return;
+    }
+
+    // Validar modo online
+    if (!_isOnlineMode) {
+      throw OfflineModeException(
+        'No se puede sincronizar: modo offline. '
+        'Por favor, verifica tu conexión a Internet.'
+      );
+    }
+
+    try {
+      _isSyncing = true;
+      notifyListeners();
+
+      debugPrint('Subiendo todos los datos locales a la nube...');
+
+      // 1. Obtener todas las sesiones locales
+      final boxSesiones = Hive.box<Sesion>(AppConstants.boxSesiones);
+      final sesionesLocales = boxSesiones.values.toList();
+      debugPrint('Sesiones locales a subir: ${sesionesLocales.length}');
+
+      // 2. Obtener perfil local
+      final boxPerfil = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+      final perfilLocal = boxPerfil.isNotEmpty ? boxPerfil.getAt(0) : null;
+
+      // 3. Eliminar todas las sesiones existentes en Firestore
+      debugPrint('Eliminando sesiones existentes en la nube...');
+      final sesionesRemotas = await _firestoreService.obtenerSesiones(_userId!);
+      for (final sesionRemota in sesionesRemotas) {
+        await _firestoreService.eliminarSesion(_userId!, sesionRemota.fecha);
+      }
+
+      // 4. Subir todas las sesiones locales
+      debugPrint('Subiendo ${sesionesLocales.length} sesiones locales...');
+      await _firestoreService.sincronizarDatosLocales(
+        _userId!,
+        sesionesLocales,
+        perfilLocal,
+      );
+
+      debugPrint('Subida completada: ${sesionesLocales.length} sesiones en la nube');
+
+      _isSyncing = false;
+      notifyListeners();
+    } on NetworkException {
+      _isSyncing = false;
+      notifyListeners();
+      rethrow;
+    } on PermissionException {
+      _isSyncing = false;
+      notifyListeners();
+      rethrow;
+    } catch (e) {
+      _isSyncing = false;
+      notifyListeners();
+      
+      final errorMsg = e.toString().toLowerCase();
+      
+      if (errorMsg.contains('network') || 
+          errorMsg.contains('unavailable') ||
+          errorMsg.contains('failed to connect')) {
+        throw NetworkException(
+          'Error de conexión durante la sincronización. '
+          'Por favor, verifica tu conexión a Internet e intenta nuevamente.'
+        );
+      } else if (errorMsg.contains('permission') || 
+                 errorMsg.contains('permission_denied')) {
+        throw PermissionException(
+          'Error de permisos durante la sincronización. '
+          'Por favor, verifica que tienes los permisos necesarios en Firebase.'
+        );
+      } else {
+        debugPrint('Error durante la subida: $e');
+        throw SyncException(
+          'Error durante la subida de datos. '
+          'Por favor, intenta nuevamente más tarde.',
+          e is Exception ? e : null,
+        );
+      }
     }
   }
 

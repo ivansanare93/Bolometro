@@ -1280,6 +1280,54 @@ abstract class AppLocalizations {
   /// **'Guardar datos en la nube'**
   String get saveDataToCloud;
 
+  /// No description provided for @syncDirection.
+  ///
+  /// In es, this message translates to:
+  /// **'Dirección de sincronización'**
+  String get syncDirection;
+
+  /// No description provided for @uploadToCloud.
+  ///
+  /// In es, this message translates to:
+  /// **'Subir a la nube'**
+  String get uploadToCloud;
+
+  /// No description provided for @downloadFromCloud.
+  ///
+  /// In es, this message translates to:
+  /// **'Descargar desde la nube'**
+  String get downloadFromCloud;
+
+  /// No description provided for @smartSync.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronización inteligente'**
+  String get smartSync;
+
+  /// No description provided for @uploadToCloudDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Sobrescribir la nube con los datos locales'**
+  String get uploadToCloudDesc;
+
+  /// No description provided for @downloadFromCloudDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Sobrescribir los datos locales con los de la nube'**
+  String get downloadFromCloudDesc;
+
+  /// No description provided for @smartSyncDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Combinar datos locales y de la nube'**
+  String get smartSyncDesc;
+
+  /// No description provided for @selectSyncDirection.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona el tipo de sincronización'**
+  String get selectSyncDirection;
+
   /// No description provided for @noDataForStatistics.
   ///
   /// In es, this message translates to:

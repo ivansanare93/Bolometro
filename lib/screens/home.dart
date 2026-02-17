@@ -239,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   subtitle: Text(
                                     dataRepository.isSyncing
                                         ? AppLocalizations.of(context)!.syncing
-                                        : AppLocalizations.of(context)!.saveDataToCloud,
+                                        : AppLocalizations.of(context)!.selectSyncDirection,
                                     style: const TextStyle(fontSize: 12),
                                   ),
                                   trailing: dataRepository.isSyncing
@@ -254,14 +254,78 @@ class _HomeScreenState extends State<HomeScreen> {
                                   onTap: dataRepository.isSyncing
                                       ? null
                                       : () async {
+                                          // Mostrar diálogo para seleccionar dirección de sincronización
+                                          final syncDirection = await showDialog<String>(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title: Text(AppLocalizations.of(context)!.syncDirection),
+                                                content: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    ListTile(
+                                                      leading: const Icon(Icons.upload),
+                                                      title: Text(AppLocalizations.of(context)!.uploadToCloud),
+                                                      subtitle: Text(
+                                                        AppLocalizations.of(context)!.uploadToCloudDesc,
+                                                        style: const TextStyle(fontSize: 12),
+                                                      ),
+                                                      onTap: () => Navigator.pop(context, 'upload'),
+                                                    ),
+                                                    const Divider(),
+                                                    ListTile(
+                                                      leading: const Icon(Icons.download),
+                                                      title: Text(AppLocalizations.of(context)!.downloadFromCloud),
+                                                      subtitle: Text(
+                                                        AppLocalizations.of(context)!.downloadFromCloudDesc,
+                                                        style: const TextStyle(fontSize: 12),
+                                                      ),
+                                                      onTap: () => Navigator.pop(context, 'download'),
+                                                    ),
+                                                    const Divider(),
+                                                    ListTile(
+                                                      leading: const Icon(Icons.sync_alt),
+                                                      title: Text(AppLocalizations.of(context)!.smartSync),
+                                                      subtitle: Text(
+                                                        AppLocalizations.of(context)!.smartSyncDesc,
+                                                        style: const TextStyle(fontSize: 12),
+                                                      ),
+                                                      onTap: () => Navigator.pop(context, 'smart'),
+                                                    ),
+                                                  ],
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () => Navigator.pop(context),
+                                                    child: Text(AppLocalizations.of(context)!.cancel),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+
+                                          if (syncDirection == null) return;
+
                                           try {
                                             final analytics = Provider.of<AnalyticsService>(
                                               context,
                                               listen: false,
                                             );
                                             await analytics.logSync();
-                                            await dataRepository
-                                                .sincronizarANube();
+
+                                            // Ejecutar la sincronización según la dirección seleccionada
+                                            switch (syncDirection) {
+                                              case 'upload':
+                                                await dataRepository.subirANube();
+                                                break;
+                                              case 'download':
+                                                await dataRepository.descargarDesdeNube();
+                                                break;
+                                              case 'smart':
+                                                await dataRepository.sincronizarANube();
+                                                break;
+                                            }
+
                                             if (context.mounted) {
                                               Navigator.pop(context);
                                               ScaffoldMessenger.of(context)
