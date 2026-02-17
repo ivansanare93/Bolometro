@@ -44,8 +44,9 @@
 - **Barra de Progreso**: Visualiza tu avance hacia el siguiente nivel
 
 ### 👥 Sistema de Amigos y Rankings
-- **Gestión de Amistades**: Busca y añade amigos por correo electrónico
+- **Gestión de Amistades**: Busca y añade amigos por correo electrónico o código de amigo
 - **Solicitudes de Amistad**: Acepta o rechaza solicitudes de amistad
+- **Notificaciones Push**: Recibe notificaciones cuando recibes o aceptan solicitudes de amistad
 - **Rankings entre Amigos**: Compara tus estadísticas con tus amigos
 - **Múltiples Categorías de Ranking**: Rankings por promedio, mejor partida, % de strikes, % de spares y consistencia
 - **Clasificación Automática**: Rankings ordenados por la métrica seleccionada
@@ -93,7 +94,7 @@
 - **Base de datos**: Hive (NoSQL local)
 - **Gestión de estado**: Provider
 - **Gráficos**: FL Chart
-- **Backend (opcional)**: Firebase (Auth, Firestore)
+- **Backend**: Firebase (Auth, Firestore, Cloud Functions, Cloud Messaging)
 - **Iconos**: Font Awesome, Material Design Icons
 
 ## 📱 Plataformas Soportadas
@@ -519,9 +520,9 @@ Si ves errores de autenticación con Google, consulta el archivo [`AUTENTICACION
 - Optimizaciones de rendimiento y cache
 - Internacionalización completa (ES/EN)
 - Documentación técnica exhaustiva (26+ documentos)
+- Sistema de notificaciones push para interacciones sociales
 
 **Próximas Mejoras**:
-- Notificaciones push para solicitudes de amistad
 - Más logros y desafíos especiales
 - Análisis avanzados de patrones de juego
 
