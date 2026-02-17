@@ -1,5 +1,0 @@
-package com.bolometro
-
-import io.flutter.embedding.android.FlutterActivity
-
-class MainActivity : FlutterActivity()
