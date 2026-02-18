@@ -106,6 +106,8 @@ class DataRepository extends ChangeNotifier {
     if (!Hive.isBoxOpen(boxName)) {
       return await Hive.openBox<PerfilUsuario>(boxName);
     }
+    return Hive.box<PerfilUsuario>(boxName);
+  }
 
   /// Configurar el usuario autenticado y modo online
   Future<void> setUser(String? userId) async {
