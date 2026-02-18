@@ -344,14 +344,24 @@ class DataRepository extends ChangeNotifier {
         final progressLocal = progressBox.isNotEmpty ? progressBox.getAt(0) : null;
         final achievementsLocal = achievementsBox.values.toList();
         
-        if (progressLocal != null || achievementsLocal.isNotEmpty) {
+        // Solo sincronizar si hay datos de progreso (los logros pueden estar vacíos inicialmente)
+        if (progressLocal != null) {
           await _firestoreService.sincronizarGamificacion(
             _userId!,
-            progressLocal ?? UserProgress(),
+            progressLocal,
             achievementsLocal,
           );
           
           debugPrint('Datos de gamificación sincronizados: ${achievementsLocal.length} logros');
+        } else if (achievementsLocal.isNotEmpty) {
+          // Si solo hay logros sin progreso, crear un progreso por defecto
+          debugPrint('No hay progreso local, creando progreso por defecto para sincronizar logros');
+          await _firestoreService.sincronizarGamificacion(
+            _userId!,
+            UserProgress(),
+            achievementsLocal,
+          );
+          debugPrint('Logros sincronizados con progreso por defecto');
         }
       } catch (e) {
         debugPrint('Error al sincronizar gamificación: $e');
@@ -572,14 +582,24 @@ class DataRepository extends ChangeNotifier {
       );
 
       // 6. Subir datos de gamificación si existen
-      if (progressLocal != null || achievementsLocal.isNotEmpty) {
+      // Solo subir si hay datos de progreso (los logros pueden estar vacíos inicialmente)
+      if (progressLocal != null) {
         debugPrint('Subiendo datos de gamificación...');
         await _firestoreService.sincronizarGamificacion(
           _userId!,
-          progressLocal ?? UserProgress(),
+          progressLocal,
           achievementsLocal,
         );
         debugPrint('Datos de gamificación subidos exitosamente');
+      } else if (achievementsLocal.isNotEmpty) {
+        // Si solo hay logros sin progreso, crear un progreso por defecto
+        debugPrint('No hay progreso local, creando progreso por defecto para subir logros');
+        await _firestoreService.sincronizarGamificacion(
+          _userId!,
+          UserProgress(),
+          achievementsLocal,
+        );
+        debugPrint('Logros subidos con progreso por defecto');
       }
 
       debugPrint('Subida completada: ${sesionesLocales.length} sesiones en la nube');
