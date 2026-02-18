@@ -66,9 +66,9 @@ class DataRepository extends ChangeNotifier {
   /// - Prioriza sincronizar progreso existente con logros
   /// - Si solo hay logros, crea progreso por defecto para preservarlos
   /// - Si no hay datos, no hace nada
-  Future<void> _sincronizarGamificacion(String mensajeAccion, String mensajeCompletado) async {
+  Future<void> _sincronizarGamificacion(String actionMessage, String completionMessage) async {
     try {
-      debugPrint(mensajeAccion);
+      debugPrint(actionMessage);
       
       final progressBox = await Hive.openBox<UserProgress>(AppConstants.boxUserProgress);
       final achievementsBox = await Hive.openBox<Achievement>(AppConstants.boxAchievements);
@@ -83,16 +83,17 @@ class DataRepository extends ChangeNotifier {
           progressLocal,
           achievementsLocal,
         );
-        debugPrint('$mensajeCompletado: ${achievementsLocal.length} logros');
+        debugPrint('$completionMessage: ${achievementsLocal.length} logros');
       } else if (achievementsLocal.isNotEmpty) {
         // Si solo hay logros sin progreso, crear un progreso por defecto
+        // UserProgress() crea un progreso inicial con valores por defecto (level=1, xp=0, etc.)
         debugPrint('No hay progreso local, creando progreso por defecto para sincronizar logros');
         await _firestoreService.sincronizarGamificacion(
           _userId!,
-          UserProgress(),
+          UserProgress(), // Crea progreso con valores iniciales por defecto
           achievementsLocal,
         );
-        debugPrint('$mensajeCompletado con progreso por defecto');
+        debugPrint('$completionMessage con progreso por defecto');
       }
     } catch (e) {
       debugPrint('Error al sincronizar gamificación: $e');
