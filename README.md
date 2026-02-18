@@ -451,7 +451,7 @@ Para ver el historial completo de cambios y versiones del proyecto, consulta [CH
 ### Versión Actual: 1.0.2
 
 **Características Principales**:
-- ✅ Sistema de gamificación completo (15 logros únicos con sistema de niveles)
+- ✅ Sistema de gamificación completo (29 logros únicos con sistema de niveles)
 - ✅ Sistema de amigos y rankings (búsqueda, solicitudes, comparación de estadísticas)
 - ✅ Autenticación con Google Sign-In y sincronización en la nube
 - ✅ Internacionalización completa (Español e Inglés)
@@ -514,7 +514,11 @@ Si ves errores de autenticación con Google, consulta el archivo [`AUTENTICACION
 **Última Actualización**: Febrero 2026
 
 **Características Recientes**:
-- Sistema de gamificación completo con 15 logros y sistema de niveles
+- **Más logros y desafíos especiales** - Sistema ampliado con 29 logros únicos (+93% incremento)
+  - 2 nuevos tipos de logros: Consistencia y Dedicación
+  - Logros de nivel avanzado para partidas, strikes y spares
+  - Sistema de tracking de estadísticas avanzadas
+- Sistema de gamificación completo con 29 logros y sistema de niveles
 - Sistema social de amigos y rankings comparativos
 - **Rankings por categorías adicionales** (Promedio, Strikes%, Spares%, Mejor Partida, Consistencia)
 - **Gráficos comparativos entre amigos** (estadísticas, tendencias, distribuciones)
@@ -525,8 +529,9 @@ Si ves errores de autenticación con Google, consulta el archivo [`AUTENTICACION
 - Sistema de notificaciones push para interacciones sociales
 
 **Próximas Mejoras**:
-- Más logros y desafíos especiales
 - Análisis avanzados de patrones de juego
+- Desafíos temporales diarios/semanales
+- Logros sociales basados en comparaciones con amigos
 
 ---
 
