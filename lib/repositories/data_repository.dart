@@ -66,9 +66,9 @@ class DataRepository extends ChangeNotifier {
   /// - Prioriza sincronizar progreso existente con logros
   /// - Si solo hay logros, crea progreso por defecto para preservarlos
   /// - Si no hay datos, no hace nada
-  Future<void> _sincronizarGamificacion(String operacion) async {
+  Future<void> _sincronizarGamificacion(String mensajeAccion, String mensajeCompletado) async {
     try {
-      debugPrint('$operacion datos de gamificación...');
+      debugPrint(mensajeAccion);
       
       final progressBox = await Hive.openBox<UserProgress>(AppConstants.boxUserProgress);
       final achievementsBox = await Hive.openBox<Achievement>(AppConstants.boxAchievements);
@@ -83,30 +83,21 @@ class DataRepository extends ChangeNotifier {
           progressLocal,
           achievementsLocal,
         );
-        debugPrint('Datos de gamificación ${operacion.toLowerCase()}s: ${achievementsLocal.length} logros');
+        debugPrint('$mensajeCompletado: ${achievementsLocal.length} logros');
       } else if (achievementsLocal.isNotEmpty) {
         // Si solo hay logros sin progreso, crear un progreso por defecto
-        debugPrint('No hay progreso local, creando progreso por defecto para $operacion logros');
+        debugPrint('No hay progreso local, creando progreso por defecto para sincronizar logros');
         await _firestoreService.sincronizarGamificacion(
           _userId!,
           UserProgress(),
           achievementsLocal,
         );
-        debugPrint('Logros ${operacion.toLowerCase()}s con progreso por defecto');
+        debugPrint('$mensajeCompletado con progreso por defecto');
       }
     } catch (e) {
-      debugPrint('Error al $operacion gamificación: $e');
+      debugPrint('Error al sincronizar gamificación: $e');
       // Continuar con el resto de la sincronización
     }
-  }
-
-  /// Obtener box de perfil, abriéndolo si es necesario
-  Future<Box<PerfilUsuario>> _getPerfilBox() async {
-    final boxName = _getPerfilBoxName();
-    if (!Hive.isBoxOpen(boxName)) {
-      return await Hive.openBox<PerfilUsuario>(boxName);
-    }
-    return Hive.box<PerfilUsuario>(boxName);
   }
 
   /// Configurar el usuario autenticado y modo online
@@ -384,7 +375,10 @@ class DataRepository extends ChangeNotifier {
       }
 
       // 5. Sincronizar datos de gamificación
-      await _sincronizarGamificacion('Sincronizado');
+      await _sincronizarGamificacion(
+        'Sincronizando datos de gamificación...',
+        'Datos de gamificación sincronizados',
+      );
 
       // 6. Obtener sesiones finales de la nube después de la subida
       debugPrint('Descargando estado final desde la nube...');
@@ -581,7 +575,10 @@ class DataRepository extends ChangeNotifier {
       );
 
       // 5. Subir datos de gamificación
-      await _sincronizarGamificacion('Subido');
+      await _sincronizarGamificacion(
+        'Subiendo datos de gamificación...',
+        'Datos de gamificación subidos',
+      );
 
       debugPrint('Subida completada: ${sesionesLocales.length} sesiones en la nube');
 
