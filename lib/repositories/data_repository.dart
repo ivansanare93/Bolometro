@@ -86,11 +86,11 @@ class DataRepository extends ChangeNotifier {
         debugPrint('$completionMessage: ${achievementsLocal.length} logros');
       } else if (achievementsLocal.isNotEmpty) {
         // Si solo hay logros sin progreso, crear un progreso por defecto
-        // UserProgress() crea un progreso inicial con valores por defecto (level=1, xp=0, etc.)
+        // UserProgress() crea: experiencePoints=0, currentLevel=1, unlockedAchievementIds=[]
         debugPrint('No hay progreso local, creando progreso por defecto para sincronizar logros');
         await _firestoreService.sincronizarGamificacion(
           _userId!,
-          UserProgress(), // Crea progreso con valores iniciales por defecto
+          UserProgress(), // Crea progreso con valores iniciales: XP=0, nivel=1
           achievementsLocal,
         );
         debugPrint('$completionMessage con progreso por defecto');
