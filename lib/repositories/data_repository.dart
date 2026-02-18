@@ -90,7 +90,7 @@ class DataRepository extends ChangeNotifier {
         debugPrint('No hay progreso local, creando progreso por defecto para sincronizar logros');
         await _firestoreService.sincronizarGamificacion(
           _userId!,
-          UserProgress(), // Crea progreso con valores iniciales: XP=0, nivel=1
+          UserProgress(), // Crea: experiencePoints=0, currentLevel=1
           achievementsLocal,
         );
         debugPrint('$completionMessage con progreso por defecto');
