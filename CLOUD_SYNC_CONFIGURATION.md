@@ -168,10 +168,14 @@ Guarda un logro individual en Firestore.
 
 **Ubicación:** `users/{userId}/gamification/progress/achievements/{achievementId}`
 
+**Nota:** Los logros se almacenan como una subcolección del documento `progress`, no directamente bajo `gamification`.
+
 ### obtenerLogros(userId)
 Obtiene todos los logros del usuario desde Firestore.
 
 **Retorna:** `List<Achievement>` (vacío si no hay logros)
+
+**Ubicación consultada:** `users/{userId}/gamification/progress/achievements/`
 
 ### sincronizarGamificacion(userId, progress, achievements)
 Sincroniza progreso y todos los logros en una operación batch (atómica).
