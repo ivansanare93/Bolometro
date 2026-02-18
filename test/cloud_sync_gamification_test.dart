@@ -169,9 +169,13 @@ void main() {
       // }
       //
       // Esta regla permite:
-      // - Lectura y escritura del documento 'progress'
-      // - Lectura y escritura de la subcolección 'achievements'
+      // - Lectura y escritura del documento 'progress' en gamification/progress
+      // - Lectura y escritura de la subcolección 'achievements' en gamification/progress/achievements/{achievementId}
       // - Solo para el usuario autenticado (userId == request.auth.uid)
+      //
+      // Estructura de datos en Firestore:
+      // users/{userId}/gamification/progress (documento con UserProgress)
+      // users/{userId}/gamification/progress/achievements/{achievementId} (subcolección de Achievement)
       //
       // Sin esta regla, las operaciones de gamificación fallarían con PERMISSION_DENIED
       

@@ -102,8 +102,8 @@ users/{userId}/
   ├── friendRequests/{requestId} (subcolección)
   ├── notifications/{notificationId} (subcolección)
   └── gamification/ (subcolección) ← NUEVO
-      ├── progress (documento)
-      └── achievements/{achievementId} (subcolección)
+      └── progress (documento)
+          └── achievements/{achievementId} (subcolección)
 ```
 
 ## Almacenamiento Local (Hive)

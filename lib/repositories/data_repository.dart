@@ -341,13 +341,13 @@ class DataRepository extends ChangeNotifier {
         final progressBox = await Hive.openBox<UserProgress>('userProgress');
         final achievementsBox = await Hive.openBox<Achievement>('achievements');
         
-        if (progressBox.isNotEmpty && achievementsBox.isNotEmpty) {
-          final progressLocal = progressBox.getAt(0)!;
-          final achievementsLocal = achievementsBox.values.toList();
-          
+        final progressLocal = progressBox.isNotEmpty ? progressBox.getAt(0) : null;
+        final achievementsLocal = achievementsBox.values.toList();
+        
+        if (progressLocal != null || achievementsLocal.isNotEmpty) {
           await _firestoreService.sincronizarGamificacion(
             _userId!,
-            progressLocal,
+            progressLocal ?? UserProgress(),
             achievementsLocal,
           );
           
@@ -572,11 +572,11 @@ class DataRepository extends ChangeNotifier {
       );
 
       // 6. Subir datos de gamificación si existen
-      if (progressLocal != null && achievementsLocal.isNotEmpty) {
+      if (progressLocal != null || achievementsLocal.isNotEmpty) {
         debugPrint('Subiendo datos de gamificación...');
         await _firestoreService.sincronizarGamificacion(
           _userId!,
-          progressLocal,
+          progressLocal ?? UserProgress(),
           achievementsLocal,
         );
         debugPrint('Datos de gamificación subidos exitosamente');
