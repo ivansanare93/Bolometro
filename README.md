@@ -448,7 +448,7 @@ Para instrucciones de compilación local y detalles de configuración de CI/CD, 
 
 Para ver el historial completo de cambios y versiones del proyecto, consulta [CHANGELOG.md](CHANGELOG.md).
 
-### Versión Actual: 1.0.2
+### Versión Actual: 1.0.4
 
 **Características Principales**:
 - ✅ Sistema de gamificación completo (29 logros únicos con sistema de niveles)
@@ -509,7 +509,7 @@ Si ves errores de autenticación con Google, consulta el archivo [`AUTENTICACION
 
 ## 🚀 Estado del Proyecto
 
-**Versión Actual**: 1.0.2  
+**Versión Actual**: 1.0.4  
 **Estado**: ✅ En Producción  
 **Última Actualización**: Febrero 2026
 
