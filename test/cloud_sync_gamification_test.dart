@@ -188,9 +188,8 @@ void main() {
     test('UserProgress debe ser serializable a/desde JSON', () {
       // Arrange
       final progress = UserProgress(
-        level: 5,
-        xp: 1000,
-        totalGames: 50,
+        experiencePoints: 1000,
+        currentLevel: 5,
       );
       
       // Act
@@ -198,9 +197,9 @@ void main() {
       final restored = UserProgress.fromJson(json);
       
       // Assert
-      expect(restored.level, progress.level);
-      expect(restored.xp, progress.xp);
-      expect(restored.totalGames, progress.totalGames);
+      expect(restored.experiencePoints, progress.experiencePoints);
+      expect(restored.currentLevel, progress.currentLevel);
+      expect(restored.unlockedAchievementIds, progress.unlockedAchievementIds);
     });
 
     test('Achievement debe ser serializable a/desde JSON', () {

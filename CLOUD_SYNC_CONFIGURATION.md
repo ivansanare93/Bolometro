@@ -111,10 +111,10 @@ users/{userId}/
 Los datos de gamificación se almacenan en dos boxes de Hive:
 
 1. **userProgress** - Box que contiene un único documento UserProgress con:
-   - level (nivel del usuario)
-   - xp (puntos de experiencia)
-   - totalGames (total de partidas jugadas)
-   - otros campos de progreso
+   - experiencePoints (puntos de experiencia acumulados)
+   - currentLevel (nivel actual del usuario)
+   - unlockedAchievementIds (lista de IDs de logros desbloqueados)
+   - lastUpdated (fecha de última actualización)
 
 2. **achievements** - Box que contiene múltiples Achievement identificados por ID:
    - id (identificador único del logro)
