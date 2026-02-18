@@ -17,12 +17,83 @@ class DataRepository extends ChangeNotifier {
 
   bool get isOnlineMode => _isOnlineMode;
   bool get isSyncing => _isSyncing;
+  
+  /// Obtener nombre del box de sesiones actual
+  String get sesionesBoxName => _getSesionesBoxName();
+  
+  /// Obtener nombre del box de perfil actual
+  String get perfilBoxName => _getPerfilBoxName();
+
+  /// Obtener nombre del box de sesiones específico del usuario
+  String _getSesionesBoxName() {
+    if (_userId != null) {
+      return '${AppConstants.boxSesiones}_$_userId';
+    }
+    return AppConstants.boxSesiones;
+  }
+
+  /// Obtener nombre del box de perfil específico del usuario
+  String _getPerfilBoxName() {
+    if (_userId != null) {
+      return '${AppConstants.boxPerfilUsuario}_$_userId';
+    }
+    return AppConstants.boxPerfilUsuario;
+  }
+
+  /// Obtener box de sesiones, abriéndolo si es necesario
+  Future<Box<Sesion>> _getSesionesBox() async {
+    final boxName = _getSesionesBoxName();
+    if (!Hive.isBoxOpen(boxName)) {
+      return await Hive.openBox<Sesion>(boxName);
+    }
+    return Hive.box<Sesion>(boxName);
+  }
+
+  /// Obtener box de perfil, abriéndolo si es necesario
+  Future<Box<PerfilUsuario>> _getPerfilBox() async {
+    final boxName = _getPerfilBoxName();
+    if (!Hive.isBoxOpen(boxName)) {
+      return await Hive.openBox<PerfilUsuario>(boxName);
+    }
+    return Hive.box<PerfilUsuario>(boxName);
+  }
 
   /// Configurar el usuario autenticado y modo online
-  void setUser(String? userId) {
+  Future<void> setUser(String? userId) async {
     _userId = userId;
     _isOnlineMode = userId != null;
+    
+    // Asegurar que los boxes del usuario estén abiertos
+    if (_userId != null) {
+      await _getSesionesBox();
+      await _getPerfilBox();
+    }
+    
     notifyListeners();
+  }
+
+  /// Limpiar datos locales del usuario cuando cierra sesión
+  Future<void> clearUserData() async {
+    if (_userId != null) {
+      try {
+        final sesionesBoxName = _getSesionesBoxName();
+        final perfilBoxName = _getPerfilBoxName();
+        
+        // Cerrar y eliminar boxes del usuario
+        if (Hive.isBoxOpen(sesionesBoxName)) {
+          await Hive.box<Sesion>(sesionesBoxName).clear();
+          await Hive.box<Sesion>(sesionesBoxName).close();
+        }
+        if (Hive.isBoxOpen(perfilBoxName)) {
+          await Hive.box<PerfilUsuario>(perfilBoxName).clear();
+          await Hive.box<PerfilUsuario>(perfilBoxName).close();
+        }
+        
+        debugPrint('Datos locales del usuario limpiados');
+      } catch (e) {
+        debugPrint('Error al limpiar datos locales: $e');
+      }
+    }
   }
 
   /// Obtener todas las sesiones
@@ -33,14 +104,14 @@ class DataRepository extends ChangeNotifier {
         return await _firestoreService.obtenerSesiones(_userId!);
       } else {
         // Modo offline: obtener desde Hive
-        final box = Hive.box<Sesion>(AppConstants.boxSesiones);
+        final box = await _getSesionesBox();
         return box.values.toList();
       }
     } catch (e) {
       debugPrint('Error al obtener sesiones: $e');
       // Fallback a datos locales si falla Firestore
       try {
-        final box = Hive.box<Sesion>(AppConstants.boxSesiones);
+        final box = await _getSesionesBox();
         return box.values.toList();
       } catch (e) {
         debugPrint('Error al obtener sesiones desde Hive: $e');
@@ -63,7 +134,7 @@ class DataRepository extends ChangeNotifier {
         );
       } else {
         // Modo offline: paginación local con Hive
-        final box = Hive.box<Sesion>(AppConstants.boxSesiones);
+        final box = await _getSesionesBox();
         final todasSesiones = box.values.toList();
         
         // Ordenar por fecha descendente
@@ -88,7 +159,7 @@ class DataRepository extends ChangeNotifier {
   Future<void> guardarSesion(Sesion sesion) async {
     try {
       // Guardar localmente primero
-      final box = Hive.box<Sesion>(AppConstants.boxSesiones);
+      final box = await _getSesionesBox();
       await box.add(sesion);
 
       // Si está online, guardar también en Firestore
@@ -107,7 +178,7 @@ class DataRepository extends ChangeNotifier {
   Future<void> eliminarSesion(Sesion sesion) async {
     try {
       // Eliminar localmente desde Hive usando el índice
-      final box = Hive.box<Sesion>(AppConstants.boxSesiones);
+      final box = await _getSesionesBox();
       final sesiones = box.values.toList();
       final index = sesiones.indexOf(sesion);
       
@@ -139,7 +210,7 @@ class DataRepository extends ChangeNotifier {
       }
 
       // Modo offline o si no hay perfil remoto: obtener desde Hive
-      final box = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+      final box = await _getPerfilBox();
       if (box.isNotEmpty) {
         return box.getAt(0);
       }
@@ -154,7 +225,7 @@ class DataRepository extends ChangeNotifier {
   Future<void> guardarPerfil(PerfilUsuario perfil) async {
     try {
       // Guardar localmente
-      final box = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+      final box = await _getPerfilBox();
       if (box.isEmpty) {
         await box.add(perfil);
       } else {
@@ -230,12 +301,12 @@ class DataRepository extends ChangeNotifier {
           .toSet();
 
       // 2. Obtener datos locales desde Hive
-      final boxSesiones = Hive.box<Sesion>(AppConstants.boxSesiones);
+      final boxSesiones = await _getSesionesBox();
       final sesionesLocales = boxSesiones.values.toList();
       debugPrint('Sesiones locales: ${sesionesLocales.length}');
 
       // Obtener perfil local una sola vez
-      final boxPerfil = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+      final boxPerfil = await _getPerfilBox();
       final perfilLocal = boxPerfil.isNotEmpty ? boxPerfil.getAt(0) : null;
 
       // 3. Filtrar sesiones locales que NO existen en la nube
@@ -338,7 +409,7 @@ class DataRepository extends ChangeNotifier {
       final sesionesRemotas = await _firestoreService.obtenerSesiones(_userId!);
       
       // Guardar en Hive
-      final boxSesiones = Hive.box<Sesion>(AppConstants.boxSesiones);
+      final boxSesiones = await _getSesionesBox();
       await boxSesiones.clear();
       for (final sesion in sesionesRemotas) {
         await boxSesiones.add(sesion);
@@ -347,7 +418,7 @@ class DataRepository extends ChangeNotifier {
       // Obtener perfil desde Firestore
       final perfilRemoto = await _firestoreService.obtenerPerfil(_userId!);
       if (perfilRemoto != null) {
-        final boxPerfil = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+        final boxPerfil = await _getPerfilBox();
         await boxPerfil.clear();
         await boxPerfil.add(perfilRemoto);
       }
@@ -406,12 +477,12 @@ class DataRepository extends ChangeNotifier {
       debugPrint('Subiendo todos los datos locales a la nube...');
 
       // 1. Obtener todas las sesiones locales
-      final boxSesiones = Hive.box<Sesion>(AppConstants.boxSesiones);
+      final boxSesiones = await _getSesionesBox();
       final sesionesLocales = boxSesiones.values.toList();
       debugPrint('Sesiones locales a subir: ${sesionesLocales.length}');
 
       // 2. Obtener perfil local
-      final boxPerfil = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+      final boxPerfil = await _getPerfilBox();
       final perfilLocal = boxPerfil.isNotEmpty ? boxPerfil.getAt(0) : null;
 
       // 3. Eliminar todas las sesiones existentes en Firestore

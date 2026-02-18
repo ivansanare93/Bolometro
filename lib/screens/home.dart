@@ -38,7 +38,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _perfilBoxFuture = Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+    final dataRepository = Provider.of<DataRepository>(context, listen: false);
+    _perfilBoxFuture = Hive.openBox<PerfilUsuario>(dataRepository.perfilBoxName);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
         final analytics = Provider.of<AnalyticsService>(context, listen: false);
@@ -50,8 +51,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _refrescarPerfil() async {
+    final dataRepository = Provider.of<DataRepository>(context, listen: false);
     setState(() {
-      _perfilBoxFuture = Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+      _perfilBoxFuture = Hive.openBox<PerfilUsuario>(dataRepository.perfilBoxName);
     });
   }
 
@@ -401,8 +403,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                       } catch (e) {
                                         debugPrint('Error logging sign out: $e');
                                       }
+                                      // Limpiar datos locales del usuario antes de cerrar sesión
+                                      await dataRepository.clearUserData();
                                       await authService.signOut();
-                                      dataRepository.setUser(null);
+                                      await dataRepository.setUser(null);
                                     }
                                   },
                                 ),

@@ -6,6 +6,7 @@ import '../models/sesion.dart';
 import '../models/partida.dart';
 import '../utils/app_constants.dart';
 import '../services/analytics_service.dart';
+import '../repositories/data_repository.dart';
 import 'editar_partida.dart';
 import 'home.dart';
 import '../l10n/app_localizations.dart';
@@ -44,7 +45,8 @@ class _VerSesionState extends State<VerSesion> {
           partida: partidaOriginal,
           onGuardar: (partidaActualizada) async {
             try {
-              final box = Hive.box<Sesion>(AppConstants.boxSesiones);
+              final dataRepository = Provider.of<DataRepository>(context, listen: false);
+              final box = Hive.box<Sesion>(dataRepository.sesionesBoxName);
               final sesionIndex = box.values.toList().indexOf(sesionActual);
               if (sesionIndex == -1) {
                 debugPrint('Sesión no encontrada en Hive');
@@ -126,7 +128,8 @@ class _VerSesionState extends State<VerSesion> {
     );
     if (confirm == true) {
       try {
-        final box = Hive.box<Sesion>(AppConstants.boxSesiones);
+        final dataRepository = Provider.of<DataRepository>(context, listen: false);
+        final box = Hive.box<Sesion>(dataRepository.sesionesBoxName);
         final sesionIndex = box.values.toList().indexOf(sesionActual);
         if (sesionIndex == -1) {
           debugPrint('Sesión no encontrada en Hive');

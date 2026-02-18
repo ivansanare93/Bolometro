@@ -54,12 +54,11 @@ class _LoginScreenState extends State<LoginScreen> {
       }
       
       // Configurar el repositorio con el usuario autenticado
-      dataRepository.setUser(authService.userId);
+      await dataRepository.setUser(authService.userId);
 
       // Auto-poblar perfil con datos de Google si no existe
       try {
-        final perfilBox = await Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
-        final perfilExistente = perfilBox.get('perfil');
+        final perfilExistente = await dataRepository.obtenerPerfil();
         
         // Si no hay perfil o el perfil está vacío, crear uno con datos de Google
         if (perfilExistente == null || (perfilExistente.nombre.trim().isEmpty)) {
@@ -72,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
               googleDisplayName: user.displayName,
               isFromGoogle: true,
             );
-            await perfilBox.put('perfil', nuevoPerfil);
+            await dataRepository.guardarPerfil(nuevoPerfil);
             debugPrint('Perfil creado automáticamente con datos de Google');
           }
         }
@@ -115,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final dataRepository = Provider.of<DataRepository>(context, listen: false);
     
     // Configurar modo offline
-    dataRepository.setUser(null);
+    await dataRepository.setUser(null);
     
     // Notificar al AuthWrapper que el usuario continuó sin login
     widget.onContinueWithoutLogin?.call();

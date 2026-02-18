@@ -57,11 +57,11 @@ void main() {
 
     test('sincronizarANube debe lanzar excepción si está en modo offline', () async {
       // Arrange: configurar usuario pero sin modo online
-      repository.setUser('test-user-id');
+      await repository.setUser('test-user-id');
       // Por defecto está en modo online cuando hay usuario, 
       // pero forzamos offline para el test
-      repository.setUser(null);
-      repository.setUser('test-user-id'); // Esto activa online
+      await repository.setUser(null);
+      await repository.setUser('test-user-id'); // Esto activa online
       
       // Para este test necesitaríamos poder forzar modo offline
       // Lo cual requeriría modificar la clase o usar mocks
@@ -92,17 +92,17 @@ void main() {
       expect(repository.isOnlineMode, isFalse);
     });
 
-    test('isOnlineMode debe ser true cuando hay usuario', () {
+    test('isOnlineMode debe ser true cuando hay usuario', () async {
       // Arrange & Act
-      repository.setUser('test-user-id');
+      await repository.setUser('test-user-id');
       
       // Assert
       expect(repository.isOnlineMode, isTrue);
     });
 
-    test('isOnlineMode debe ser false cuando no hay usuario', () {
+    test('isOnlineMode debe ser false cuando no hay usuario', () async {
       // Arrange & Act
-      repository.setUser(null);
+      await repository.setUser(null);
       
       // Assert
       expect(repository.isOnlineMode, isFalse);

@@ -13,6 +13,7 @@ import '../services/analytics_service.dart';
 import '../services/achievement_service.dart';
 import '../services/auth_service.dart';
 import '../services/firestore_service.dart';
+import '../repositories/data_repository.dart';
 import 'home.dart';
 
 class PerfilUsuarioScreen extends StatefulWidget {
@@ -62,7 +63,8 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       _ensureFriendCode();
     });
     try {
-      perfilBox = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+      final dataRepository = Provider.of<DataRepository>(context, listen: false);
+      perfilBox = Hive.box<PerfilUsuario>(dataRepository.perfilBoxName);
       perfil = perfilBox.get('perfil');
       // Si no hay perfil, crea uno por defecto
       if (perfil == null) {
@@ -80,7 +82,8 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       debugPrint('Error de Hive al cargar perfil: $e');
       // Intentar abrir la box nuevamente o crear valores por defecto
       try {
-        perfilBox = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+        final dataRepository = Provider.of<DataRepository>(context, listen: false);
+        perfilBox = Hive.box<PerfilUsuario>(dataRepository.perfilBoxName);
       } catch (_) {
         // Si falla, será necesario recrear la box en un futuro acceso
         debugPrint('No se pudo abrir la box de perfil');

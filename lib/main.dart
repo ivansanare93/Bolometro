@@ -74,6 +74,9 @@ void main() async {
   if (!Hive.isAdapterRegistered(17)) {
     Hive.registerAdapter(UserProgressAdapter());
   }
+  
+  // Abrir boxes por defecto para modo offline (sin usuario autenticado)
+  // Los boxes específicos de usuario se abrirán cuando se autentique
   await Hive.openBox<Sesion>(AppConstants.boxSesiones);
   await Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
 
@@ -189,7 +192,15 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
     // Sincronizar estado de autenticación con el repositorio
     if (authService.isAuthenticated && authService.userId != null) {
-      dataRepository.setUser(authService.userId);
+      // Use scheduleMicrotask to avoid blocking the build method
+      // Errors are caught and logged to prevent silent failures
+      Future.microtask(() async {
+        try {
+          await dataRepository.setUser(authService.userId);
+        } catch (e) {
+          debugPrint('Error setting user in repository: $e');
+        }
+      });
       // Inicializar notificaciones para usuario autenticado
       _initializeNotifications(authService.userId!);
     }
