@@ -76,12 +76,14 @@ class DataRepository extends ChangeNotifier {
       final progressLocal = progressBox.isNotEmpty ? progressBox.getAt(0) : null;
       final achievementsLocal = achievementsBox.values.toList();
       
-      // Solo sincronizar si hay datos de progreso (los logros pueden estar vacíos inicialmente)
+      // Lógica de sincronización:
+      // 1. Caso normal: Hay progreso (con o sin logros) → sincronizar ambos
+      // 2. Caso especial: Solo hay logros sin progreso → crear progreso por defecto para preservar logros
       if (progressLocal != null) {
         await _firestoreService.sincronizarGamificacion(
           _userId!,
           progressLocal,
-          achievementsLocal,
+          achievementsLocal, // Puede estar vacío si el usuario aún no ha desbloqueado logros
         );
         debugPrint('$completionMessage: ${achievementsLocal.length} logros');
       } else if (achievementsLocal.isNotEmpty) {
