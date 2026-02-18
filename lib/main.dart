@@ -193,7 +193,14 @@ class _AuthWrapperState extends State<AuthWrapper> {
     // Sincronizar estado de autenticación con el repositorio
     if (authService.isAuthenticated && authService.userId != null) {
       // Use scheduleMicrotask to avoid blocking the build method
-      Future.microtask(() => dataRepository.setUser(authService.userId));
+      // Errors are caught and logged to prevent silent failures
+      Future.microtask(() async {
+        try {
+          await dataRepository.setUser(authService.userId);
+        } catch (e) {
+          debugPrint('Error setting user in repository: $e');
+        }
+      });
       // Inicializar notificaciones para usuario autenticado
       _initializeNotifications(authService.userId!);
     }
