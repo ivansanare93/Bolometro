@@ -158,7 +158,9 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
         friendCode: perfil?.friendCode, // Preservar el código de amigo
       );
 
-      await perfilBox.put('perfil', nuevoPerfil);
+      final dataRepository = Provider.of<DataRepository>(context, listen: false);
+      await dataRepository.guardarPerfil(nuevoPerfil);
+      
       setState(() {
         perfil = nuevoPerfil;
       });
