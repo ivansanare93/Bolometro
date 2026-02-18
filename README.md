@@ -518,7 +518,6 @@ Si ves errores de autenticación con Google, consulta el archivo [`AUTENTICACION
   - 2 nuevos tipos de logros: Consistencia y Dedicación
   - Logros de nivel avanzado para partidas, strikes y spares
   - Sistema de tracking de estadísticas avanzadas
-- Sistema de gamificación completo con 29 logros y sistema de niveles
 - Sistema social de amigos y rankings comparativos
 - **Rankings por categorías adicionales** (Promedio, Strikes%, Spares%, Mejor Partida, Consistencia)
 - **Gráficos comparativos entre amigos** (estadísticas, tendencias, distribuciones)
