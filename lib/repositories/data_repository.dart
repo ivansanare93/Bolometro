@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import '../models/sesion.dart';
 import '../models/perfil_usuario.dart';
+import '../models/user_progress.dart';
+import '../models/achievement.dart';
 import '../services/firestore_service.dart';
 import '../utils/app_constants.dart';
 import '../exceptions/sync_exceptions.dart';
@@ -332,11 +334,35 @@ class DataRepository extends ChangeNotifier {
         debugPrint('No hay sesiones ni perfil para sincronizar');
       }
 
-      // 5. Obtener sesiones finales de la nube después de la subida
+      // 5. Sincronizar datos de gamificación
+      try {
+        debugPrint('Sincronizando datos de gamificación...');
+        
+        final progressBox = await Hive.openBox<UserProgress>('userProgress');
+        final achievementsBox = await Hive.openBox<Achievement>('achievements');
+        
+        if (progressBox.isNotEmpty && achievementsBox.isNotEmpty) {
+          final progressLocal = progressBox.getAt(0)!;
+          final achievementsLocal = achievementsBox.values.toList();
+          
+          await _firestoreService.sincronizarGamificacion(
+            _userId!,
+            progressLocal,
+            achievementsLocal,
+          );
+          
+          debugPrint('Datos de gamificación sincronizados: ${achievementsLocal.length} logros');
+        }
+      } catch (e) {
+        debugPrint('Error al sincronizar gamificación: $e');
+        // Continuar con el resto de la sincronización
+      }
+
+      // 6. Obtener sesiones finales de la nube después de la subida
       debugPrint('Descargando estado final desde la nube...');
       final sesionesFinal = await _firestoreService.obtenerSesiones(_userId!);
 
-      // 6. Actualizar almacenamiento local con datos de la nube (verdad única)
+      // 7. Actualizar almacenamiento local con datos de la nube (verdad única)
       // IMPORTANTE: Solo limpiamos después de confirmar que tenemos los datos de la nube
       debugPrint('Actualizando almacenamiento local con datos de la nube...');
       await boxSesiones.clear();
@@ -423,6 +449,32 @@ class DataRepository extends ChangeNotifier {
         await boxPerfil.add(perfilRemoto);
       }
 
+      // Obtener y guardar datos de gamificación desde Firestore
+      try {
+        debugPrint('Descargando datos de gamificación...');
+        
+        final progressRemoto = await _firestoreService.obtenerProgreso(_userId!);
+        if (progressRemoto != null) {
+          final progressBox = await Hive.openBox<UserProgress>('userProgress');
+          await progressBox.clear();
+          await progressBox.add(progressRemoto);
+          debugPrint('Progreso del usuario descargado');
+        }
+        
+        final achievementsRemotos = await _firestoreService.obtenerLogros(_userId!);
+        if (achievementsRemotos.isNotEmpty) {
+          final achievementsBox = await Hive.openBox<Achievement>('achievements');
+          await achievementsBox.clear();
+          for (var achievement in achievementsRemotos) {
+            await achievementsBox.put(achievement.id, achievement);
+          }
+          debugPrint('${achievementsRemotos.length} logros descargados');
+        }
+      } catch (e) {
+        debugPrint('Error al descargar datos de gamificación: $e');
+        // Continuar sin gamificación si hay error
+      }
+
       debugPrint('Descarga completada: ${sesionesRemotas.length} sesiones');
 
       _isSyncing = false;
@@ -485,20 +537,50 @@ class DataRepository extends ChangeNotifier {
       final boxPerfil = await _getPerfilBox();
       final perfilLocal = boxPerfil.isNotEmpty ? boxPerfil.getAt(0) : null;
 
-      // 3. Eliminar todas las sesiones existentes en Firestore
+      // 3. Obtener datos de gamificación locales
+      UserProgress? progressLocal;
+      List<Achievement> achievementsLocal = [];
+      
+      try {
+        final progressBox = await Hive.openBox<UserProgress>('userProgress');
+        if (progressBox.isNotEmpty) {
+          progressLocal = progressBox.getAt(0);
+        }
+        
+        final achievementsBox = await Hive.openBox<Achievement>('achievements');
+        achievementsLocal = achievementsBox.values.toList();
+        
+        debugPrint('Datos de gamificación locales: Progress: ${progressLocal != null ? "Sí" : "No"}, Logros: ${achievementsLocal.length}');
+      } catch (e) {
+        debugPrint('Error al obtener datos de gamificación locales: $e');
+        // Continuar sin gamificación si hay error
+      }
+
+      // 4. Eliminar todas las sesiones existentes en Firestore
       debugPrint('Eliminando sesiones existentes en la nube...');
       final sesionesRemotas = await _firestoreService.obtenerSesiones(_userId!);
       for (final sesionRemota in sesionesRemotas) {
         await _firestoreService.eliminarSesion(_userId!, sesionRemota.fecha);
       }
 
-      // 4. Subir todas las sesiones locales
+      // 5. Subir todas las sesiones locales
       debugPrint('Subiendo ${sesionesLocales.length} sesiones locales...');
       await _firestoreService.sincronizarDatosLocales(
         _userId!,
         sesionesLocales,
         perfilLocal,
       );
+
+      // 6. Subir datos de gamificación si existen
+      if (progressLocal != null && achievementsLocal.isNotEmpty) {
+        debugPrint('Subiendo datos de gamificación...');
+        await _firestoreService.sincronizarGamificacion(
+          _userId!,
+          progressLocal,
+          achievementsLocal,
+        );
+        debugPrint('Datos de gamificación subidos exitosamente');
+      }
 
       debugPrint('Subida completada: ${sesionesLocales.length} sesiones en la nube');
 
