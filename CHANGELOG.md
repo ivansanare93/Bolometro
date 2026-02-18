@@ -5,6 +5,39 @@ Todos los cambios notables del proyecto Bolómetro se documentarán en este arch
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 
+## [1.0.4] - 2026-02-18
+
+### Agregado
+- **Más Logros y Desafíos Especiales**: Sistema de gamificación ampliado con 14 nuevos logros
+  - Total de logros incrementado de 15 a 29 (+93% incremento)
+  - 2 nuevos tipos de logros: Consistencia y Dedicación
+  - Logros de nivel avanzado para partidas jugadas (250, 500 partidas)
+  - Logros de nivel avanzado para strikes (250, 500 strikes)
+  - Logro de puntuación casi perfecta (275 puntos)
+  - Logros de rachas avanzadas (7, 10 strikes consecutivos)
+  - Logros de nivel avanzado para spares (250, 500 spares)
+  - Logros de consistencia (5, 10 partidas con puntuaciones similares)
+  - Logros de dedicación (7, 30, 100 días diferentes jugando)
+- **Sistema de Tracking Avanzado**:
+  - Tracking de consistencia en partidas (secuencias con puntuaciones ±15 puntos)
+  - Tracking de días únicos de juego para logros de dedicación
+- **Traducciones**: 28 nuevas cadenas en español e inglés para nuevos logros
+
+### Mejorado
+- `AchievementService._calculateStats()` ahora calcula `maxConsistency` y `daysPlayed`
+- Sistema de gamificación con XP total disponible incrementado en +204% (~12,000 XP total)
+- Distribución de rareza más equilibrada: 4 comunes, 8 raros, 11 épicos, 6 legendarios
+
+### Documentación
+- Nueva documentación completa en `docs/MORE_ACHIEVEMENTS_IMPLEMENTATION.md`
+- Actualizado `docs/GAMIFICATION.md` con lista completa de 29 logros
+- Actualizado README.md para reflejar el sistema ampliado de logros
+
+### Pruebas
+- Nuevo archivo de pruebas `test/new_achievements_test.dart` con 347 líneas de tests
+- Tests para todos los nuevos logros de consistencia y dedicación
+- Tests de cálculo de progreso y rareza
+
 ## [1.0.3] - 2026-02-16
 
 ### Agregado
