@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import '../models/sesion.dart';
 import '../models/perfil_usuario.dart';
+import '../models/user_progress.dart';
+import '../models/achievement.dart';
 import '../services/firestore_service.dart';
 import '../utils/app_constants.dart';
 import '../exceptions/sync_exceptions.dart';
@@ -56,6 +58,49 @@ class DataRepository extends ChangeNotifier {
       return await Hive.openBox<PerfilUsuario>(boxName);
     }
     return Hive.box<PerfilUsuario>(boxName);
+  }
+
+  /// Sincronizar datos de gamificación en Firestore
+  /// 
+  /// Maneja la lógica de sincronización de progreso y logros:
+  /// - Prioriza sincronizar progreso existente con logros
+  /// - Si solo hay logros, crea progreso por defecto para preservarlos
+  /// - Si no hay datos, no hace nada
+  Future<void> _sincronizarGamificacion(String actionMessage, String completionMessage) async {
+    try {
+      debugPrint(actionMessage);
+      
+      final progressBox = await Hive.openBox<UserProgress>(AppConstants.boxUserProgress);
+      final achievementsBox = await Hive.openBox<Achievement>(AppConstants.boxAchievements);
+      
+      final progressLocal = progressBox.isNotEmpty ? progressBox.getAt(0) : null;
+      final achievementsLocal = achievementsBox.values.toList();
+      
+      // Lógica de sincronización:
+      // 1. Caso normal: Hay progreso (con o sin logros) → sincronizar ambos
+      // 2. Caso especial: Solo hay logros sin progreso → crear progreso por defecto para preservar logros
+      if (progressLocal != null) {
+        await _firestoreService.sincronizarGamificacion(
+          _userId!,
+          progressLocal,
+          achievementsLocal, // Puede estar vacío si el usuario aún no ha desbloqueado logros
+        );
+        debugPrint('$completionMessage: ${achievementsLocal.length} logros');
+      } else if (achievementsLocal.isNotEmpty) {
+        // Si solo hay logros sin progreso, crear un progreso por defecto
+        // UserProgress() crea: experiencePoints=0, currentLevel=1, unlockedAchievementIds=[]
+        debugPrint('No hay progreso local, creando progreso por defecto para sincronizar logros');
+        await _firestoreService.sincronizarGamificacion(
+          _userId!,
+          UserProgress(), // Crea: experiencePoints=0, currentLevel=1
+          achievementsLocal,
+        );
+        debugPrint('$completionMessage con progreso por defecto');
+      }
+    } catch (e) {
+      debugPrint('Error al sincronizar gamificación: $e');
+      // Continuar con el resto de la sincronización
+    }
   }
 
   /// Configurar el usuario autenticado y modo online
@@ -332,11 +377,17 @@ class DataRepository extends ChangeNotifier {
         debugPrint('No hay sesiones ni perfil para sincronizar');
       }
 
-      // 5. Obtener sesiones finales de la nube después de la subida
+      // 5. Sincronizar datos de gamificación
+      await _sincronizarGamificacion(
+        'Sincronizando datos de gamificación...',
+        'Datos de gamificación sincronizados',
+      );
+
+      // 6. Obtener sesiones finales de la nube después de la subida
       debugPrint('Descargando estado final desde la nube...');
       final sesionesFinal = await _firestoreService.obtenerSesiones(_userId!);
 
-      // 6. Actualizar almacenamiento local con datos de la nube (verdad única)
+      // 7. Actualizar almacenamiento local con datos de la nube (verdad única)
       // IMPORTANTE: Solo limpiamos después de confirmar que tenemos los datos de la nube
       debugPrint('Actualizando almacenamiento local con datos de la nube...');
       await boxSesiones.clear();
@@ -423,6 +474,32 @@ class DataRepository extends ChangeNotifier {
         await boxPerfil.add(perfilRemoto);
       }
 
+      // Obtener y guardar datos de gamificación desde Firestore
+      try {
+        debugPrint('Descargando datos de gamificación...');
+        
+        final progressRemoto = await _firestoreService.obtenerProgreso(_userId!);
+        if (progressRemoto != null) {
+          final progressBox = await Hive.openBox<UserProgress>(AppConstants.boxUserProgress);
+          await progressBox.clear();
+          await progressBox.add(progressRemoto);
+          debugPrint('Progreso del usuario descargado');
+        }
+        
+        final achievementsRemotos = await _firestoreService.obtenerLogros(_userId!);
+        if (achievementsRemotos.isNotEmpty) {
+          final achievementsBox = await Hive.openBox<Achievement>(AppConstants.boxAchievements);
+          await achievementsBox.clear();
+          for (var achievement in achievementsRemotos) {
+            await achievementsBox.put(achievement.id, achievement);
+          }
+          debugPrint('${achievementsRemotos.length} logros descargados');
+        }
+      } catch (e) {
+        debugPrint('Error al descargar datos de gamificación: $e');
+        // Continuar sin gamificación si hay error
+      }
+
       debugPrint('Descarga completada: ${sesionesRemotas.length} sesiones');
 
       _isSyncing = false;
@@ -498,6 +575,12 @@ class DataRepository extends ChangeNotifier {
         _userId!,
         sesionesLocales,
         perfilLocal,
+      );
+
+      // 5. Subir datos de gamificación
+      await _sincronizarGamificacion(
+        'Subiendo datos de gamificación...',
+        'Datos de gamificación subidos',
       );
 
       debugPrint('Subida completada: ${sesionesLocales.length} sesiones en la nube');
