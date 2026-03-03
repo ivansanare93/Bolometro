@@ -83,13 +83,14 @@ void main() {
       );
     });
 
-    test('descargarDesdeNube debe retornar sin error si no hay usuario autenticado', () async {
+    test('descargarDesdeNube debe lanzar AuthenticationException si no hay usuario autenticado', () async {
       // Arrange: no configurar usuario
       
-      // Act & Assert - el método debe retornar sin lanzar excepción pero no hacer nada
-      // porque verifica _userId == null
-      await repository.descargarDesdeNube();
-      expect(repository.isOnlineMode, isFalse);
+      // Act & Assert - el método debe lanzar excepción igual que subirANube
+      expect(
+        () => repository.descargarDesdeNube(),
+        throwsA(isA<AuthenticationException>()),
+      );
     });
 
     test('isOnlineMode debe ser true cuando hay usuario', () async {

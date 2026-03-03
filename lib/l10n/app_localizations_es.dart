@@ -359,6 +359,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get syncSuccess => 'Datos sincronizados correctamente';
 
   @override
+  String get uploadToCloudSuccess => 'Datos subidos a la nube correctamente';
+
+  @override
+  String get downloadFromCloudSuccess =>
+      'Datos descargados desde la nube correctamente';
+
+  @override
   String get syncError => 'Error al sincronizar datos';
 
   @override
@@ -631,11 +638,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get smartSync => 'Sincronización inteligente';
 
   @override
-  String get uploadToCloudDesc => 'Sobrescribir la nube con los datos locales';
+  String get uploadToCloudDesc =>
+      'Dispositivo → Nube: tus datos locales reemplazarán los de la nube';
 
   @override
   String get downloadFromCloudDesc =>
-      'Sobrescribir los datos locales con los de la nube';
+      'Nube → Dispositivo: los datos de la nube reemplazarán los tuyos';
 
   @override
   String get smartSyncDesc => 'Combinar datos locales y de la nube';

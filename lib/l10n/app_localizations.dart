@@ -794,6 +794,18 @@ abstract class AppLocalizations {
   /// **'Datos sincronizados correctamente'**
   String get syncSuccess;
 
+  /// No description provided for @uploadToCloudSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Datos subidos a la nube correctamente'**
+  String get uploadToCloudSuccess;
+
+  /// No description provided for @downloadFromCloudSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Datos descargados desde la nube correctamente'**
+  String get downloadFromCloudSuccess;
+
   /// No description provided for @syncError.
   ///
   /// In es, this message translates to:
@@ -1307,13 +1319,13 @@ abstract class AppLocalizations {
   /// No description provided for @uploadToCloudDesc.
   ///
   /// In es, this message translates to:
-  /// **'Sobrescribir la nube con los datos locales'**
+  /// **'Dispositivo → Nube: tus datos locales reemplazarán los de la nube'**
   String get uploadToCloudDesc;
 
   /// No description provided for @downloadFromCloudDesc.
   ///
   /// In es, this message translates to:
-  /// **'Sobrescribir los datos locales con los de la nube'**
+  /// **'Nube → Dispositivo: los datos de la nube reemplazarán los tuyos'**
   String get downloadFromCloudDesc;
 
   /// No description provided for @smartSyncDesc.

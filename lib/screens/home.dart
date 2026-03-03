@@ -316,16 +316,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                             await analytics.logSync();
 
                                             // Ejecutar la sincronización según la dirección seleccionada
+                                            String successMessage;
                                             switch (syncDirection) {
                                               case 'upload':
                                                 await dataRepository.subirANube();
+                                                successMessage = AppLocalizations.of(context)!.uploadToCloudSuccess;
                                                 break;
                                               case 'download':
                                                 await dataRepository.descargarDesdeNube();
+                                                successMessage = AppLocalizations.of(context)!.downloadFromCloudSuccess;
                                                 break;
                                               case 'smart':
                                                 await dataRepository.sincronizarANube();
+                                                successMessage = AppLocalizations.of(context)!.syncSuccess;
                                                 break;
+                                              default:
+                                                return;
                                             }
 
                                             if (context.mounted) {
@@ -334,7 +340,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   .showSnackBar(
                                                 SnackBar(
                                                   content: Text(
-                                                    AppLocalizations.of(context)!.syncSuccess,
+                                                    successMessage,
                                                   ),
                                                 ),
                                               );
