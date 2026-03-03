@@ -141,6 +141,7 @@ Text(AppLocalizations.of(context)!.welcomeUser('Juan'))
 Para cadenas que cambian según la cantidad:
 
 ### Archivo ARB
+{% raw %}
 ```json
 {
   "gamesCount": "{count, plural, =0{No hay partidas} =1{1 partida} other{{count} partidas}}",
@@ -154,6 +155,7 @@ Para cadenas que cambian según la cantidad:
   }
 }
 ```
+{% endraw %}
 
 ### Uso
 ```dart
