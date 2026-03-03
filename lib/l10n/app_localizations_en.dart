@@ -357,6 +357,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncSuccess => 'Data synced successfully';
 
   @override
+  String get uploadToCloudSuccess => 'Data uploaded to cloud successfully';
+
+  @override
+  String get downloadFromCloudSuccess =>
+      'Data downloaded from cloud successfully';
+
+  @override
   String get syncError => 'Error syncing data';
 
   @override
@@ -625,10 +632,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get smartSync => 'Smart sync';
 
   @override
-  String get uploadToCloudDesc => 'Overwrite cloud with local data';
+  String get uploadToCloudDesc =>
+      'Device → Cloud: your local data will replace the cloud data';
 
   @override
-  String get downloadFromCloudDesc => 'Overwrite local data with cloud data';
+  String get downloadFromCloudDesc =>
+      'Cloud → Device: the cloud data will replace your local data';
 
   @override
   String get smartSyncDesc => 'Merge local and cloud data';

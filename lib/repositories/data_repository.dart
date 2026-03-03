@@ -439,9 +439,27 @@ class DataRepository extends ChangeNotifier {
 
   /// Descargar datos desde la nube al almacenamiento local
   /// Sobrescribir los datos locales con los de la nube
+  /// 
+  /// Requiere que el usuario esté autenticado.
+  /// 
+  /// Lanza:
+  /// - [AuthenticationException] si el usuario no está autenticado
+  /// - [OfflineModeException] si no hay conexión
   Future<void> descargarDesdeNube() async {
-    if (!_isOnlineMode || _userId == null) {
-      return;
+    // Validar que el usuario está autenticado
+    if (_userId == null) {
+      throw AuthenticationException(
+        'No se puede descargar: usuario no autenticado. '
+        'Por favor, inicia sesión antes de sincronizar.'
+      );
+    }
+
+    // Validar modo online
+    if (!_isOnlineMode) {
+      throw OfflineModeException(
+        'No se puede descargar: modo offline. '
+        'Por favor, verifica tu conexión a Internet.'
+      );
     }
 
     // Evitar sincronizaciones simultáneas
@@ -507,8 +525,26 @@ class DataRepository extends ChangeNotifier {
     } catch (e) {
       _isSyncing = false;
       notifyListeners();
-      debugPrint('Error al descargar desde la nube: $e');
-      rethrow;
+      
+      final errorMsg = e.toString().toLowerCase();
+      
+      if (errorMsg.contains('network') || 
+          errorMsg.contains('unavailable') ||
+          errorMsg.contains('failed to connect')) {
+        throw NetworkException(
+          'Error de conexión durante la descarga. '
+          'Por favor, verifica tu conexión a Internet e intenta nuevamente.'
+        );
+      } else if (errorMsg.contains('permission') || 
+                 errorMsg.contains('permission_denied')) {
+        throw PermissionException(
+          'Error de permisos durante la descarga. '
+          'Por favor, verifica que tienes los permisos necesarios en Firebase.'
+        );
+      } else {
+        debugPrint('Error al descargar desde la nube: $e');
+        rethrow;
+      }
     }
   }
 

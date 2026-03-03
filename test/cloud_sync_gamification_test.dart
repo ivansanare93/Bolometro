@@ -75,14 +75,16 @@ void main() {
       );
     });
 
-    test('descargarDesdeNube debe retornar sin error cuando no hay usuario', () async {
+    test('descargarDesdeNube debe lanzar AuthenticationException cuando no hay usuario', () async {
       // Arrange
       final repository = DataRepository();
       
-      // Act & Assert - no debe lanzar excepción
-      await repository.descargarDesdeNube();
-      
-      expect(repository.isOnlineMode, isFalse);
+      // Act & Assert - debe lanzar excepción igual que subirANube
+      expect(
+        () => repository.descargarDesdeNube(),
+        throwsA(isA<AuthenticationException>()),
+        reason: 'descargarDesdeNube debe verificar autenticación antes de descargar',
+      );
     });
 
     test('sincronizarANube debe lanzar AuthenticationException sin autenticación', () async {
