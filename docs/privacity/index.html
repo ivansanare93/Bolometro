@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Política de Privacidad – Bolómetro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 860px;
+            margin: 40px auto;
+            padding: 0 20px;
+            line-height: 1.7;
+            color: #333;
+        }
+        h1 { color: #1a1a2e; }
+        h2 { color: #16213e; margin-top: 2em; }
+        h3 { color: #0f3460; }
+        a { color: #0f3460; }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1em 0;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th { background-color: #f0f0f0; }
+        hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+        .back-link { display: inline-block; margin-bottom: 1.5em; }
+    </style>
+</head>
+<body>
+
+    <a class="back-link" href="../index.html">← Volver al inicio</a>
+
+    <h1>Política de Privacidad de Bolómetro</h1>
+    <p><strong>Última actualización:</strong> 03 de marzo de 2026<br>
+    <strong>Versión de la aplicación:</strong> 1.1.5</p>
+
+    <hr>
+
+    <h2>1. Introducción</h2>
+    <p>Bienvenido a <strong>Bolómetro</strong>, la aplicación para jugadores de bolos que permite registrar, analizar y mejorar el rendimiento en cada sesión y partida. Esta Política de Privacidad describe cómo recopilamos, usamos, almacenamos y protegemos tu información personal cuando usas nuestra aplicación.</p>
+    <p>Al usar Bolómetro, aceptas las prácticas descritas en esta política. Si no estás de acuerdo con alguno de los términos aquí expuestos, te pedimos que no uses la aplicación.</p>
+
+    <hr>
+
+    <h2>2. Información que Recopilamos</h2>
+
+    <h3>2.1 Información que Tú Proporcionas</h3>
+    <p>Cuando usas Bolómetro, puedes proporcionarnos voluntariamente la siguiente información:</p>
+    <ul>
+        <li><strong>Datos de perfil:</strong> Nombre, dirección de correo electrónico, club de bolos, mano dominante, fecha de nacimiento, biografía e imagen de avatar.</li>
+        <li><strong>Datos de sesiones y partidas:</strong> Registros de sesiones de entrenamiento y competición, incluyendo fecha, lugar, tipo de sesión, puntuaciones por frame, notas y pines derribados por tiro.</li>
+    </ul>
+
+    <h3>2.2 Información Recopilada Automáticamente</h3>
+    <p>La aplicación recopila automáticamente cierta información para mejorar la experiencia del usuario:</p>
+    <ul>
+        <li><strong>Datos de autenticación:</strong> Identificador único de usuario (UID) de Firebase Authentication, vinculado a tu cuenta de Google.</li>
+        <li><strong>Datos de uso y analíticas:</strong> A través de Firebase Analytics, registramos eventos de uso de la aplicación, como vistas de pantallas, creación o eliminación de sesiones y partidas, cambios de configuración, y uso de funcionalidades de estadísticas y gráficos. Estos datos son anónimos y no incluyen información personal identificable (PII).</li>
+        <li><strong>Notificaciones push:</strong> Utilizamos Firebase Cloud Messaging (FCM) para enviar notificaciones push. Se puede recopilar un token de dispositivo con el fin de entregar dichas notificaciones.</li>
+        <li><strong>Información técnica del dispositivo:</strong> El sistema operativo y la versión de la aplicación pueden registrarse con fines de diagnóstico.</li>
+    </ul>
+
+    <h3>2.3 Datos de la Red Social (Sistema de Amigos)</h3>
+    <p>Si utilizas las funcionalidades sociales de la aplicación, recopilamos:</p>
+    <ul>
+        <li>Solicitudes de amistad enviadas y recibidas.</li>
+        <li>Lista de amigos asociada a tu cuenta.</li>
+    </ul>
+
+    <hr>
+
+    <h2>3. Cómo Usamos tu Información</h2>
+    <p>Usamos la información recopilada para:</p>
+    <ul>
+        <li><strong>Proporcionar y mejorar la app:</strong> Guardar tus sesiones y partidas, calcular estadísticas de rendimiento y mostrar tu historial.</li>
+        <li><strong>Sincronización en la nube:</strong> Si inicias sesión con Google, sincronizamos tus datos entre dispositivos mediante Firebase Firestore para que puedas acceder a tu información desde cualquier lugar.</li>
+        <li><strong>Autenticación:</strong> Verificar tu identidad de forma segura mediante Firebase Authentication y Google Sign-In.</li>
+        <li><strong>Notificaciones:</strong> Enviarte notificaciones relevantes sobre la aplicación (si has otorgado permiso).</li>
+        <li><strong>Análisis y mejora:</strong> Entender cómo se usa la aplicación para mejorar funcionalidades y la experiencia del usuario mediante Firebase Analytics.</li>
+        <li><strong>Funcionalidades sociales:</strong> Gestionar solicitudes de amistad y el sistema de amigos.</li>
+    </ul>
+
+    <hr>
+
+    <h2>4. Almacenamiento de Datos</h2>
+
+    <h3>4.1 Almacenamiento Local</h3>
+    <p>Los datos se guardan localmente en tu dispositivo utilizando <strong>Hive</strong>, una base de datos local. Esto permite que la aplicación funcione sin conexión a Internet.</p>
+
+    <h3>4.2 Almacenamiento en la Nube</h3>
+    <p>Si inicias sesión con tu cuenta de Google, tus datos se almacenan en <strong>Firebase Firestore</strong> (Google Cloud), lo que permite sincronizarlos entre dispositivos. Solo tú puedes leer y escribir en tu propia información; las reglas de seguridad de Firestore garantizan que ningún otro usuario pueda acceder a tus datos.</p>
+
+    <h3>4.3 Retención de Datos</h3>
+    <ul>
+        <li>Tus datos se conservan mientras mantengas tu cuenta activa.</li>
+        <li>Si eliminas tu cuenta, tus datos en Firestore serán eliminados. Los datos locales en el dispositivo permanecerán hasta que desinstales la aplicación o los elimines manualmente.</li>
+    </ul>
+
+    <hr>
+
+    <h2>5. Compartición de Datos con Terceros</h2>
+    <p>No vendemos ni alquilamos tu información personal a terceros. Sin embargo, utilizamos los siguientes servicios de terceros que pueden tener acceso a ciertos datos:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Servicio</th>
+                <th>Proveedor</th>
+                <th>Finalidad</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Firebase Authentication</td>
+                <td>Google LLC</td>
+                <td>Autenticación de usuarios</td>
+            </tr>
+            <tr>
+                <td>Firebase Firestore</td>
+                <td>Google LLC</td>
+                <td>Almacenamiento en la nube</td>
+            </tr>
+            <tr>
+                <td>Firebase Analytics</td>
+                <td>Google LLC</td>
+                <td>Análisis de uso anónimo</td>
+            </tr>
+            <tr>
+                <td>Firebase Cloud Messaging</td>
+                <td>Google LLC</td>
+                <td>Notificaciones push</td>
+            </tr>
+            <tr>
+                <td>Google Sign-In</td>
+                <td>Google LLC</td>
+                <td>Inicio de sesión con Google</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Todos estos servicios son proporcionados por <strong>Google LLC</strong> y están sujetos a la <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Política de Privacidad de Google</a>.</p>
+
+    <hr>
+
+    <h2>6. Seguridad de los Datos</h2>
+    <p>Tomamos medidas razonables para proteger tu información:</p>
+    <ul>
+        <li><strong>Autenticación segura:</strong> Usamos Firebase Authentication; las credenciales de Google nunca se almacenan localmente en la app.</li>
+        <li><strong>Reglas de seguridad de Firestore:</strong> Solo el propietario de los datos puede acceder a ellos. Ningún otro usuario puede leer o modificar tu información.</li>
+        <li><strong>Transmisión cifrada:</strong> Toda comunicación con Firebase se realiza a través de conexiones cifradas (HTTPS/TLS).</li>
+    </ul>
+    <p>Sin embargo, ningún sistema de seguridad es completamente infalible. Te recomendamos que mantengas seguras tus credenciales de Google.</p>
+
+    <hr>
+
+    <h2>7. Tus Derechos</h2>
+    <p>Tienes los siguientes derechos respecto a tus datos personales:</p>
+    <ul>
+        <li><strong>Acceso:</strong> Puedes consultar todos tus datos directamente en la aplicación.</li>
+        <li><strong>Rectificación:</strong> Puedes editar tu perfil y tus registros de sesiones en cualquier momento desde la app.</li>
+        <li><strong>Eliminación:</strong> Puedes eliminar tus sesiones, partidas y datos de perfil desde la propia aplicación. Para eliminar completamente tu cuenta y todos los datos asociados en la nube, contáctanos (ver sección 10).</li>
+        <li><strong>Portabilidad:</strong> Puedes exportar tus datos usando la funcionalidad de compartir disponible en la app.</li>
+        <li><strong>Opt-out de Analytics:</strong> Puedes deshabilitar la recopilación de analíticas desde los ajustes de tu dispositivo o mediante la opción correspondiente en la aplicación (si está disponible).</li>
+    </ul>
+
+    <hr>
+
+    <h2>8. Privacidad de Menores</h2>
+    <p>Bolómetro no está dirigida a menores de 13 años. No recopilamos intencionalmente información personal de niños menores de 13 años. Si eres padre o tutor y crees que tu hijo ha proporcionado información personal a través de la app, contáctanos para que podamos tomar las medidas oportunas.</p>
+
+    <hr>
+
+    <h2>9. Cambios en esta Política de Privacidad</h2>
+    <p>Podemos actualizar esta Política de Privacidad ocasionalmente para reflejar cambios en la aplicación o en la legislación aplicable. Cuando lo hagamos, actualizaremos la fecha indicada al comienzo del documento. Te recomendamos revisar esta política periódicamente. El uso continuado de la aplicación tras la publicación de cambios constituye tu aceptación de dichos cambios.</p>
+
+    <hr>
+
+    <h2>10. Contacto</h2>
+    <p>Si tienes preguntas, comentarios o solicitudes relacionadas con esta Política de Privacidad o con el tratamiento de tus datos personales, puedes contactarnos a través del repositorio oficial del proyecto:</p>
+    <ul>
+        <li><strong>Repositorio:</strong> <a href="https://github.com/ivansanare93/Bolometro" target="_blank" rel="noopener noreferrer">https://github.com/ivansanare93/Bolometro</a></li>
+    </ul>
+
+    <hr>
+
+    <h2>11. Legislación Aplicable</h2>
+    <p>Esta Política de Privacidad se rige por la legislación española y europea en materia de protección de datos, incluyendo el <strong>Reglamento General de Protección de Datos (RGPD/GDPR)</strong> de la Unión Europea y la <strong>Ley Orgánica 3/2018, de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD)</strong> de España.</p>
+
+    <hr>
+
+    <p><em>Esta política de privacidad ha sido elaborada para la aplicación <strong>Bolómetro</strong>, desarrollada por ivansanare93.</em></p>
+
+</body>
+</html>
