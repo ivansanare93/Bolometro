@@ -215,7 +215,7 @@ void main() {
         type: AchievementType.firstGame,
         rarity: AchievementRarity.common,
         targetValue: 1,
-        currentValue: 1,
+        currentProgress: 1,
         isUnlocked: true,
       );
       
