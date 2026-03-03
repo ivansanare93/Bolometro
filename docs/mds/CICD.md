@@ -212,12 +212,14 @@ jobs:
 
 ### Usar Secretos
 
+{% raw %}
 ```yaml
 - name: Paso usando secreto
   env:
     SECRET_KEY: ${{ secrets.SECRET_KEY }}
   run: echo "Usando secreto"
 ```
+{% endraw %}
 
 ### Secretos Comunes
 
@@ -257,6 +259,7 @@ jobs:
 
 Acelera las compilaciones mediante caché:
 
+{% raw %}
 ```yaml
 - name: Cache pub dependencies
   uses: actions/cache@v3
@@ -266,9 +269,11 @@ Acelera las compilaciones mediante caché:
     restore-keys: |
       ${{ runner.os }}-pub-
 ```
+{% endraw %}
 
 ### Cachear Artefactos de Compilación
 
+{% raw %}
 ```yaml
 - name: Cache build artifacts
   uses: actions/cache@v3
@@ -278,6 +283,7 @@ Acelera las compilaciones mediante caché:
       .dart_tool
     key: ${{ runner.os }}-build-${{ hashFiles('**/pubspec.lock') }}
 ```
+{% endraw %}
 
 ## Badges de Estado
 
