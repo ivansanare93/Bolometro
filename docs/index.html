@@ -1,14 +1,183 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Bolómetro – La app definitiva para jugadores de bolos. Registra, analiza y mejora tu rendimiento en cada sesión y partida.">
     <link rel="stylesheet" href="assets/styles.css">
-    <title>Welcome to Bolometro</title>
+    <title>Bolómetro – La app para jugadores de bolos</title>
 </head>
 <body>
-    <h1>Welcome to Bolometro</h1>
-    <p>This is your landing page.</p>
-    <p><a href="privacity/index.html">Política de Privacidad</a></p>
+
+    <!-- ===== CABECERA / HERO ===== -->
+    <header class="site-header">
+        <span class="logo-icon">🎳</span>
+        <h1>Bolómetro</h1>
+        <p class="tagline">La aplicación definitiva para jugadores de bolos. Registra, analiza y mejora tu rendimiento en cada sesión y partida.</p>
+        <a class="btn btn-primary" href="#caracteristicas">Ver características</a>
+        <a class="btn btn-outline" href="privacity/index.html">Política de Privacidad</a>
+    </header>
+
+    <!-- ===== CONTENIDO PRINCIPAL ===== -->
+    <main>
+
+        <!-- Qué es Bolómetro -->
+        <section id="que-es">
+            <h2>¿Qué es Bolómetro?</h2>
+            <p>
+                <strong>Bolómetro</strong> es una aplicación móvil multiplataforma desarrollada en Flutter que permite
+                a los jugadores de bolos llevar un seguimiento completo de su rendimiento. Diseñada tanto para
+                jugadores aficionados como profesionales, te ayuda a tomar decisiones basadas en datos reales.
+            </p>
+            <p>
+                Disponible para Android e iOS, funciona tanto en modo sin conexión como sincronizando tus datos
+                en la nube mediante tu cuenta de Google.
+            </p>
+        </section>
+
+        <!-- Estadísticas rápidas -->
+        <section id="estadisticas">
+            <h2>Bolómetro en números</h2>
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="number">29</div>
+                    <div class="label">Logros únicos</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">4</div>
+                    <div class="label">Niveles de rareza</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">∞</div>
+                    <div class="label">Partidas a registrar</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">☁️</div>
+                    <div class="label">Sincronización en la nube</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Características principales -->
+        <section id="caracteristicas">
+            <h2>Características principales</h2>
+            <div class="features-grid">
+
+                <div class="feature-card">
+                    <span class="icon">🎯</span>
+                    <h3>Registro de Partidas</h3>
+                    <p>Marcador completo con validación en tiempo real, soporte para strikes, spares y el décimo frame.</p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon">📊</span>
+                    <h3>Estadísticas Detalladas</h3>
+                    <p>Analiza tu promedio, mejor partida, porcentaje de strikes y spares, y mucho más.</p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon">📈</span>
+                    <h3>Evolución Visual</h3>
+                    <p>Gráficos interactivos para ver tu progreso a lo largo del tiempo y detectar tendencias.</p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon">🏆</span>
+                    <h3>Gamificación</h3>
+                    <p>29 logros únicos, sistema de niveles con XP y 4 niveles de rareza: Común, Raro, Épico y Legendario.</p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon">👥</span>
+                    <h3>Sistema de Amigos</h3>
+                    <p>Busca amigos por correo o código, compara rankings y compite por el primer puesto.</p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon">☁️</span>
+                    <h3>Sincronización en la Nube</h3>
+                    <p>Inicia sesión con Google y accede a tus datos desde cualquier dispositivo de forma segura.</p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon">📴</span>
+                    <h3>Modo Sin Conexión</h3>
+                    <p>Todas tus partidas se guardan localmente con Hive; no necesitas internet para jugar.</p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon">🔔</span>
+                    <h3>Notificaciones Push</h3>
+                    <p>Recibe alertas al desbloquear logros, aceptar solicitudes de amistad y más novedades.</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Tecnología -->
+        <section id="tecnologia">
+            <h2>Tecnología utilizada</h2>
+            <p>Bolómetro está construido con un stack moderno y fiable:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tecnología</th>
+                        <th>Uso</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Flutter / Dart</td>
+                        <td>Framework principal multiplataforma (Android, iOS, Web)</td>
+                    </tr>
+                    <tr>
+                        <td>Firebase Authentication</td>
+                        <td>Autenticación segura con Google</td>
+                    </tr>
+                    <tr>
+                        <td>Firebase Firestore</td>
+                        <td>Base de datos en la nube en tiempo real</td>
+                    </tr>
+                    <tr>
+                        <td>Firebase Analytics</td>
+                        <td>Análisis de uso anónimo</td>
+                    </tr>
+                    <tr>
+                        <td>Firebase Cloud Messaging</td>
+                        <td>Notificaciones push</td>
+                    </tr>
+                    <tr>
+                        <td>Hive</td>
+                        <td>Almacenamiento local en el dispositivo</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Privacidad y seguridad -->
+        <section id="privacidad">
+            <h2>Privacidad y Seguridad</h2>
+            <p>
+                La privacidad de nuestros usuarios es una prioridad. Tus datos se protegen mediante
+                conexiones cifradas (HTTPS/TLS), reglas de seguridad de Firestore y autenticación robusta.
+                Nunca vendemos ni compartimos tu información con terceros con fines comerciales.
+            </p>
+            <p>
+                <a href="privacity/index.html">→ Lee nuestra Política de Privacidad completa</a>
+            </p>
+        </section>
+
+    </main>
+
+    <!-- ===== PIE DE PÁGINA ===== -->
+    <footer class="site-footer">
+        <p>
+            &copy; 2026 <strong>Bolómetro</strong> · Desarrollado por
+            <a href="https://github.com/ivansanare93/Bolometro" target="_blank" rel="noopener noreferrer">ivansanare93</a>
+            &nbsp;|&nbsp;
+            <a href="privacity/index.html">Política de Privacidad</a>
+        </p>
+    </footer>
+
 </body>
 </html>
