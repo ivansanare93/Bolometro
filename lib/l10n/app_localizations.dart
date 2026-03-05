@@ -2245,6 +2245,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Menor es mejor'**
   String get lowerIsBetter;
+
+  /// No description provided for @draftRestoredSession.
+  ///
+  /// In es, this message translates to:
+  /// **'Se ha restaurado tu sesión en curso'**
+  String get draftRestoredSession;
+
+  /// No description provided for @draftRestoredGame.
+  ///
+  /// In es, this message translates to:
+  /// **'Se ha restaurado tu partida en curso'**
+  String get draftRestoredGame;
 }
 
 class _AppLocalizationsDelegate

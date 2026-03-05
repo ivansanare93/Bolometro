@@ -10,6 +10,7 @@ import '../utils/app_constants.dart';
 import '../repositories/data_repository.dart';
 import '../services/analytics_service.dart';
 import '../services/achievement_service.dart';
+import '../services/draft_service.dart';
 import '../l10n/app_localizations.dart';
 import 'home.dart';
 
@@ -22,14 +23,20 @@ class RegistroCompletoSesionScreen extends StatefulWidget {
 }
 
 class _RegistroCompletoSesionScreenState
-    extends State<RegistroCompletoSesionScreen> {
+    extends State<RegistroCompletoSesionScreen>
+    with WidgetsBindingObserver {
   String _lugar = '';
   String _tipo = AppConstants.tipoEntrenamiento;
   final List<Partida> _partidas = [];
 
+  // TextEditingController to keep the location field in sync with restored draft
+  final TextEditingController _lugarController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _restoreDraftIfAvailable();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
         final analytics = Provider.of<AnalyticsService>(context, listen: false);
@@ -40,6 +47,64 @@ class _RegistroCompletoSesionScreenState
     });
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _lugarController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      _saveDraft();
+    }
+  }
+
+  void _saveDraft() {
+    DraftService.saveSesionDraft(
+      lugar: _lugar,
+      tipo: _tipo,
+      partidas: _partidas,
+    );
+  }
+
+  Future<void> _restoreDraftIfAvailable() async {
+    final draft = await DraftService.loadSesionDraft();
+    if (draft == null) return;
+
+    final savedPartidas = (draft['partidas'] as List<dynamic>?)
+        ?.map((p) => Partida.fromJson(p as Map<String, dynamic>))
+        .toList();
+
+    final savedLugar = (draft['lugar'] as String?) ?? '';
+    final savedTipo = (draft['tipo'] as String?) ?? AppConstants.tipoEntrenamiento;
+
+    final hasData = (savedPartidas != null && savedPartidas.isNotEmpty) ||
+        savedLugar.isNotEmpty;
+
+    if (!hasData) return;
+
+    if (mounted) {
+      setState(() {
+        _lugar = savedLugar;
+        _tipo = savedTipo;
+        if (savedPartidas != null) {
+          _partidas.clear();
+          _partidas.addAll(savedPartidas);
+        }
+        _lugarController.text = savedLugar;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.draftRestoredSession),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
   void anadirPartida() async {
     await Navigator.push(
       context,
@@ -47,6 +112,7 @@ class _RegistroCompletoSesionScreenState
         builder: (_) => RegistroSesionScreen(
           onGuardar: (partida) {
             setState(() => _partidas.add(partida));
+            _saveDraft();
           },
         ),
       ),
@@ -64,6 +130,7 @@ class _RegistroCompletoSesionScreenState
             setState(() {
               _partidas[index] = partidaActualizada;
             });
+            _saveDraft();
           },
         ),
       ),
@@ -72,6 +139,7 @@ class _RegistroCompletoSesionScreenState
 
   void borrarPartida(int index) {
     setState(() => _partidas.removeAt(index));
+    _saveDraft();
   }
 
   Future<void> _guardarSesion() async {
@@ -97,6 +165,7 @@ class _RegistroCompletoSesionScreenState
         listen: false,
       );
       await dataRepository.guardarSesion(nuevaSesion);
+      await DraftService.clearSesionDraft();
 
       final analytics = Provider.of<AnalyticsService>(context, listen: false);
       await analytics.logSessionCreated(_tipo);
@@ -184,72 +253,85 @@ class _RegistroCompletoSesionScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.registerSession),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.home),
-            tooltip: "Inicio",
-            onPressed: () {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const HomeScreen()),
-                (route) => false,
-              );
-            },
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextFormField(
-              decoration: InputDecoration(
-                labelText: AppLocalizations.of(context)!.location,
-                border: const OutlineInputBorder(),
-              ),
-              onChanged: (v) => _lugar = v,
-            ),
-            const SizedBox(height: 16),
-            SelectorTipoPartida(
-              value: _tipo,
-              onChanged: (value) => setState(
-                () => _tipo = value ?? AppConstants.tipoEntrenamiento,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.gamesCount(_partidas.length),
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                ElevatedButton.icon(
-                  onPressed: anadirPartida,
-                  icon: const Icon(Icons.add),
-                  label: Text(AppLocalizations.of(context)!.addGame),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: ListaPartidas(
-                partidas: _partidas,
-                onEditar: editarPartida,
-                onBorrar: borrarPartida,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _guardarSesion,
-              icon: const Icon(Icons.save),
-              label: Text(AppLocalizations.of(context)!.save),
+    return PopScope(
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) DraftService.clearSesionDraft();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(AppLocalizations.of(context)!.registerSession),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.home),
+              tooltip: "Inicio",
+              onPressed: () {
+                DraftService.clearSesionDraft();
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const HomeScreen()),
+                  (route) => false,
+                );
+              },
             ),
           ],
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextFormField(
+                controller: _lugarController,
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.location,
+                  border: const OutlineInputBorder(),
+                ),
+                onChanged: (v) {
+                  _lugar = v;
+                  _saveDraft();
+                },
+              ),
+              const SizedBox(height: 16),
+              SelectorTipoPartida(
+                value: _tipo,
+                onChanged: (value) {
+                  setState(
+                    () => _tipo = value ?? AppConstants.tipoEntrenamiento,
+                  );
+                  _saveDraft();
+                },
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.gamesCount(_partidas.length),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: anadirPartida,
+                    icon: const Icon(Icons.add),
+                    label: Text(AppLocalizations.of(context)!.addGame),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: ListaPartidas(
+                  partidas: _partidas,
+                  onEditar: editarPartida,
+                  onBorrar: borrarPartida,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: _guardarSesion,
+                icon: const Icon(Icons.save),
+                label: Text(AppLocalizations.of(context)!.save),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1134,4 +1134,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get lowerIsBetter => 'Menor es mejor';
+
+  @override
+  String get draftRestoredSession => 'Se ha restaurado tu sesión en curso';
+
+  @override
+  String get draftRestoredGame => 'Se ha restaurado tu partida en curso';
 }

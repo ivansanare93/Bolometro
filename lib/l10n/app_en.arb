@@ -547,5 +547,13 @@
   "lowerIsBetter": "Lower is better",
   "@lowerIsBetter": {
     "description": "Indicator that lower values are better"
+  },
+  "draftRestoredSession": "Your in-progress session has been restored",
+  "@draftRestoredSession": {
+    "description": "Snackbar message when a session draft is restored after app was killed in background"
+  },
+  "draftRestoredGame": "Your in-progress game has been restored",
+  "@draftRestoredGame": {
+    "description": "Snackbar message when a game draft is restored after app was killed in background"
   }
 }

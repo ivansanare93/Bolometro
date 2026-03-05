@@ -1125,4 +1125,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lowerIsBetter => 'Lower is better';
+
+  @override
+  String get draftRestoredSession => 'Your in-progress session has been restored';
+
+  @override
+  String get draftRestoredGame => 'Your in-progress game has been restored';
 }
