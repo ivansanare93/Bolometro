@@ -682,5 +682,13 @@
   "lowerIsBetter": "Menor es mejor",
   "@lowerIsBetter": {
     "description": "Indicador de que valores menores son mejores"
+  },
+  "draftRestoredSession": "Se ha restaurado tu sesión en curso",
+  "@draftRestoredSession": {
+    "description": "Mensaje cuando se restaura el borrador de la sesión tras matar la app en segundo plano"
+  },
+  "draftRestoredGame": "Se ha restaurado tu partida en curso",
+  "@draftRestoredGame": {
+    "description": "Mensaje cuando se restaura el borrador de la partida tras matar la app en segundo plano"
   }
 }
