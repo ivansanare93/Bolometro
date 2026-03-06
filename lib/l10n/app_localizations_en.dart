@@ -1179,4 +1179,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get modified => 'Modified';
+
+  @override
+  String get viewNote => 'View Note';
+
+  @override
+  String get created => 'Created';
 }
