@@ -2354,13 +2354,13 @@ abstract class AppLocalizations {
   /// **'Modificado'**
   String get modified;
 
-  /// No description provided for @viewNote.
+  /// Título de la pantalla de visualización de nota
   ///
   /// In es, this message translates to:
   /// **'Ver Nota'**
   String get viewNote;
 
-  /// No description provided for @created.
+  /// Etiqueta de fecha de creación
   ///
   /// In es, this message translates to:
   /// **'Creado'**
