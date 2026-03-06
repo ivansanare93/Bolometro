@@ -5,6 +5,7 @@ import '../models/nota.dart';
 import '../repositories/data_repository.dart';
 import '../l10n/app_localizations.dart';
 import 'editar_nota_screen.dart';
+import 'ver_nota_screen.dart';
 
 class NotasScreen extends StatefulWidget {
   const NotasScreen({super.key});
@@ -60,11 +61,23 @@ class _NotasScreenState extends State<NotasScreen> {
     });
   }
 
-  Future<void> _abrirEditar({Nota? nota}) async {
+  Future<void> _abrirNueva() async {
     final resultado = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (_) => EditarNotaScreen(nota: nota),
+        builder: (_) => const EditarNotaScreen(),
+      ),
+    );
+    if (resultado == true) {
+      await _cargarNotas();
+    }
+  }
+
+  Future<void> _abrirVer(Nota nota) async {
+    final resultado = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => VerNotaScreen(nota: nota),
       ),
     );
     if (resultado == true) {
@@ -107,6 +120,21 @@ class _NotasScreenState extends State<NotasScreen> {
           ),
         );
       }
+    }
+  }
+
+  Future<void> _completarEliminacion(Nota nota) async {
+    final l10n = AppLocalizations.of(context)!;
+    final repo = Provider.of<DataRepository>(context, listen: false);
+    await repo.eliminarNota(nota);
+    await _cargarNotas();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.noteDeleted),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
@@ -173,54 +201,157 @@ class _NotasScreenState extends State<NotasScreen> {
                         ),
                       )
                     : ListView.builder(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 80),
                         itemCount: _notasFiltradas.length,
                         itemBuilder: (context, index) {
                           final nota = _notasFiltradas[index];
-                          return Card(
-                            margin: const EdgeInsets.symmetric(
-                              vertical: 4,
-                              horizontal: 4,
+                          return Dismissible(
+                            key: ValueKey(nota.key ?? nota.titulo),
+                            direction: DismissDirection.endToStart,
+                            background: Container(
+                              margin: const EdgeInsets.symmetric(vertical: 4),
+                              decoration: BoxDecoration(
+                                color: cs.error,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 20),
+                              child: const Icon(
+                                Icons.delete_sweep_outlined,
+                                color: Colors.white,
+                                size: 28,
+                              ),
                             ),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              title: Text(
-                                nota.titulo,
-                                style: const TextStyle(fontWeight: FontWeight.bold),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  if (nota.contenido.isNotEmpty) ...[
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      nota.contenido,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
+                            confirmDismiss: (_) async {
+                              final l10n = AppLocalizations.of(context)!;
+                              return await showDialog<bool>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: Text(l10n.deleteNoteConfirm),
+                                  content: Text(nota.titulo),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(ctx, false),
+                                      child: Text(l10n.cancel),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(ctx, true),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor:
+                                            Theme.of(ctx).colorScheme.error,
+                                      ),
+                                      child: Text(l10n.delete),
                                     ),
                                   ],
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${l10n.modified}: ${_formatFecha(nota.fechaModificacion)}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.copyWith(color: cs.outline),
+                                ),
+                              );
+                            },
+                            onDismissed: (_) => _completarEliminacion(nota),
+                            child: Card(
+                              margin: const EdgeInsets.symmetric(vertical: 4),
+                              elevation: 2,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(12),
+                                onTap: () => _abrirVer(nota),
+                                child: Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                      16, 14, 8, 14),
+                                  child: Row(
+                                    children: [
+                                      // Left accent bar
+                                      Container(
+                                        width: 4,
+                                        height: 48,
+                                        decoration: BoxDecoration(
+                                          color: cs.primary,
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      // Note info
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              nota.titulo,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            if (nota.contenido
+                                                .isNotEmpty) ...[
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                nota.contenido,
+                                                maxLines: 2,
+                                                overflow:
+                                                    TextOverflow.ellipsis,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.copyWith(
+                                                      color: cs.onSurface
+                                                          .withOpacity(0.7),
+                                                    ),
+                                              ),
+                                            ],
+                                            const SizedBox(height: 6),
+                                            Row(
+                                              children: [
+                                                Icon(
+                                                  Icons
+                                                      .edit_calendar_outlined,
+                                                  size: 12,
+                                                  color: cs.outline,
+                                                ),
+                                                const SizedBox(width: 3),
+                                                Text(
+                                                  _formatFecha(
+                                                      nota.fechaModificacion),
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodySmall
+                                                      ?.copyWith(
+                                                          color: cs.outline),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      // Actions column
+                                      Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(Icons.delete_outline,
+                                                color: cs.error),
+                                            tooltip: l10n.delete,
+                                            onPressed: () =>
+                                                _confirmarEliminar(nota),
+                                          ),
+                                          Icon(
+                                            Icons.chevron_right,
+                                            color: cs.outline,
+                                            size: 20,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
-                              trailing: IconButton(
-                                icon: Icon(Icons.delete_outline,
-                                    color: cs.error),
-                                tooltip: l10n.delete,
-                                onPressed: () => _confirmarEliminar(nota),
-                              ),
-                              onTap: () => _abrirEditar(nota: nota),
                             ),
                           );
                         },
@@ -229,10 +360,11 @@ class _NotasScreenState extends State<NotasScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _abrirEditar(),
+        onPressed: _abrirNueva,
         tooltip: l10n.newNote,
         child: const Icon(Icons.add),
       ),
     );
   }
 }
+

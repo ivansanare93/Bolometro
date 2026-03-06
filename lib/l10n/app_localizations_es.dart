@@ -1188,4 +1188,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get modified => 'Modificado';
+
+  @override
+  String get viewNote => 'Ver Nota';
+
+  @override
+  String get created => 'Creado';
 }

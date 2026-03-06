@@ -202,6 +202,11 @@ class _AuthWrapperState extends State<AuthWrapper> {
       Future.microtask(() async {
         try {
           await dataRepository.setUser(authService.userId);
+          // Update AchievementService to use the user-specific sessions box
+          if (context.mounted) {
+            Provider.of<AchievementService>(context, listen: false)
+                .updateSesionesBoxName(dataRepository.sesionesBoxName);
+          }
         } catch (e) {
           debugPrint('Error setting user in repository: $e');
         }

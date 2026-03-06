@@ -619,5 +619,13 @@
   "modified": "Modified",
   "@modified": {
     "description": "Label for modification date"
+  },
+  "viewNote": "View Note",
+  "@viewNote": {
+    "description": "Title for the note view screen"
+  },
+  "created": "Created",
+  "@created": {
+    "description": "Label for creation date"
   }
 }

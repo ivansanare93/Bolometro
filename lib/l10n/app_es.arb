@@ -754,5 +754,13 @@
   "modified": "Modificado",
   "@modified": {
     "description": "Etiqueta de fecha de modificación"
+  },
+  "viewNote": "Ver Nota",
+  "@viewNote": {
+    "description": "Título de la pantalla de visualización de nota"
+  },
+  "created": "Creado",
+  "@created": {
+    "description": "Etiqueta de fecha de creación"
   }
 }

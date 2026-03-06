@@ -2353,6 +2353,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Modificado'**
   String get modified;
+
+  /// No description provided for @viewNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver Nota'**
+  String get viewNote;
+
+  /// No description provided for @created.
+  ///
+  /// In es, this message translates to:
+  /// **'Creado'**
+  String get created;
 }
 
 class _AppLocalizationsDelegate
