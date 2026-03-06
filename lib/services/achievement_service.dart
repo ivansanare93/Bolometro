@@ -16,10 +16,17 @@ class AchievementService extends ChangeNotifier {
   UserProgress? _userProgress;
   Map<String, Achievement> _achievements = {};
   bool _isInitialized = false;
+  String _sesionesBoxName = AppConstants.boxSesiones;
 
   UserProgress? get userProgress => _userProgress;
   List<Achievement> get achievements => _achievements.values.toList();
   bool get isInitialized => _isInitialized;
+
+  /// Actualiza el nombre del box de sesiones a usar para calcular estadísticas.
+  /// Debe llamarse cuando el usuario inicia o cierra sesión.
+  void updateSesionesBoxName(String boxName) {
+    _sesionesBoxName = boxName;
+  }
 
   /// Inicializa el servicio de logros
   Future<void> initialize() async {
@@ -376,7 +383,12 @@ class AchievementService extends ChangeNotifier {
   /// Calcula estadísticas de todas las sesiones
   Future<Map<String, int>> _calculateStats() async {
     try {
-      final sesionesBox = Hive.box<Sesion>(AppConstants.boxSesiones);
+      final Box<Sesion> sesionesBox;
+      if (Hive.isBoxOpen(_sesionesBoxName)) {
+        sesionesBox = Hive.box<Sesion>(_sesionesBoxName);
+      } else {
+        sesionesBox = await Hive.openBox<Sesion>(_sesionesBoxName);
+      }
       final sesiones = sesionesBox.values.toList();
 
       int totalGames = 0;

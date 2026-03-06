@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
+import '../services/achievement_service.dart';
 import '../services/analytics_service.dart';
 import '../repositories/data_repository.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -55,6 +56,11 @@ class _LoginScreenState extends State<LoginScreen> {
       
       // Configurar el repositorio con el usuario autenticado
       await dataRepository.setUser(authService.userId);
+      // Update AchievementService to use the user-specific sessions box
+      if (mounted) {
+        final achievementService = Provider.of<AchievementService>(context, listen: false);
+        achievementService.updateSesionesBoxName(dataRepository.sesionesBoxName);
+      }
 
       // Auto-poblar perfil con datos de Google si no existe
       try {
@@ -115,6 +121,11 @@ class _LoginScreenState extends State<LoginScreen> {
     
     // Configurar modo offline
     await dataRepository.setUser(null);
+    // Update AchievementService to use the default sessions box
+    if (mounted) {
+      final achievementService = Provider.of<AchievementService>(context, listen: false);
+      achievementService.updateSesionesBoxName(dataRepository.sesionesBoxName);
+    }
     
     // Notificar al AuthWrapper que el usuario continuó sin login
     widget.onContinueWithoutLogin?.call();
