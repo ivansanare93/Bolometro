@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import '../models/sesion.dart';
+import '../models/nota.dart';
 import '../models/perfil_usuario.dart';
 import '../models/user_progress.dart';
 import '../models/achievement.dart';
@@ -239,6 +240,61 @@ class DataRepository extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('Error al eliminar sesión: $e');
+      rethrow;
+    }
+  }
+
+  // ===== Notas =====
+
+  /// Obtener box de notas, abriéndolo si es necesario
+  Future<Box<Nota>> _getNotasBox() async {
+    if (!Hive.isBoxOpen(AppConstants.boxNotas)) {
+      return await Hive.openBox<Nota>(AppConstants.boxNotas);
+    }
+    return Hive.box<Nota>(AppConstants.boxNotas);
+  }
+
+  /// Obtener todas las notas
+  Future<List<Nota>> obtenerNotas() async {
+    try {
+      final box = await _getNotasBox();
+      return box.values.toList().reversed.toList();
+    } catch (e) {
+      debugPrint('Error al obtener notas: $e');
+      return [];
+    }
+  }
+
+  /// Guardar una nota nueva
+  Future<void> guardarNota(Nota nota) async {
+    try {
+      final box = await _getNotasBox();
+      await box.add(nota);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error al guardar nota: $e');
+      rethrow;
+    }
+  }
+
+  /// Actualizar una nota existente
+  Future<void> actualizarNota(Nota nota) async {
+    try {
+      await nota.save();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error al actualizar nota: $e');
+      rethrow;
+    }
+  }
+
+  /// Eliminar una nota
+  Future<void> eliminarNota(Nota nota) async {
+    try {
+      await nota.delete();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error al eliminar nota: $e');
       rethrow;
     }
   }

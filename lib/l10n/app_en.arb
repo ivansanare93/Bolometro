@@ -555,5 +555,69 @@
   "draftRestoredGame": "Your in-progress game has been restored",
   "@draftRestoredGame": {
     "description": "Snackbar message when a game draft is restored after app was killed in background"
+  },
+  "notebook": "Notebook",
+  "@notebook": {
+    "description": "Title for the notebook section"
+  },
+  "notebookSubtitle": "Notes and observations",
+  "@notebookSubtitle": {
+    "description": "Subtitle for the notebook entry in home"
+  },
+  "newNote": "New Note",
+  "@newNote": {
+    "description": "Button to create a new note"
+  },
+  "editNote": "Edit Note",
+  "@editNote": {
+    "description": "Title when editing an existing note"
+  },
+  "noteTitle": "Title",
+  "@noteTitle": {
+    "description": "Title field for a note"
+  },
+  "noteContent": "Content",
+  "@noteContent": {
+    "description": "Content field for a note"
+  },
+  "noteTitleHint": "E.g. Oil pattern at Bowling Alley X",
+  "@noteTitleHint": {
+    "description": "Hint text for the note title field"
+  },
+  "noteContentHint": "Write your notes here...",
+  "@noteContentHint": {
+    "description": "Hint text for the note content field"
+  },
+  "noteTitleRequired": "Title is required",
+  "@noteTitleRequired": {
+    "description": "Validation message when title is empty"
+  },
+  "noNotes": "No notes yet",
+  "@noNotes": {
+    "description": "Message when there are no saved notes"
+  },
+  "noNotesHint": "Tap + to add your first note",
+  "@noNotesHint": {
+    "description": "Hint when there are no saved notes"
+  },
+  "searchNotes": "Search notes...",
+  "@searchNotes": {
+    "description": "Placeholder for note search"
+  },
+  "deleteNoteConfirm": "Delete this note?",
+  "@deleteNoteConfirm": {
+    "description": "Confirmation before deleting a note"
+  },
+  "noteSaved": "Note saved",
+  "@noteSaved": {
+    "description": "Message when a note is saved successfully"
+  },
+  "noteDeleted": "Note deleted",
+  "@noteDeleted": {
+    "description": "Message when a note is deleted successfully"
+  },
+  "modified": "Modified",
+  "@modified": {
+    "description": "Label for modification date"
   }
 }

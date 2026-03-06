@@ -1140,4 +1140,52 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get draftRestoredGame => 'Se ha restaurado tu partida en curso';
+
+  @override
+  String get notebook => 'Cuaderno de Notas';
+
+  @override
+  String get notebookSubtitle => 'Apuntes y observaciones';
+
+  @override
+  String get newNote => 'Nueva Nota';
+
+  @override
+  String get editNote => 'Editar Nota';
+
+  @override
+  String get noteTitle => 'Título';
+
+  @override
+  String get noteContent => 'Contenido';
+
+  @override
+  String get noteTitleHint => 'Ej: Patrón de aceite en Bolera X';
+
+  @override
+  String get noteContentHint => 'Escribe tus apuntes aquí...';
+
+  @override
+  String get noteTitleRequired => 'El título es obligatorio';
+
+  @override
+  String get noNotes => 'No hay notas todavía';
+
+  @override
+  String get noNotesHint => 'Pulsa + para añadir tu primera nota';
+
+  @override
+  String get searchNotes => 'Buscar notas...';
+
+  @override
+  String get deleteNoteConfirm => '¿Eliminar esta nota?';
+
+  @override
+  String get noteSaved => 'Nota guardada';
+
+  @override
+  String get noteDeleted => 'Nota eliminada';
+
+  @override
+  String get modified => 'Modificado';
 }

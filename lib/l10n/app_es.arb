@@ -690,5 +690,69 @@
   "draftRestoredGame": "Se ha restaurado tu partida en curso",
   "@draftRestoredGame": {
     "description": "Mensaje cuando se restaura el borrador de la partida tras matar la app en segundo plano"
+  },
+  "notebook": "Cuaderno de Notas",
+  "@notebook": {
+    "description": "Título de la sección del cuaderno de notas"
+  },
+  "notebookSubtitle": "Apuntes y observaciones",
+  "@notebookSubtitle": {
+    "description": "Subtítulo para el acceso al cuaderno de notas en el inicio"
+  },
+  "newNote": "Nueva Nota",
+  "@newNote": {
+    "description": "Botón para crear una nueva nota"
+  },
+  "editNote": "Editar Nota",
+  "@editNote": {
+    "description": "Título al editar una nota existente"
+  },
+  "noteTitle": "Título",
+  "@noteTitle": {
+    "description": "Campo título de una nota"
+  },
+  "noteContent": "Contenido",
+  "@noteContent": {
+    "description": "Campo contenido de una nota"
+  },
+  "noteTitleHint": "Ej: Patrón de aceite en Bolera X",
+  "@noteTitleHint": {
+    "description": "Texto de sugerencia para el campo título de nota"
+  },
+  "noteContentHint": "Escribe tus apuntes aquí...",
+  "@noteContentHint": {
+    "description": "Texto de sugerencia para el campo contenido de nota"
+  },
+  "noteTitleRequired": "El título es obligatorio",
+  "@noteTitleRequired": {
+    "description": "Mensaje de validación cuando el título está vacío"
+  },
+  "noNotes": "No hay notas todavía",
+  "@noNotes": {
+    "description": "Mensaje cuando no hay notas guardadas"
+  },
+  "noNotesHint": "Pulsa + para añadir tu primera nota",
+  "@noNotesHint": {
+    "description": "Sugerencia cuando no hay notas guardadas"
+  },
+  "searchNotes": "Buscar notas...",
+  "@searchNotes": {
+    "description": "Placeholder para la búsqueda de notas"
+  },
+  "deleteNoteConfirm": "¿Eliminar esta nota?",
+  "@deleteNoteConfirm": {
+    "description": "Confirmación antes de eliminar una nota"
+  },
+  "noteSaved": "Nota guardada",
+  "@noteSaved": {
+    "description": "Mensaje cuando la nota se guarda correctamente"
+  },
+  "noteDeleted": "Nota eliminada",
+  "@noteDeleted": {
+    "description": "Mensaje cuando la nota se elimina correctamente"
+  },
+  "modified": "Modificado",
+  "@modified": {
+    "description": "Etiqueta de fecha de modificación"
   }
 }

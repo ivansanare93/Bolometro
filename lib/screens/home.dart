@@ -12,6 +12,7 @@ import 'friends_screen.dart';
 import 'rankings_screen.dart';
 import 'achievements_screen.dart';
 import 'registro_completo_sesion.dart';
+import 'notas_screen.dart';
 import '../providers/theme_provider.dart';
 import '../providers/language_provider.dart';
 import '../models/perfil_usuario.dart';
@@ -773,6 +774,21 @@ class _HomeScreenState extends State<HomeScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (_) => const AchievementsScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      leading: const Text('📓', style: TextStyle(fontSize: 32)),
+                      title: Text(AppLocalizations.of(context)!.notebook),
+                      subtitle: Text(AppLocalizations.of(context)!.notebookSubtitle),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const NotasScreen(),
                           ),
                         );
                       },
