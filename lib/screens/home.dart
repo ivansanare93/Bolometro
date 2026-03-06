@@ -414,6 +414,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                       await dataRepository.clearUserData();
                                       await authService.signOut();
                                       await dataRepository.setUser(null);
+                                      // Update AchievementService to use the default sessions box
+                                      if (context.mounted) {
+                                        Provider.of<AchievementService>(context, listen: false)
+                                            .updateSesionesBoxName(dataRepository.sesionesBoxName);
+                                      }
                                     }
                                   },
                                 ),
