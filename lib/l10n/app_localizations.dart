@@ -2246,109 +2246,109 @@ abstract class AppLocalizations {
   /// **'Menor es mejor'**
   String get lowerIsBetter;
 
-  /// No description provided for @draftRestoredSession.
+  /// Mensaje cuando se restaura el borrador de la sesión tras matar la app en segundo plano
   ///
   /// In es, this message translates to:
   /// **'Se ha restaurado tu sesión en curso'**
   String get draftRestoredSession;
 
-  /// No description provided for @draftRestoredGame.
+  /// Mensaje cuando se restaura el borrador de la partida tras matar la app en segundo plano
   ///
   /// In es, this message translates to:
   /// **'Se ha restaurado tu partida en curso'**
   String get draftRestoredGame;
 
-  /// No description provided for @notebook.
+  /// Título de la sección del cuaderno de notas
   ///
   /// In es, this message translates to:
   /// **'Cuaderno de Notas'**
   String get notebook;
 
-  /// No description provided for @notebookSubtitle.
+  /// Subtítulo para el acceso al cuaderno de notas en el inicio
   ///
   /// In es, this message translates to:
   /// **'Apuntes y observaciones'**
   String get notebookSubtitle;
 
-  /// No description provided for @newNote.
+  /// Botón para crear una nueva nota
   ///
   /// In es, this message translates to:
   /// **'Nueva Nota'**
   String get newNote;
 
-  /// No description provided for @editNote.
+  /// Título al editar una nota existente
   ///
   /// In es, this message translates to:
   /// **'Editar Nota'**
   String get editNote;
 
-  /// No description provided for @noteTitle.
+  /// Campo título de una nota
   ///
   /// In es, this message translates to:
   /// **'Título'**
   String get noteTitle;
 
-  /// No description provided for @noteContent.
+  /// Campo contenido de una nota
   ///
   /// In es, this message translates to:
   /// **'Contenido'**
   String get noteContent;
 
-  /// No description provided for @noteTitleHint.
+  /// Texto de sugerencia para el campo título de nota
   ///
   /// In es, this message translates to:
   /// **'Ej: Patrón de aceite en Bolera X'**
   String get noteTitleHint;
 
-  /// No description provided for @noteContentHint.
+  /// Texto de sugerencia para el campo contenido de nota
   ///
   /// In es, this message translates to:
   /// **'Escribe tus apuntes aquí...'**
   String get noteContentHint;
 
-  /// No description provided for @noteTitleRequired.
+  /// Mensaje de validación cuando el título está vacío
   ///
   /// In es, this message translates to:
   /// **'El título es obligatorio'**
   String get noteTitleRequired;
 
-  /// No description provided for @noNotes.
+  /// Mensaje cuando no hay notas guardadas
   ///
   /// In es, this message translates to:
   /// **'No hay notas todavía'**
   String get noNotes;
 
-  /// No description provided for @noNotesHint.
+  /// Sugerencia cuando no hay notas guardadas
   ///
   /// In es, this message translates to:
   /// **'Pulsa + para añadir tu primera nota'**
   String get noNotesHint;
 
-  /// No description provided for @searchNotes.
+  /// Placeholder para la búsqueda de notas
   ///
   /// In es, this message translates to:
   /// **'Buscar notas...'**
   String get searchNotes;
 
-  /// No description provided for @deleteNoteConfirm.
+  /// Confirmación antes de eliminar una nota
   ///
   /// In es, this message translates to:
   /// **'¿Eliminar esta nota?'**
   String get deleteNoteConfirm;
 
-  /// No description provided for @noteSaved.
+  /// Mensaje cuando la nota se guarda correctamente
   ///
   /// In es, this message translates to:
   /// **'Nota guardada'**
   String get noteSaved;
 
-  /// No description provided for @noteDeleted.
+  /// Mensaje cuando la nota se elimina correctamente
   ///
   /// In es, this message translates to:
   /// **'Nota eliminada'**
   String get noteDeleted;
 
-  /// No description provided for @modified.
+  /// Etiqueta de fecha de modificación
   ///
   /// In es, this message translates to:
   /// **'Modificado'**
