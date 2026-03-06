@@ -1131,4 +1131,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get draftRestoredGame => 'Your in-progress game has been restored';
+
+  @override
+  String get notebook => 'Notebook';
+
+  @override
+  String get notebookSubtitle => 'Notes and observations';
+
+  @override
+  String get newNote => 'New Note';
+
+  @override
+  String get editNote => 'Edit Note';
+
+  @override
+  String get noteTitle => 'Title';
+
+  @override
+  String get noteContent => 'Content';
+
+  @override
+  String get noteTitleHint => 'E.g. Oil pattern at Bowling Alley X';
+
+  @override
+  String get noteContentHint => 'Write your notes here...';
+
+  @override
+  String get noteTitleRequired => 'Title is required';
+
+  @override
+  String get noNotes => 'No notes yet';
+
+  @override
+  String get noNotesHint => 'Tap + to add your first note';
+
+  @override
+  String get searchNotes => 'Search notes...';
+
+  @override
+  String get deleteNoteConfirm => 'Delete this note?';
+
+  @override
+  String get noteSaved => 'Note saved';
+
+  @override
+  String get noteDeleted => 'Note deleted';
+
+  @override
+  String get modified => 'Modified';
 }

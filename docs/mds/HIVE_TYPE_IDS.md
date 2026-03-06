@@ -15,6 +15,7 @@ Este documento mantiene un registro centralizado de todos los `typeId` asignados
 |--------|---------------|---------|-------------|
 | 0 | `Partida` | `lib/models/partida.dart` | Representa una partida de bolos individual |
 | 1 | `Sesion` | `lib/models/sesion.dart` | Representa una sesión de entrenamiento con múltiples partidas |
+| 2 | `Nota` | `lib/models/nota.dart` | Nota del cuaderno de apuntes |
 | 10 | `PerfilUsuario` | `lib/models/perfil_usuario.dart` | Perfil del usuario de la aplicación |
 | 11 | `Achievement` | `lib/models/achievement.dart` | Logro del sistema de gamificación |
 | 13 | `AchievementType` | `lib/models/achievement.dart` | Enum de tipos de logros |
@@ -26,7 +27,7 @@ Este documento mantiene un registro centralizado de todos los `typeId` asignados
 ## TypeIDs Disponibles
 
 Los siguientes typeId están disponibles para nuevos modelos:
-- 2-9 (rango bajo)
+- 3-9 (rango bajo)
 - 12 (individual)
 - 18+ (rango alto)
 

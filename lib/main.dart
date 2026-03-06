@@ -12,6 +12,7 @@ import 'utils/app_constants.dart';
 
 import 'models/partida.dart';
 import 'models/sesion.dart';
+import 'models/nota.dart';
 import 'models/friend.dart';
 import 'models/friend_request.dart';
 import 'models/achievement.dart';
@@ -53,6 +54,9 @@ void main() async {
   if (!Hive.isAdapterRegistered(1)) {
     Hive.registerAdapter(SesionAdapter());
   }
+  if (!Hive.isAdapterRegistered(2)) {
+    Hive.registerAdapter(NotaAdapter());
+  }
   if (!Hive.isAdapterRegistered(10)) {
     Hive.registerAdapter(PerfilUsuarioAdapter());
   }
@@ -79,6 +83,7 @@ void main() async {
   // Los boxes específicos de usuario se abrirán cuando se autentique
   await Hive.openBox<Sesion>(AppConstants.boxSesiones);
   await Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+  await Hive.openBox<Nota>(AppConstants.boxNotas);
 
   runApp(
     MultiProvider(

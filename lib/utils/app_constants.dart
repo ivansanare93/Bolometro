@@ -32,6 +32,7 @@ class AppConstants {
   static const String boxSolicitudesAmistad = 'solicitudes_amistad';
   static const String boxUserProgress = 'userProgress';
   static const String boxAchievements = 'achievements';
+  static const String boxNotas = 'notas';
 
   // ===== Configuración de UI =====
   static const double cardBorderRadius = 12.0;
