@@ -406,13 +406,14 @@ class AchievementService extends ChangeNotifier {
           // Contar strikes y spares
           int currentStreak = 0;
           for (var frame in partida.frames) {
-            if (frame.first == 10) {
+            if (frame.isEmpty) continue;
+            if (frame.first == AppConstants.simboloStrike) {
               totalStrikes++;
               currentStreak++;
               maxStreak = maxStreak > currentStreak ? maxStreak : currentStreak;
             } else {
               currentStreak = 0;
-              if (frame.first + frame.last == 10) {
+              if (frame.length > 1 && frame.contains(AppConstants.simboloSpare)) {
                 totalSpares++;
               }
             }
