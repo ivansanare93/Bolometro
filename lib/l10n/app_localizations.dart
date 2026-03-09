@@ -2365,6 +2365,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Creado'**
   String get created;
+
+  /// Título del diálogo de confirmación para descartar cambios
+  ///
+  /// In es, this message translates to:
+  /// **'Descartar cambios'**
+  String get discardChanges;
+
+  /// Mensaje mostrado cuando el usuario intenta salir con datos sin guardar
+  ///
+  /// In es, this message translates to:
+  /// **'Tienes datos sin guardar. ¿Quieres salir sin guardar?'**
+  String get discardChangesMessage;
+
+  /// Etiqueta del botón para confirmar el descarte de cambios
+  ///
+  /// In es, this message translates to:
+  /// **'Descartar'**
+  String get discard;
 }
 
 class _AppLocalizationsDelegate
