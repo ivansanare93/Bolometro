@@ -60,18 +60,16 @@ class TecladoTiros extends StatelessWidget {
               t2 != null &&
               t2.isNotEmpty &&
               t2 != '-') {
-            // Strike y luego número: el tercer tiro debe sumar máximo 10 con el segundo
+            // Strike y luego número: el tercer tiro se limita a los pines restantes
             final segundoValor = int.tryParse(t2) ?? 0;
             for (var n in numeros) {
               final val = int.parse(n);
-              if (segundoValor + val > 10) deshabilitadas.add(n);
+              // Deshabilitar números que igualen o superen los pines restantes (eso sería spare o exceso)
+              if (segundoValor + val >= 10) deshabilitadas.add(n);
             }
-            // Solo permitir '/' si suma exactamente 10
-            if (segundoValor < 10) {
-              // Si la suma no da 10, deshabilita '/'
-            } else {
-              deshabilitadas.add('/');
-            }
+            // Strike no es posible si quedan menos de 10 pines
+            if (segundoValor > 0) deshabilitadas.add('X');
+            // '/' siempre disponible cuando quedan pines (segundoValor < 10)
           } else if (t1 == 'X' && (t2 == '-' || t2 == '')) {
             // Strike y fallo/ninguno: todo permitido
           } else if (t1 != 'X' && t2 == 'X') {

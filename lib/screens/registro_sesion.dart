@@ -304,7 +304,17 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
           }
         } else if (tiro == 2) {
           if (primerTiroStrike || sparePrevio) {
-            if (seleccionados.length == 10) {
+            final segundoTiroPins = pinesPorTiro[frame][1] ?? [];
+            final unionConSegundo = <int>{...segundoTiroPins, ...seleccionados};
+            // Spare: el segundo tiro tumbó entre 1 y 9 pines (isNotEmpty descarta
+            // el caso en que no hay datos; length < 10 descarta otro strike),
+            // y la unión cubre los 10 pines (= se completó el semipleno).
+            if (primerTiroStrike &&
+                segundoTiroPins.isNotEmpty &&
+                segundoTiroPins.length < 10 &&
+                unionConSegundo.length == 10) {
+              valor = "/"; // Spare: todos los pines restantes del segundo tiro
+            } else if (seleccionados.length == 10) {
               valor = "X"; // Strike en tercer tiro
             } else if (seleccionados.isEmpty) {
               valor = "-"; // Fallo
