@@ -1194,4 +1194,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get created => 'Creado';
+
+  @override
+  String get discardChanges => 'Descartar cambios';
+
+  @override
+  String get discardChangesMessage =>
+      'Tienes datos sin guardar. ¿Quieres salir sin guardar?';
+
+  @override
+  String get discard => 'Descartar';
 }
