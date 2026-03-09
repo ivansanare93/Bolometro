@@ -6,6 +6,7 @@ import '../repositories/data_repository.dart';
 import '../l10n/app_localizations.dart';
 import 'editar_nota_screen.dart';
 import 'ver_nota_screen.dart';
+import 'home.dart';
 
 class NotasScreen extends StatefulWidget {
   const NotasScreen({super.key});
@@ -151,6 +152,19 @@ class _NotasScreenState extends State<NotasScreen> {
       appBar: AppBar(
         title: Text(l10n.notebook),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.home),
+            tooltip: AppLocalizations.of(context)!.home,
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
