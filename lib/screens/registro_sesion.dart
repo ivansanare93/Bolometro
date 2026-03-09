@@ -157,6 +157,40 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
     }
   }
 
+  bool _tieneDataSinGuardar() {
+    final algúnFrameConDatos = framesText.any(
+      (frame) => frame.any((tiro) => tiro.isNotEmpty),
+    );
+    final notasConDatos = notas != null && notas!.trim().isNotEmpty;
+    return algúnFrameConDatos || notasConDatos;
+  }
+
+  Future<bool> _confirmarSalirSinGuardar() async {
+    if (!_tieneDataSinGuardar()) return true;
+    final l10n = AppLocalizations.of(context)!;
+    final resultado = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.discardChanges),
+        content: Text(l10n.discardChangesMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            child: Text(l10n.discard),
+          ),
+        ],
+      ),
+    );
+    return resultado == true;
+  }
+
   Map<int, Set<int>> _obtenerErroresPorTiro(List<List<String>> frames) {
     final errores = <int, Set<int>>{};
     for (int i = 0; i < frames.length; i++) {
@@ -413,8 +447,19 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
     }
 
     return PopScope(
+      canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (didPop) DraftService.clearPartidaDraft();
+        if (didPop) {
+          DraftService.clearPartidaDraft();
+          return;
+        }
+        Future.microtask(() async {
+          final debesSalir = await _confirmarSalirSinGuardar();
+          if (debesSalir && mounted) {
+            await DraftService.clearPartidaDraft();
+            if (mounted) Navigator.pop(context);
+          }
+        });
       },
       child: Scaffold(
         appBar: AppBar(
@@ -424,7 +469,9 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
             IconButton(
               icon: const Icon(Icons.home),
               tooltip: "Inicio",
-              onPressed: () {
+              onPressed: () async {
+                final debesSalir = await _confirmarSalirSinGuardar();
+                if (!debesSalir || !mounted) return;
                 DraftService.clearPartidaDraft();
                 Navigator.pushAndRemoveUntil(
                   context,

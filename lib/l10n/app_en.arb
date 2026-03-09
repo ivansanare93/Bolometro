@@ -627,5 +627,17 @@
   "created": "Created",
   "@created": {
     "description": "Label for creation date"
+  },
+  "discardChanges": "Discard changes",
+  "@discardChanges": {
+    "description": "Title for the discard changes confirmation dialog"
+  },
+  "discardChangesMessage": "You have unsaved data. Do you want to exit without saving?",
+  "@discardChangesMessage": {
+    "description": "Message shown when the user tries to leave with unsaved data"
+  },
+  "discard": "Discard",
+  "@discard": {
+    "description": "Button label to confirm discarding changes"
   }
 }

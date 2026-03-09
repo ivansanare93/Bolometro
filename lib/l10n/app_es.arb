@@ -762,5 +762,17 @@
   "created": "Creado",
   "@created": {
     "description": "Etiqueta de fecha de creación"
+  },
+  "discardChanges": "Descartar cambios",
+  "@discardChanges": {
+    "description": "Título del diálogo de confirmación para descartar cambios"
+  },
+  "discardChangesMessage": "Tienes datos sin guardar. ¿Quieres salir sin guardar?",
+  "@discardChangesMessage": {
+    "description": "Mensaje mostrado cuando el usuario intenta salir con datos sin guardar"
+  },
+  "discard": "Descartar",
+  "@discard": {
+    "description": "Etiqueta del botón para confirmar el descarte de cambios"
   }
 }

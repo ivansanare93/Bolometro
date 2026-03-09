@@ -1186,4 +1186,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get created => 'Created';
+
+  @override
+  String get discardChanges => 'Discard changes';
+
+  @override
+  String get discardChangesMessage =>
+      'You have unsaved data. Do you want to exit without saving?';
+
+  @override
+  String get discard => 'Discard';
 }
