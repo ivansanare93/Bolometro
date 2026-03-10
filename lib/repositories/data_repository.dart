@@ -312,10 +312,17 @@ class DataRepository extends ChangeNotifier {
 
       // Modo offline o si no hay perfil remoto: obtener desde Hive
       final box = await _getPerfilBox();
-      if (box.isNotEmpty) {
-        return box.getAt(0);
+      var perfil = box.get('perfil');
+      // Migration: handle profiles saved with integer key 0 (legacy format)
+      if (perfil == null && box.isNotEmpty) {
+        perfil = box.getAt(0);
+        if (perfil != null) {
+          await box.put('perfil', perfil);
+          await box.deleteAt(0);
+          debugPrint('Perfil migrado a clave fija "perfil"');
+        }
       }
-      return null;
+      return perfil;
     } catch (e) {
       debugPrint('Error al obtener perfil: $e');
       return null;
@@ -325,13 +332,9 @@ class DataRepository extends ChangeNotifier {
   /// Guardar perfil de usuario
   Future<void> guardarPerfil(PerfilUsuario perfil) async {
     try {
-      // Guardar localmente
+      // Guardar localmente usando la clave fija 'perfil'
       final box = await _getPerfilBox();
-      if (box.isEmpty) {
-        await box.add(perfil);
-      } else {
-        await box.putAt(0, perfil);
-      }
+      await box.put('perfil', perfil);
 
       // Si está online, guardar también en Firestore
       if (_isOnlineMode && _userId != null) {
@@ -341,6 +344,25 @@ class DataRepository extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('Error al guardar perfil: $e');
+      rethrow;
+    }
+  }
+
+  /// Eliminar perfil de usuario
+  Future<void> eliminarPerfil() async {
+    try {
+      // Eliminar localmente
+      final box = await _getPerfilBox();
+      await box.delete('perfil');
+
+      // Si está online, eliminar también en Firestore
+      if (_isOnlineMode && _userId != null) {
+        await _firestoreService.eliminarPerfil(_userId!);
+      }
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error al eliminar perfil: $e');
       rethrow;
     }
   }
@@ -408,7 +430,7 @@ class DataRepository extends ChangeNotifier {
 
       // Obtener perfil local una sola vez
       final boxPerfil = await _getPerfilBox();
-      final perfilLocal = boxPerfil.isNotEmpty ? boxPerfil.getAt(0) : null;
+      final perfilLocal = boxPerfil.get('perfil');
 
       // 3. Filtrar sesiones locales que NO existen en la nube
       final sesionesNuevas = sesionesLocales.where((sesion) {
@@ -545,7 +567,7 @@ class DataRepository extends ChangeNotifier {
       if (perfilRemoto != null) {
         final boxPerfil = await _getPerfilBox();
         await boxPerfil.clear();
-        await boxPerfil.add(perfilRemoto);
+        await boxPerfil.put('perfil', perfilRemoto);
       }
 
       // Obtener y guardar datos de gamificación desde Firestore
@@ -652,7 +674,7 @@ class DataRepository extends ChangeNotifier {
 
       // 2. Obtener perfil local
       final boxPerfil = await _getPerfilBox();
-      final perfilLocal = boxPerfil.isNotEmpty ? boxPerfil.getAt(0) : null;
+      final perfilLocal = boxPerfil.get('perfil');
 
       // 3. Eliminar todas las sesiones existentes en Firestore
       debugPrint('Eliminando sesiones existentes en la nube...');
