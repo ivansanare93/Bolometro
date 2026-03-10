@@ -66,6 +66,15 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       final dataRepository = Provider.of<DataRepository>(context, listen: false);
       perfilBox = Hive.box<PerfilUsuario>(dataRepository.perfilBoxName);
       perfil = perfilBox.get('perfil');
+      // Migration: handle profiles saved with integer key 0 (legacy format)
+      if (perfil == null && perfilBox.isNotEmpty) {
+        perfil = perfilBox.getAt(0);
+        if (perfil != null) {
+          perfilBox.put('perfil', perfil!);
+          perfilBox.deleteAt(0);
+          debugPrint('Perfil migrado a clave fija "perfil"');
+        }
+      }
       // Si no hay perfil, crea uno por defecto
       if (perfil == null) {
         perfil = PerfilUsuario(nombre: '');
@@ -108,8 +117,8 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
         
         final updatedPerfil = perfil!.copyWith(friendCode: friendCode);
         
-        await perfilBox.put('perfil', updatedPerfil);
-        await firestoreService.guardarPerfil(userId, updatedPerfil);
+        final dataRepository = Provider.of<DataRepository>(context, listen: false);
+        await dataRepository.guardarPerfil(updatedPerfil);
         
         setState(() {
           perfil = updatedPerfil;
@@ -179,13 +188,10 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
           ),
         );
 
-        // Espera un poco para que se vea el mensaje y navega al Home
+        // Espera un poco para que se vea el mensaje y vuelve a la pantalla anterior
         await Future.delayed(const Duration(milliseconds: 600));
         if (mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
-            (route) => false,
-          );
+          Navigator.of(context).pop();
         }
       }
     } on HiveError catch (e) {
@@ -270,7 +276,8 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
 
     if (confirm == true) {
       try {
-        await perfilBox.delete('perfil');
+        final dataRepository = Provider.of<DataRepository>(context, listen: false);
+        await dataRepository.eliminarPerfil();
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -283,11 +290,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
           );
           await Future.delayed(const Duration(milliseconds: 600));
           if (!mounted) return;
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
-            (route) => false,
-          );
+          Navigator.pop(context);
         }
       } on HiveError catch (e) {
         debugPrint('Error de Hive al eliminar perfil: $e');

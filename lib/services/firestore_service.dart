@@ -184,6 +184,21 @@ class FirestoreService {
     }
   }
 
+  /// Eliminar el perfil del usuario de Firestore
+  Future<void> eliminarPerfil(String userId) async {
+    try {
+      final docRef = _getPerfilDocument(userId);
+      final docSnapshot = await docRef.get();
+      if (docSnapshot.exists) {
+        await docRef.update({'perfil': FieldValue.delete()});
+        debugPrint('Perfil eliminado de Firestore');
+      }
+    } catch (e) {
+      debugPrint('Error al eliminar perfil de Firestore: $e');
+      rethrow;
+    }
+  }
+
   /// Guardar o actualizar el perfil del usuario
   /// 
   /// Guarda el perfil en el documento principal del usuario.

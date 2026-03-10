@@ -546,7 +546,15 @@ class _HomeScreenState extends State<HomeScreen> {
               itemBuilder: (context, index) => const ListItemSkeleton(),
             );
           }
-          final perfil = snapshot.data!.get('perfil');
+          var perfil = snapshot.data!.get('perfil');
+          // Migration: handle profiles saved with integer key 0 (legacy format)
+          if (perfil == null && snapshot.data!.isNotEmpty) {
+            perfil = snapshot.data!.getAt(0);
+            if (perfil != null) {
+              snapshot.data!.put('perfil', perfil);
+              snapshot.data!.deleteAt(0);
+            }
+          }
           final tienePerfil =
               perfil != null && (perfil.nombre.trim().isNotEmpty);
           final authService = Provider.of<AuthService>(context, listen: false);
