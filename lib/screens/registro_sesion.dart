@@ -158,11 +158,11 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
   }
 
   bool _tieneDataSinGuardar() {
-    final algúnFrameConDatos = framesText.any(
+    final algunFrameConDatos = framesText.any(
       (frame) => frame.any((tiro) => tiro.isNotEmpty),
     );
     final notasConDatos = notas != null && notas!.trim().isNotEmpty;
-    return algúnFrameConDatos || notasConDatos;
+    return algunFrameConDatos || notasConDatos;
   }
 
   Future<bool> _confirmarSalirSinGuardar() async {
