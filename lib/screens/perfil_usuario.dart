@@ -111,6 +111,11 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       
       if (userId == null) return; // No hacer nada si no hay usuario autenticado
       
+      // No generar código de amigo para perfiles sin nombre: probablemente el
+      // perfil real todavía no ha sido descargado de Firestore y guardarlo
+      // ahora sobreescribiría el perfil real con datos vacíos.
+      if (perfil?.nombre.trim().isEmpty ?? true) return;
+      
       if (perfil?.friendCode?.isEmpty ?? true) {
         final firestoreService = FirestoreService();
         final friendCode = await firestoreService.generarCodigoAmigoUnico();

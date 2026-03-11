@@ -306,6 +306,14 @@ class DataRepository extends ChangeNotifier {
         // Modo online: intentar obtener desde Firestore
         final perfilRemoto = await _firestoreService.obtenerPerfil(_userId!);
         if (perfilRemoto != null) {
+          // Cachear el perfil remoto en Hive para que la UI pueda leerlo de
+          // forma síncrona. Sin este paso, la pantalla de perfil (que lee
+          // directamente de la box local en initState) vería una box vacía y
+          // crearía un perfil en blanco, sobreescribiendo el dato real en
+          // Firestore cuando se generara el código de amigo.
+          final box = await _getPerfilBox();
+          await box.put('perfil', perfilRemoto);
+          debugPrint('Perfil remoto cacheado en Hive local');
           return perfilRemoto;
         }
       }
@@ -470,6 +478,14 @@ class DataRepository extends ChangeNotifier {
       debugPrint('Actualizando almacenamiento local con datos de la nube...');
       await boxSesiones.clear();
       await boxSesiones.addAll(sesionesFinal);
+
+      // 8. Cachear el perfil de la nube en Hive para que la UI lo encuentre
+      // de forma síncrona en initState (evita que se muestre un perfil vacío).
+      final perfilRemoto = await _firestoreService.obtenerPerfil(_userId!);
+      if (perfilRemoto != null) {
+        await boxPerfil.put('perfil', perfilRemoto);
+        debugPrint('Perfil remoto cacheado en Hive tras sincronización');
+      }
 
       debugPrint('Sincronización bidireccional completada: ${sesionesFinal.length} sesiones totales');
       
