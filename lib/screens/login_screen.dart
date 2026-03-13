@@ -5,9 +5,7 @@ import '../services/achievement_service.dart';
 import '../services/analytics_service.dart';
 import '../repositories/data_repository.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:hive/hive.dart';
 import '../models/perfil_usuario.dart';
-import '../utils/app_constants.dart';
 
 /// Pantalla de inicio de sesión con Google
 class LoginScreen extends StatefulWidget {
@@ -62,14 +60,16 @@ class _LoginScreenState extends State<LoginScreen> {
         achievementService.updateSesionesBoxName(dataRepository.sesionesBoxName);
       }
 
-      // Auto-poblar perfil con datos de Google si no existe
+      // Poblar/actualizar perfil con datos de la cuenta de Google
       try {
-        final perfilExistente = await dataRepository.obtenerPerfil();
-        
-        // Si no hay perfil o el perfil está vacío, crear uno con datos de Google
-        if (perfilExistente == null || (perfilExistente.nombre.trim().isEmpty)) {
-          final user = authService.user;
-          if (user != null) {
+        final user = authService.user;
+        if (user != null) {
+          // obtenerPerfil() busca primero en Firestore (modo online) y cachea
+          // en Hive local para que la pantalla de perfil lo encuentre.
+          final perfilExistente = await dataRepository.obtenerPerfil();
+
+          if (perfilExistente == null || perfilExistente.nombre.trim().isEmpty) {
+            // Primera vez: crear perfil completo con datos de Google
             final nuevoPerfil = PerfilUsuario(
               nombre: user.displayName ?? 'Usuario',
               email: user.email,
@@ -79,10 +79,33 @@ class _LoginScreenState extends State<LoginScreen> {
             );
             await dataRepository.guardarPerfil(nuevoPerfil);
             debugPrint('Perfil creado automáticamente con datos de Google');
+          } else {
+            // Perfil existente: actualizar campos de Google por si han cambiado
+            // (foto, nombre visible, email). Las personalizaciones del usuario
+            // (club, mano dominante, bio, etc.) se preservan.
+            // Solo se actualiza un campo si el nuevo valor de Google no es nulo
+            // y difiere del valor almacenado, evitando guardados innecesarios.
+            final fotoActualizada = user.photoURL != null &&
+                user.photoURL != perfilExistente.googlePhotoUrl;
+            final nombreActualizado = user.displayName != null &&
+                user.displayName != perfilExistente.googleDisplayName;
+            final emailActualizado = user.email != null &&
+                user.email != perfilExistente.email;
+
+            if (fotoActualizada || nombreActualizado || emailActualizado) {
+              final perfilActualizado = perfilExistente.copyWith(
+                googlePhotoUrl: user.photoURL,
+                googleDisplayName: user.displayName,
+                email: user.email ?? perfilExistente.email,
+                isFromGoogle: true,
+              );
+              await dataRepository.guardarPerfil(perfilActualizado);
+              debugPrint('Datos de Google actualizados en el perfil existente');
+            }
           }
         }
       } catch (e) {
-        debugPrint('Error al crear perfil desde Google: $e');
+        debugPrint('Error al crear/actualizar perfil desde Google: $e');
       }
 
       // Sincronizar datos locales a la nube
