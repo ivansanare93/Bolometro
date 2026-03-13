@@ -154,6 +154,12 @@ Consulta AUTENTICACION.md para más detalles.''';
       _isLoading = true;
       notifyListeners();
 
+      try {
+        await _googleSignIn.disconnect();
+      } catch (_) {
+        // Disconnect can fail if already disconnected; continue with sign-out
+      }
+
       await Future.wait([
         _auth.signOut(),
         _googleSignIn.signOut(),

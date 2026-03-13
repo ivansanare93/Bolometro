@@ -120,25 +120,27 @@ class DataRepository extends ChangeNotifier {
 
   /// Limpiar datos locales del usuario cuando cierra sesión
   Future<void> clearUserData() async {
-    if (_userId != null) {
-      try {
-        final sesionesBoxName = _getSesionesBoxName();
-        final perfilBoxName = _getPerfilBoxName();
-        
-        // Cerrar y eliminar boxes del usuario
-        if (Hive.isBoxOpen(sesionesBoxName)) {
-          await Hive.box<Sesion>(sesionesBoxName).clear();
-          await Hive.box<Sesion>(sesionesBoxName).close();
-        }
-        if (Hive.isBoxOpen(perfilBoxName)) {
-          await Hive.box<PerfilUsuario>(perfilBoxName).clear();
-          await Hive.box<PerfilUsuario>(perfilBoxName).close();
-        }
-        
-        debugPrint('Datos locales del usuario limpiados');
-      } catch (e) {
-        debugPrint('Error al limpiar datos locales: $e');
+    if (_userId == null) return;
+
+    final sesionesBoxName = _getSesionesBoxName();
+    final perfilBoxName = _getPerfilBoxName();
+
+    try {
+      // Cerrar boxes si están abiertas
+      if (Hive.isBoxOpen(sesionesBoxName)) {
+        await Hive.box<Sesion>(sesionesBoxName).close();
       }
+      if (Hive.isBoxOpen(perfilBoxName)) {
+        await Hive.box<PerfilUsuario>(perfilBoxName).close();
+      }
+
+      // Borrar del disco para evitar mezcla de datos entre usuarios
+      await Hive.deleteBoxFromDisk(sesionesBoxName);
+      await Hive.deleteBoxFromDisk(perfilBoxName);
+
+      debugPrint('Datos locales del usuario eliminados del disco');
+    } catch (e) {
+      debugPrint('Error al borrar datos locales del usuario: $e');
     }
   }
 

@@ -18,6 +18,7 @@ import '../providers/language_provider.dart';
 import '../models/perfil_usuario.dart';
 import '../utils/app_constants.dart';
 import '../services/auth_service.dart';
+import '../services/draft_service.dart';
 import '../services/analytics_service.dart';
 import '../services/achievement_service.dart';
 import '../repositories/data_repository.dart';
@@ -410,6 +411,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                       } catch (e) {
                                         debugPrint('Error logging sign out: $e');
                                       }
+                                      // Limpiar drafts de SharedPreferences antes de cerrar sesión
+                                      await DraftService.clearSesionDraft();
+                                      await DraftService.clearPartidaDraft();
                                       // Limpiar datos locales del usuario antes de cerrar sesión
                                       await dataRepository.clearUserData();
                                       await authService.signOut();
