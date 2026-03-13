@@ -1,9 +1,883 @@
-  Future<void> _bootstrap() async {
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:hive/hive.dart';
+import 'registro_sesion.dart';
+import 'estadisticas.dart';
+import 'lista_sesiones.dart';
+import 'perfil_usuario.dart';
+import 'friends_screen.dart';
+import 'rankings_screen.dart';
+import 'achievements_screen.dart';
+import 'registro_completo_sesion.dart';
+import 'notas_screen.dart';
+import '../providers/theme_provider.dart';
+import '../providers/language_provider.dart';
+import '../models/perfil_usuario.dart';
+import '../utils/app_constants.dart';
+import '../services/auth_service.dart';
+import '../services/draft_service.dart';
+import '../services/analytics_service.dart';
+import '../services/achievement_service.dart';
+import '../repositories/data_repository.dart';
+import '../l10n/app_localizations.dart';
+import '../widgets/skeleton_loaders.dart';
+
+class HomeScreen extends StatefulWidget {
+  final bool mostrarAppBar;
+
+  const HomeScreen({super.key, this.mostrarAppBar = true});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late Future<Box<PerfilUsuario>> _perfilBoxFuture;
+  late Future<void> _bootstrapFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    final dataRepository = Provider.of<DataRepository>(context, listen: false);
+    final authService = Provider.of<AuthService>(context, listen: false);
+    _bootstrapFuture = _bootstrap(dataRepository, authService);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        analytics.logScreenView('home_screen');
+      } catch (e) {
+        debugPrint('Error logging screen view: $e');
+      }
+    });
+  }
+
+  /// Precarga el perfil remoto desde Firestore (si el usuario está autenticado)
+  /// antes de abrir la box de Hive, para evitar el flash de "crear perfil"
+  /// cuando Hive todavía está vacío tras un re-login.
+Future<void> _bootstrap(
+  DataRepository dataRepository,
+  AuthService authService,
+) async {
+  try {
     final uid = authService.userId;
+
+    // Asegurar que el repo está configurado para el UID antes de pedir perfil
     if (uid != null) {
       await dataRepository.setUser(uid);
       await dataRepository.obtenerPerfil();
     }
-    // Open the Hive box as before
-    // ... other bootstrap code ...
+  } catch (e) {
+    debugPrint('Error en bootstrap de HomeScreen: $e');
   }
+
+  _perfilBoxFuture = Hive.openBox<PerfilUsuario>(dataRepository.perfilBoxName);
+}
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      appBar: widget.mostrarAppBar
+          ? AppBar(
+              title: Row(
+                children: [
+                  Image.asset('assets/logo_bolometro_min.png', height: 60),
+                  const SizedBox(width: 2),
+                  const Text('Bolómetro'),
+                ],
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.settings),
+                  tooltip: AppLocalizations.of(context)!.settings,
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(16),
+                        ),
+                      ),
+                      builder: (context) {
+                        final themeProvider = Provider.of<ThemeProvider>(
+                          context,
+                        );
+                        final authService = Provider.of<AuthService>(
+                          context,
+                          listen: false,
+                        );
+                        final dataRepository = Provider.of<DataRepository>(
+                          context,
+                          listen: false,
+                        );
+                        final achievementService = Provider.of<AchievementService>(
+                          context,
+                          listen: false,
+                        );
+
+                        return SingleChildScrollView(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                              Text(
+                                AppLocalizations.of(context)!.settings,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              
+                              // Estado de autenticación
+                              if (authService.isAuthenticated) ...[
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: cs.primaryContainer.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: cs.primary.withOpacity(0.2),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.cloud_done,
+                                        color: cs.primary,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              AppLocalizations.of(context)!.signedIn,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Text(
+                                              authService.user?.email ?? 'Usuario',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: cs.onSurface
+                                                    .withOpacity(0.7),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                              
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(AppLocalizations.of(context)!.darkMode),
+                                  Switch(
+                                    value: themeProvider.isDarkMode,
+                                    onChanged: (val) async {
+                                      themeProvider.toggleTheme(val);
+                                      try {
+                                        final analytics = Provider.of<AnalyticsService>(
+                                          context,
+                                          listen: false,
+                                        );
+                                        await analytics.logThemeChanged(val ? 'dark' : 'light');
+                                      } catch (e) {
+                                        debugPrint('Error logging theme change: $e');
+                                      }
+                                      if (context.mounted) Navigator.pop(context);
+                                    },
+                                  ),
+                                ],
+                              ),
+                              
+                              const SizedBox(height: 16),
+                              
+                              // Language selection
+                              Consumer<LanguageProvider>(
+                                builder: (context, languageProvider, _) {
+                                  return Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(AppLocalizations.of(context)!.language),
+                                      DropdownButton<String>(
+                                        value: languageProvider.locale.languageCode,
+                                        items: [
+                                          DropdownMenuItem(
+                                            value: 'es',
+                                            child: Text(AppLocalizations.of(context)!.spanish),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'en',
+                                            child: Text(AppLocalizations.of(context)!.english),
+                                          ),
+                                        ],
+                                        onChanged: (String? newLanguage) async {
+                                          if (newLanguage != null) {
+                                            await languageProvider.setLocale(Locale(newLanguage));
+                                            if (context.mounted) {
+                                              try {
+                                                final analytics = Provider.of<AnalyticsService>(
+                                                  context,
+                                                  listen: false,
+                                                );
+                                                await analytics.logLanguageChanged(newLanguage);
+                                              } catch (e) {
+                                                debugPrint('Error logging language change: $e');
+                                              }
+                                            }
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                              
+                              if (authService.isAuthenticated) ...[
+                                const Divider(height: 32),
+                                ListTile(
+                                  leading: Icon(
+                                    Icons.sync,
+                                    color: cs.primary,
+                                  ),
+                                  title: Text(AppLocalizations.of(context)!.syncData),
+                                  subtitle: Text(
+                                    dataRepository.isSyncing
+                                        ? AppLocalizations.of(context)!.syncing
+                                        : AppLocalizations.of(context)!.selectSyncDirection,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  trailing: dataRepository.isSyncing
+                                      ? const SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : null,
+                                  onTap: dataRepository.isSyncing
+                                      ? null
+                                      : () async {
+                                          // Mostrar diálogo para seleccionar dirección de sincronización
+                                          final syncDirection = await showDialog<String>(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title: Text(AppLocalizations.of(context)!.syncDirection),
+                                                content: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    ListTile(
+                                                      leading: const Icon(Icons.upload),
+                                                      title: Text(AppLocalizations.of(context)!.uploadToCloud),
+                                                      subtitle: Text(
+                                                        AppLocalizations.of(context)!.uploadToCloudDesc,
+                                                        style: const TextStyle(fontSize: 12),
+                                                      ),
+                                                      onTap: () => Navigator.pop(context, 'upload'),
+                                                    ),
+                                                    const Divider(),
+                                                    ListTile(
+                                                      leading: const Icon(Icons.download),
+                                                      title: Text(AppLocalizations.of(context)!.downloadFromCloud),
+                                                      subtitle: Text(
+                                                        AppLocalizations.of(context)!.downloadFromCloudDesc,
+                                                        style: const TextStyle(fontSize: 12),
+                                                      ),
+                                                      onTap: () => Navigator.pop(context, 'download'),
+                                                    ),
+                                                    const Divider(),
+                                                    ListTile(
+                                                      leading: const Icon(Icons.sync_alt),
+                                                      title: Text(AppLocalizations.of(context)!.smartSync),
+                                                      subtitle: Text(
+                                                        AppLocalizations.of(context)!.smartSyncDesc,
+                                                        style: const TextStyle(fontSize: 12),
+                                                      ),
+                                                      onTap: () => Navigator.pop(context, 'smart'),
+                                                    ),
+                                                  ],
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () => Navigator.pop(context),
+                                                    child: Text(AppLocalizations.of(context)!.cancel),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+
+                                          if (syncDirection == null) return;
+
+                                          try {
+                                            final analytics = Provider.of<AnalyticsService>(
+                                              context,
+                                              listen: false,
+                                            );
+                                            await analytics.logSync();
+
+                                            // Ejecutar la sincronización según la dirección seleccionada
+                                            String successMessage;
+                                            switch (syncDirection) {
+                                              case 'upload':
+                                                await dataRepository.subirANube();
+                                                successMessage = AppLocalizations.of(context)!.uploadToCloudSuccess;
+                                                break;
+                                              case 'download':
+                                                await dataRepository.descargarDesdeNube();
+                                                successMessage = AppLocalizations.of(context)!.downloadFromCloudSuccess;
+                                                break;
+                                              case 'smart':
+                                                await dataRepository.sincronizarANube();
+                                                successMessage = AppLocalizations.of(context)!.syncSuccess;
+                                                break;
+                                              default:
+                                                return;
+                                            }
+
+                                            if (context.mounted) {
+                                              Navigator.pop(context);
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    successMessage,
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          } catch (e) {
+                                            if (context.mounted) {
+                                              Navigator.pop(context);
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    'Error: ${e.toString()}',
+                                                  ),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        },
+                                ),
+                                const Divider(height: 32),
+                                ListTile(
+                                  leading: const Icon(
+                                    Icons.logout,
+                                    color: Colors.red,
+                                  ),
+                                  title: Text(
+                                    AppLocalizations.of(context)!.signOut,
+                                    style: const TextStyle(color: Colors.red),
+                                  ),
+                                  onTap: () async {
+                                    Navigator.pop(context);
+                                    final confirm = await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: Text(AppLocalizations.of(context)!.signOut),
+                                        content: Text(
+                                          AppLocalizations.of(context)!.signOutConfirmation,
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, false),
+                                            child: Text(AppLocalizations.of(context)!.cancel),
+                                          ),
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, true),
+                                            child: Text(
+                                              AppLocalizations.of(context)!.signOut,
+                                              style:
+                                                  const TextStyle(color: Colors.red),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+
+                                    if (confirm == true) {
+                                      try {
+                                        final analytics = Provider.of<AnalyticsService>(
+                                          context,
+                                          listen: false,
+                                        );
+                                        await analytics.logSignOut();
+                                      } catch (e) {
+                                        debugPrint('Error logging sign out: $e');
+                                      }
+                                      // Limpiar drafts de SharedPreferences antes de cerrar sesión
+                                      await DraftService.clearSesionDraft();
+                                      await DraftService.clearPartidaDraft();
+                                      // Limpiar datos locales del usuario antes de cerrar sesión
+                                      await dataRepository.clearUserData();
+                                      await authService.signOut();
+                                      await dataRepository.setUser(null);
+                                      // Update AchievementService to use the default sessions box
+                                      if (context.mounted) {
+                                        Provider.of<AchievementService>(context, listen: false)
+                                            .updateSesionesBoxName(dataRepository.sesionesBoxName);
+                                      }
+                                    }
+                                  },
+                                ),
+                                // const Divider(height: 32),
+                                // ListTile(
+                                //   leading: const Icon(
+                                //     Icons.refresh,
+                                //     color: Colors.orange,
+                                //   ),
+                                //   title: Text(
+                                //     AppLocalizations.of(context)!.resetProgress,
+                                //     style: const TextStyle(color: Colors.orange),
+                                //   ),
+                                //   subtitle: Text(
+                                //     AppLocalizations.of(context)!.resetProgressDesc,
+                                //     style: const TextStyle(fontSize: 12),
+                                //   ),
+                                //   onTap: () async {
+                                //     Navigator.pop(context);
+                                //     final confirm = await showDialog<bool>(
+                                //       context: context,
+                                //       builder: (context) => AlertDialog(
+                                //         title: Text(AppLocalizations.of(context)!.resetProgress),
+                                //         content: Text(
+                                //           AppLocalizations.of(context)!.resetProgressConfirmation,
+                                //         ),
+                                //         actions: [
+                                //           TextButton(
+                                //             onPressed: () =>
+                                //                 Navigator.pop(context, false),
+                                //             child: Text(AppLocalizations.of(context)!.cancel),
+                                //           ),
+                                //           TextButton(
+                                //             onPressed: () =>
+                                //                 Navigator.pop(context, true),
+                                //             child: Text(
+                                //               AppLocalizations.of(context)!.confirm,
+                                //               style:
+                                //                   const TextStyle(color: Colors.orange),
+                                //             ),
+                                //           ),
+                                //         ],
+                                //       ),
+                                //     );
+
+                                //     if (confirm == true) {
+                                //       try {
+                                //         debugPrint('[UI] Usuario confirmó reseteo de progreso');
+                                //         await achievementService.resetProgress();
+                                //         debugPrint('[UI] Reseteo de progreso completado exitosamente');
+                                //         if (context.mounted) {
+                                //           ScaffoldMessenger.of(context)
+                                //               .showSnackBar(
+                                //             SnackBar(
+                                //               content: Text(
+                                //                 AppLocalizations.of(context)!.resetProgressSuccess,
+                                //               ),
+                                //             ),
+                                //           );
+                                //         }
+                                //       } catch (e) {
+                                //         debugPrint('[UI] Error al resetear progreso: $e');
+                                //         if (context.mounted) {
+                                //           ScaffoldMessenger.of(context)
+                                //               .showSnackBar(
+                                //             SnackBar(
+                                //               content: Text(
+                                //                 '${AppLocalizations.of(context)!.resetProgressError}: ${e.toString()}',
+                                //               ),
+                                //               backgroundColor: Colors.red,
+                                //             ),
+                                //           );
+                                //         }
+                                //       }
+                                //     }
+                                //   },
+                                // ),
+                              ] else ...[
+                                const Divider(height: 32),
+                                Text(
+                                  AppLocalizations.of(context)!.moreOptionsComingSoon,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                              
+                              const SizedBox(height: 16),
+                              const SizedBox(height: 28),
+                              FutureBuilder<PackageInfo>(
+                                future: PackageInfo.fromPlatform(),
+                                builder: (context, snapshot) {
+                                  if (!snapshot.hasData)
+                                    return const SizedBox(height: 18);
+                                  final version = snapshot.data!.version;
+                                  return Center(
+                                    child: Text(
+                                      'Versión: $version',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ],
+            )
+          : null,
+      body: FutureBuilder<void>(
+        future: _bootstrapFuture,
+        builder: (context, bootstrapSnapshot) {
+          if (bootstrapSnapshot.connectionState != ConnectionState.done) {
+            return ListView.builder(
+              itemCount: 5,
+              itemBuilder: (context, index) => const ListItemSkeleton(),
+            );
+          }
+          return FutureBuilder<Box<PerfilUsuario>>(
+        future: _perfilBoxFuture,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return ListView.builder(
+              itemCount: 5,
+              itemBuilder: (context, index) => const ListItemSkeleton(),
+            );
+          }
+          var perfil = snapshot.data!.get('perfil');
+          // Migration: handle profiles saved with integer key 0 (legacy format)
+          if (perfil == null && snapshot.data!.isNotEmpty) {
+            perfil = snapshot.data!.getAt(0);
+            if (perfil != null) {
+              snapshot.data!.put('perfil', perfil);
+              snapshot.data!.deleteAt(0);
+            }
+          }
+          final tienePerfil =
+              perfil != null && (perfil.nombre.trim().isNotEmpty);
+          final authService = Provider.of<AuthService>(context, listen: false);
+
+          // Avatar: comprobamos si la imagen existe realmente
+          final avatarFileExists =
+              perfil != null &&
+              perfil.avatarPath != null &&
+              perfil.avatarPath!.isNotEmpty &&
+              File(perfil.avatarPath!).existsSync();
+
+          // Determinar qué avatar mostrar (prioridad: local > Google > default)
+          final Widget avatar;
+          if (perfil != null && avatarFileExists) {
+            // Usar imagen local
+            avatar = CircleAvatar(
+              radius: 46,
+              backgroundImage: FileImage(File(perfil.avatarPath!)),
+            );
+          } else if (perfil != null && perfil.hasGooglePhoto) {
+            // Usar foto de Google con manejo de errores
+            avatar = CircleAvatar(
+              radius: 46,
+              backgroundColor: cs.primary.withOpacity(0.10),
+              child: ClipOval(
+                child: Image.network(
+                  perfil.googlePhotoUrl!,
+                  width: 92,
+                  height: 92,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    // Fallback a icono por defecto si falla la carga
+                    return Icon(Icons.person, size: 46, color: cs.primary);
+                  },
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                            : null,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            );
+          } else {
+            // Avatar por defecto
+            avatar = CircleAvatar(
+              radius: 46,
+              backgroundColor: cs.primary.withOpacity(0.10),
+              child: Icon(Icons.person, size: 46, color: cs.primary),
+            );
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 14),
+                      GestureDetector(
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const PerfilUsuarioScreen(),
+                            ),
+                          );
+                          await _refrescarPerfil();
+                        },
+                        child: avatar,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        tienePerfil
+                            ? AppLocalizations.of(context)!.welcomeUser(perfil!.nombre)
+                            : AppLocalizations.of(context)!.welcomeCreateProfile,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      if (tienePerfil &&
+                          perfil.club != null &&
+                          perfil.club!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 3.0),
+                          child: Text(
+                            AppLocalizations.of(context)!.clubLabel(perfil.club!),
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: cs.primary,
+                            ),
+                          ),
+                        ),
+                      if (tienePerfil && perfil.manoDominante != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2.0),
+                          child: Text(
+                            AppLocalizations.of(context)!.dominantHandLabel(perfil.manoDominante!),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: cs.primary.withOpacity(0.68),
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 9),
+                      tienePerfil
+                          ? OutlinedButton.icon(
+                              icon: const Icon(Icons.edit, size: 19),
+                              label: Text(AppLocalizations.of(context)!.editMyProfile),
+                              style: OutlinedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(13),
+                                ),
+                                textStyle: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              onPressed: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const PerfilUsuarioScreen(),
+                                  ),
+                                );
+                                await _refrescarPerfil();
+                              },
+                            )
+                          : ElevatedButton.icon(
+                              icon: const Icon(Icons.person_add_alt_1),
+                              label: Text(
+                                AppLocalizations.of(context)!.createMyProfile,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: cs.primary,
+                                foregroundColor: Colors.white,
+                                elevation: 2,
+                                minimumSize: const Size(190, 48),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                textStyle: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              onPressed: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const PerfilUsuarioScreen(),
+                                  ),
+                                );
+                                await _refrescarPerfil();
+                              },
+                            ),
+                      const SizedBox(height: 18),
+                    ],
+                  ),
+                ),
+
+                // SOLO mostramos el resto si existe perfil completo
+                if (tienePerfil) ...[
+                  Card(
+                    child: ListTile(
+                      leading: const Padding(
+                        padding: EdgeInsets.only(top: 4),
+                        child: Text('🎳', style: TextStyle(fontSize: 32)),
+                      ),
+                      title: Text(AppLocalizations.of(context)!.newSession),
+                      subtitle: Text(AppLocalizations.of(context)!.registerMultipleGames),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                const RegistroCompletoSesionScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      leading: const Text('📋', style: TextStyle(fontSize: 32)),
+                      title: Text(AppLocalizations.of(context)!.viewSessions),
+                      subtitle: Text(AppLocalizations.of(context)!.sessionsList),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ListaSesionesScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      leading: const Text('📊', style: TextStyle(fontSize: 32)),
+                      title: Text(AppLocalizations.of(context)!.statistics),
+                      subtitle: Text(AppLocalizations.of(context)!.performanceSummary),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                const EstadisticasPantallaCompleta(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      leading: const Text('🏅', style: TextStyle(fontSize: 32)),
+                      title: Text(AppLocalizations.of(context)!.achievements),
+                      subtitle: Text(AppLocalizations.of(context)!.levelsAndAchievements),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AchievementsScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      leading: const Text('📓', style: TextStyle(fontSize: 32)),
+                      title: Text(AppLocalizations.of(context)!.notebook),
+                      subtitle: Text(AppLocalizations.of(context)!.notebookSubtitle),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const NotasScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  // Solo mostrar Friends y Rankings si el usuario está autenticado
+                  if (authService.isAuthenticated) ...[
+                    Card(
+                      child: ListTile(
+                        leading: const Text('👥', style: TextStyle(fontSize: 32)),
+                        title: Text(AppLocalizations.of(context)!.friends),
+                        subtitle: Text(AppLocalizations.of(context)!.manageFriends),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const FriendsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
+                        leading: const Text('🏆', style: TextStyle(fontSize: 32)),
+                        title: Text(AppLocalizations.of(context)!.rankings),
+                        subtitle: Text(AppLocalizations.of(context)!.compareWithFriends),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const RankingsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ],
+              ],
+            ),
+          );
+        },
+          );
+        },
+      ),
+    );
+  }
+}
