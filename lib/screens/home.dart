@@ -76,6 +76,27 @@ Future<void> _bootstrap(
   _perfilBoxFuture = Hive.openBox<PerfilUsuario>(dataRepository.perfilBoxName);
 }
 
+  /// Refresca el perfil desde Firestore y actualiza la UI.
+  /// Se llama al volver de la pantalla de perfil.
+  Future<void> _refrescarPerfil() async {
+    if (!mounted) return;
+    final dataRepository = Provider.of<DataRepository>(context, listen: false);
+    final authService = Provider.of<AuthService>(context, listen: false);
+    try {
+      if (authService.userId != null) {
+        await dataRepository.obtenerPerfil();
+      }
+    } catch (e) {
+      debugPrint('Error al refrescar perfil: $e');
+    }
+    if (mounted) {
+      setState(() {
+        _perfilBoxFuture =
+            Hive.openBox<PerfilUsuario>(dataRepository.perfilBoxName);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
