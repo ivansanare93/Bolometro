@@ -63,35 +63,32 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
     _loadPerfil();
   }
 
-  /// Abre la box correcta para el usuario actual y carga su perfil.
-  /// Usa [Hive.openBox] (no [Hive.box]) para garantizar que la box
-  /// correcta esté abierta sin depender de un estado previo.
+  /// Carga el perfil del usuario usando el repositorio de datos.
+  /// En modo online obtiene el perfil desde Firestore (fuente de verdad) y lo
+  /// cachea localmente. En modo offline lo lee desde el almacenamiento local.
   Future<void> _loadPerfil() async {
     try {
       final dataRepository = Provider.of<DataRepository>(context, listen: false);
+
+      // Obtener perfil a través del repositorio: en modo online recupera siempre
+      // desde Firestore y lo cachea en Hive; en modo offline usa el Hive local.
+      final loadedPerfil = await dataRepository.obtenerPerfil();
+
+      // Obtener referencia a la box local para escuchar actualizaciones futuras
+      // (p.ej. sincronización en segundo plano).
       final boxName = dataRepository.perfilBoxName;
       final box = Hive.isBoxOpen(boxName)
           ? Hive.box<PerfilUsuario>(boxName)
           : await Hive.openBox<PerfilUsuario>(boxName);
-
-      var loadedPerfil = box.get('perfil');
-      // Migration: handle profiles saved with integer key 0 (legacy format)
-      if (loadedPerfil == null && box.isNotEmpty) {
-        loadedPerfil = box.getAt(0);
-        if (loadedPerfil != null) {
-          await box.put('perfil', loadedPerfil);
-          await box.deleteAt(0);
-          debugPrint('Perfil migrado a clave fija "perfil"');
-        }
-      }
-      // If no profile exists, keep defaults in memory only — do NOT write to
-      // Hive so we don't overwrite a real profile that may arrive via sync.
 
       if (!mounted) return;
       setState(() {
         _perfilBox = box;
         perfil = loadedPerfil;
         _isLoading = false;
+        // Si loadedPerfil es null (usuario sin perfil aún), los controladores
+        // quedan con cadenas vacías, mostrando el formulario en blanco para
+        // que el usuario complete sus datos por primera vez.
         _nombreController.text = loadedPerfil?.nombre ?? '';
         _emailController.text = loadedPerfil?.email ?? '';
         _clubController.text = loadedPerfil?.club ?? '';
@@ -101,9 +98,9 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
         _avatarPath = loadedPerfil?.avatarPath;
       });
 
-      // Listen for late profile updates (e.g. Firestore sync arriving after
-      // the screen was already open). Guard prevents duplicate registration if
-      // _loadPerfil were ever called more than once.
+      // Escuchar actualizaciones futuras de la box (p.ej. sincronización de
+      // Firestore llegando mientras la pantalla está abierta). El guard evita
+      // registros duplicados si _loadPerfil se llamase más de una vez.
       if (_perfilBoxListenable == null) {
         _perfilBoxListenable = box.listenable(keys: ['perfil']);
         _perfilBoxListenable!.addListener(_onPerfilBoxChanged);
