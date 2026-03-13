@@ -36,12 +36,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Future<Box<PerfilUsuario>> _perfilBoxFuture;
+  late Future<void> _bootstrapFuture;
 
   @override
   void initState() {
     super.initState();
     final dataRepository = Provider.of<DataRepository>(context, listen: false);
-    _perfilBoxFuture = Hive.openBox<PerfilUsuario>(dataRepository.perfilBoxName);
+    final authService = Provider.of<AuthService>(context, listen: false);
+    _bootstrapFuture = _bootstrap(dataRepository, authService);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
         final analytics = Provider.of<AnalyticsService>(context, listen: false);
@@ -50,6 +52,23 @@ class _HomeScreenState extends State<HomeScreen> {
         debugPrint('Error logging screen view: $e');
       }
     });
+  }
+
+  /// Precarga el perfil remoto desde Firestore (si el usuario está autenticado)
+  /// antes de abrir la box de Hive, para evitar el flash de "crear perfil"
+  /// cuando Hive todavía está vacío tras un re-login.
+  Future<void> _bootstrap(
+    DataRepository dataRepository,
+    AuthService authService,
+  ) async {
+    try {
+      if (authService.isAuthenticated) {
+        await dataRepository.obtenerPerfil();
+      }
+    } catch (e) {
+      debugPrint('Error en bootstrap de HomeScreen: $e');
+    }
+    _perfilBoxFuture = Hive.openBox<PerfilUsuario>(dataRepository.perfilBoxName);
   }
 
   Future<void> _refrescarPerfil() async {
@@ -541,7 +560,16 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             )
           : null,
-      body: FutureBuilder<Box<PerfilUsuario>>(
+      body: FutureBuilder<void>(
+        future: _bootstrapFuture,
+        builder: (context, bootstrapSnapshot) {
+          if (bootstrapSnapshot.connectionState != ConnectionState.done) {
+            return ListView.builder(
+              itemCount: 5,
+              itemBuilder: (context, index) => const ListItemSkeleton(),
+            );
+          }
+          return FutureBuilder<Box<PerfilUsuario>>(
         future: _perfilBoxFuture,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -847,6 +875,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ],
             ),
+          );
+        },
           );
         },
       ),
