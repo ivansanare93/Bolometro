@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
@@ -8,13 +8,11 @@ import '../l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../models/perfil_usuario.dart';
-import '../utils/app_constants.dart';
 import '../services/analytics_service.dart';
 import '../services/achievement_service.dart';
 import '../services/auth_service.dart';
 import '../services/firestore_service.dart';
 import '../repositories/data_repository.dart';
-import 'home.dart';
 
 class PerfilUsuarioScreen extends StatefulWidget {
   const PerfilUsuarioScreen({super.key});
@@ -24,8 +22,9 @@ class PerfilUsuarioScreen extends StatefulWidget {
 }
 
 class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
-  late Box<PerfilUsuario> perfilBox;
+  Box<PerfilUsuario>? _perfilBox;
   PerfilUsuario? perfil;
+  bool _isLoading = true;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -39,20 +38,18 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
   String? _avatarPath;
   bool _clearGooglePhoto = false; // Flag para limpiar foto de Google
 
-  void _initializeDefaultValues() {
-    perfil = PerfilUsuario(nombre: '');
-    _nombreController = TextEditingController(text: '');
-    _emailController = TextEditingController(text: '');
-    _clubController = TextEditingController(text: '');
-    _bioController = TextEditingController(text: '');
-    _manoDominante = null;
-    _fechaNacimiento = null;
-    _avatarPath = null;
-  }
+  // Listener para reaccionar a cambios en la box (p.ej. sync de Firestore)
+  ValueListenable<Box<PerfilUsuario>>? _perfilBoxListenable;
 
   @override
   void initState() {
     super.initState();
+    // Initialize controllers with empty defaults synchronously
+    _nombreController = TextEditingController();
+    _emailController = TextEditingController();
+    _clubController = TextEditingController();
+    _bioController = TextEditingController();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
         final analytics = Provider.of<AnalyticsService>(context, listen: false);
@@ -60,47 +57,86 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       } catch (e) {
         debugPrint('Error logging screen view: $e');
       }
-      _ensureFriendCode();
     });
+
+    // Load profile asynchronously, opening the correct user-specific box
+    _loadPerfil();
+  }
+
+  /// Abre la box correcta para el usuario actual y carga su perfil.
+  /// Usa [Hive.openBox] (no [Hive.box]) para garantizar que la box
+  /// correcta esté abierta sin depender de un estado previo.
+  Future<void> _loadPerfil() async {
     try {
       final dataRepository = Provider.of<DataRepository>(context, listen: false);
-      perfilBox = Hive.box<PerfilUsuario>(dataRepository.perfilBoxName);
-      perfil = perfilBox.get('perfil');
+      final boxName = dataRepository.perfilBoxName;
+      final box = Hive.isBoxOpen(boxName)
+          ? Hive.box<PerfilUsuario>(boxName)
+          : await Hive.openBox<PerfilUsuario>(boxName);
+
+      var loadedPerfil = box.get('perfil');
       // Migration: handle profiles saved with integer key 0 (legacy format)
-      if (perfil == null && perfilBox.isNotEmpty) {
-        perfil = perfilBox.getAt(0);
-        if (perfil != null) {
-          perfilBox.put('perfil', perfil!);
-          perfilBox.deleteAt(0);
+      if (loadedPerfil == null && box.isNotEmpty) {
+        loadedPerfil = box.getAt(0);
+        if (loadedPerfil != null) {
+          await box.put('perfil', loadedPerfil);
+          await box.deleteAt(0);
           debugPrint('Perfil migrado a clave fija "perfil"');
         }
       }
-      // Si no hay perfil, crea uno por defecto
-      if (perfil == null) {
-        perfil = PerfilUsuario(nombre: '');
-        perfilBox.put('perfil', perfil!);
+      // If no profile exists, keep defaults in memory only — do NOT write to
+      // Hive so we don't overwrite a real profile that may arrive via sync.
+
+      if (!mounted) return;
+      setState(() {
+        _perfilBox = box;
+        perfil = loadedPerfil;
+        _isLoading = false;
+        _nombreController.text = loadedPerfil?.nombre ?? '';
+        _emailController.text = loadedPerfil?.email ?? '';
+        _clubController.text = loadedPerfil?.club ?? '';
+        _bioController.text = loadedPerfil?.bio ?? '';
+        _manoDominante = loadedPerfil?.manoDominante;
+        _fechaNacimiento = loadedPerfil?.fechaNacimiento;
+        _avatarPath = loadedPerfil?.avatarPath;
+      });
+
+      // Listen for late profile updates (e.g. Firestore sync arriving after
+      // the screen was already open). Guard prevents duplicate registration if
+      // _loadPerfil were ever called more than once.
+      if (_perfilBoxListenable == null) {
+        _perfilBoxListenable = box.listenable(keys: ['perfil']);
+        _perfilBoxListenable!.addListener(_onPerfilBoxChanged);
       }
-      _nombreController = TextEditingController(text: perfil?.nombre ?? '');
-      _emailController = TextEditingController(text: perfil?.email ?? '');
-      _clubController = TextEditingController(text: perfil?.club ?? '');
-      _bioController = TextEditingController(text: perfil?.bio ?? '');
-      _manoDominante = perfil?.manoDominante;
-      _fechaNacimiento = perfil?.fechaNacimiento;
-      _avatarPath = perfil?.avatarPath;
-    } on HiveError catch (e) {
-      debugPrint('Error de Hive al cargar perfil: $e');
-      // Intentar abrir la box nuevamente o crear valores por defecto
-      try {
-        final dataRepository = Provider.of<DataRepository>(context, listen: false);
-        perfilBox = Hive.box<PerfilUsuario>(dataRepository.perfilBoxName);
-      } catch (_) {
-        // Si falla, será necesario recrear la box en un futuro acceso
-        debugPrint('No se pudo abrir la box de perfil');
-      }
-      _initializeDefaultValues();
+
+      _ensureFriendCode();
     } catch (e) {
-      debugPrint('Error inesperado al inicializar perfil: $e');
-      _initializeDefaultValues();
+      debugPrint('Error al cargar perfil: $e');
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// Reacciona a cambios en la box de perfil (p.ej. actualización de Firestore).
+  /// Solo actualiza los controladores si el perfil local estaba vacío/sin nombre
+  /// y ahora llega uno real, para no pisar ediciones del usuario.
+  void _onPerfilBoxChanged() {
+    if (!mounted || _perfilBox == null) return;
+    final latestPerfil = _perfilBox!.get('perfil');
+    if ((perfil?.nombre.trim().isEmpty ?? true) &&
+        latestPerfil?.nombre.trim().isNotEmpty == true) {
+      setState(() {
+        perfil = latestPerfil;
+        _nombreController.text = latestPerfil!.nombre;
+        _emailController.text = latestPerfil.email ?? '';
+        _clubController.text = latestPerfil.club ?? '';
+        _bioController.text = latestPerfil.bio ?? '';
+        _manoDominante = latestPerfil.manoDominante;
+        _fechaNacimiento = latestPerfil.fechaNacimiento;
+        _avatarPath = latestPerfil.avatarPath;
+      });
     }
   }
 
@@ -329,6 +365,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
 
   @override
   void dispose() {
+    _perfilBoxListenable?.removeListener(_onPerfilBoxChanged);
     _nombreController.dispose();
     _emailController.dispose();
     _clubController.dispose();
@@ -339,6 +376,17 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(AppLocalizations.of(context)!.myProfile),
+          centerTitle: true,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final avatarFileExists =
         _avatarPath != null && File(_avatarPath!).existsSync();
     
@@ -353,13 +401,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
           IconButton(
             icon: const Icon(Icons.home),
             tooltip: AppLocalizations.of(context)!.home,
-            onPressed: () {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const HomeScreen()),
-                (route) => false,
-              );
-            },
+            onPressed: () => Navigator.pop(context),
           ),
         ],
       ),

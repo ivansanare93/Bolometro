@@ -149,6 +149,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   bool _hasShownLoginScreen = false;
   bool _skipLogin = false;
   String? _previousUserId;
+  String? _lastSetUserId;
   bool _notificationsInitialized = false;
   bool _initializingNotifications = false;
 
@@ -182,6 +183,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     if (_previousUserId != null && authService.userId == null) {
       // Update previous user ID first to prevent multiple callbacks
       _previousUserId = authService.userId;
+      _lastSetUserId = null; // Reset so the next login re-triggers setUser
       _notificationsInitialized = false;
       // User logged out, reset flags to allow new login
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -195,8 +197,12 @@ class _AuthWrapperState extends State<AuthWrapper> {
       _previousUserId = authService.userId;
     }
 
-    // Sincronizar estado de autenticación con el repositorio
-    if (authService.isAuthenticated && authService.userId != null) {
+    // Sincronizar estado de autenticación con el repositorio solo cuando
+    // cambia el userId para evitar llamadas repetidas en cada rebuild.
+    if (authService.isAuthenticated &&
+        authService.userId != null &&
+        authService.userId != _lastSetUserId) {
+      _lastSetUserId = authService.userId;
       // Use scheduleMicrotask to avoid blocking the build method
       // Errors are caught and logged to prevent silent failures
       Future.microtask(() async {
