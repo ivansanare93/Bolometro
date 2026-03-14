@@ -4,9 +4,9 @@ import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import '../models/sesion.dart';
 import '../models/partida.dart';
-import '../utils/app_constants.dart';
 import '../services/analytics_service.dart';
 import '../repositories/data_repository.dart';
+import '../widgets/score_sheet_pin_strip.dart';
 import 'editar_partida.dart';
 import 'home.dart';
 import '../l10n/app_localizations.dart';
@@ -196,14 +196,6 @@ class _VerSesionState extends State<VerSesion> {
     return partida.pinesPorTiro.any(
       (frame) => frame.any((tiro) => tiro != null),
     );
-  }
-
-  /// Formats a list of knocked-down pin indices as a compact string.
-  /// e.g. [1, 3, 7] → "1·3·7", [] → "–", null → ""
-  String _formatPins(List<int>? pins) {
-    if (pins == null) return '';
-    if (pins.isEmpty) return '–';
-    return pins.join('·');
   }
 
   @override
@@ -506,70 +498,8 @@ class _VerSesionState extends State<VerSesion> {
                         ],
                       ),
                       const SizedBox(height: 4),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: List.generate(10, (i) {
-                            final isLast = i == 9;
-                            final framePines = partida.pinesPorTiro[i];
-                            final maxTiros = isLast ? 3 : 2;
-
-                            final tirosPines = <List<int>>[];
-                            for (int j = 0;
-                                j < maxTiros && j < framePines.length;
-                                j++) {
-                              final pins = framePines[j];
-                              if (pins != null) tirosPines.add(pins);
-                            }
-
-                            if (tirosPines.isEmpty) {
-                              return const SizedBox.shrink();
-                            }
-
-                            return Container(
-                              margin: const EdgeInsets.only(right: 8),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: Colors.grey.shade300,
-                                ),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    'F${i + 1}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: isDark
-                                          ? Colors.grey[400]
-                                          : Colors.grey[600],
-                                    ),
-                                  ),
-                                  for (final pins in tirosPines)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 2),
-                                      child: Text(
-                                        _formatPins(pins),
-                                        style: TextStyle(
-                                          fontSize: 9,
-                                          color: isDark
-                                              ? Colors.grey[300]
-                                              : Colors.grey[700],
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            );
-                          }),
-                        ),
+                      ScoreSheetPinStrip(
+                        pinesPorTiro: partida.pinesPorTiro,
                       ),
                     ],
                     if (partida.notas != null &&

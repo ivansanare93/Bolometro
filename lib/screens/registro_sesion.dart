@@ -10,6 +10,7 @@ import '../widgets/marcador_bolos.dart';
 import '../widgets/teclado_selector_pins.dart';
 import '../widgets/resumen_puntuacion.dart';
 import '../widgets/notas_field.dart';
+import '../widgets/score_sheet_pin_strip.dart';
 import 'home.dart';
 import '../utils/teclado_tiros_adaptativo.dart';
 import '../l10n/app_localizations.dart';
@@ -516,6 +517,16 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
                 autoFocusEnabled: !_modoVisual,
                 autoAdvanceFocus: true,
               ),
+
+              // Pin strip: shown in visual mode once at least one throw has pin data
+              if (_modoVisual &&
+                  pinesPorTiro.any((f) => f.any((t) => t != null))) ...[
+                const SizedBox(height: 6),
+                ScoreSheetPinStrip(
+                  pinesPorTiro: pinesPorTiro,
+                  frameActivo: _frameActivo,
+                ),
+              ],
 
               const SizedBox(height: 8),
               ResumenPuntuacion(
