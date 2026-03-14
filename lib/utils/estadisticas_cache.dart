@@ -117,6 +117,7 @@ class EstadisticasCache extends ChangeNotifier {
     // Calcular estadísticas basadas en datos de pines (teclado visual)
     final promedioPrimerTiro = EstadisticasUtils.calcularPromedioPrimerTiro(partidas);
     final tasaConversionSpare = EstadisticasUtils.calcularTasaConversionSpare(partidas);
+    final conversionSparePorPin = EstadisticasUtils.calcularConversionSparePorPin(partidas);
 
     return {
       'porcentajes': porcentajes,
@@ -139,6 +140,7 @@ class EstadisticasCache extends ChangeNotifier {
       'totalSesiones': sesiones.length,
       'promedioPrimerTiro': promedioPrimerTiro,
       'tasaConversionSpare': tasaConversionSpare,
+      'conversionSparePorPin': conversionSparePorPin,
     };
   }
 
@@ -165,6 +167,7 @@ class EstadisticasCache extends ChangeNotifier {
       'totalSesiones': 0,
       'promedioPrimerTiro': null,
       'tasaConversionSpare': null,
+      'conversionSparePorPin': <String, List<int>>{},
     };
   }
 

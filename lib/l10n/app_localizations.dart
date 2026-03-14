@@ -2426,6 +2426,24 @@ abstract class AppLocalizations {
   /// **'Conv. Spare'**
   String get spareConversionRate;
 
+  /// Título de la sección de conversión de spare desglosada por pin
+  ///
+  /// In es, this message translates to:
+  /// **'Remate por Pin'**
+  String get perPinSpareStats;
+
+  /// Etiqueta que muestra los pines que quedaron en pie tras el primer tiro
+  ///
+  /// In es, this message translates to:
+  /// **'Deje: {pins}'**
+  String perPinLeaveLabel(String pins);
+
+  /// Muestra las conversiones sobre las oportunidades para un deje
+  ///
+  /// In es, this message translates to:
+  /// **'{converted}/{attempts}'**
+  String perPinConversionValue(int converted, int attempts);
+
   /// Subtítulo de la pantalla de inicio de sesión
   ///
   /// In es, this message translates to:

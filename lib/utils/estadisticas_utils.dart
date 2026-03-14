@@ -287,7 +287,11 @@ class EstadisticasUtils {
 
   /// Tasa de conversión de spare (porcentaje) usando datos visuales de pines.
   /// Calcula cuántas veces el jugador derribó todos los pines restantes en el
-  /// segundo tiro de los frames 1–9 cuando el primero no fue pleno (strike).
+  /// segundo tiro de los frames 1–9 cuando el primero no fue pleno (strike),
+  /// más las oportunidades del frame 10 cuando aplica:
+  ///  - Primer tiro del frame 10 no es pleno: el segundo tiro es la oportunidad.
+  ///  - Primer tiro del frame 10 es pleno: si el segundo no lo es, el tercero es
+  ///    la oportunidad de remate.
   /// Devuelve null si no hay oportunidades registradas con datos de pines.
   /// Solo se puede calcular cuando el usuario ha usado el teclado de pines.
   static double? calcularTasaConversionSpare(List<Partida> partidas) {
@@ -295,7 +299,7 @@ class EstadisticasUtils {
     int conversiones = 0;
 
     for (final partida in partidas) {
-      // Solo frames 1-9 (índices 0-8); el frame 10 tiene reglas especiales
+      // Frames 1-9 (índices 0-8)
       for (int f = 0; f < AppConstants.totalFrames - 1; f++) {
         if (f >= partida.pinesPorTiro.length) break;
         final tiro0Pines = partida.pinesPorTiro[f][0];
@@ -310,9 +314,102 @@ class EstadisticasUtils {
           }
         }
       }
+
+      // Frame 10 (índice 9) — incluido cuando aplica
+      if (partida.pinesPorTiro.length > 9) {
+        final frame10 = partida.pinesPorTiro[9];
+        final tiro0 = frame10[0];
+        final tiro1 = frame10[1];
+        final tiro2 = frame10.length > 2 ? frame10[2] : null;
+
+        // Caso 1: primer tiro no es pleno → tiro1 es la oportunidad de remate
+        if (tiro0 != null && tiro1 != null && tiro0.length < AppConstants.maxPinesBowling) {
+          oportunidades++;
+          final union = <int>{...tiro0, ...tiro1};
+          if (union.length == AppConstants.maxPinesBowling) conversiones++;
+        }
+
+        // Caso 2: primer tiro es pleno y segundo no lo es → tiro2 es la oportunidad
+        if (tiro0 != null && tiro0.length == AppConstants.maxPinesBowling &&
+            tiro1 != null && tiro2 != null && tiro1.length < AppConstants.maxPinesBowling) {
+          oportunidades++;
+          final union = <int>{...tiro1, ...tiro2};
+          if (union.length == AppConstants.maxPinesBowling) conversiones++;
+        }
+      }
     }
 
     if (oportunidades == 0) return null;
     return (conversiones / oportunidades) * 100;
+  }
+
+  /// Estadísticas de conversión de spare desglosadas por los pines que quedaron en pie
+  /// ("dejes") después del primer tiro.
+  ///
+  /// Incluye el frame 10 cuando aplica (igual que [calcularTasaConversionSpare]).
+  ///
+  /// Devuelve un mapa donde:
+  /// - Clave: lista de pines restantes en orden ascendente, unidos por coma
+  ///   (p. ej. "7" para el pin 7 solo, "7,10" para el split 7-10).
+  /// - Valor: lista de dos enteros [oportunidades, conversiones].
+  ///
+  /// Devuelve un mapa vacío si no hay datos de pines disponibles.
+  static Map<String, List<int>> calcularConversionSparePorPin(List<Partida> partidas) {
+    final resultado = <String, List<int>>{};
+
+    void addOportunidad(List<int> pinesRestantes, bool convertido) {
+      final key = (List<int>.from(pinesRestantes)..sort()).join(',');
+      resultado.putIfAbsent(key, () => [0, 0]);
+      resultado[key]![0]++;
+      if (convertido) resultado[key]![1]++;
+    }
+
+    final allPinsSet = Set<int>.from(List.generate(AppConstants.maxPinesBowling, (i) => i + 1));
+
+    for (final partida in partidas) {
+      // Frames 1-9 (índices 0-8)
+      for (int f = 0; f < AppConstants.totalFrames - 1; f++) {
+        if (f >= partida.pinesPorTiro.length) break;
+        final tiro0Pines = partida.pinesPorTiro[f][0];
+        final tiro1Pines = partida.pinesPorTiro[f][1];
+
+        if (tiro0Pines != null && tiro1Pines != null && tiro0Pines.length < AppConstants.maxPinesBowling) {
+          final pinesRestantes = (allPinsSet.difference(tiro0Pines.toSet()).toList()..sort());
+          if (pinesRestantes.isNotEmpty) {
+            final union = <int>{...tiro0Pines, ...tiro1Pines};
+            addOportunidad(pinesRestantes, union.length == AppConstants.maxPinesBowling);
+          }
+        }
+      }
+
+      // Frame 10 (índice 9) — incluido cuando aplica
+      if (partida.pinesPorTiro.length > 9) {
+        final frame10 = partida.pinesPorTiro[9];
+        final tiro0 = frame10[0];
+        final tiro1 = frame10[1];
+        final tiro2 = frame10.length > 2 ? frame10[2] : null;
+
+        // Caso 1: primer tiro no es pleno
+        if (tiro0 != null && tiro1 != null && tiro0.length < AppConstants.maxPinesBowling) {
+          final pinesRestantes = (allPinsSet.difference(tiro0.toSet()).toList()..sort());
+          if (pinesRestantes.isNotEmpty) {
+            final union = <int>{...tiro0, ...tiro1};
+            addOportunidad(pinesRestantes, union.length == AppConstants.maxPinesBowling);
+          }
+        }
+
+        // Caso 2: primer tiro es pleno y segundo no lo es
+        if (tiro0 != null && tiro0.length == AppConstants.maxPinesBowling &&
+            tiro1 != null && tiro2 != null && tiro1.length < AppConstants.maxPinesBowling) {
+          final pinesRestantes = (allPinsSet.difference(tiro1.toSet()).toList()..sort());
+          if (pinesRestantes.isNotEmpty) {
+            final union = <int>{...tiro1, ...tiro2};
+            addOportunidad(pinesRestantes, union.length == AppConstants.maxPinesBowling);
+          }
+        }
+      }
+    }
+
+    return resultado;
   }
 }
