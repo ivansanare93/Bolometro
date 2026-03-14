@@ -2492,7 +2492,7 @@ abstract class AppLocalizations {
   /// **'Hace menos de un minuto'**
   String get timeAgoJustNow;
 
-  /// Botón para cambiar al modo de teclado clásico
+  /// Botón para cambiar al modo de teclado clásico en el registro de partida
   ///
   /// In es, this message translates to:
   /// **'Cambiar a teclado clásico'**
@@ -2504,13 +2504,13 @@ abstract class AppLocalizations {
   /// **'Registrar bolos visualmente'**
   String get registerPinsVisually;
 
-  /// Etiqueta del selector de tipo de sesión
+  /// Etiqueta del selector de tipo de sesión (entrenamiento/competición)
   ///
   /// In es, this message translates to:
   /// **'Tipo de sesión'**
   String get sessionType;
 
-  /// Mensaje cuando no hay partidas añadidas
+  /// Mensaje cuando no hay partidas añadidas en la lista
   ///
   /// In es, this message translates to:
   /// **'No hay partidas añadidas'**
@@ -2522,13 +2522,13 @@ abstract class AppLocalizations {
   /// **'1 partida'**
   String get heatmap1Game;
 
-  /// Leyenda del mapa de calor para 3+ partidas
+  /// Leyenda del mapa de calor para 3 o más partidas
   ///
   /// In es, this message translates to:
   /// **'3+ partidas'**
   String get heatmap3Games;
 
-  /// Leyenda del mapa de calor para 5+ partidas
+  /// Leyenda del mapa de calor para 5 o más partidas
   ///
   /// In es, this message translates to:
   /// **'5+ partidas'**

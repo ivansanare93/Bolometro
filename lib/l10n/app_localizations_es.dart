@@ -1237,22 +1237,29 @@ class AppLocalizationsEs extends AppLocalizations {
   String get signingIn => 'Iniciando sesión...';
 
   @override
-  String get privacyNote => 'Tus datos personales están seguros. Solo accedemos a tu información básica de perfil.';
+  String get privacyNote =>
+      'Tus datos personales están seguros. Solo accedemos a tu información básica de perfil.';
 
   @override
-  String timeAgoDays(int count) => 'Hace $count días';
+  String timeAgoDays(int count) {
+    return 'Hace $count días';
+  }
 
   @override
   String get timeAgoDay => 'Hace 1 día';
 
   @override
-  String timeAgoHours(int count) => 'Hace $count horas';
+  String timeAgoHours(int count) {
+    return 'Hace $count horas';
+  }
 
   @override
   String get timeAgoHour => 'Hace 1 hora';
 
   @override
-  String timeAgoMinutes(int count) => 'Hace $count minutos';
+  String timeAgoMinutes(int count) {
+    return 'Hace $count minutos';
+  }
 
   @override
   String get timeAgoMinute => 'Hace 1 minuto';
@@ -1291,10 +1298,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exportShareText => 'Mis partidas de bolos';
 
   @override
-  String get exportErrorAccess => 'Error al acceder a las partidas. Intenta nuevamente.';
+  String get exportErrorAccess =>
+      'Error al acceder a las partidas. Intenta nuevamente.';
 
   @override
-  String get exportErrorGeneral => 'Error al exportar partidas. Intenta nuevamente.';
+  String get exportErrorGeneral =>
+      'Error al exportar partidas. Intenta nuevamente.';
 
   @override
   String get strike => 'Pleno';

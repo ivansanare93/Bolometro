@@ -1229,22 +1229,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signingIn => 'Signing in...';
 
   @override
-  String get privacyNote => 'Your personal data is safe. We only access your basic profile information.';
+  String get privacyNote =>
+      'Your personal data is safe. We only access your basic profile information.';
 
   @override
-  String timeAgoDays(int count) => '$count days ago';
+  String timeAgoDays(int count) {
+    return '$count days ago';
+  }
 
   @override
   String get timeAgoDay => '1 day ago';
 
   @override
-  String timeAgoHours(int count) => '$count hours ago';
+  String timeAgoHours(int count) {
+    return '$count hours ago';
+  }
 
   @override
   String get timeAgoHour => '1 hour ago';
 
   @override
-  String timeAgoMinutes(int count) => '$count minutes ago';
+  String timeAgoMinutes(int count) {
+    return '$count minutes ago';
+  }
 
   @override
   String get timeAgoMinute => '1 minute ago';
@@ -1301,5 +1308,5 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accept => 'Accept';
 
   @override
-  String get onStreak => "You're on a streak!";
+  String get onStreak => 'You\'re on a streak!';
 }
