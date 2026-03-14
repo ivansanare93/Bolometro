@@ -2612,10 +2612,7 @@ abstract class AppLocalizations {
   /// **'¡Vas en racha!'**
   String get onStreak;
 
-  /// Label for the pin detail section per throw in the game view.
-  ///
-  /// In en, this message translates to:
-  /// **'Pins per throw'**
+  /// Etiqueta de la sección de detalle de pines por tiro en la vista de partida
   ///
   /// In es, this message translates to:
   /// **'Pines por tiro'**
