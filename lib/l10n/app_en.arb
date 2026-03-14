@@ -639,5 +639,21 @@
   "discard": "Discard",
   "@discard": {
     "description": "Button label to confirm discarding changes"
+  },
+  "pinStatsSection": "Pin Statistics",
+  "@pinStatsSection": {
+    "description": "Title for the pin-based statistics section"
+  },
+  "pinStatsNote": "Available only for games recorded with the pin keyboard",
+  "@pinStatsNote": {
+    "description": "Note indicating that pin statistics require the visual keyboard"
+  },
+  "firstBallAvg": "1st Ball Avg",
+  "@firstBallAvg": {
+    "description": "Label for the first ball average (pins knocked on first throw)"
+  },
+  "spareConversionRate": "Spare Conv.",
+  "@spareConversionRate": {
+    "description": "Label for the spare conversion rate"
   }
 }

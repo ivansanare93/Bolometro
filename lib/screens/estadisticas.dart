@@ -29,6 +29,10 @@ class EstadisticasPantallaCompleta extends StatefulWidget {
 
 class _EstadisticasPantallaCompletaState
     extends State<EstadisticasPantallaCompleta> {
+  // Thresholds for pin-based stat directional indicators
+  static const double _kGoodFirstBallAverage = 6.0;
+  static const double _kGoodSpareConversionRate = 50.0;
+
   late Future<List<Sesion>> _sesionesFuture;
   String _filtroTipo = AppConstants.tipoTodos;
   bool _hasLoggedView = false;
@@ -282,6 +286,11 @@ class _EstadisticasPantallaCompletaState
           final miniPromedios = stats['promedioMovil'] as List<double>;
           final sesionRecord = stats['sesionRecord'] as Sesion?;
           final sesionPeor = stats['sesionPeor'] as Sesion?;
+
+          // Estadísticas de pines (solo disponibles con el teclado visual)
+          final promedioPrimerTiro = stats['promedioPrimerTiro'] as double?;
+          final tasaConversionSpare = stats['tasaConversionSpare'] as double?;
+          final hayEstadisticasPines = promedioPrimerTiro != null || tasaConversionSpare != null;
           
           // Extract theme colors once to avoid repeated lookups
           final greyColor = Colors.grey[700];
@@ -523,6 +532,52 @@ class _EstadisticasPantallaCompletaState
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 5),
+
+              // --- PIN-BASED STATS (only shown when pin keyboard data is available) ---
+              if (hayEstadisticasPines) ...[
+                const SizedBox(height: 20),
+                Text(
+                  AppLocalizations.of(context)!.pinStatsSection,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: greyColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  AppLocalizations.of(context)!.pinStatsNote,
+                  style: TextStyle(fontSize: 11, color: greyColor),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                RepaintBoundary(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        if (promedioPrimerTiro != null)
+                          KpiCardDinamico(
+                            label: AppLocalizations.of(context)!.firstBallAvg,
+                            value: promedioPrimerTiro.toStringAsFixed(1),
+                            icon: Icons.looks_one_rounded,
+                            color: Colors.teal[600]!,
+                            esSubida: promedioPrimerTiro >= _kGoodFirstBallAverage,
+                          ),
+                        if (tasaConversionSpare != null)
+                          KpiCardDinamico(
+                            label: AppLocalizations.of(context)!.spareConversionRate,
+                            value: '${tasaConversionSpare.toStringAsFixed(1)}%',
+                            icon: Icons.adjust_rounded,
+                            color: Colors.deepOrange[600]!,
+                            esSubida: tasaConversionSpare >= _kGoodSpareConversionRate,
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
               if (sesionRecord != null)
                 Card(
                   color: recordCardColor,

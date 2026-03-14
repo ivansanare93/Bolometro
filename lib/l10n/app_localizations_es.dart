@@ -1204,4 +1204,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get discard => 'Descartar';
+
+  @override
+  String get pinStatsSection => 'Estadísticas de Pines';
+
+  @override
+  String get pinStatsNote => 'Disponible solo para partidas registradas con el teclado de pines';
+
+  @override
+  String get firstBallAvg => 'Prom. 1ª Bola';
+
+  @override
+  String get spareConversionRate => 'Conv. Spare';
 }

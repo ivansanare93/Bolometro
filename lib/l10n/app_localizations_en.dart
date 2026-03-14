@@ -1196,4 +1196,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get discard => 'Discard';
+
+  @override
+  String get pinStatsSection => 'Pin Statistics';
+
+  @override
+  String get pinStatsNote => 'Available only for games recorded with the pin keyboard';
+
+  @override
+  String get firstBallAvg => '1st Ball Avg';
+
+  @override
+  String get spareConversionRate => 'Spare Conv.';
 }
