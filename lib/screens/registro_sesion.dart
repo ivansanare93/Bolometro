@@ -561,6 +561,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
                     }
 
                     return SelectorpinesWidget(
+                      key: ValueKey((_frameActivo!, _tiroActivo!)),
                       pinesIniciales: pinesIniciales,
                       pinesDeshabilitados: pinesDeshabilitados,
                       onAceptar: _onAceptarSeleccionPins,
@@ -587,14 +588,15 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
                   deshabilitadosNotifier: teclasDeshabilitadas,
                 ),
               const SizedBox(height: 16),
-              NotasField(
-                initialValue: notas,
-                onChanged: (v) {
-                  notas = v;
-                  _saveDraft();
-                },
-                onFocusChange: (focused) {},
-              ),
+              if (!_modoVisual)
+                NotasField(
+                  initialValue: notas,
+                  onChanged: (v) {
+                    notas = v;
+                    _saveDraft();
+                  },
+                  onFocusChange: (focused) {},
+                ),
               const SizedBox(height: 40),
             ],
           ),
