@@ -655,5 +655,124 @@
   "spareConversionRate": "Spare Conv.",
   "@spareConversionRate": {
     "description": "Label for the spare conversion rate"
+  },
+  "loginSubtitle": "Record and analyze your bowling games",
+  "@loginSubtitle": {
+    "description": "Subtitle on the login screen"
+  },
+  "whySignIn": "Why sign in?",
+  "@whySignIn": {
+    "description": "Title for the sign-in benefits section"
+  },
+  "syncDevices": "Sync your data across all your devices",
+  "@syncDevices": {
+    "description": "Benefit: sync across devices"
+  },
+  "autoBackup": "Automatic cloud backup",
+  "@autoBackup": {
+    "description": "Benefit: automatic cloud backup"
+  },
+  "socialFeatures": "Get ready for future social features",
+  "@socialFeatures": {
+    "description": "Benefit: upcoming social features"
+  },
+  "signingIn": "Signing in...",
+  "@signingIn": {
+    "description": "Text shown while signing in"
+  },
+  "privacyNote": "Your personal data is safe. We only access your basic profile information.",
+  "@privacyNote": {
+    "description": "Privacy disclaimer on the login screen"
+  },
+  "timeAgoDays": "{count} days ago",
+  "@timeAgoDays": {
+    "description": "Time elapsed in days (plural)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeAgoDay": "1 day ago",
+  "@timeAgoDay": {
+    "description": "Time elapsed of exactly 1 day"
+  },
+  "timeAgoHours": "{count} hours ago",
+  "@timeAgoHours": {
+    "description": "Time elapsed in hours (plural)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeAgoHour": "1 hour ago",
+  "@timeAgoHour": {
+    "description": "Time elapsed of exactly 1 hour"
+  },
+  "timeAgoMinutes": "{count} minutes ago",
+  "@timeAgoMinutes": {
+    "description": "Time elapsed in minutes (plural)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeAgoMinute": "1 minute ago",
+  "@timeAgoMinute": {
+    "description": "Time elapsed of exactly 1 minute"
+  },
+  "timeAgoJustNow": "Just now",
+  "@timeAgoJustNow": {
+    "description": "Time elapsed less than a minute"
+  },
+  "switchToClassicKeyboard": "Switch to classic keyboard",
+  "@switchToClassicKeyboard": {
+    "description": "Button to switch to classic keyboard mode when recording a game"
+  },
+  "registerPinsVisually": "Register pins visually",
+  "@registerPinsVisually": {
+    "description": "Button to switch to visual pin entry mode"
+  },
+  "sessionType": "Session type",
+  "@sessionType": {
+    "description": "Label for the session type selector (training/competition)"
+  },
+  "noGamesAdded": "No games added",
+  "@noGamesAdded": {
+    "description": "Message when no games have been added to the list"
+  },
+  "heatmap1Game": "1 game",
+  "@heatmap1Game": {
+    "description": "Heatmap legend for 1 game"
+  },
+  "heatmap3Games": "3+ games",
+  "@heatmap3Games": {
+    "description": "Heatmap legend for 3 or more games"
+  },
+  "heatmap5Games": "5+ games",
+  "@heatmap5Games": {
+    "description": "Heatmap legend for 5 or more games"
+  },
+  "noGamesToExport": "No games to export",
+  "@noGamesToExport": {
+    "description": "Message when there are no games to export"
+  },
+  "exportSuccess": "Export completed",
+  "@exportSuccess": {
+    "description": "Confirmation message after exporting games"
+  },
+  "exportShareText": "My bowling games",
+  "@exportShareText": {
+    "description": "Text used when sharing exported games"
+  },
+  "exportErrorAccess": "Error accessing games. Please try again.",
+  "@exportErrorAccess": {
+    "description": "Error message when failing to access games for export"
+  },
+  "exportErrorGeneral": "Error exporting games. Please try again.",
+  "@exportErrorGeneral": {
+    "description": "General error message when exporting games fails"
   }
 }

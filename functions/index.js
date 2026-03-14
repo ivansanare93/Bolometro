@@ -4,6 +4,30 @@ const admin = require("firebase-admin");
 admin.initializeApp();
 
 /**
+ * Returns localized notification strings for the given language code.
+ * Falls back to Spanish if the language is not supported.
+ * @param {string} lang - Language code (e.g. 'en', 'es')
+ * @return {Object} Localized strings
+ */
+function getNotificationStrings(lang) {
+  const strings = {
+    en: {
+      friendRequestTitle: "New friend request",
+      friendRequestBody: (name) => `${name} has sent you a friend request`,
+      friendRequestAcceptedTitle: "Request accepted",
+      friendRequestAcceptedBody: (name) => `${name} accepted your friend request`,
+    },
+    es: {
+      friendRequestTitle: "Nueva solicitud de amistad",
+      friendRequestBody: (name) => `${name} te ha enviado una solicitud de amistad`,
+      friendRequestAcceptedTitle: "Solicitud aceptada",
+      friendRequestAcceptedBody: (name) => `${name} ha aceptado tu solicitud de amistad`,
+    },
+  };
+  return strings[lang] || strings["es"];
+}
+
+/**
  * Helper function para enviar notificaciones push
  * @param {string} userId - ID del usuario destinatario
  * @param {Object} notificationData - Datos de la notificación
@@ -93,8 +117,13 @@ exports.sendFriendRequestNotification = functions.firestore
         return null;
       }
 
-      const title = "Nueva solicitud de amistad";
-      const body = `${notification.fromUserName} te ha enviado una solicitud de amistad`;
+      // Obtener el idioma del usuario
+      const userDoc = await admin.firestore().collection("users").doc(userId).get();
+      const lang = (userDoc.exists && userDoc.data().languageCode) || "es";
+      const i18n = getNotificationStrings(lang);
+
+      const title = i18n.friendRequestTitle;
+      const body = i18n.friendRequestBody(notification.fromUserName || "");
       const data = {
         type: "friend_request",
         requestId: notification.requestId || "",
@@ -119,8 +148,13 @@ exports.sendFriendRequestAcceptedNotification = functions.firestore
         return null;
       }
 
-      const title = "Solicitud aceptada";
-      const body = `${notification.acceptedByUserName} ha aceptado tu solicitud de amistad`;
+      // Obtener el idioma del usuario
+      const userDoc = await admin.firestore().collection("users").doc(userId).get();
+      const lang = (userDoc.exists && userDoc.data().languageCode) || "es";
+      const i18n = getNotificationStrings(lang);
+
+      const title = i18n.friendRequestAcceptedTitle;
+      const body = i18n.friendRequestAcceptedBody(notification.acceptedByUserName || "");
       const data = {
         type: "friend_request_accepted",
         acceptedByUserName: notification.acceptedByUserName || "",

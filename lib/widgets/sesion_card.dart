@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import '../models/sesion.dart';
 import '../utils/app_constants.dart';
+import '../l10n/app_localizations.dart';
 
 class SesionCard extends StatelessWidget {
   final Sesion sesion;
@@ -17,6 +18,10 @@ class SesionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final tipoLabel = sesion.tipo == AppConstants.tipoCompeticion
+        ? l10n.competition
+        : l10n.training;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 3,
@@ -39,7 +44,7 @@ class SesionCard extends StatelessWidget {
           ),
         ),
         title: Text(
-          '${sesion.tipo}  •  ${sesion.lugar.isEmpty ? "Sin lugar" : sesion.lugar}',
+          '$tipoLabel  •  ${sesion.lugar.isEmpty ? l10n.noLocation : sesion.lugar}',
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         subtitle: Row(
@@ -58,7 +63,7 @@ class SesionCard extends StatelessWidget {
             Icon(MdiIcons.bowling, size: 16, color: Colors.grey[600]),
             const SizedBox(width: 4),
             Text(
-              '${sesion.partidas.length} partidas',
+              l10n.gamesCount(sesion.partidas.length),
               style: const TextStyle(fontSize: 13),
             ),
           ],
@@ -69,7 +74,7 @@ class SesionCard extends StatelessWidget {
                   Icons.delete_outline,
                   color: Colors.red,
                 ),
-                tooltip: 'Eliminar',
+                tooltip: l10n.deleteTooltip,
                 onPressed: onDelete,
               )
             : null,

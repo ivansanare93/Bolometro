@@ -425,7 +425,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
           actions: [
             IconButton(
               icon: const Icon(Icons.home),
-              tooltip: "Inicio",
+              tooltip: AppLocalizations.of(context)!.home,
               onPressed: () async {
                 final debesSalir = await _confirmarSalirSinGuardar();
                 if (!debesSalir || !mounted) return;
@@ -466,8 +466,8 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
                     ),
                     label: Text(
                       _modoVisual
-                          ? 'Cambiar a teclado clásico'
-                          : 'Registrar bolos visualmente',
+                          ? AppLocalizations.of(context)!.switchToClassicKeyboard
+                          : AppLocalizations.of(context)!.registerPinsVisually,
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _modoVisual

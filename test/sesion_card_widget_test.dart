@@ -1,9 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bolometro/widgets/sesion_card.dart';
 import 'package:bolometro/models/sesion.dart';
 import 'package:bolometro/models/partida.dart';
 import 'package:bolometro/utils/app_constants.dart';
+import 'package:bolometro/l10n/app_localizations.dart';
+
+/// Helper to wrap a widget with the required localizations
+Widget withLocalizations(Widget child) {
+  return MaterialApp(
+    localizationsDelegates: const [
+      AppLocalizations.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    supportedLocales: const [Locale('en'), Locale('es')],
+    locale: const Locale('en'),
+    home: Scaffold(body: child),
+  );
+}
 
 /// Tests for SesionCard widget
 void main() {
@@ -37,14 +54,10 @@ void main() {
 
     testWidgets('SesionCard should display correctly', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SesionCard(
-              sesion: testSesion,
-              onTap: () {},
-            ),
-          ),
-        ),
+        withLocalizations(SesionCard(
+          sesion: testSesion,
+          onTap: () {},
+        )),
       );
 
       // Verify the card is displayed
@@ -54,14 +67,10 @@ void main() {
 
     testWidgets('SesionCard should display session location', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SesionCard(
-              sesion: testSesion,
-              onTap: () {},
-            ),
-          ),
-        ),
+        withLocalizations(SesionCard(
+          sesion: testSesion,
+          onTap: () {},
+        )),
       );
 
       // Verify location is shown
@@ -72,16 +81,12 @@ void main() {
       bool tapped = false;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SesionCard(
-              sesion: testSesion,
-              onTap: () {
-                tapped = true;
-              },
-            ),
-          ),
-        ),
+        withLocalizations(SesionCard(
+          sesion: testSesion,
+          onTap: () {
+            tapped = true;
+          },
+        )),
       );
 
       // Tap the card
@@ -94,14 +99,10 @@ void main() {
 
     testWidgets('SesionCard should show training type indicator', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SesionCard(
-              sesion: testSesion,
-              onTap: () {},
-            ),
-          ),
-        ),
+        withLocalizations(SesionCard(
+          sesion: testSesion,
+          onTap: () {},
+        )),
       );
 
       // The card should show training type somehow (implementation dependent)
@@ -126,14 +127,10 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SesionCard(
-              sesion: competitionSesion,
-              onTap: () {},
-            ),
-          ),
-        ),
+        withLocalizations(SesionCard(
+          sesion: competitionSesion,
+          onTap: () {},
+        )),
       );
 
       expect(find.byType(SesionCard), findsOneWidget);

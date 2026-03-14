@@ -1208,4 +1208,82 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get spareConversionRate => 'Spare Conv.';
+
+  @override
+  String get loginSubtitle => 'Record and analyze your bowling games';
+
+  @override
+  String get whySignIn => 'Why sign in?';
+
+  @override
+  String get syncDevices => 'Sync your data across all your devices';
+
+  @override
+  String get autoBackup => 'Automatic cloud backup';
+
+  @override
+  String get socialFeatures => 'Get ready for future social features';
+
+  @override
+  String get signingIn => 'Signing in...';
+
+  @override
+  String get privacyNote => 'Your personal data is safe. We only access your basic profile information.';
+
+  @override
+  String timeAgoDays(int count) => '$count days ago';
+
+  @override
+  String get timeAgoDay => '1 day ago';
+
+  @override
+  String timeAgoHours(int count) => '$count hours ago';
+
+  @override
+  String get timeAgoHour => '1 hour ago';
+
+  @override
+  String timeAgoMinutes(int count) => '$count minutes ago';
+
+  @override
+  String get timeAgoMinute => '1 minute ago';
+
+  @override
+  String get timeAgoJustNow => 'Just now';
+
+  @override
+  String get switchToClassicKeyboard => 'Switch to classic keyboard';
+
+  @override
+  String get registerPinsVisually => 'Register pins visually';
+
+  @override
+  String get sessionType => 'Session type';
+
+  @override
+  String get noGamesAdded => 'No games added';
+
+  @override
+  String get heatmap1Game => '1 game';
+
+  @override
+  String get heatmap3Games => '3+ games';
+
+  @override
+  String get heatmap5Games => '5+ games';
+
+  @override
+  String get noGamesToExport => 'No games to export';
+
+  @override
+  String get exportSuccess => 'Export completed';
+
+  @override
+  String get exportShareText => 'My bowling games';
+
+  @override
+  String get exportErrorAccess => 'Error accessing games. Please try again.';
+
+  @override
+  String get exportErrorGeneral => 'Error exporting games. Please try again.';
 }

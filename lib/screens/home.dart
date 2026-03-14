@@ -108,7 +108,7 @@ Future<void> _bootstrap(
                 children: [
                   Image.asset('assets/logo_bolometro_min.png', height: 60),
                   const SizedBox(width: 2),
-                  const Text('Bolómetro'),
+                  Text(AppLocalizations.of(context)!.appTitle),
                 ],
               ),
               actions: [

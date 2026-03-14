@@ -790,5 +790,124 @@
   "spareConversionRate": "Conv. Spare",
   "@spareConversionRate": {
     "description": "Etiqueta para la tasa de conversión de spare"
+  },
+  "loginSubtitle": "Registra y analiza tus partidas de bolos",
+  "@loginSubtitle": {
+    "description": "Subtítulo de la pantalla de inicio de sesión"
+  },
+  "whySignIn": "¿Por qué iniciar sesión?",
+  "@whySignIn": {
+    "description": "Título de la sección de beneficios de iniciar sesión"
+  },
+  "syncDevices": "Sincroniza tus datos en todos tus dispositivos",
+  "@syncDevices": {
+    "description": "Beneficio de sincronización entre dispositivos"
+  },
+  "autoBackup": "Copia de seguridad automática en la nube",
+  "@autoBackup": {
+    "description": "Beneficio de copia de seguridad automática"
+  },
+  "socialFeatures": "Prepárate para funciones sociales futuras",
+  "@socialFeatures": {
+    "description": "Beneficio de funciones sociales futuras"
+  },
+  "signingIn": "Iniciando sesión...",
+  "@signingIn": {
+    "description": "Texto mostrado mientras se inicia sesión"
+  },
+  "privacyNote": "Tus datos personales están seguros. Solo accedemos a tu información básica de perfil.",
+  "@privacyNote": {
+    "description": "Nota de privacidad en la pantalla de inicio de sesión"
+  },
+  "timeAgoDays": "Hace {count} días",
+  "@timeAgoDays": {
+    "description": "Tiempo transcurrido en días (plural)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeAgoDay": "Hace 1 día",
+  "@timeAgoDay": {
+    "description": "Tiempo transcurrido de exactamente 1 día"
+  },
+  "timeAgoHours": "Hace {count} horas",
+  "@timeAgoHours": {
+    "description": "Tiempo transcurrido en horas (plural)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeAgoHour": "Hace 1 hora",
+  "@timeAgoHour": {
+    "description": "Tiempo transcurrido de exactamente 1 hora"
+  },
+  "timeAgoMinutes": "Hace {count} minutos",
+  "@timeAgoMinutes": {
+    "description": "Tiempo transcurrido en minutos (plural)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeAgoMinute": "Hace 1 minuto",
+  "@timeAgoMinute": {
+    "description": "Tiempo transcurrido de exactamente 1 minuto"
+  },
+  "timeAgoJustNow": "Hace menos de un minuto",
+  "@timeAgoJustNow": {
+    "description": "Tiempo transcurrido menor a un minuto"
+  },
+  "switchToClassicKeyboard": "Cambiar a teclado clásico",
+  "@switchToClassicKeyboard": {
+    "description": "Botón para cambiar al modo de teclado clásico en el registro de partida"
+  },
+  "registerPinsVisually": "Registrar bolos visualmente",
+  "@registerPinsVisually": {
+    "description": "Botón para cambiar al modo visual de registro de pines"
+  },
+  "sessionType": "Tipo de sesión",
+  "@sessionType": {
+    "description": "Etiqueta del selector de tipo de sesión (entrenamiento/competición)"
+  },
+  "noGamesAdded": "No hay partidas añadidas",
+  "@noGamesAdded": {
+    "description": "Mensaje cuando no hay partidas añadidas en la lista"
+  },
+  "heatmap1Game": "1 partida",
+  "@heatmap1Game": {
+    "description": "Leyenda del mapa de calor para 1 partida"
+  },
+  "heatmap3Games": "3+ partidas",
+  "@heatmap3Games": {
+    "description": "Leyenda del mapa de calor para 3 o más partidas"
+  },
+  "heatmap5Games": "5+ partidas",
+  "@heatmap5Games": {
+    "description": "Leyenda del mapa de calor para 5 o más partidas"
+  },
+  "noGamesToExport": "No hay partidas para exportar",
+  "@noGamesToExport": {
+    "description": "Mensaje cuando no hay partidas para exportar"
+  },
+  "exportSuccess": "Exportación completada",
+  "@exportSuccess": {
+    "description": "Mensaje de confirmación al exportar partidas"
+  },
+  "exportShareText": "Mis partidas de bolos",
+  "@exportShareText": {
+    "description": "Texto para compartir al exportar partidas"
+  },
+  "exportErrorAccess": "Error al acceder a las partidas. Intenta nuevamente.",
+  "@exportErrorAccess": {
+    "description": "Mensaje de error al acceder a las partidas para exportar"
+  },
+  "exportErrorGeneral": "Error al exportar partidas. Intenta nuevamente.",
+  "@exportErrorGeneral": {
+    "description": "Mensaje de error general al exportar partidas"
   }
 }
