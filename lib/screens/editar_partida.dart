@@ -190,7 +190,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
         actions: [
           IconButton(
             icon: const Icon(Icons.home),
-            tooltip: "Inicio",
+            tooltip: AppLocalizations.of(context)!.home,
             onPressed: () {
               Navigator.pushAndRemoveUntil(
                 context,

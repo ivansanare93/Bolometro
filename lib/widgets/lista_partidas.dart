@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/partida.dart';
+import '../l10n/app_localizations.dart';
 
 class ListaPartidas extends StatelessWidget {
   final List<Partida> partidas;
@@ -14,20 +15,19 @@ class ListaPartidas extends StatelessWidget {
   });
 
   Future<bool?> _confirmarBorrado(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     return await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('¿Eliminar partida?'),
-        content: const Text(
-          '¿Seguro que quieres eliminar esta partida? Esta acción no se puede deshacer.',
-        ),
+        title: Text(l10n.deleteGameTitle),
+        content: Text(l10n.deleteGameConfirmation),
         actions: [
           TextButton(
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
             onPressed: () => Navigator.of(context).pop(false),
           ),
           TextButton(
-            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
             onPressed: () => Navigator.of(context).pop(true),
           ),
         ],
@@ -37,12 +37,13 @@ class ListaPartidas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (partidas.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
           child: Text(
-            'No hay partidas añadidas',
+            l10n.noGamesAdded,
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
@@ -69,8 +70,8 @@ class ListaPartidas extends StatelessWidget {
             elevation: 1,
             margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
             child: ListTile(
-              title: Text('Partida ${index + 1} - ${p.total} puntos'),
-              onTap: () => onEditar(index), // ← Toca para editar
+              title: Text('${l10n.gameNumber(index + 1)} - ${l10n.points(p.total)}'),
+              onTap: () => onEditar(index),
             ),
           ),
         );

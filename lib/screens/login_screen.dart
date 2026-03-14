@@ -6,6 +6,7 @@ import '../services/analytics_service.dart';
 import '../repositories/data_repository.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../models/perfil_usuario.dart';
+import '../l10n/app_localizations.dart';
 
 /// Pantalla de inicio de sesión con Google
 class LoginScreen extends StatefulWidget {
@@ -157,6 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     
     return Scaffold(
       body: SafeArea(
@@ -175,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
               
               // Título
               Text(
-                'Bolómetro',
+                l10n.appTitle,
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: cs.primary,
@@ -186,7 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
               
               // Subtítulo
               Text(
-                'Registra y analiza tus partidas de bolos',
+                l10n.loginSubtitle,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: cs.onSurface.withOpacity(0.7),
                 ),
@@ -208,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '¿Por qué iniciar sesión?',
+                      l10n.whySignIn,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -218,15 +220,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 12),
                     _buildBenefitItem(
                       Icons.cloud_sync,
-                      'Sincroniza tus datos en todos tus dispositivos',
+                      l10n.syncDevices,
                     ),
                     _buildBenefitItem(
                       Icons.backup,
-                      'Copia de seguridad automática en la nube',
+                      l10n.autoBackup,
                     ),
                     _buildBenefitItem(
                       Icons.group_add,
-                      'Prepárate para funciones sociales futuras',
+                      l10n.socialFeatures,
                     ),
                   ],
                 ),
@@ -244,7 +246,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       )
                     : const FaIcon(FontAwesomeIcons.google, size: 20),
                 label: Text(
-                  _isProcessing ? 'Iniciando sesión...' : 'Continuar con Google',
+                  _isProcessing ? l10n.signingIn : l10n.continueWithGoogle,
                   style: const TextStyle(fontSize: 16),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -262,7 +264,7 @@ class _LoginScreenState extends State<LoginScreen> {
               TextButton(
                 onPressed: _isProcessing ? null : _continueOffline,
                 child: Text(
-                  'Continuar sin iniciar sesión',
+                  l10n.continueWithoutLogin,
                   style: TextStyle(
                     color: cs.onSurface.withOpacity(0.6),
                   ),
@@ -272,7 +274,7 @@ class _LoginScreenState extends State<LoginScreen> {
               
               // Nota sobre privacidad
               Text(
-                'Tus datos personales están seguros. Solo accedemos a tu información básica de perfil.',
+                l10n.privacyNote,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: cs.onSurface.withOpacity(0.5),
                 ),

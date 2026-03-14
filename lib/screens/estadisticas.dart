@@ -88,11 +88,19 @@ class _EstadisticasPantallaCompletaState
     return filtered;
   }
 
+  String _translateTipo(String tipo, AppLocalizations l10n) {
+    if (tipo == AppConstants.tipoEntrenamiento) return l10n.training;
+    if (tipo == AppConstants.tipoCompeticion) return l10n.competition;
+    if (tipo == AppConstants.tipoTodos) return l10n.all;
+    return tipo;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.fullStatistics),
+        title: Text(l10n.fullStatistics),
         centerTitle: true,
         actions: [
           IconButton(
@@ -203,7 +211,7 @@ class _EstadisticasPantallaCompletaState
                                     (tipo) => DropdownMenuItem(
                                       value: tipo,
                                       child: Text(
-                                        tipo,
+                                        _translateTipo(tipo, l10n),
                                         style: TextStyle(
                                           color: Theme.of(context).colorScheme.onSurface.withOpacity(
                                             tipo == _filtroTipo ? 1.0 : 0.72,
@@ -358,7 +366,7 @@ class _EstadisticasPantallaCompletaState
                                   (tipo) => DropdownMenuItem(
                                     value: tipo,
                                     child: Text(
-                                      tipo,
+                                      _translateTipo(tipo, l10n),
                                       style: TextStyle(
                                         color: Theme.of(context).colorScheme.onSurface.withOpacity(
                                           tipo == _filtroTipo ? 1.0 : 0.72,

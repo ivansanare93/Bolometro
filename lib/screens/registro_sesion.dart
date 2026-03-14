@@ -425,7 +425,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
           actions: [
             IconButton(
               icon: const Icon(Icons.home),
-              tooltip: "Inicio",
+              tooltip: AppLocalizations.of(context)!.home,
               onPressed: () async {
                 final debesSalir = await _confirmarSalirSinGuardar();
                 if (!debesSalir || !mounted) return;
@@ -466,8 +466,8 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
                     ),
                     label: Text(
                       _modoVisual
-                          ? 'Cambiar a teclado clásico'
-                          : 'Registrar bolos visualmente',
+                          ? AppLocalizations.of(context)!.switchToClassicKeyboard
+                          : AppLocalizations.of(context)!.registerPinsVisually,
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _modoVisual
@@ -561,6 +561,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
                     }
 
                     return SelectorpinesWidget(
+                      key: ValueKey((_frameActivo!, _tiroActivo!)),
                       pinesIniciales: pinesIniciales,
                       pinesDeshabilitados: pinesDeshabilitados,
                       onAceptar: _onAceptarSeleccionPins,
@@ -587,14 +588,15 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
                   deshabilitadosNotifier: teclasDeshabilitadas,
                 ),
               const SizedBox(height: 16),
-              NotasField(
-                initialValue: notas,
-                onChanged: (v) {
-                  notas = v;
-                  _saveDraft();
-                },
-                onFocusChange: (focused) {},
-              ),
+              if (!_modoVisual)
+                NotasField(
+                  initialValue: notas,
+                  onChanged: (v) {
+                    notas = v;
+                    _saveDraft();
+                  },
+                  onFocusChange: (focused) {},
+                ),
               const SizedBox(height: 40),
             ],
           ),

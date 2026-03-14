@@ -559,10 +559,10 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
               // Email
               TextFormField(
                 controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: Icon(Icons.email_outlined),
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.email,
+                  prefixIcon: const Icon(Icons.email_outlined),
+                  border: const OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.emailAddress,
                 validator: (v) {
@@ -643,10 +643,10 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                 children: [
                   Expanded(
                     child: InputDecorator(
-                      decoration: const InputDecoration(
-                        labelText: 'Fecha de nacimiento',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.cake_outlined),
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.birthDate,
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.cake_outlined),
                       ),
                       child: InkWell(
                         onTap: () async {

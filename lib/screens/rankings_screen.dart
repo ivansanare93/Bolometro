@@ -57,9 +57,10 @@ class _RankingsScreenState extends State<RankingsScreen> {
 
       // Agregar mis estadísticas
       final currentUser = authService.user;
+      final localizations = AppLocalizations.of(context)!;
       rankings.add({
         'userId': userId,
-        'nombre': currentUser?.displayName ?? 'Tú',
+        'nombre': currentUser?.displayName ?? localizations.you,
         'email': currentUser?.email,
         'photoUrl': currentUser?.photoURL,
         'esUsuarioActual': true,
