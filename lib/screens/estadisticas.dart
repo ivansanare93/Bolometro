@@ -298,6 +298,7 @@ class _EstadisticasPantallaCompletaState
           // Estadísticas de pines (solo disponibles con el teclado visual)
           final promedioPrimerTiro = stats['promedioPrimerTiro'] as double?;
           final tasaConversionSpare = stats['tasaConversionSpare'] as double?;
+          final conversionSparePorPin = stats['conversionSparePorPin'] as Map<String, List<int>>? ?? {};
           final hayEstadisticasPines = promedioPrimerTiro != null || tasaConversionSpare != null;
           
           // Extract theme colors once to avoid repeated lookups
@@ -657,6 +658,16 @@ class _EstadisticasPantallaCompletaState
                     ),
                   ),
                 ),
+                if (conversionSparePorPin.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  _buildSectionHeader(
+                    title: l10n.perPinSpareStats,
+                    icon: Icons.pin_drop_rounded,
+                    color: Colors.deepOrange[600]!,
+                  ),
+                  const SizedBox(height: 4),
+                  _buildPerPinSpareTable(conversionSparePorPin, l10n),
+                ],
               ],
               const SizedBox(height: 20),
             ],
@@ -668,6 +679,77 @@ class _EstadisticasPantallaCompletaState
 
   String _formatearFechaCorta(DateTime fecha) {
     return "${fecha.day.toString().padLeft(2, '0')}/${fecha.month.toString().padLeft(2, '0')}/${fecha.year}";
+  }
+
+  /// Builds a compact table showing per-pin spare conversion stats.
+  /// Entries are sorted by number of attempts (descending) so the most
+  /// common leaves appear first.
+  Widget _buildPerPinSpareTable(
+    Map<String, List<int>> conversionPorPin,
+    AppLocalizations l10n,
+  ) {
+    // Sort by attempts descending, then by leave key ascending for ties
+    final sortedEntries = conversionPorPin.entries.toList()
+      ..sort((a, b) {
+        final cmp = b.value[0].compareTo(a.value[0]);
+        return cmp != 0 ? cmp : a.key.compareTo(b.key);
+      });
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? Colors.grey[850]! : Colors.grey[100]!;
+    final textColor = isDark ? Colors.white70 : Colors.black87;
+
+    return Card(
+      color: cardBg,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        child: Column(
+          children: sortedEntries.map((entry) {
+            final leave = entry.key;
+            final attempts = entry.value[0];
+            final converted = entry.value[1];
+            final pct = attempts > 0 ? (converted / attempts * 100) : 0.0;
+            final isGood = pct >= _kGoodSpareConversionRate;
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      l10n.perPinLeaveLabel(leave),
+                      style: TextStyle(fontSize: 13, color: textColor),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      l10n.perPinConversionValue(converted, attempts),
+                      style: TextStyle(fontSize: 13, color: textColor),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      '${pct.toStringAsFixed(1)}%',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: isGood ? Colors.green[600] : Colors.deepOrange[600],
+                      ),
+                      textAlign: TextAlign.end,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
   }
 
   Widget _buildSectionHeader({

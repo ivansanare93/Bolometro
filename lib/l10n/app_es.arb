@@ -803,6 +803,31 @@
   "@spareConversionRate": {
     "description": "Etiqueta para la tasa de conversión de spare"
   },
+  "perPinSpareStats": "Remate por Pin",
+  "@perPinSpareStats": {
+    "description": "Título de la sección de conversión de spare desglosada por pin"
+  },
+  "perPinLeaveLabel": "Deje: {pins}",
+  "@perPinLeaveLabel": {
+    "description": "Etiqueta que muestra qué pines quedaron en pie tras el primer tiro",
+    "placeholders": {
+      "pins": {
+        "type": "String"
+      }
+    }
+  },
+  "perPinConversionValue": "{converted}/{attempts}",
+  "@perPinConversionValue": {
+    "description": "Muestra las conversiones sobre las oportunidades para un deje",
+    "placeholders": {
+      "converted": {
+        "type": "int"
+      },
+      "attempts": {
+        "type": "int"
+      }
+    }
+  },
   "loginSubtitle": "Registra y analiza tus partidas de bolos",
   "@loginSubtitle": {
     "description": "Subtítulo de la pantalla de inicio de sesión"

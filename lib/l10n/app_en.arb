@@ -668,6 +668,31 @@
   "@spareConversionRate": {
     "description": "Label for the spare conversion rate"
   },
+  "perPinSpareStats": "Spare by Pin",
+  "@perPinSpareStats": {
+    "description": "Title for the per-pin spare conversion breakdown section"
+  },
+  "perPinLeaveLabel": "Leave: {pins}",
+  "@perPinLeaveLabel": {
+    "description": "Label showing which pins were left standing after the first throw",
+    "placeholders": {
+      "pins": {
+        "type": "String"
+      }
+    }
+  },
+  "perPinConversionValue": "{converted}/{attempts}",
+  "@perPinConversionValue": {
+    "description": "Shows conversions out of attempts for a given leave",
+    "placeholders": {
+      "converted": {
+        "type": "int"
+      },
+      "attempts": {
+        "type": "int"
+      }
+    }
+  },
   "loginSubtitle": "Record and analyze your bowling games",
   "@loginSubtitle": {
     "description": "Subtitle on the login screen"

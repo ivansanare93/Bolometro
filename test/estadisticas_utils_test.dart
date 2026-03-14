@@ -567,8 +567,151 @@ void main() {
       expect(result, isNull);
     });
 
-    test('ignores frame 10 (tenth frame has special rules)', () {
-      // Only frame 10 has pin data (index 9), so no valid opportunities
+    test('includes frame 10 non-strike first throw as a spare opportunity', () {
+      // Only frame 10 (index 9) has pin data; first throw not a strike → spare opportunity
+      final pinesPorTiro = List.generate(
+        AppConstants.totalFrames,
+        (i) => <List<int>?>[
+          i == 9 ? [1, 2, 3, 4, 5] : null,
+          i == 9 ? [6, 7, 8, 9, 10] : null, // all remaining → spare converted
+          null,
+        ],
+      );
+      final partida = Partida(
+        fecha: DateTime(2024, 1, 1),
+        total: 100,
+        frames: List.generate(AppConstants.totalFrames, (i) => i == 9 ? ['5', '/'] : []),
+        pinesPorTiro: pinesPorTiro,
+      );
+      final result = EstadisticasUtils.calcularTasaConversionSpare([partida]);
+      expect(result, equals(100.0));
+    });
+
+    test('includes frame 10 strike-then-non-strike as a spare opportunity', () {
+      // Frame 10: tiro0=strike, tiro1=5 pins, tiro2=converts spare
+      final pinesPorTiro = List.generate(
+        AppConstants.totalFrames,
+        (i) => <List<int>?>[
+          i == 9 ? List.generate(10, (j) => j + 1) : null, // strike
+          i == 9 ? [1, 2, 3, 4, 5] : null,                 // 5 pins
+          i == 9 ? [6, 7, 8, 9, 10] : null,                // remaining 5 → spare
+        ],
+      );
+      final partida = Partida(
+        fecha: DateTime(2024, 1, 1),
+        total: 150,
+        frames: List.generate(AppConstants.totalFrames, (i) => i == 9 ? ['X', '5', '/'] : []),
+        pinesPorTiro: pinesPorTiro,
+      );
+      final result = EstadisticasUtils.calcularTasaConversionSpare([partida]);
+      expect(result, equals(100.0));
+    });
+
+    test('frame 10 strike-then-strike yields no extra spare opportunity', () {
+      // Frame 10: tiro0=strike, tiro1=strike → tiro1 is also a strike, no spare chance
+      final pinesPorTiro = List.generate(
+        AppConstants.totalFrames,
+        (i) => <List<int>?>[
+          i == 9 ? List.generate(10, (j) => j + 1) : null, // strike
+          i == 9 ? List.generate(10, (j) => j + 1) : null, // strike → no spare opp
+          i == 9 ? List.generate(10, (j) => j + 1) : null, // strike
+        ],
+      );
+      final partida = Partida(
+        fecha: DateTime(2024, 1, 1),
+        total: 300,
+        frames: List.generate(AppConstants.totalFrames, (i) => i == 9 ? ['X', 'X', 'X'] : []),
+        pinesPorTiro: pinesPorTiro,
+      );
+      final result = EstadisticasUtils.calcularTasaConversionSpare([partida]);
+      expect(result, isNull); // no non-strike spare opportunities anywhere
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  group('EstadisticasUtils - calcularConversionSparePorPin', () {
+    test('returns empty map when no partidas have pin data', () {
+      final partidas = [
+        Partida(fecha: DateTime(2024, 1, 1), total: 100, frames: []),
+      ];
+      expect(EstadisticasUtils.calcularConversionSparePorPin(partidas), isEmpty);
+    });
+
+    test('returns empty map for empty list', () {
+      expect(EstadisticasUtils.calcularConversionSparePorPin([]), isEmpty);
+    });
+
+    test('groups single-pin leave correctly', () {
+      // Frame 0: knocks 9 pins (leaves pin 10 only), then converts
+      final pinesPorTiro = List.generate(
+        AppConstants.totalFrames,
+        (i) => <List<int>?>[
+          i == 0 ? [1, 2, 3, 4, 5, 6, 7, 8, 9] : null,
+          i == 0 ? [10] : null,
+          null,
+        ],
+      );
+      final partida = Partida(
+        fecha: DateTime(2024, 1, 1),
+        total: 100,
+        frames: List.generate(AppConstants.totalFrames, (i) => i == 0 ? ['9', '/'] : []),
+        pinesPorTiro: pinesPorTiro,
+      );
+      final result = EstadisticasUtils.calcularConversionSparePorPin([partida]);
+      expect(result.containsKey('10'), isTrue);
+      expect(result['10'], equals([1, 1])); // 1 attempt, 1 conversion
+    });
+
+    test('groups multi-pin leave by sorted pins', () {
+      // Frame 0: knocks pins 1-8 (leaves 9 and 10), does not convert
+      final pinesPorTiro = List.generate(
+        AppConstants.totalFrames,
+        (i) => <List<int>?>[
+          i == 0 ? [1, 2, 3, 4, 5, 6, 7, 8] : null,
+          i == 0 ? [9] : null, // only knocks 9, leaves 10 → not a spare
+          null,
+        ],
+      );
+      final partida = Partida(
+        fecha: DateTime(2024, 1, 1),
+        total: 80,
+        frames: List.generate(AppConstants.totalFrames, (i) => i == 0 ? ['8', '1'] : []),
+        pinesPorTiro: pinesPorTiro,
+      );
+      final result = EstadisticasUtils.calcularConversionSparePorPin([partida]);
+      expect(result.containsKey('9,10'), isTrue);
+      expect(result['9,10'], equals([1, 0])); // 1 attempt, 0 conversions
+    });
+
+    test('accumulates stats across multiple frames and partidas', () {
+      // Two partidas, each with frame 0 leaving pin 7 only
+      // Partida 1: converts; Partida 2: does not convert
+      List<List<List<int>?>> makePines({required bool converts}) =>
+          List.generate(AppConstants.totalFrames, (i) => <List<int>?>[
+                i == 0 ? [1, 2, 3, 4, 5, 6, 8, 9, 10] : null, // leaves pin 7
+                i == 0 ? (converts ? [7] : []) : null,
+                null,
+              ]);
+
+      final partida1 = Partida(
+        fecha: DateTime(2024, 1, 1),
+        total: 100,
+        frames: List.generate(AppConstants.totalFrames, (i) => i == 0 ? ['9', '/'] : []),
+        pinesPorTiro: makePines(converts: true),
+      );
+      final partida2 = Partida(
+        fecha: DateTime(2024, 1, 2),
+        total: 90,
+        frames: List.generate(AppConstants.totalFrames, (i) => i == 0 ? ['9', '0'] : []),
+        pinesPorTiro: makePines(converts: false),
+      );
+      final result = EstadisticasUtils.calcularConversionSparePorPin([partida1, partida2]);
+      expect(result.containsKey('7'), isTrue);
+      expect(result['7'], equals([2, 1])); // 2 attempts, 1 conversion
+    });
+
+    test('includes frame 10 non-strike first throw', () {
+      // Frame 10: tiro0 knocks 5, tiro1 knocks remaining 5 (spare)
       final pinesPorTiro = List.generate(
         AppConstants.totalFrames,
         (i) => <List<int>?>[
@@ -583,8 +726,54 @@ void main() {
         frames: List.generate(AppConstants.totalFrames, (i) => i == 9 ? ['5', '/'] : []),
         pinesPorTiro: pinesPorTiro,
       );
-      final result = EstadisticasUtils.calcularTasaConversionSpare([partida]);
-      expect(result, isNull);
+      final result = EstadisticasUtils.calcularConversionSparePorPin([partida]);
+      expect(result.containsKey('6,7,8,9,10'), isTrue);
+      final statsF10a = result['6,7,8,9,10']!;
+      expect(statsF10a[0], equals(1)); // 1 attempt
+      expect(statsF10a[1], equals(1)); // 1 conversion
+    });
+
+    test('includes frame 10 strike-then-non-strike spare opportunity', () {
+      // Frame 10: tiro0=strike, tiro1=5 pins, tiro2=remaining 5 (spare)
+      final pinesPorTiro = List.generate(
+        AppConstants.totalFrames,
+        (i) => <List<int>?>[
+          i == 9 ? List.generate(10, (j) => j + 1) : null, // strike
+          i == 9 ? [1, 2, 3, 4, 5] : null,
+          i == 9 ? [6, 7, 8, 9, 10] : null, // spare
+        ],
+      );
+      final partida = Partida(
+        fecha: DateTime(2024, 1, 1),
+        total: 150,
+        frames: List.generate(AppConstants.totalFrames, (i) => i == 9 ? ['X', '5', '/'] : []),
+        pinesPorTiro: pinesPorTiro,
+      );
+      final result = EstadisticasUtils.calcularConversionSparePorPin([partida]);
+      expect(result.containsKey('6,7,8,9,10'), isTrue);
+      final statsF10b = result['6,7,8,9,10']!;
+      expect(statsF10b[0], equals(1));
+      expect(statsF10b[1], equals(1));
+    });
+
+    test('ignores strike frames (no spare opportunity)', () {
+      // All frames are strikes → no spare opportunities
+      final pinesPorTiro = List.generate(
+        AppConstants.totalFrames,
+        (i) => <List<int>?>[
+          List.generate(10, (j) => j + 1), // strike
+          null,
+          null,
+        ],
+      );
+      final partida = Partida(
+        fecha: DateTime(2024, 1, 1),
+        total: 300,
+        frames: List.generate(AppConstants.totalFrames, (_) => ['X']),
+        pinesPorTiro: pinesPorTiro,
+      );
+      final result = EstadisticasUtils.calcularConversionSparePorPin([partida]);
+      expect(result, isEmpty);
     });
   });
 }
