@@ -1319,4 +1319,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get onStreak => '¡Vas en racha!';
+
+  @override
+  String get pinsPerThrow => 'Pines por tiro';
 }

@@ -1309,4 +1309,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onStreak => 'You\'re on a streak!';
+
+  @override
+  String get pinsPerThrow => 'Pins per throw';
 }

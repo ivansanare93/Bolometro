@@ -2593,6 +2593,15 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'¡Vas en racha!'**
   String get onStreak;
+
+  /// Label for the pin detail section per throw in the game view.
+  ///
+  /// In en, this message translates to:
+  /// **'Pins per throw'**
+  ///
+  /// In es, this message translates to:
+  /// **'Pines por tiro'**
+  String get pinsPerThrow;
 }
 
 class _AppLocalizationsDelegate
