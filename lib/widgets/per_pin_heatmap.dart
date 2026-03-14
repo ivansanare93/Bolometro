@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 /// Data model for a single pin in the heatmap.
 class PinHeatmapData {
@@ -318,7 +319,7 @@ class _Legend extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
-        Text('Sin datos', style: TextStyle(fontSize: 10, color: textColor)),
+        Text(AppLocalizations.of(context)?.noData ?? 'No data', style: TextStyle(fontSize: 10, color: textColor)),
       ],
     );
   }
