@@ -190,6 +190,22 @@ class _VerSesionState extends State<VerSesion> {
     }
   }
 
+  /// Returns true if the game was recorded with the pin keyboard
+  /// (i.e. at least one throw has pin selection data).
+  bool _hasPinData(Partida partida) {
+    return partida.pinesPorTiro.any(
+      (frame) => frame.any((tiro) => tiro != null),
+    );
+  }
+
+  /// Formats a list of knocked-down pin indices as a compact string.
+  /// e.g. [1, 3, 7] → "1·3·7", [] → "–", null → ""
+  String _formatPins(List<int>? pins) {
+    if (pins == null) return '';
+    if (pins.isEmpty) return '–';
+    return pins.join('·');
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -468,6 +484,94 @@ class _VerSesionState extends State<VerSesion> {
                         }),
                       ),
                     ),
+                    // Pin detail section (only for games recorded with pin keyboard)
+                    if (_hasPinData(partida)) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.my_location,
+                            size: 14,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            l10n.pinsPerThrow,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: List.generate(10, (i) {
+                            final isLast = i == 9;
+                            final framePines = partida.pinesPorTiro[i];
+                            final maxTiros = isLast ? 3 : 2;
+
+                            final tirosPines = <List<int>>[];
+                            for (int j = 0;
+                                j < maxTiros && j < framePines.length;
+                                j++) {
+                              final pins = framePines[j];
+                              if (pins != null) tirosPines.add(pins);
+                            }
+
+                            if (tirosPines.isEmpty) {
+                              return const SizedBox.shrink();
+                            }
+
+                            return Container(
+                              margin: const EdgeInsets.only(right: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.grey.shade300,
+                                ),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'F${i + 1}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: isDark
+                                          ? Colors.grey[400]
+                                          : Colors.grey[600],
+                                    ),
+                                  ),
+                                  for (final pins in tirosPines)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 2),
+                                      child: Text(
+                                        _formatPins(pins),
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          color: isDark
+                                              ? Colors.grey[300]
+                                              : Colors.grey[700],
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
+                    ],
                     if (partida.notas != null &&
                         partida.notas!.trim().isNotEmpty) ...[
                       const SizedBox(height: 10),

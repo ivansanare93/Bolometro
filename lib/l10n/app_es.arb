@@ -941,5 +941,9 @@
   "onStreak": "¡Vas en racha!",
   "@onStreak": {
     "description": "Mensaje de motivación cuando el jugador tiene una buena racha"
+  },
+  "pinsPerThrow": "Pines por tiro",
+  "@pinsPerThrow": {
+    "description": "Etiqueta de la sección de detalle de pines por tiro en la vista de partida"
   }
 }

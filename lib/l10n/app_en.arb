@@ -806,5 +806,9 @@
   "onStreak": "You're on a streak!",
   "@onStreak": {
     "description": "Motivational message when the player has a good streak going"
+  },
+  "pinsPerThrow": "Pins per throw",
+  "@pinsPerThrow": {
+    "description": "Label for the pin detail section per throw in the game view"
   }
 }
