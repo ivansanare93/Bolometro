@@ -1201,7 +1201,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pinStatsSection => 'Pin Statistics';
 
   @override
-  String get pinStatsNote => 'Available only for games recorded with the pin keyboard';
+  String get pinStatsNote =>
+      'Available only for games recorded with the pin keyboard';
 
   @override
   String get firstBallAvg => '1st Ball Avg';
