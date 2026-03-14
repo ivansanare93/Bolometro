@@ -72,22 +72,40 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
     });
   }
 
+  /// Returns the list of pin numbers available in the current shot
+  /// (i.e., pins not already knocked down / not disabled).
+  List<int> _pinesDisponibles() {
+    return List.generate(AppConstants.maxPinesBowling, (i) => i + 1)
+        .where((p) => !widget.pinesDeshabilitados.contains(p))
+        .toList();
+  }
+
   void _marcarPleno() {
+    HapticFeedback.heavyImpact();
+    final todosLosPines = _pinesDisponibles();
     setState(() {
       _pinesCaidos = List.generate(
         AppConstants.maxPinesBowling,
         (i) => !widget.pinesDeshabilitados.contains(i + 1),
       );
     });
+    Future.delayed(const Duration(milliseconds: 150), () {
+      if (mounted) widget.onAceptar(todosLosPines);
+    });
   }
 
   void _marcarRemate() {
+    HapticFeedback.heavyImpact();
+    final pinesRemate = _pinesDisponibles();
     setState(() {
       for (int i = 0; i < 10; i++) {
         if (!widget.pinesDeshabilitados.contains(i + 1)) {
           _pinesCaidos[i] = true;
         }
       }
+    });
+    Future.delayed(const Duration(milliseconds: 150), () {
+      if (mounted) widget.onAceptar(pinesRemate);
     });
   }
 

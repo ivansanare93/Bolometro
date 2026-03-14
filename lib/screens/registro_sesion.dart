@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/partida.dart';
 import '../services/analytics_service.dart';
 import '../services/draft_service.dart';
+import '../utils/app_constants.dart';
 import '../utils/pines_a_tiro_utils.dart';
 import '../utils/registro_tiros_utils.dart';
 import '../widgets/marcador_bolos.dart';
@@ -36,6 +37,9 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
   int? _frameActivo;
   int? _tiroActivo;
   bool mostrarSelectorpines = false;
+
+  // Scroll controller for the body
+  final ScrollController _scrollController = ScrollController();
 
   // Notifier para teclas deshabilitadas
   final ValueNotifier<Set<String>> teclasDeshabilitadas = ValueNotifier({});
@@ -71,6 +75,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -274,27 +279,83 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
       _tiroActivo = tiro;
       mostrarSelectorpines = true;
     });
+    _scrollToBottom();
   }
 
   void _onAceptarSeleccionPins(List<int> seleccionados) {
     final frame = _frameActivo!;
     final tiro = _tiroActivo!;
 
+    final valor = pinesAValorTiro(
+      frame: frame,
+      tiro: tiro,
+      seleccionados: seleccionados,
+      pinesPorTiroFrame: pinesPorTiro[frame],
+      framesText: framesText,
+    );
+
+    // Build updated frames to determine if a third shot is needed
+    final updatedFrames = List<List<String>>.generate(
+      10,
+      (i) => List<String>.from(framesText[i]),
+    );
+    updatedFrames[frame][tiro] = valor;
+
+    // Compute next frame/tiro (mirrors MarcadorBolos.insertarValor logic)
+    int nextFrame = frame;
+    int nextTiro = tiro;
+
+    if (frame < 9) {
+      if (valor == AppConstants.simboloStrike || tiro == 1) {
+        nextFrame = frame + 1;
+        nextTiro = 0;
+      } else {
+        nextTiro = 1;
+      }
+    } else {
+      // Frame 10
+      if (tiro < 2) {
+        if (tiro == 1 && !mostrarTercerTiro(updatedFrames)) {
+          // No third shot needed — stay on current cell (done)
+        } else {
+          nextTiro = tiro + 1;
+        }
+      }
+    }
+
+    final advanced = !(nextFrame == frame && nextTiro == tiro);
+
     setState(() {
       pinesPorTiro[frame][tiro] = seleccionados;
-      final valor = pinesAValorTiro(
-        frame: frame,
-        tiro: tiro,
-        seleccionados: seleccionados,
-        pinesPorTiroFrame: pinesPorTiro[frame],
-        framesText: framesText,
-      );
-
       framesText[frame][tiro] = valor;
       erroresPorTiro = _obtenerErroresPorTiro(framesText);
-      mostrarSelectorpines = false;
+      if (!advanced) {
+        mostrarSelectorpines = false;
+      }
+      // When advanced, _frameActivo/_tiroActivo and mostrarSelectorpines are
+      // updated by _onCampoVisualActivo via setTiroActivo below.
     });
+
+    if (advanced) {
+      // setTiroActivo triggers _onCampoVisualActivo → updates _frameActivo,
+      // _tiroActivo, and mostrarSelectorpines = true.
+      marcadorKey.currentState?.setTiroActivo(nextFrame, nextTiro);
+      _scrollToBottom();
+    }
+
     _saveDraft();
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   void _actualizarTeclasDeshabilitadas({int? frame, int? tiro}) {
@@ -379,6 +440,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
           ],
         ),
         body: SingleChildScrollView(
+          controller: _scrollController,
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -388,14 +450,16 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
                 children: [
                   ElevatedButton.icon(
                     onPressed: () {
+                      final newModoVisual = !_modoVisual;
                       setState(() {
-                        _modoVisual = !_modoVisual;
-                        mostrarSelectorpines = false;
+                        _modoVisual = newModoVisual;
+                        mostrarSelectorpines = newModoVisual;
                         _actualizarTeclasDeshabilitadas(
                           frame: _frameActivo,
                           tiro: _tiroActivo,
                         );
                       });
+                      if (newModoVisual) _scrollToBottom();
                     },
                     icon: Icon(
                       _modoVisual ? Icons.keyboard : Icons.push_pin_rounded,
