@@ -3,9 +3,10 @@ import 'package:provider/provider.dart';
 import '../models/partida.dart';
 import '../services/analytics_service.dart';
 import '../services/draft_service.dart';
+import '../utils/pines_a_tiro_utils.dart';
 import '../utils/registro_tiros_utils.dart';
 import '../widgets/marcador_bolos.dart';
-import '../widgets/teclado_selector_pins.dart'; // Debe aceptar onAceptar
+import '../widgets/teclado_selector_pins.dart';
 import '../widgets/resumen_puntuacion.dart';
 import '../widgets/notas_field.dart';
 import 'home.dart';
@@ -35,7 +36,6 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
   int? _frameActivo;
   int? _tiroActivo;
   bool mostrarSelectorpines = false;
-  List<List<String>> _frames = List.generate(10, (_) => []);
 
   // Notifier para teclas deshabilitadas
   final ValueNotifier<Set<String>> teclasDeshabilitadas = ValueNotifier({});
@@ -276,90 +276,19 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
     });
   }
 
-    int _parseTiro(String tiro, String previo) {
-    if (tiro == 'X') return 10;
-    if (tiro == '/') return 10 - _parseTiro(previo, '');
-    if (tiro == '-') return 0;
-    return int.tryParse(tiro) ?? 0;
-  }
-
   void _onAceptarSeleccionPins(List<int> seleccionados) {
     final frame = _frameActivo!;
     final tiro = _tiroActivo!;
 
     setState(() {
       pinesPorTiro[frame][tiro] = seleccionados;
-      String valor = "";
-
-      if (frame < 9) {
-        // Frames 1–9
-        if (tiro == 0 && seleccionados.length == 10) {
-          valor = "X"; // Strike
-        } else if (tiro == 1) {
-          final prevTiro = pinesPorTiro[frame][0] ?? [];
-          final union = <int>{...prevTiro, ...seleccionados};
-          if (union.length == 10 && prevTiro.length != 10) {
-            valor = "/"; // Spare
-          } else if (seleccionados.isEmpty) {
-            valor = "-";
-          } else {
-            valor = "${seleccionados.length}";
-          }
-        } else {
-          valor = seleccionados.isEmpty ? "-" : "${seleccionados.length}";
-        }
-      } else {
-        // Frame 10
-        final tiro1 = framesText[9][0];
-        final tiro2 = framesText[9][1];
-
-        final primerTiroStrike = tiro1 == "X";
-        final sparePrevio =
-            tiro1 != "X" &&
-            tiro1.isNotEmpty &&
-            tiro2.isNotEmpty &&
-            (_parseTiro(tiro1, "") + _parseTiro(tiro2, tiro1) == 10);
-
-        if (tiro == 0) {
-          valor = seleccionados.length == 10
-              ? "X"
-              : (seleccionados.isEmpty ? "-" : "${seleccionados.length}");
-        } else if (tiro == 1) {
-          final prevTiro = pinesPorTiro[frame][0] ?? [];
-          final union = <int>{...prevTiro, ...seleccionados};
-          if (union.length == 10 && prevTiro.length != 10) {
-            valor = "/"; // Spare
-          } else if (seleccionados.length == 10) {
-            valor = "X"; // Strike en segundo tiro
-          } else if (seleccionados.isEmpty) {
-            valor = "-";
-          } else {
-            valor = "${seleccionados.length}";
-          }
-        } else if (tiro == 2) {
-          if (primerTiroStrike || sparePrevio) {
-            final segundoTiroPins = pinesPorTiro[frame][1] ?? [];
-            final unionConSegundo = <int>{...segundoTiroPins, ...seleccionados};
-            // Spare: el segundo tiro tumbó entre 1 y 9 pines (isNotEmpty descarta
-            // el caso en que no hay datos; length < 10 descarta otro strike),
-            // y la unión cubre los 10 pines (= se completó el semipleno).
-            if (primerTiroStrike &&
-                segundoTiroPins.isNotEmpty &&
-                segundoTiroPins.length < 10 &&
-                unionConSegundo.length == 10) {
-              valor = "/"; // Spare: todos los pines restantes del segundo tiro
-            } else if (seleccionados.length == 10) {
-              valor = "X"; // Strike en tercer tiro
-            } else if (seleccionados.isEmpty) {
-              valor = "-"; // Fallo
-            } else {
-              valor = "${seleccionados.length}";
-            }
-          } else {
-            valor = "-"; // No correspondía tercer tiro → fallo por defecto
-          }
-        }
-      }
+      final valor = pinesAValorTiro(
+        frame: frame,
+        tiro: tiro,
+        seleccionados: seleccionados,
+        pinesPorTiroFrame: pinesPorTiro[frame],
+        framesText: framesText,
+      );
 
       framesText[frame][tiro] = valor;
       erroresPorTiro = _obtenerErroresPorTiro(framesText);
@@ -386,52 +315,19 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
     final buenaRacha = esBuenaRacha(frames);
     bool esStrikeEnPrimerTiro = false;
 
-    // Pines ya tirados en tiros previos del frame activo (para deshabilitar)
+    // Pines ya tirados en tiros previos del frame activo (para deshabilitar).
+    // calcularPinesDeshabilitados handles all cases: frames 1-9 as well as all
+    // frame-10 scenarios (strike, spare, third tiro, and the degenerate case
+    // where tiro 2 is shown without a valid strike/spare – pins from both prior
+    // shots are disabled so no new selection is possible).
     List<int> pinesDeshabilitados = [];
 
     if (_modoVisual && _frameActivo != null && _tiroActivo != null) {
-      // --- Lógica especial para frame 10 ---
-      if (_frameActivo == 9) {
-        final primerTiro = pinesPorTiro[9][0] ?? [];
-        final segundoTiro = pinesPorTiro[9][1] ?? [];
-        final tiro = _tiroActivo!;
-
-        if (tiro == 0) {
-          // Primer tiro: todos disponibles
-          pinesDeshabilitados = [];
-        } else if (tiro == 1) {
-          if (primerTiro.length == 10) {
-            // Strike en primer tiro: todos los pines disponibles de nuevo
-            pinesDeshabilitados = [];
-          } else {
-            // Solo puedes volver a tirar los que no tiraste antes
-            pinesDeshabilitados = primerTiro;
-          }
-        } else if (tiro == 2) {
-          if (primerTiro.length == 10) {
-            // Strike en tiro 1
-            if (segundoTiro.length == 10) {
-              // Otro strike en tiro 2: todos los pines de nuevo
-              pinesDeshabilitados = [];
-            } else {
-              // Solo los tirados en segundo tiro quedan deshabilitados
-              pinesDeshabilitados = segundoTiro;
-            }
-          } else if (primerTiro.length + segundoTiro.length == 10) {
-            // Spare en los dos primeros tiros: todos los pines disponibles
-            pinesDeshabilitados = [];
-          } else {
-            // Caso raro: suma < 10, pero hay tercer tiro (no debería pasar)
-            pinesDeshabilitados = [...primerTiro, ...segundoTiro];
-          }
-        }
-      }
-      // --- Resto de frames 1-9 ---
-      else if (_tiroActivo! > 0) {
-        for (int prev = 0; prev < _tiroActivo!; prev++) {
-          pinesDeshabilitados.addAll(pinesPorTiro[_frameActivo!][prev] ?? []);
-        }
-      }
+      pinesDeshabilitados = calcularPinesDeshabilitados(
+        frame: _frameActivo!,
+        tiro: _tiroActivo!,
+        pinesPorTiroFrame: pinesPorTiro[_frameActivo!],
+      );
     }
 
     // --- Detectar strike en primer tiro (para bloquear el segundo en frames 1-9) ---
@@ -487,41 +383,40 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // En un futuro activar teclado por pines
-              // const SizedBox(height: 8),
-              // Row(
-              //   children: [
-              //     ElevatedButton.icon(
-              //       onPressed: () {
-              //         setState(() {
-              //           _modoVisual = !_modoVisual;
-              //           mostrarSelectorpines = false;
-              //           _actualizarTeclasDeshabilitadas(
-              //             frame: _frameActivo,
-              //             tiro: _tiroActivo,
-              //           );
-              //         });
-              //       },
-              //       icon: Icon(
-              //         _modoVisual ? Icons.keyboard : Icons.push_pin_rounded,
-              //       ),
-              //       label: Text(
-              //         _modoVisual
-              //             ? "Cambiar a teclado clásico"
-              //             : "Registrar bolos visualmente",
-              //       ),
-              //       style: ElevatedButton.styleFrom(
-              //         backgroundColor: _modoVisual
-              //             ? Colors.orange
-              //             : const Color(0xFF0077B6),
-              //         foregroundColor: Colors.white,
-              //         shape: RoundedRectangleBorder(
-              //           borderRadius: BorderRadius.circular(12),
-              //         ),
-              //       ),
-              //     ),
-              //   ],
-              // ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _modoVisual = !_modoVisual;
+                        mostrarSelectorpines = false;
+                        _actualizarTeclasDeshabilitadas(
+                          frame: _frameActivo,
+                          tiro: _tiroActivo,
+                        );
+                      });
+                    },
+                    icon: Icon(
+                      _modoVisual ? Icons.keyboard : Icons.push_pin_rounded,
+                    ),
+                    label: Text(
+                      _modoVisual
+                          ? 'Cambiar a teclado clásico'
+                          : 'Registrar bolos visualmente',
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _modoVisual
+                          ? Colors.orange
+                          : const Color(0xFF0077B6),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
               MarcadorBolos(
                 key: marcadorKey,
@@ -580,13 +475,10 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
 
                     if (_frameActivo == 9) {
                       if (_tiroActivo == 1) {
-                        // Tiro 2 del frame 10
                         final tiro1 = pinesPorTiro[9][0] ?? [];
                         if (tiro1.length == 10) {
-                          // Strike: todos en pie
                           pinesIniciales = [];
                         } else {
-                          // No strike: pines caídos en el 1
                           pinesIniciales = tiro1;
                         }
                       } else if (_tiroActivo == 2) {
@@ -597,13 +489,9 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
                             !huboStrike1 && (tiro1.length + tiro2.length == 10);
 
                         if (huboStrike1 || huboSpare) {
-                          // Reinicio completo de pinos disponibles
                           pinesIniciales = [];
-                          pinesDeshabilitados = [];
                         } else {
-                          // Caso raro: no strike ni spare pero llegó un tiro 3 → bloquear
                           pinesIniciales = [...tiro1, ...tiro2];
-                          pinesDeshabilitados = [...tiro1, ...tiro2];
                         }
                       }
                     }
