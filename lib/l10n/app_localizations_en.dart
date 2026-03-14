@@ -1198,6 +1198,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get discard => 'Discard';
 
   @override
+  String get statsGeneralSection => 'General Statistics';
+
+  @override
+  String get statsEvolutionSection => 'Evolution & Distribution';
+
+  @override
+  String get statsBestWorstSection => 'Best & Worst';
+
+  @override
   String get pinStatsSection => 'Pin Statistics';
 
   @override

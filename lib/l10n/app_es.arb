@@ -775,6 +775,18 @@
   "@discard": {
     "description": "Etiqueta del botón para confirmar el descarte de cambios"
   },
+  "statsGeneralSection": "Estadísticas Generales",
+  "@statsGeneralSection": {
+    "description": "Título de la sección de estadísticas generales"
+  },
+  "statsEvolutionSection": "Evolución y Distribución",
+  "@statsEvolutionSection": {
+    "description": "Título de la sección de evolución y distribución de puntuaciones"
+  },
+  "statsBestWorstSection": "Mejores y Peores",
+  "@statsBestWorstSection": {
+    "description": "Título de la sección de mejores y peores partidas y sesiones"
+  },
   "pinStatsSection": "Estadísticas de Pines",
   "@pinStatsSection": {
     "description": "Título de la sección de estadísticas basadas en datos de pines"

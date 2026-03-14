@@ -391,16 +391,18 @@ class _EstadisticasPantallaCompletaState
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 20),
 
-              // --- KPIs y tarjetas principales ---
+              // ── SECCIÓN 1: ESTADÍSTICAS GENERALES ──────────────────────────
+              _buildSectionHeader(
+                title: l10n.statsGeneralSection,
+                icon: Icons.bar_chart_rounded,
+                color: Colors.blue[700]!,
+              ),
+              const SizedBox(height: 4),
               Text(
                 AppLocalizations.of(context)!.quickScoreSummary,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: greyColor,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(fontSize: 12, color: greyColor),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
@@ -484,7 +486,14 @@ class _EstadisticasPantallaCompletaState
                 porcentajeFallos: porcentajes["fallos"]!,
               ),
 
-              const SizedBox(height: 16),
+              // ── SECCIÓN 2: EVOLUCIÓN Y DISTRIBUCIÓN ───────────────────────
+              const SizedBox(height: 8),
+              _buildSectionHeader(
+                title: l10n.statsEvolutionSection,
+                icon: Icons.show_chart_rounded,
+                color: Colors.purple[600]!,
+              ),
+              const SizedBox(height: 4),
               Text(
                 AppLocalizations.of(context)!.recentEvolution,
                 style: TextStyle(
@@ -497,7 +506,7 @@ class _EstadisticasPantallaCompletaState
               const SizedBox(height: 3),
               MiniGraficoPromedioMovil(promedios: miniPromedios),
 
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
               Text(
                 AppLocalizations.of(context)!.scoreDistribution,
                 style: Theme.of(
@@ -511,7 +520,14 @@ class _EstadisticasPantallaCompletaState
               const SizedBox(height: 4),
               HistogramaPuntuaciones(histograma: histograma),
 
-              const SizedBox(height: 24),
+              // ── SECCIÓN 3: MEJORES Y PEORES ────────────────────────────────
+              const SizedBox(height: 8),
+              _buildSectionHeader(
+                title: l10n.statsBestWorstSection,
+                icon: Icons.emoji_events_rounded,
+                color: Colors.orange[700]!,
+              ),
+              const SizedBox(height: 4),
               Text(
                 AppLocalizations.of(context)!.topBestWorstGames,
                 style: TextStyle(
@@ -533,59 +549,13 @@ class _EstadisticasPantallaCompletaState
                 color: Colors.red,
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
               Text(
                 AppLocalizations.of(context)!.bestWorstSessionDescription,
                 style: TextStyle(fontSize: 12, color: greyColor),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 5),
-
-              // --- PIN-BASED STATS (only shown when pin keyboard data is available) ---
-              if (hayEstadisticasPines) ...[
-                const SizedBox(height: 20),
-                Text(
-                  AppLocalizations.of(context)!.pinStatsSection,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: greyColor,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  AppLocalizations.of(context)!.pinStatsNote,
-                  style: TextStyle(fontSize: 11, color: greyColor),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                RepaintBoundary(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        if (promedioPrimerTiro != null)
-                          KpiCardDinamico(
-                            label: AppLocalizations.of(context)!.firstBallAvg,
-                            value: promedioPrimerTiro.toStringAsFixed(1),
-                            icon: Icons.looks_one_rounded,
-                            color: Colors.teal[600]!,
-                            esSubida: promedioPrimerTiro >= _kGoodFirstBallAverage,
-                          ),
-                        if (tasaConversionSpare != null)
-                          KpiCardDinamico(
-                            label: AppLocalizations.of(context)!.spareConversionRate,
-                            value: '${tasaConversionSpare.toStringAsFixed(1)}%',
-                            icon: Icons.adjust_rounded,
-                            color: Colors.deepOrange[600]!,
-                            esSubida: tasaConversionSpare >= _kGoodSpareConversionRate,
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+              const SizedBox(height: 8),
               if (sesionRecord != null)
                 Card(
                   color: recordCardColor,
@@ -646,6 +616,48 @@ class _EstadisticasPantallaCompletaState
                     ),
                   ),
                 ),
+
+              // ── SECCIÓN 4: ESTADÍSTICAS DE PINES ──────────────────────────
+              if (hayEstadisticasPines) ...[
+                const SizedBox(height: 8),
+                _buildSectionHeader(
+                  title: l10n.pinStatsSection,
+                  icon: Icons.adjust_rounded,
+                  color: Colors.teal[600]!,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  AppLocalizations.of(context)!.pinStatsNote,
+                  style: TextStyle(fontSize: 11, color: greyColor),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                RepaintBoundary(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        if (promedioPrimerTiro != null)
+                          KpiCardDinamico(
+                            label: AppLocalizations.of(context)!.firstBallAvg,
+                            value: promedioPrimerTiro.toStringAsFixed(1),
+                            icon: Icons.looks_one_rounded,
+                            color: Colors.teal[600]!,
+                            esSubida: promedioPrimerTiro >= _kGoodFirstBallAverage,
+                          ),
+                        if (tasaConversionSpare != null)
+                          KpiCardDinamico(
+                            label: AppLocalizations.of(context)!.spareConversionRate,
+                            value: '${tasaConversionSpare.toStringAsFixed(1)}%',
+                            icon: Icons.adjust_rounded,
+                            color: Colors.deepOrange[600]!,
+                            esSubida: tasaConversionSpare >= _kGoodSpareConversionRate,
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 20),
             ],
           );
@@ -656,5 +668,37 @@ class _EstadisticasPantallaCompletaState
 
   String _formatearFechaCorta(DateTime fecha) {
     return "${fecha.day.toString().padLeft(2, '0')}/${fecha.month.toString().padLeft(2, '0')}/${fecha.year}";
+  }
+
+  Widget _buildSectionHeader({
+    required String title,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: color,
+              letterSpacing: 0.2,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Divider(
+              color: color.withOpacity(0.35),
+              thickness: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
