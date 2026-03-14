@@ -2384,6 +2384,24 @@ abstract class AppLocalizations {
   /// **'Descartar'**
   String get discard;
 
+  /// Título de la sección de estadísticas generales
+  ///
+  /// In es, this message translates to:
+  /// **'Estadísticas Generales'**
+  String get statsGeneralSection;
+
+  /// Título de la sección de evolución y distribución de puntuaciones
+  ///
+  /// In es, this message translates to:
+  /// **'Evolución y Distribución'**
+  String get statsEvolutionSection;
+
+  /// Título de la sección de mejores y peores partidas y sesiones
+  ///
+  /// In es, this message translates to:
+  /// **'Mejores y Peores'**
+  String get statsBestWorstSection;
+
   /// Título de la sección de estadísticas basadas en datos de pines
   ///
   /// In es, this message translates to:

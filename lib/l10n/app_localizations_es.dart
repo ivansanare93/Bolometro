@@ -1206,6 +1206,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get discard => 'Descartar';
 
   @override
+  String get statsGeneralSection => 'Estadísticas Generales';
+
+  @override
+  String get statsEvolutionSection => 'Evolución y Distribución';
+
+  @override
+  String get statsBestWorstSection => 'Mejores y Peores';
+
+  @override
   String get pinStatsSection => 'Estadísticas de Pines';
 
   @override

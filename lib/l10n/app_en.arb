@@ -640,6 +640,18 @@
   "@discard": {
     "description": "Button label to confirm discarding changes"
   },
+  "statsGeneralSection": "General Statistics",
+  "@statsGeneralSection": {
+    "description": "Title for the general statistics section"
+  },
+  "statsEvolutionSection": "Evolution & Distribution",
+  "@statsEvolutionSection": {
+    "description": "Title for the score evolution and distribution section"
+  },
+  "statsBestWorstSection": "Best & Worst",
+  "@statsBestWorstSection": {
+    "description": "Title for the best and worst games and sessions section"
+  },
   "pinStatsSection": "Pin Statistics",
   "@pinStatsSection": {
     "description": "Title for the pin-based statistics section"
