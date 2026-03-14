@@ -18,6 +18,7 @@ import '../widgets/estadisticas/histograma_puntuaciones.dart';
 import 'home.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/skeleton_loaders.dart';
+import '../widgets/per_pin_heatmap.dart';
 
 class EstadisticasPantallaCompleta extends StatefulWidget {
   const EstadisticasPantallaCompleta({super.key});
@@ -666,6 +667,10 @@ class _EstadisticasPantallaCompletaState
                     color: Colors.deepOrange[600]!,
                   ),
                   const SizedBox(height: 4),
+                  PerPinHeatmap(
+                    data: buildPerPinHeatmapData(conversionSparePorPin),
+                  ),
+                  const SizedBox(height: 8),
                   _buildPerPinSpareTable(conversionSparePorPin, l10n),
                 ],
               ],
