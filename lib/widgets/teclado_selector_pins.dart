@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../utils/app_constants.dart';
+import '../l10n/app_localizations.dart';
 
 class SelectorpinesWidget extends StatefulWidget {
   final List<int> pinesIniciales;
@@ -137,6 +138,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final azul = cs.primary;
+    final l10n = AppLocalizations.of(context)!;
 
     final fondoCard = isDark ? const Color(0xFF23272A) : cs.background;
     final fondoPinNoSel = isDark ? const Color(0xFF30353A) : cs.surfaceVariant;
@@ -277,7 +279,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.bolt, size: 18),
-                        label: const Text('Pleno'),
+                        label: Text(l10n.strike),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange,
                           foregroundColor: Colors.white,
@@ -290,7 +292,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.auto_fix_high, size: 18),
-                        label: const Text('Remate'),
+                        label: Text(l10n.spare),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: azul,
                           foregroundColor: Colors.white,
@@ -303,7 +305,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.close, size: 18),
-                        label: const Text('Fallo'),
+                        label: Text(l10n.miss),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.grey[500],
                           foregroundColor: Colors.white,
@@ -398,7 +400,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
                           _scaleList = List.filled(10, 1.0);
                         });
                       },
-                      label: const Text('Limpiar'),
+                      label: Text(l10n.clear),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -411,7 +413,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
                         minimumSize: const Size.fromHeight(46),
                       ),
                       onPressed: () => widget.onAceptar(seleccionados),
-                      label: const Text('Aceptar'),
+                      label: Text(l10n.accept),
                     ),
                   ),
                 ],

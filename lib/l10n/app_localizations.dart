@@ -2563,6 +2563,36 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Error al exportar partidas. Intenta nuevamente.'**
   String get exportErrorGeneral;
+
+  /// Botón para marcar un strike en el teclado de pines
+  ///
+  /// In es, this message translates to:
+  /// **'Pleno'**
+  String get strike;
+
+  /// Botón para marcar un spare en el teclado de pines
+  ///
+  /// In es, this message translates to:
+  /// **'Remate'**
+  String get spare;
+
+  /// Botón para marcar un fallo en el teclado de pines
+  ///
+  /// In es, this message translates to:
+  /// **'Fallo'**
+  String get miss;
+
+  /// Botón para confirmar la selección de pines
+  ///
+  /// In es, this message translates to:
+  /// **'Aceptar'**
+  String get accept;
+
+  /// Mensaje de motivación cuando el jugador tiene una buena racha
+  ///
+  /// In es, this message translates to:
+  /// **'¡Vas en racha!'**
+  String get onStreak;
 }
 
 class _AppLocalizationsDelegate

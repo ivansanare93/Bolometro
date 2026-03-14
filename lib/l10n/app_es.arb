@@ -909,5 +909,25 @@
   "exportErrorGeneral": "Error al exportar partidas. Intenta nuevamente.",
   "@exportErrorGeneral": {
     "description": "Mensaje de error general al exportar partidas"
+  },
+  "strike": "Pleno",
+  "@strike": {
+    "description": "Botón para marcar un strike en el teclado de pines"
+  },
+  "spare": "Remate",
+  "@spare": {
+    "description": "Botón para marcar un spare en el teclado de pines"
+  },
+  "miss": "Fallo",
+  "@miss": {
+    "description": "Botón para marcar un fallo en el teclado de pines"
+  },
+  "accept": "Aceptar",
+  "@accept": {
+    "description": "Botón para confirmar la selección de pines"
+  },
+  "onStreak": "¡Vas en racha!",
+  "@onStreak": {
+    "description": "Mensaje de motivación cuando el jugador tiene una buena racha"
   }
 }

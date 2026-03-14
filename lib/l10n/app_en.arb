@@ -774,5 +774,25 @@
   "exportErrorGeneral": "Error exporting games. Please try again.",
   "@exportErrorGeneral": {
     "description": "General error message when exporting games fails"
+  },
+  "strike": "Strike",
+  "@strike": {
+    "description": "Button to mark a strike on the pin keyboard"
+  },
+  "spare": "Spare",
+  "@spare": {
+    "description": "Button to mark a spare on the pin keyboard"
+  },
+  "miss": "Miss",
+  "@miss": {
+    "description": "Button to mark a miss on the pin keyboard"
+  },
+  "accept": "Accept",
+  "@accept": {
+    "description": "Button to confirm pin selection"
+  },
+  "onStreak": "You're on a streak!",
+  "@onStreak": {
+    "description": "Motivational message when the player has a good streak going"
   }
 }

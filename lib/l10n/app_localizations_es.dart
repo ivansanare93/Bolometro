@@ -1294,4 +1294,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get exportErrorGeneral => 'Error al exportar partidas. Intenta nuevamente.';
+
+  @override
+  String get strike => 'Pleno';
+
+  @override
+  String get spare => 'Remate';
+
+  @override
+  String get miss => 'Fallo';
+
+  @override
+  String get accept => 'Aceptar';
+
+  @override
+  String get onStreak => '¡Vas en racha!';
 }

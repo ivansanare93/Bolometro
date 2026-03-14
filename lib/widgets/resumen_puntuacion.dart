@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 class ResumenPuntuacion extends StatelessWidget {
   final int puntuacionActual;
@@ -56,7 +57,7 @@ class ResumenPuntuacion extends StatelessWidget {
                   children: [
                     Icon(Icons.whatshot, color: Theme.of(context).colorScheme.tertiary),
                     const SizedBox(width: 6),
-                    Text('¡Vas en racha!',
+                    Text(AppLocalizations.of(context)!.onStreak,
                         style: TextStyle(color: Theme.of(context).colorScheme.tertiary)),
                   ],
                 ),

@@ -1286,4 +1286,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportErrorGeneral => 'Error exporting games. Please try again.';
+
+  @override
+  String get strike => 'Strike';
+
+  @override
+  String get spare => 'Spare';
+
+  @override
+  String get miss => 'Miss';
+
+  @override
+  String get accept => 'Accept';
+
+  @override
+  String get onStreak => "You're on a streak!";
 }
