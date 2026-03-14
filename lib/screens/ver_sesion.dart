@@ -193,10 +193,12 @@ class _VerSesionState extends State<VerSesion> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
     final esEntrenamiento = sesionActual.tipo.toLowerCase() == 'entrenamiento';
     final colorTipo = esEntrenamiento
         ? Theme.of(context).colorScheme.primary
         : Colors.red.shade700;
+    final tipoLabel = esEntrenamiento ? l10n.training : l10n.competition;
 
     // RESUMEN
     final promedio = sesionActual.partidas.isNotEmpty
@@ -222,7 +224,7 @@ class _VerSesionState extends State<VerSesion> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          '${sesionActual.tipo} • ${sesionActual.lugar.isNotEmpty ? sesionActual.lugar : AppLocalizations.of(context)!.noLocation}',
+          '$tipoLabel • ${sesionActual.lugar.isNotEmpty ? sesionActual.lugar : l10n.noLocation}',
         ),
         actions: [
           IconButton(
@@ -264,7 +266,7 @@ class _VerSesionState extends State<VerSesion> {
                       ),
                       const SizedBox(width: 14),
                       Text(
-                        sesionActual.tipo.toUpperCase(),
+                        tipoLabel.toUpperCase(),
                         style: TextStyle(
                           color: colorTipo,
                           fontWeight: FontWeight.bold,

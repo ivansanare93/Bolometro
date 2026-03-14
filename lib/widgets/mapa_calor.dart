@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
 import 'package:bolometro/models/sesion.dart';
+import '../l10n/app_localizations.dart';
 
 class MapaCalorGitHub extends StatelessWidget {
   final Map<DateTime, int> partidasPorDia;
@@ -9,6 +10,7 @@ class MapaCalorGitHub extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final hoy = DateTime.now();
     final firstDay = hoy.subtract(const Duration(days: 365));
 
@@ -16,12 +18,12 @@ class MapaCalorGitHub extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Mapa de actividad (GitHub style)',
+          l10n.heatmap,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
         HeatMapCalendar(
-          datasets: partidasPorDia, // <-- ESTE es el nombre correcto
+          datasets: partidasPorDia,
           colorMode: ColorMode.color,
           colorsets: const {
             1: Color(0xFFBBDEFB),
@@ -39,7 +41,7 @@ class MapaCalorGitHub extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    "Partidas el ${date.day}/${date.month}/${date.year}: $count",
+                    '${date.day}/${date.month}/${date.year}: ${l10n.gamesCount(count)}',
                   ),
                 ),
               );
@@ -49,11 +51,11 @@ class MapaCalorGitHub extends StatelessWidget {
         const SizedBox(height: 12),
         Row(
           children: [
-            _LeyendaItem(color: Color(0xFFBBDEFB), label: '1 partida'),
+            _LeyendaItem(color: const Color(0xFFBBDEFB), label: l10n.heatmap1Game),
             const SizedBox(width: 8),
-            _LeyendaItem(color: Color(0xFF64B5F6), label: '3+ partidas'),
+            _LeyendaItem(color: const Color(0xFF64B5F6), label: l10n.heatmap3Games),
             const SizedBox(width: 8),
-            _LeyendaItem(color: Color(0xFF1976D2), label: '5+ partidas'),
+            _LeyendaItem(color: const Color(0xFF1976D2), label: l10n.heatmap5Games),
           ],
         ),
         const SizedBox(height: 18),

@@ -6,14 +6,16 @@ import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/partida.dart';
+import '../l10n/app_localizations.dart';
 
 Future<void> exportarPartidas(BuildContext context) async {
+  final l10n = AppLocalizations.of(context)!;
   try {
     final box = Hive.box<Partida>('partidas');
 
     if (box.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No hay partidas para exportar')),
+        SnackBar(content: Text(l10n.noGamesToExport)),
       );
       return;
     }
@@ -26,19 +28,19 @@ Future<void> exportarPartidas(BuildContext context) async {
     final file = File('${dir.path}/partidas_exportadas.json');
     await file.writeAsString(jsonString);
 
-    await Share.shareXFiles([XFile(file.path)], text: 'Mis partidas de bolos');
+    await Share.shareXFiles([XFile(file.path)], text: l10n.exportShareText);
 
     if (context.mounted) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Exportación completada')));
+      ).showSnackBar(SnackBar(content: Text(l10n.exportSuccess)));
     }
   } on HiveError catch (e) {
     debugPrint('Error de Hive al exportar partidas: $e');
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error al acceder a las partidas. Intenta nuevamente.'),
+        SnackBar(
+          content: Text(l10n.exportErrorAccess),
           backgroundColor: Colors.red,
         ),
       );
@@ -47,8 +49,8 @@ Future<void> exportarPartidas(BuildContext context) async {
     debugPrint('Error al exportar partidas: $e');
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error al exportar partidas. Intenta nuevamente.'),
+        SnackBar(
+          content: Text(l10n.exportErrorGeneral),
           backgroundColor: Colors.red,
         ),
       );

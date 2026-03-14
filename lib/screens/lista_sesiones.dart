@@ -200,10 +200,18 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
     }
   }
 
+  String _translateTipo(String tipo, AppLocalizations l10n) {
+    if (tipo == AppConstants.tipoEntrenamiento) return l10n.training;
+    if (tipo == AppConstants.tipoCompeticion) return l10n.competition;
+    if (tipo == AppConstants.tipoTodos) return l10n.all;
+    return tipo;
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
@@ -276,7 +284,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
                               (tipo) => DropdownMenuItem(
                                 value: tipo,
                                 child: Text(
-                                  tipo,
+                                  _translateTipo(tipo, l10n),
                                   style: TextStyle(
                                     color: cs.onSurface.withOpacity(
                                       tipo == _filtroTipo ? 1.0 : 0.72,

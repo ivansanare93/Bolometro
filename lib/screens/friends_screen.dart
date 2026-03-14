@@ -263,7 +263,7 @@ class _FriendsScreenState extends State<FriendsScreen>
         ),
         title: Text(request.fromUserName),
         subtitle: Text(
-          _getTimeAgo(request.createdAt),
+          _getTimeAgo(request.createdAt, localizations),
           style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
         ),
         trailing: Row(
@@ -453,17 +453,17 @@ class _FriendsScreenState extends State<FriendsScreen>
     );
   }
 
-  String _getTimeAgo(DateTime dateTime) {
+  String _getTimeAgo(DateTime dateTime, AppLocalizations l10n) {
     final difference = DateTime.now().difference(dateTime);
 
     if (difference.inDays > 0) {
-      return 'Hace ${difference.inDays} ${difference.inDays == 1 ? 'día' : 'días'}';
+      return difference.inDays == 1 ? l10n.timeAgoDay : l10n.timeAgoDays(difference.inDays);
     } else if (difference.inHours > 0) {
-      return 'Hace ${difference.inHours} ${difference.inHours == 1 ? 'hora' : 'horas'}';
+      return difference.inHours == 1 ? l10n.timeAgoHour : l10n.timeAgoHours(difference.inHours);
     } else if (difference.inMinutes > 0) {
-      return 'Hace ${difference.inMinutes} ${difference.inMinutes == 1 ? 'minuto' : 'minutos'}';
+      return difference.inMinutes == 1 ? l10n.timeAgoMinute : l10n.timeAgoMinutes(difference.inMinutes);
     } else {
-      return 'Hace menos de un minuto';
+      return l10n.timeAgoJustNow;
     }
   }
 }

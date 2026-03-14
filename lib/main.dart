@@ -160,13 +160,13 @@ class _AuthWrapperState extends State<AuthWrapper> {
     });
   }
 
-  Future<void> _initializeNotifications(String userId) async {
+  Future<void> _initializeNotifications(String userId, {String? languageCode}) async {
     if (!_notificationsInitialized && !_initializingNotifications) {
       _initializingNotifications = true;
       try {
         final notificationService = NotificationService();
         await notificationService.initialize();
-        await notificationService.saveUserToken(userId);
+        await notificationService.saveUserToken(userId, languageCode: languageCode);
         _notificationsInitialized = true;
       } finally {
         _initializingNotifications = false;
@@ -218,7 +218,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
         }
       });
       // Inicializar notificaciones para usuario autenticado
-      _initializeNotifications(authService.userId!);
+      _initializeNotifications(
+        authService.userId!,
+        languageCode: Provider.of<LanguageProvider>(context, listen: false).locale.languageCode,
+      );
     }
 
     // Mostrar pantalla de login solo la primera vez si no está autenticado y no se ha saltado

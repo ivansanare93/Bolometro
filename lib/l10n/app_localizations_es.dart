@@ -1216,4 +1216,97 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get spareConversionRate => 'Conv. Spare';
+
+  @override
+  String get loginSubtitle => 'Registra y analiza tus partidas de bolos';
+
+  @override
+  String get whySignIn => '¿Por qué iniciar sesión?';
+
+  @override
+  String get syncDevices => 'Sincroniza tus datos en todos tus dispositivos';
+
+  @override
+  String get autoBackup => 'Copia de seguridad automática en la nube';
+
+  @override
+  String get socialFeatures => 'Prepárate para funciones sociales futuras';
+
+  @override
+  String get signingIn => 'Iniciando sesión...';
+
+  @override
+  String get privacyNote => 'Tus datos personales están seguros. Solo accedemos a tu información básica de perfil.';
+
+  @override
+  String timeAgoDays(int count) => 'Hace $count días';
+
+  @override
+  String get timeAgoDay => 'Hace 1 día';
+
+  @override
+  String timeAgoHours(int count) => 'Hace $count horas';
+
+  @override
+  String get timeAgoHour => 'Hace 1 hora';
+
+  @override
+  String timeAgoMinutes(int count) => 'Hace $count minutos';
+
+  @override
+  String get timeAgoMinute => 'Hace 1 minuto';
+
+  @override
+  String get timeAgoJustNow => 'Hace menos de un minuto';
+
+  @override
+  String get switchToClassicKeyboard => 'Cambiar a teclado clásico';
+
+  @override
+  String get registerPinsVisually => 'Registrar bolos visualmente';
+
+  @override
+  String get sessionType => 'Tipo de sesión';
+
+  @override
+  String get noGamesAdded => 'No hay partidas añadidas';
+
+  @override
+  String get heatmap1Game => '1 partida';
+
+  @override
+  String get heatmap3Games => '3+ partidas';
+
+  @override
+  String get heatmap5Games => '5+ partidas';
+
+  @override
+  String get noGamesToExport => 'No hay partidas para exportar';
+
+  @override
+  String get exportSuccess => 'Exportación completada';
+
+  @override
+  String get exportShareText => 'Mis partidas de bolos';
+
+  @override
+  String get exportErrorAccess => 'Error al acceder a las partidas. Intenta nuevamente.';
+
+  @override
+  String get exportErrorGeneral => 'Error al exportar partidas. Intenta nuevamente.';
+
+  @override
+  String get strike => 'Pleno';
+
+  @override
+  String get spare => 'Remate';
+
+  @override
+  String get miss => 'Fallo';
+
+  @override
+  String get accept => 'Aceptar';
+
+  @override
+  String get onStreak => '¡Vas en racha!';
 }

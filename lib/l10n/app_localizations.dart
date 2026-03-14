@@ -2407,6 +2407,192 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Conv. Spare'**
   String get spareConversionRate;
+
+  /// Subtítulo de la pantalla de inicio de sesión
+  ///
+  /// In es, this message translates to:
+  /// **'Registra y analiza tus partidas de bolos'**
+  String get loginSubtitle;
+
+  /// Título de la sección de beneficios de iniciar sesión
+  ///
+  /// In es, this message translates to:
+  /// **'¿Por qué iniciar sesión?'**
+  String get whySignIn;
+
+  /// Beneficio de sincronización entre dispositivos
+  ///
+  /// In es, this message translates to:
+  /// **'Sincroniza tus datos en todos tus dispositivos'**
+  String get syncDevices;
+
+  /// Beneficio de copia de seguridad automática
+  ///
+  /// In es, this message translates to:
+  /// **'Copia de seguridad automática en la nube'**
+  String get autoBackup;
+
+  /// Beneficio de funciones sociales futuras
+  ///
+  /// In es, this message translates to:
+  /// **'Prepárate para funciones sociales futuras'**
+  String get socialFeatures;
+
+  /// Texto mostrado mientras se inicia sesión
+  ///
+  /// In es, this message translates to:
+  /// **'Iniciando sesión...'**
+  String get signingIn;
+
+  /// Nota de privacidad en la pantalla de inicio de sesión
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos personales están seguros. Solo accedemos a tu información básica de perfil.'**
+  String get privacyNote;
+
+  /// Tiempo transcurrido en días (plural)
+  ///
+  /// In es, this message translates to:
+  /// **'Hace {count} días'**
+  String timeAgoDays(int count);
+
+  /// Tiempo transcurrido de exactamente 1 día
+  ///
+  /// In es, this message translates to:
+  /// **'Hace 1 día'**
+  String get timeAgoDay;
+
+  /// Tiempo transcurrido en horas (plural)
+  ///
+  /// In es, this message translates to:
+  /// **'Hace {count} horas'**
+  String timeAgoHours(int count);
+
+  /// Tiempo transcurrido de exactamente 1 hora
+  ///
+  /// In es, this message translates to:
+  /// **'Hace 1 hora'**
+  String get timeAgoHour;
+
+  /// Tiempo transcurrido en minutos (plural)
+  ///
+  /// In es, this message translates to:
+  /// **'Hace {count} minutos'**
+  String timeAgoMinutes(int count);
+
+  /// Tiempo transcurrido de exactamente 1 minuto
+  ///
+  /// In es, this message translates to:
+  /// **'Hace 1 minuto'**
+  String get timeAgoMinute;
+
+  /// Tiempo transcurrido menor a un minuto
+  ///
+  /// In es, this message translates to:
+  /// **'Hace menos de un minuto'**
+  String get timeAgoJustNow;
+
+  /// Botón para cambiar al modo de teclado clásico
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar a teclado clásico'**
+  String get switchToClassicKeyboard;
+
+  /// Botón para cambiar al modo visual de registro de pines
+  ///
+  /// In es, this message translates to:
+  /// **'Registrar bolos visualmente'**
+  String get registerPinsVisually;
+
+  /// Etiqueta del selector de tipo de sesión
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo de sesión'**
+  String get sessionType;
+
+  /// Mensaje cuando no hay partidas añadidas
+  ///
+  /// In es, this message translates to:
+  /// **'No hay partidas añadidas'**
+  String get noGamesAdded;
+
+  /// Leyenda del mapa de calor para 1 partida
+  ///
+  /// In es, this message translates to:
+  /// **'1 partida'**
+  String get heatmap1Game;
+
+  /// Leyenda del mapa de calor para 3+ partidas
+  ///
+  /// In es, this message translates to:
+  /// **'3+ partidas'**
+  String get heatmap3Games;
+
+  /// Leyenda del mapa de calor para 5+ partidas
+  ///
+  /// In es, this message translates to:
+  /// **'5+ partidas'**
+  String get heatmap5Games;
+
+  /// Mensaje cuando no hay partidas para exportar
+  ///
+  /// In es, this message translates to:
+  /// **'No hay partidas para exportar'**
+  String get noGamesToExport;
+
+  /// Mensaje de confirmación al exportar partidas
+  ///
+  /// In es, this message translates to:
+  /// **'Exportación completada'**
+  String get exportSuccess;
+
+  /// Texto para compartir al exportar partidas
+  ///
+  /// In es, this message translates to:
+  /// **'Mis partidas de bolos'**
+  String get exportShareText;
+
+  /// Mensaje de error al acceder a las partidas para exportar
+  ///
+  /// In es, this message translates to:
+  /// **'Error al acceder a las partidas. Intenta nuevamente.'**
+  String get exportErrorAccess;
+
+  /// Mensaje de error general al exportar partidas
+  ///
+  /// In es, this message translates to:
+  /// **'Error al exportar partidas. Intenta nuevamente.'**
+  String get exportErrorGeneral;
+
+  /// Botón para marcar un strike en el teclado de pines
+  ///
+  /// In es, this message translates to:
+  /// **'Pleno'**
+  String get strike;
+
+  /// Botón para marcar un spare en el teclado de pines
+  ///
+  /// In es, this message translates to:
+  /// **'Remate'**
+  String get spare;
+
+  /// Botón para marcar un fallo en el teclado de pines
+  ///
+  /// In es, this message translates to:
+  /// **'Fallo'**
+  String get miss;
+
+  /// Botón para confirmar la selección de pines
+  ///
+  /// In es, this message translates to:
+  /// **'Aceptar'**
+  String get accept;
+
+  /// Mensaje de motivación cuando el jugador tiene una buena racha
+  ///
+  /// In es, this message translates to:
+  /// **'¡Vas en racha!'**
+  String get onStreak;
 }
 
 class _AppLocalizationsDelegate

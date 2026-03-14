@@ -82,7 +82,7 @@ class NotificationService {
   }
 
   /// Guardar el token FCM del usuario en Firestore
-  Future<void> saveUserToken(String userId) async {
+  Future<void> saveUserToken(String userId, {String? languageCode}) async {
     if (_fcmToken == null) {
       debugPrint('No hay token FCM para guardar');
       return;
@@ -90,10 +90,14 @@ class NotificationService {
 
     try {
       _currentUserId = userId;
-      await _firestore.collection('users').doc(userId).update({
+      final data = <String, dynamic>{
         'fcmToken': _fcmToken,
         'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
-      });
+      };
+      if (languageCode != null) {
+        data['languageCode'] = languageCode;
+      }
+      await _firestore.collection('users').doc(userId).update(data);
       debugPrint('Token FCM guardado para usuario: $userId');
     } catch (e) {
       debugPrint('Error al guardar token FCM: $e');

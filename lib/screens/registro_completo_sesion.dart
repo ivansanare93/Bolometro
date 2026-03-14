@@ -263,7 +263,7 @@ class _RegistroCompletoSesionScreenState
           actions: [
             IconButton(
               icon: const Icon(Icons.home),
-              tooltip: "Inicio",
+              tooltip: AppLocalizations.of(context)!.home,
               onPressed: () {
                 DraftService.clearSesionDraft();
                 Navigator.pushAndRemoveUntil(
