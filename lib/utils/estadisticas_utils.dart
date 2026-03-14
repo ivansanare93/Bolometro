@@ -262,4 +262,57 @@ class EstadisticasUtils {
       'consistencia': consistencia,
     };
   }
+
+  /// Promedio de pinos derribados en el primer tiro usando datos visuales de pines.
+  /// Devuelve null si no hay partidas con datos de pines registrados.
+  /// Solo se puede calcular cuando el usuario ha usado el teclado de pines.
+  static double? calcularPromedioPrimerTiro(List<Partida> partidas) {
+    int totalPines = 0;
+    int totalTiros = 0;
+
+    for (final partida in partidas) {
+      for (int f = 0; f < AppConstants.totalFrames; f++) {
+        if (f >= partida.pinesPorTiro.length) break;
+        final tiro0Pines = partida.pinesPorTiro[f][0];
+        if (tiro0Pines != null) {
+          totalPines += tiro0Pines.length;
+          totalTiros++;
+        }
+      }
+    }
+
+    if (totalTiros == 0) return null;
+    return totalPines / totalTiros;
+  }
+
+  /// Tasa de conversión de spare (porcentaje) usando datos visuales de pines.
+  /// Calcula cuántas veces el jugador derribó todos los pines restantes en el
+  /// segundo tiro de los frames 1–9 cuando el primero no fue pleno (strike).
+  /// Devuelve null si no hay oportunidades registradas con datos de pines.
+  /// Solo se puede calcular cuando el usuario ha usado el teclado de pines.
+  static double? calcularTasaConversionSpare(List<Partida> partidas) {
+    int oportunidades = 0;
+    int conversiones = 0;
+
+    for (final partida in partidas) {
+      // Solo frames 1-9 (índices 0-8); el frame 10 tiene reglas especiales
+      for (int f = 0; f < AppConstants.totalFrames - 1; f++) {
+        if (f >= partida.pinesPorTiro.length) break;
+        final tiro0Pines = partida.pinesPorTiro[f][0];
+        final tiro1Pines = partida.pinesPorTiro[f][1];
+
+        // Necesitamos datos de pines en ambos tiros y que el primero no sea strike
+        if (tiro0Pines != null && tiro1Pines != null && tiro0Pines.length < AppConstants.maxPinesBowling) {
+          oportunidades++;
+          final union = <int>{...tiro0Pines, ...tiro1Pines};
+          if (union.length == AppConstants.maxPinesBowling) {
+            conversiones++;
+          }
+        }
+      }
+    }
+
+    if (oportunidades == 0) return null;
+    return (conversiones / oportunidades) * 100;
+  }
 }

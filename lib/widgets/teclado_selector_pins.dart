@@ -74,7 +74,10 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
 
   void _marcarPleno() {
     setState(() {
-      _pinesCaidos = List.generate(10, (_) => true);
+      _pinesCaidos = List.generate(
+        AppConstants.maxPinesBowling,
+        (i) => !widget.pinesDeshabilitados.contains(i + 1),
+      );
     });
   }
 

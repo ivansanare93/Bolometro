@@ -2383,6 +2383,30 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Descartar'**
   String get discard;
+
+  /// Título de la sección de estadísticas basadas en datos de pines
+  ///
+  /// In es, this message translates to:
+  /// **'Estadísticas de Pines'**
+  String get pinStatsSection;
+
+  /// Nota indicando que las estadísticas de pines requieren el teclado visual
+  ///
+  /// In es, this message translates to:
+  /// **'Disponible solo para partidas registradas con el teclado de pines'**
+  String get pinStatsNote;
+
+  /// Etiqueta para el promedio de pinos en el primer tiro
+  ///
+  /// In es, this message translates to:
+  /// **'Prom. 1ª Bola'**
+  String get firstBallAvg;
+
+  /// Etiqueta para la tasa de conversión de spare
+  ///
+  /// In es, this message translates to:
+  /// **'Conv. Spare'**
+  String get spareConversionRate;
 }
 
 class _AppLocalizationsDelegate

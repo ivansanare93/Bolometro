@@ -774,5 +774,21 @@
   "discard": "Descartar",
   "@discard": {
     "description": "Etiqueta del botón para confirmar el descarte de cambios"
+  },
+  "pinStatsSection": "Estadísticas de Pines",
+  "@pinStatsSection": {
+    "description": "Título de la sección de estadísticas basadas en datos de pines"
+  },
+  "pinStatsNote": "Disponible solo para partidas registradas con el teclado de pines",
+  "@pinStatsNote": {
+    "description": "Nota indicando que las estadísticas de pines requieren el teclado visual"
+  },
+  "firstBallAvg": "Prom. 1ª Bola",
+  "@firstBallAvg": {
+    "description": "Etiqueta para el promedio de pinos en el primer tiro"
+  },
+  "spareConversionRate": "Conv. Spare",
+  "@spareConversionRate": {
+    "description": "Etiqueta para la tasa de conversión de spare"
   }
 }

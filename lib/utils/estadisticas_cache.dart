@@ -114,6 +114,10 @@ class EstadisticasCache extends ChangeNotifier {
     // Calculate moving average (expensive operation, cached here)
     final promedioMovil = EstadisticasUtils.promedioMovil(partidas, AppConstants.ventanaPromedioMovil);
 
+    // Calcular estadísticas basadas en datos de pines (teclado visual)
+    final promedioPrimerTiro = EstadisticasUtils.calcularPromedioPrimerTiro(partidas);
+    final tasaConversionSpare = EstadisticasUtils.calcularTasaConversionSpare(partidas);
+
     return {
       'porcentajes': porcentajes,
       'rachaStrikes': rachaStrikes,
@@ -133,6 +137,8 @@ class EstadisticasCache extends ChangeNotifier {
       'promedioMovil': promedioMovil,
       'totalPartidas': partidas.length,
       'totalSesiones': sesiones.length,
+      'promedioPrimerTiro': promedioPrimerTiro,
+      'tasaConversionSpare': tasaConversionSpare,
     };
   }
 
@@ -157,6 +163,8 @@ class EstadisticasCache extends ChangeNotifier {
       'promedioMovil': <double>[],
       'totalPartidas': 0,
       'totalSesiones': 0,
+      'promedioPrimerTiro': null,
+      'tasaConversionSpare': null,
     };
   }
 

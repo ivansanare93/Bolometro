@@ -352,4 +352,239 @@ void main() {
       expect(result[1], equals(120.0)); // Average of last 5: four 100s and one 200
     });
   });
+
+  // ---------------------------------------------------------------------------
+  group('EstadisticasUtils - calcularPromedioPrimerTiro', () {
+    test('returns null when no partidas have pin data', () {
+      final partidas = [
+        Partida(fecha: DateTime(2024, 1, 1), total: 100, frames: []),
+        Partida(fecha: DateTime(2024, 1, 2), total: 120, frames: []),
+      ];
+      expect(EstadisticasUtils.calcularPromedioPrimerTiro(partidas), isNull);
+    });
+
+    test('returns null for empty list of partidas', () {
+      expect(EstadisticasUtils.calcularPromedioPrimerTiro([]), isNull);
+    });
+
+    test('calculates correct average for single game with all strikes', () {
+      // 10 frames, each first throw knocks 10 pins
+      final pinesPorTiro = List.generate(
+        AppConstants.totalFrames,
+        (_) => <List<int>?>[List.generate(10, (i) => i + 1), null, null],
+      );
+      final partida = Partida(
+        fecha: DateTime(2024, 1, 1),
+        total: 300,
+        frames: List.generate(AppConstants.totalFrames, (_) => ['X']),
+        pinesPorTiro: pinesPorTiro,
+      );
+      final result = EstadisticasUtils.calcularPromedioPrimerTiro([partida]);
+      expect(result, equals(10.0));
+    });
+
+    test('calculates correct average for single game with 5 pins per first throw', () {
+      // 10 frames, each first throw knocks 5 pins
+      final pinesPorTiro = List.generate(
+        AppConstants.totalFrames,
+        (_) => <List<int>?>[
+          [1, 2, 3, 4, 5], // 5 pins
+          [6, 7, 8, 9, 10], // spare
+          null,
+        ],
+      );
+      final partida = Partida(
+        fecha: DateTime(2024, 1, 1),
+        total: 150,
+        frames: List.generate(AppConstants.totalFrames, (_) => ['5', '/']),
+        pinesPorTiro: pinesPorTiro,
+      );
+      final result = EstadisticasUtils.calcularPromedioPrimerTiro([partida]);
+      expect(result, equals(5.0));
+    });
+
+    test('ignores frames without pin data', () {
+      // Only 5 frames have pin data (first 5), each with 8 pins on first throw
+      final pinesPorTiro = List.generate(
+        AppConstants.totalFrames,
+        (i) => <List<int>?>[
+          i < 5 ? [1, 2, 3, 4, 5, 6, 7, 8] : null, // 8 pins or null
+          null,
+          null,
+        ],
+      );
+      final partida = Partida(
+        fecha: DateTime(2024, 1, 1),
+        total: 100,
+        frames: List.generate(AppConstants.totalFrames, (_) => ['8', '1']),
+        pinesPorTiro: pinesPorTiro,
+      );
+      // Only 5 frames have data, each with 8 pins → average = 8.0
+      final result = EstadisticasUtils.calcularPromedioPrimerTiro([partida]);
+      expect(result, equals(8.0));
+    });
+
+    test('averages correctly across multiple partidas', () {
+      // Game 1: all frames with 6 pins on first throw
+      final pines1 = List.generate(
+        AppConstants.totalFrames,
+        (_) => <List<int>?>[
+          [1, 2, 3, 4, 5, 6],
+          null,
+          null,
+        ],
+      );
+      // Game 2: all frames with 8 pins on first throw
+      final pines2 = List.generate(
+        AppConstants.totalFrames,
+        (_) => <List<int>?>[
+          [1, 2, 3, 4, 5, 6, 7, 8],
+          null,
+          null,
+        ],
+      );
+      final partidas = [
+        Partida(
+          fecha: DateTime(2024, 1, 1),
+          total: 100,
+          frames: List.generate(AppConstants.totalFrames, (_) => ['6', '2']),
+          pinesPorTiro: pines1,
+        ),
+        Partida(
+          fecha: DateTime(2024, 1, 2),
+          total: 120,
+          frames: List.generate(AppConstants.totalFrames, (_) => ['8', '1']),
+          pinesPorTiro: pines2,
+        ),
+      ];
+      // 10 throws of 6 + 10 throws of 8 = 140 / 20 = 7.0
+      final result = EstadisticasUtils.calcularPromedioPrimerTiro(partidas);
+      expect(result, equals(7.0));
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  group('EstadisticasUtils - calcularTasaConversionSpare', () {
+    test('returns null when no partidas have pin data', () {
+      final partidas = [
+        Partida(fecha: DateTime(2024, 1, 1), total: 100, frames: []),
+      ];
+      expect(EstadisticasUtils.calcularTasaConversionSpare(partidas), isNull);
+    });
+
+    test('returns null for empty list of partidas', () {
+      expect(EstadisticasUtils.calcularTasaConversionSpare([]), isNull);
+    });
+
+    test('returns 100% when all non-strike frames are spared', () {
+      // 9 frames (indices 0-8), each frame: first throw knocks 5, second knocks 5 (spare)
+      final pinesPorTiro = List.generate(
+        AppConstants.totalFrames,
+        (i) => <List<int>?>[
+          i < 9 ? [1, 2, 3, 4, 5] : null,      // 5 pins in first throw
+          i < 9 ? [6, 7, 8, 9, 10] : null,     // 5 remaining pins = spare
+          null,
+        ],
+      );
+      final partida = Partida(
+        fecha: DateTime(2024, 1, 1),
+        total: 150,
+        frames: List.generate(AppConstants.totalFrames, (_) => ['5', '/']),
+        pinesPorTiro: pinesPorTiro,
+      );
+      final result = EstadisticasUtils.calcularTasaConversionSpare([partida]);
+      expect(result, equals(100.0));
+    });
+
+    test('returns 0% when no spares were converted', () {
+      // 9 frames, first throw knocks 5, second knocks 3 (no spare)
+      final pinesPorTiro = List.generate(
+        AppConstants.totalFrames,
+        (i) => <List<int>?>[
+          i < 9 ? [1, 2, 3, 4, 5] : null,
+          i < 9 ? [6, 7, 8] : null, // only 3 of remaining 5 → open frame
+          null,
+        ],
+      );
+      final partida = Partida(
+        fecha: DateTime(2024, 1, 1),
+        total: 80,
+        frames: List.generate(AppConstants.totalFrames, (_) => ['5', '3']),
+        pinesPorTiro: pinesPorTiro,
+      );
+      final result = EstadisticasUtils.calcularTasaConversionSpare([partida]);
+      expect(result, equals(0.0));
+    });
+
+    test('calculates 50% conversion rate correctly', () {
+      // 9 frames: odd frames are spared, even frames are open
+      final pinesPorTiro = List.generate(
+        AppConstants.totalFrames,
+        (i) {
+          if (i >= 9) return <List<int>?>[null, null, null];
+          final isSpare = i.isOdd;
+          return <List<int>?>[
+            [1, 2, 3, 4, 5],
+            isSpare ? [6, 7, 8, 9, 10] : [6, 7, 8],
+            null,
+          ];
+        },
+      );
+      final partida = Partida(
+        fecha: DateTime(2024, 1, 1),
+        total: 100,
+        frames: List.generate(
+          AppConstants.totalFrames,
+          (i) => i < 9
+              ? (i.isOdd ? ['5', '/'] : ['5', '3'])
+              : ['5', '3'],
+        ),
+        pinesPorTiro: pinesPorTiro,
+      );
+      // 9 frames: 4 odd (0-indexed: 1,3,5,7) + 5 even (0,2,4,6,8) → 4/9 spares
+      final result = EstadisticasUtils.calcularTasaConversionSpare([partida]);
+      expect(result, closeTo((4 / 9) * 100, 0.01));
+    });
+
+    test('ignores frames where first throw is a strike', () {
+      // 9 frames: all strikes → no conversion opportunities
+      final pinesPorTiro = List.generate(
+        AppConstants.totalFrames,
+        (i) => <List<int>?>[
+          i < 9 ? List.generate(10, (j) => j + 1) : null, // strike
+          null,
+          null,
+        ],
+      );
+      final partida = Partida(
+        fecha: DateTime(2024, 1, 1),
+        total: 200,
+        frames: List.generate(AppConstants.totalFrames, (_) => ['X']),
+        pinesPorTiro: pinesPorTiro,
+      );
+      // No non-strike frames → null (no opportunities)
+      final result = EstadisticasUtils.calcularTasaConversionSpare([partida]);
+      expect(result, isNull);
+    });
+
+    test('ignores frame 10 (tenth frame has special rules)', () {
+      // Only frame 10 has pin data (index 9), so no valid opportunities
+      final pinesPorTiro = List.generate(
+        AppConstants.totalFrames,
+        (i) => <List<int>?>[
+          i == 9 ? [1, 2, 3, 4, 5] : null,
+          i == 9 ? [6, 7, 8, 9, 10] : null,
+          null,
+        ],
+      );
+      final partida = Partida(
+        fecha: DateTime(2024, 1, 1),
+        total: 100,
+        frames: List.generate(AppConstants.totalFrames, (i) => i == 9 ? ['5', '/'] : []),
+        pinesPorTiro: pinesPorTiro,
+      );
+      final result = EstadisticasUtils.calcularTasaConversionSpare([partida]);
+      expect(result, isNull);
+    });
+  });
 }
