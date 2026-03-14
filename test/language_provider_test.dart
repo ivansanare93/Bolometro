@@ -3,20 +3,30 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:bolometro/providers/language_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Helper: creates a [LanguageProvider] that reports [languageCode] as the
+/// device's system language. Using the injected resolver keeps the tests
+/// deterministic regardless of the host machine locale.
+LanguageProvider _makeProvider(String languageCode) => LanguageProvider(
+      systemLocaleResolver: () => Locale(languageCode),
+    );
+
 /// Tests for LanguageProvider
 void main() {
   group('LanguageProvider', () {
     late LanguageProvider languageProvider;
 
     setUp(() async {
-      // Initialize SharedPreferences with mock values
+      // Initialize SharedPreferences with mock values.
+      // Simulate a Spanish-language device so existing tests keep their
+      // Spanish-default expectations unchanged.
       SharedPreferences.setMockInitialValues({});
-      languageProvider = LanguageProvider();
+      languageProvider = _makeProvider('es');
       // Wait for initialization to complete using the exposed future
       await languageProvider.initializationFuture;
     });
 
-    test('LanguageProvider initializes with Spanish locale', () async {
+    test('LanguageProvider initializes with Spanish locale when system locale is Spanish',
+        () async {
       expect(languageProvider.locale, equals(const Locale('es')));
       expect(languageProvider.isInitialized, isTrue);
     });
@@ -78,8 +88,9 @@ void main() {
       // Arrange - Save a locale preference
       SharedPreferences.setMockInitialValues({'language_code': 'en'});
       
-      // Act - Create new provider instance
-      final newProvider = LanguageProvider();
+      // Act - Create new provider instance (system locale does not matter when a
+      // preference is already persisted)
+      final newProvider = _makeProvider('es');
       await newProvider.initializationFuture;
       
       // Assert
@@ -88,8 +99,8 @@ void main() {
     });
 
     test('LanguageProvider should handle initialization errors gracefully', () async {
-      // The provider should initialize with default locale even if there are errors
-      // This test verifies that the provider completes initialization
+      // The provider should initialize with the system/default locale even if
+      // there are errors. setUp uses a Spanish system locale resolver.
       expect(languageProvider.locale, equals(const Locale('es')));
       expect(languageProvider.isInitialized, isTrue);
     });
@@ -105,10 +116,44 @@ void main() {
       expect(languageProvider.locale, equals(const Locale('en')));
       expect(prefs.getString('language_code'), equals('en'));
       
-      // Verify by creating a new provider
-      final newProvider = LanguageProvider();
+      // Verify by creating a new provider (saved 'en' preference takes precedence)
+      final newProvider = _makeProvider('es');
       await newProvider.initializationFuture;
       expect(newProvider.locale, equals(const Locale('en')));
+    });
+
+    // -------------------------------------------------------------------------
+    // System locale detection tests
+    // -------------------------------------------------------------------------
+
+    test('LanguageProvider uses English when device language is English and no preference saved',
+        () async {
+      SharedPreferences.setMockInitialValues({});
+      final provider = _makeProvider('en');
+      await provider.initializationFuture;
+
+      expect(provider.locale, equals(const Locale('en')));
+    });
+
+    test('LanguageProvider falls back to Spanish for unsupported system locale',
+        () async {
+      SharedPreferences.setMockInitialValues({});
+      final provider = _makeProvider('fr'); // French is not a supported locale
+      await provider.initializationFuture;
+
+      expect(provider.locale, equals(const Locale('es')));
+    });
+
+    test('Saved preference overrides system locale', () async {
+      // Persist Spanish preference
+      SharedPreferences.setMockInitialValues({'language_code': 'es'});
+
+      // Create provider with English system locale
+      final provider = _makeProvider('en');
+      await provider.initializationFuture;
+
+      // Saved preference (Spanish) should win
+      expect(provider.locale, equals(const Locale('es')));
     });
   });
 }
