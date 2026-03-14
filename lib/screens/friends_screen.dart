@@ -254,6 +254,7 @@ class _FriendsScreenState extends State<FriendsScreen>
   }
 
   Widget _buildRequestCard(FriendRequest request, String userId) {
+    final localizations = AppLocalizations.of(context)!;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
