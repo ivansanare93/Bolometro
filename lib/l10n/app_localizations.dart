@@ -2432,7 +2432,7 @@ abstract class AppLocalizations {
   /// **'Remate por Pin'**
   String get perPinSpareStats;
 
-  /// Etiqueta que muestra los pines que quedaron en pie tras el primer tiro
+  /// Etiqueta que muestra qué pines quedaron en pie tras el primer tiro
   ///
   /// In es, this message translates to:
   /// **'Deje: {pins}'**

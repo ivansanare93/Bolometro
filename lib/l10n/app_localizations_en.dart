@@ -1223,10 +1223,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get perPinSpareStats => 'Spare by Pin';
 
   @override
-  String perPinLeaveLabel(String pins) => 'Leave: $pins';
+  String perPinLeaveLabel(String pins) {
+    return 'Leave: $pins';
+  }
 
   @override
-  String perPinConversionValue(int converted, int attempts) => '$converted/$attempts';
+  String perPinConversionValue(int converted, int attempts) {
+    return '$converted/$attempts';
+  }
 
   @override
   String get loginSubtitle => 'Record and analyze your bowling games';

@@ -1231,10 +1231,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get perPinSpareStats => 'Remate por Pin';
 
   @override
-  String perPinLeaveLabel(String pins) => 'Deje: $pins';
+  String perPinLeaveLabel(String pins) {
+    return 'Deje: $pins';
+  }
 
   @override
-  String perPinConversionValue(int converted, int attempts) => '$converted/$attempts';
+  String perPinConversionValue(int converted, int attempts) {
+    return '$converted/$attempts';
+  }
 
   @override
   String get loginSubtitle => 'Registra y analiza tus partidas de bolos';
