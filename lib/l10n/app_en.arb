@@ -816,9 +816,9 @@
   "@strike": {
     "description": "Button to mark a strike on the pin keyboard"
   },
-  "semipleno": "Semistrike",
+  "semipleno": "Spare",
   "@semipleno": {
-    "description": "Button to mark a semistrike (knock all available pins) on the third throw of the 10th frame"
+    "description": "Button to mark a spare (knock all available pins) on the third throw of the 10th frame"
   },
   "spare": "Spare",
   "@spare": {
