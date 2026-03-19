@@ -951,6 +951,10 @@
   "@strike": {
     "description": "Botón para marcar un strike en el teclado de pines"
   },
+  "semipleno": "Semipleno",
+  "@semipleno": {
+    "description": "Botón para marcar un semipleno (derribar todos los pines disponibles) en la tercera tirada del décimo frame"
+  },
   "spare": "Remate",
   "@spare": {
     "description": "Botón para marcar un spare en el teclado de pines"

@@ -2606,6 +2606,12 @@ abstract class AppLocalizations {
   /// **'Pleno'**
   String get strike;
 
+  /// Botón para marcar un semipleno (derribar todos los pines disponibles) en la tercera tirada del décimo frame
+  ///
+  /// In es, this message translates to:
+  /// **'Semipleno'**
+  String get semipleno;
+
   /// Botón para marcar un spare en el teclado de pines
   ///
   /// In es, this message translates to:

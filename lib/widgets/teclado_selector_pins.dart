@@ -165,6 +165,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
 
     // ---- LÓGICA BOTONES ----
     bool mostrarPleno = false;
+    bool mostrarSemipleno = false;
     bool mostrarRemate = false;
     bool mostrarFallo = false;
 
@@ -208,7 +209,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
         final habilitarTercerTiro = primerTiroStrike || spareEnPrimerosDos;
 
         if (habilitarTercerTiro) {
-          mostrarPleno = !todosCaidos;
+          mostrarSemipleno = !todosCaidos;
           mostrarRemate = false;
           mostrarFallo = true;
 
@@ -280,6 +281,19 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.bolt, size: 18),
                         label: Text(l10n.strike),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: _marcarPleno,
+                      ),
+                    ),
+                  if (mostrarSemipleno)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.bolt, size: 18),
+                        label: Text(l10n.semipleno),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange,
                           foregroundColor: Colors.white,
