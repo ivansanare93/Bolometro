@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/partida.dart';
 import '../services/analytics_service.dart';
+import '../utils/app_constants.dart';
+import '../utils/pines_a_tiro_utils.dart';
 import '../utils/registro_tiros_utils.dart';
 import '../widgets/marcador_bolos.dart';
+import '../widgets/teclado_selector_pins.dart';
 import '../utils/teclado_tiros_adaptativo.dart';
 import '../widgets/resumen_puntuacion.dart';
+import '../widgets/score_sheet_pin_strip.dart';
 import '../widgets/notas_field.dart';
 import 'home.dart';
 import '../l10n/app_localizations.dart';
@@ -32,6 +36,13 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
   final marcadorKey = GlobalKey<MarcadorBolosState>();
   final ValueNotifier<Set<String>> teclasDeshabilitadas = ValueNotifier({});
   final ValueNotifier<bool> mostrarTeclado = ValueNotifier(false);
+  final ScrollController _scrollController = ScrollController();
+
+  bool _modoVisual = false;
+  bool mostrarSelectorpines = false;
+  int? _frameActivo;
+  int? _tiroActivo;
+  late List<List<List<int>?>> pinesPorTiro;
 
   late AnimationController _animController;
   late Animation<double> _animacionTeclado;
@@ -52,6 +63,14 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
         .toList();
     notas = widget.partida.notas;
     erroresPorTiro = _obtenerErroresPorTiro(framesText);
+    pinesPorTiro = List.generate(
+      10,
+      (i) => List<List<int>?>.from(
+        widget.partida.pinesPorTiro.length > i
+            ? widget.partida.pinesPorTiro[i]
+            : List.filled(3, null),
+      ),
+    );
 
     _animController = AnimationController(
       duration: const Duration(milliseconds: 300),
@@ -86,6 +105,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
   @override
   void dispose() {
     _animController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -152,6 +172,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
       frames: nuevosFrames,
       notas: notas,
       total: nuevoTotal,
+      pinesPorTiro: pinesPorTiro,
     );
 
     try {
@@ -177,12 +198,109 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
     }
   }
 
+  void _onCampoVisualActivo(int frame, int tiro) {
+    setState(() {
+      _frameActivo = frame;
+      _tiroActivo = tiro;
+      mostrarSelectorpines = true;
+    });
+    _scrollToBottom();
+  }
+
+  void _onAceptarSeleccionPins(List<int> seleccionados) {
+    final frame = _frameActivo!;
+    final tiro = _tiroActivo!;
+
+    final valor = pinesAValorTiro(
+      frame: frame,
+      tiro: tiro,
+      seleccionados: seleccionados,
+      pinesPorTiroFrame: pinesPorTiro[frame],
+      framesText: framesText,
+    );
+
+    final updatedFrames = List<List<String>>.generate(
+      10,
+      (i) => List<String>.from(framesText[i]),
+    );
+    updatedFrames[frame][tiro] = valor;
+
+    int nextFrame = frame;
+    int nextTiro = tiro;
+
+    if (frame < 9) {
+      if (valor == AppConstants.simboloStrike || tiro == 1) {
+        nextFrame = frame + 1;
+        nextTiro = 0;
+      } else {
+        nextTiro = 1;
+      }
+    } else {
+      if (tiro < 2) {
+        if (tiro == 1 && !mostrarTercerTiro(updatedFrames)) {
+          // No third shot needed
+        } else {
+          nextTiro = tiro + 1;
+        }
+      }
+    }
+
+    final advanced = !(nextFrame == frame && nextTiro == tiro);
+
+    setState(() {
+      pinesPorTiro[frame][tiro] = seleccionados;
+      framesText[frame][tiro] = valor;
+      erroresPorTiro = _obtenerErroresPorTiro(framesText);
+      if (!advanced) {
+        mostrarSelectorpines = false;
+      }
+    });
+
+    if (advanced) {
+      marcadorKey.currentState?.setTiroActivo(nextFrame, nextTiro);
+      _scrollToBottom();
+    }
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final frames = interpretarFrames(framesText);
     final puntuacionActual = calcularPuntuacionPartida(frames);
     final puntuacionMaxima = calcularPuntuacionMaximaPosible(frames);
     final buenaRacha = esBuenaRacha(frames);
+
+    List<int> pinesDeshabilitados = [];
+    bool esStrikeEnPrimerTiro = false;
+
+    if (_modoVisual && _frameActivo != null && _tiroActivo != null) {
+      pinesDeshabilitados = calcularPinesDeshabilitados(
+        frame: _frameActivo!,
+        tiro: _tiroActivo!,
+        pinesPorTiroFrame: pinesPorTiro[_frameActivo!],
+      );
+    }
+
+    if (_modoVisual &&
+        _frameActivo != null &&
+        _tiroActivo == 1 &&
+        _frameActivo! < 9) {
+      final prevTiro = pinesPorTiro[_frameActivo!][0];
+      if (prevTiro != null && prevTiro.length == 10) {
+        esStrikeEnPrimerTiro = true;
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -202,11 +320,45 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
         ],
       ),
       body: SingleChildScrollView(
+        controller: _scrollController,
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    final newModoVisual = !_modoVisual;
+                    setState(() {
+                      _modoVisual = newModoVisual;
+                      mostrarSelectorpines = newModoVisual;
+                      _actualizarTeclasDeshabilitadas();
+                    });
+                    if (newModoVisual) _scrollToBottom();
+                  },
+                  icon: Icon(
+                    _modoVisual ? Icons.keyboard : Icons.push_pin_rounded,
+                  ),
+                  label: Text(
+                    _modoVisual
+                        ? AppLocalizations.of(context)!.switchToClassicKeyboard
+                        : AppLocalizations.of(context)!.registerPinsVisually,
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _modoVisual
+                        ? Colors.orange
+                        : const Color(0xFF0077B6),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
             MarcadorBolos(
               key: marcadorKey,
               frames: framesText,
@@ -220,62 +372,125 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
               onChanged: (frame, tiro, valor) {
                 setState(() {
                   framesText[frame][tiro] = valor.trim().toUpperCase();
+                  if (!_modoVisual) pinesPorTiro[frame][tiro] = null;
                   erroresPorTiro = _obtenerErroresPorTiro(framesText);
                 });
-                _actualizarTeclasDeshabilitadas();
+                if (!_modoVisual) {
+                  _actualizarTeclasDeshabilitadas();
+                }
               },
-              onCampoActivoCambio: (frame, tiro) {
-                mostrarTeclado.value = true;
-              },
-              autoFocusEnabled: true,
+              onCampoActivoCambio: _modoVisual
+                  ? (frame, tiro) => _onCampoVisualActivo(frame, tiro)
+                  : (frame, tiro) {
+                      mostrarTeclado.value = true;
+                    },
+              autoFocusEnabled: !_modoVisual,
               autoAdvanceFocus: true,
             ),
-            const SizedBox(height: 16),
+
+            if (_modoVisual &&
+                pinesPorTiro.any((f) => f.any((t) => t != null))) ...[
+              const SizedBox(height: 6),
+              ScoreSheetPinStrip(
+                pinesPorTiro: pinesPorTiro,
+                frameActivo: _frameActivo,
+              ),
+            ],
+
+            const SizedBox(height: 8),
             ResumenPuntuacion(
               puntuacionActual: puntuacionActual,
               puntuacionMaxima: puntuacionMaxima,
               buenaRacha: buenaRacha,
             ),
-            const SizedBox(height: 16),
-            AnimatedBuilder(
-              animation: _animController,
-              builder: (context, child) => Opacity(
-                opacity: _animController.value,
-                child: SizeTransition(
-                  sizeFactor: _animacionTeclado,
-                  axisAlignment: -1.0,
-                  child: ValueListenableBuilder<bool>(
-                    valueListenable: mostrarTeclado,
-                    builder: (context, visible, _) {
-                      if (!visible) return const SizedBox.shrink();
-                      return TecladoTiros(
-                        onKeyPress: (valor) {
-                          if (valor == '⌫') {
-                            marcadorKey.currentState?.borrarValor();
-                          } else if (valor == '→') {
-                            marcadorKey.currentState?.siguiente();
-                          } else {
-                            marcadorKey.currentState?.insertarValor(valor);
-                          }
-                          _actualizarTeclasDeshabilitadas();
-                        },
-                        deshabilitadosNotifier: teclasDeshabilitadas,
-                      );
-                    },
+
+            if (_modoVisual &&
+                mostrarSelectorpines &&
+                _frameActivo != null &&
+                _tiroActivo != null &&
+                !(esStrikeEnPrimerTiro &&
+                    _tiroActivo == 1 &&
+                    _frameActivo! < 9))
+              Builder(
+                builder: (_) {
+                  List<int> pinesIniciales =
+                      pinesPorTiro[_frameActivo!][_tiroActivo!] ?? [];
+
+                  if (_frameActivo == 9) {
+                    if (_tiroActivo == 1) {
+                      final tiro1 = pinesPorTiro[9][0] ?? [];
+                      if (tiro1.length == 10) {
+                        pinesIniciales = [];
+                      } else {
+                        pinesIniciales = tiro1;
+                      }
+                    } else if (_tiroActivo == 2) {
+                      final tiro1 = pinesPorTiro[9][0] ?? [];
+                      final tiro2 = pinesPorTiro[9][1] ?? [];
+                      final huboStrike1 = tiro1.length == 10;
+                      final huboSpare =
+                          !huboStrike1 && (tiro1.length + tiro2.length == 10);
+
+                      if (huboStrike1 || huboSpare) {
+                        pinesIniciales = [];
+                      } else {
+                        pinesIniciales = [...tiro1, ...tiro2];
+                      }
+                    }
+                  }
+
+                  return SelectorpinesWidget(
+                    key: ValueKey((_frameActivo!, _tiroActivo!)),
+                    pinesIniciales: pinesIniciales,
+                    pinesDeshabilitados: pinesDeshabilitados,
+                    onAceptar: _onAceptarSeleccionPins,
+                    isFrame10: _frameActivo == 9,
+                    tiroActual: _tiroActivo!,
+                    frames: framesText,
+                  );
+                },
+              )
+            else if (!_modoVisual)
+              AnimatedBuilder(
+                animation: _animController,
+                builder: (context, child) => Opacity(
+                  opacity: _animController.value,
+                  child: SizeTransition(
+                    sizeFactor: _animacionTeclado,
+                    axisAlignment: -1.0,
+                    child: ValueListenableBuilder<bool>(
+                      valueListenable: mostrarTeclado,
+                      builder: (context, visible, _) {
+                        if (!visible) return const SizedBox.shrink();
+                        return TecladoTiros(
+                          onKeyPress: (valor) {
+                            if (valor == '⌫') {
+                              marcadorKey.currentState?.borrarValor();
+                            } else if (valor == '→') {
+                              marcadorKey.currentState?.siguiente();
+                            } else {
+                              marcadorKey.currentState?.insertarValor(valor);
+                            }
+                            _actualizarTeclasDeshabilitadas();
+                          },
+                          deshabilitadosNotifier: teclasDeshabilitadas,
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
-            ),
             const SizedBox(height: 16),
-            NotasField(
-              initialValue: notas,
-              onChanged: (v) => notas = v,
-              onTap: () {
-                marcadorKey.currentState?.desactivarCampoActivo();
-                mostrarTeclado.value = false;
-                setState(() {});
-              },
-            ),
+            if (!_modoVisual)
+              NotasField(
+                initialValue: notas,
+                onChanged: (v) => notas = v,
+                onTap: () {
+                  marcadorKey.currentState?.desactivarCampoActivo();
+                  mostrarTeclado.value = false;
+                  setState(() {});
+                },
+              ),
             const SizedBox(height: 40), // Deja espacio para el botón fijo
           ],
         ),
