@@ -46,3 +46,4 @@ app.*.map.json
 
 # Firebase Functions
 functions/node_modules/
+android/android_key.properties
