@@ -1321,6 +1321,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get strike => 'Strike';
 
   @override
+  String get semipleno => 'Spare';
+
+  @override
   String get spare => 'Spare';
 
   @override
