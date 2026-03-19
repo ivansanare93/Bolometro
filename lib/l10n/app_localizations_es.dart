@@ -1331,6 +1331,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get strike => 'Pleno';
 
   @override
+  String get semipleno => 'Semipleno';
+
+  @override
   String get spare => 'Remate';
 
   @override
