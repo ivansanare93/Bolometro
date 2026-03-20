@@ -222,14 +222,42 @@ class DataRepository extends ChangeNotifier {
     }
   }
 
+  /// Actualizar una sesión existente (busca por fecha como identificador único)
+  Future<void> actualizarSesion(Sesion sesion) async {
+    try {
+      final box = await _getSesionesBox();
+      final sesionFecha = sesion.fecha.millisecondsSinceEpoch;
+      final index = box.values.toList().indexWhere(
+        (s) => s.fecha.millisecondsSinceEpoch == sesionFecha,
+      );
+
+      if (index != -1) {
+        await box.putAt(index, sesion);
+      } else {
+        debugPrint('actualizarSesion: sesión no encontrada en Hive (fecha=$sesionFecha)');
+      }
+
+      if (_isOnlineMode && _userId != null) {
+        await _firestoreService.guardarSesion(_userId!, sesion);
+      }
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error al actualizar sesión: $e');
+      rethrow;
+    }
+  }
+
   /// Eliminar una sesión
   Future<void> eliminarSesion(Sesion sesion) async {
     try {
-      // Eliminar localmente desde Hive usando el índice
+      // Eliminar localmente desde Hive usando fecha como identificador único
       final box = await _getSesionesBox();
-      final sesiones = box.values.toList();
-      final index = sesiones.indexOf(sesion);
-      
+      final sesionFecha = sesion.fecha.millisecondsSinceEpoch;
+      final index = box.values.toList().indexWhere(
+        (s) => s.fecha.millisecondsSinceEpoch == sesionFecha,
+      );
+
       if (index != -1) {
         await box.deleteAt(index);
       }
