@@ -2438,7 +2438,7 @@ abstract class AppLocalizations {
   /// **'Remate: {pins}'**
   String perPinLeaveLabel(String pins);
 
-  /// Muestra las conversiones sobre las oportunidades para un remate
+  /// Muestra las conversiones sobre las oportunidades para un deje
   ///
   /// In es, this message translates to:
   /// **'{converted}/{attempts}'**
