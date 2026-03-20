@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart'; // For PlatformException (platform-specific errors including Google Sign-In)
@@ -44,6 +45,14 @@ Consulta AUTENTICACION.md para más detalles.''';
       _isLoading = true;
       _errorMessage = null;
       notifyListeners();
+
+      // Solicitar un token de App Check actualizado antes de autenticar.
+      // Si App Check no está disponible (p.ej. en emuladores), continúa igualmente.
+      try {
+        await FirebaseAppCheck.instance.getToken(true);
+      } catch (e) {
+        debugPrint('App Check token refresh omitido: $e');
+      }
 
       // Iniciar el flujo de autenticación de Google
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -127,6 +136,11 @@ Consulta AUTENTICACION.md para más detalles.''';
         case 'network-request-failed':
           errorMsg = 'Error de red.\n'
               'Verifica tu conexión a Internet e intenta nuevamente.';
+          break;
+        case 'app-check-token-expired':
+        case 'UNAUTHENTICATED':
+          errorMsg = 'La verificación de integridad de la app falló.\n'
+              'Asegúrate de tener Google Play Services actualizado e intenta de nuevo.';
           break;
         default:
           errorMsg = 'Error de autenticación: ${e.message ?? e.code}';

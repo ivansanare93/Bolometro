@@ -3,6 +3,21 @@ const admin = require("firebase-admin");
 
 admin.initializeApp();
 
+// Firebase App Check protege automáticamente los servicios de Firebase
+// (Firestore, Auth, Messaging) cuando el cumplimiento está activo en la consola.
+// Para funciones HTTPS invocables (callable), se puede verificar el token así:
+//
+//   exports.miFunction = functions.https.onCall(async (data, context) => {
+//     if (!context.app) {
+//       throw new functions.https.HttpsError(
+//         'failed-precondition',
+//         'La función debe invocarse desde una app verificada por App Check.'
+//       );
+//     }
+//     await admin.appCheck().verifyToken(context.app.token.token);
+//     // ... lógica de la función
+//   });
+
 /**
  * Returns localized notification strings for the given language code.
  * Falls back to Spanish if the language is not supported.

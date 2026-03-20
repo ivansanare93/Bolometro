@@ -204,8 +204,11 @@ dependencies:
   firebase_core: ^2.31.0        # Core de Firebase
   firebase_auth: ^4.19.3        # Autenticación
   cloud_firestore: ^4.16.1      # Base de datos en la nube
+  firebase_app_check: ^0.3.1+6  # Integridad (Google Play Integrity API)
   google_sign_in: ^6.2.1        # Sign-In con Google
 ```
+
+> Para la configuración completa de Google Play Integrity, consulta [PLAY_INTEGRITY.md](PLAY_INTEGRITY.md).
 
 ## Uso para Desarrolladores
 

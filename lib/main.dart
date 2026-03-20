@@ -27,6 +27,7 @@ import 'models/perfil_usuario.dart';
 import 'services/auth_service.dart';
 import 'services/analytics_service.dart';
 import 'services/achievement_service.dart';
+import 'services/integrity_service.dart';
 import 'services/notification_service.dart';
 import 'repositories/data_repository.dart';
 import 'utils/estadisticas_cache.dart';
@@ -36,6 +37,10 @@ void main() async {
   
   // Inicializar Firebase
   await Firebase.initializeApp();
+
+  // Activar Firebase App Check (Google Play Integrity en Android)
+  // para proteger los servicios de Firebase frente a accesos no autorizados.
+  await IntegrityService().activate();
   
   // Configurar manejador de mensajes en segundo plano
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
