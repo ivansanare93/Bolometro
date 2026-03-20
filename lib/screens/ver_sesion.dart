@@ -46,29 +46,16 @@ class _VerSesionState extends State<VerSesion> {
           onGuardar: (partidaActualizada) async {
             try {
               final dataRepository = Provider.of<DataRepository>(context, listen: false);
-              final box = Hive.box<Sesion>(dataRepository.sesionesBoxName);
-              final sesionIndex = box.values.toList().indexOf(sesionActual);
-              if (sesionIndex == -1) {
-                debugPrint('Sesión no encontrada en Hive');
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(AppLocalizations.of(context)!.sessionNotFoundError),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-                return;
-              }
 
               final nuevasPartidas = List<Partida>.from(sesionActual.partidas);
               nuevasPartidas[index] = partidaActualizada;
 
-              setState(() {
-                sesionActual = sesionActual.copyWith(partidas: nuevasPartidas);
-              });
+              final sesionActualizada = sesionActual.copyWith(partidas: nuevasPartidas);
+              await dataRepository.actualizarSesion(sesionActualizada);
 
-              await box.putAt(sesionIndex, sesionActual);
+              setState(() {
+                sesionActual = sesionActualizada;
+              });
 
               Navigator.pop(context); // Cierra edición
               if (context.mounted) {
@@ -129,29 +116,16 @@ class _VerSesionState extends State<VerSesion> {
     if (confirm == true) {
       try {
         final dataRepository = Provider.of<DataRepository>(context, listen: false);
-        final box = Hive.box<Sesion>(dataRepository.sesionesBoxName);
-        final sesionIndex = box.values.toList().indexOf(sesionActual);
-        if (sesionIndex == -1) {
-          debugPrint('Sesión no encontrada en Hive');
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(AppLocalizations.of(context)!.sessionNotFoundError),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-          return;
-        }
 
         final nuevasPartidas = List<Partida>.from(sesionActual.partidas)
           ..removeAt(index);
 
-        setState(() {
-          sesionActual = sesionActual.copyWith(partidas: nuevasPartidas);
-        });
+        final sesionActualizada = sesionActual.copyWith(partidas: nuevasPartidas);
+        await dataRepository.actualizarSesion(sesionActualizada);
 
-        await box.putAt(sesionIndex, sesionActual);
+        setState(() {
+          sesionActual = sesionActualizada;
+        });
 
         final analytics = Provider.of<AnalyticsService>(context, listen: false);
         await analytics.logGameDeleted();
