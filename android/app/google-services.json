@@ -14,6 +14,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "529847148516-07e70drc4o2rv02cd70f6fldpttql2c3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bolometro",
+            "certificate_hash": "3e2130c43f4da3f85204b8b7875cceb58cd6b6d8"
+          }
+        },
+        {
+          "client_id": "529847148516-9vsqnc21lai8tgcrlv23a6n37klphcr4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bolometro",
+            "certificate_hash": "88105ee9f24be49832ee9d063c692a9acf932d29"
+          }
+        },
+        {
           "client_id": "529847148516-bdsp6okmmbcgnuka6gsnmhoj3puadrps.apps.googleusercontent.com",
           "client_type": 3
         }
