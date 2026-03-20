@@ -287,19 +287,6 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
                         onPressed: _marcarPleno,
                       ),
                     ),
-                  if (mostrarSemipleno)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.bolt, size: 18),
-                        label: Text(l10n.semipleno),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
-                          foregroundColor: Colors.white,
-                        ),
-                        onPressed: _marcarPleno,
-                      ),
-                    ),
                   if (mostrarRemate)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
