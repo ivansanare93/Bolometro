@@ -807,9 +807,9 @@
   "@perPinSpareStats": {
     "description": "Título de la sección de conversión de spare desglosada por pin"
   },
-  "perPinLeaveLabel": "Deje: {pins}",
+  "perPinLeaveLabel": "Remate: {pins}",
   "@perPinLeaveLabel": {
-    "description": "Etiqueta que muestra qué pines quedaron en pie tras el primer tiro",
+    "description": "Etiqueta que muestra el remate (pines a derribar en el segundo tiro)",
     "placeholders": {
       "pins": {
         "type": "String"

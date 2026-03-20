@@ -672,9 +672,9 @@
   "@perPinSpareStats": {
     "description": "Title for the per-pin spare conversion breakdown section"
   },
-  "perPinLeaveLabel": "Leave: {pins}",
+  "perPinLeaveLabel": "Shot: {pins}",
   "@perPinLeaveLabel": {
-    "description": "Label showing which pins were left standing after the first throw",
+    "description": "Label showing the spare shot configuration (pins to knock down on second throw)",
     "placeholders": {
       "pins": {
         "type": "String"
