@@ -1224,7 +1224,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String perPinLeaveLabel(String pins) {
-    return 'Leave: $pins';
+    return 'Shot: $pins';
   }
 
   @override

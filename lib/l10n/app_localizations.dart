@@ -2432,13 +2432,13 @@ abstract class AppLocalizations {
   /// **'Remate por Pin'**
   String get perPinSpareStats;
 
-  /// Etiqueta que muestra qué pines quedaron en pie tras el primer tiro
+  /// Etiqueta que muestra el remate (pines a derribar en el segundo tiro)
   ///
   /// In es, this message translates to:
-  /// **'Deje: {pins}'**
+  /// **'Remate: {pins}'**
   String perPinLeaveLabel(String pins);
 
-  /// Muestra las conversiones sobre las oportunidades para un deje
+  /// Muestra las conversiones sobre las oportunidades para un remate
   ///
   /// In es, this message translates to:
   /// **'{converted}/{attempts}'**

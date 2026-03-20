@@ -1232,7 +1232,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String perPinLeaveLabel(String pins) {
-    return 'Deje: $pins';
+    return 'Remate: $pins';
   }
 
   @override
