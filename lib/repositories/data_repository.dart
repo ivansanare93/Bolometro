@@ -113,9 +113,60 @@ class DataRepository extends ChangeNotifier {
     if (_userId != null) {
       await _getSesionesBox();
       await _getPerfilBox();
+      // Migrar datos guardados en modo offline al box del usuario autenticado.
+      // Esto garantiza que los datos locales previos al primer inicio de sesión
+      // estén disponibles cuando Firestore aún no los tenga (p.ej. primera vez
+      // que el usuario inicia sesión con una cuenta de Google).
+      await _migrarDatosOffline();
     }
     
     notifyListeners();
+  }
+
+  /// Migra datos del box por defecto (modo offline) a los boxes específicos
+  /// del usuario autenticado cuando dichos boxes están vacíos.
+  ///
+  /// Esto ocurre la primera vez que el usuario inicia sesión en un dispositivo
+  /// donde ya tenía datos guardados en modo offline. La migración es segura
+  /// porque [obtenerPerfil] siempre prioriza Firestore sobre Hive en modo
+  /// online, por lo que el perfil remoto sobrescribirá el migrado si existe.
+  Future<void> _migrarDatosOffline() async {
+    try {
+      final userPerfilBox = await _getPerfilBox();
+      final userSesionesBox = await _getSesionesBox();
+
+      // Solo migrar si los boxes del usuario están completamente vacíos
+      // (primer inicio de sesión en este dispositivo).
+      if (userPerfilBox.isNotEmpty || userSesionesBox.isNotEmpty) return;
+
+      // Migrar perfil desde el box por defecto.
+      // Nota: se incluye el fallback a getAt(0) para manejar el formato
+      // heredado donde el perfil se guardaba con clave entera 0 antes de
+      // migrar a la clave fija 'perfil'. El mismo patrón existe en
+      // [obtenerPerfil] del repositorio.
+      if (Hive.isBoxOpen(AppConstants.boxPerfilUsuario)) {
+        final defaultPerfilBox = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+        final perfilOffline = defaultPerfilBox.get('perfil') ??
+            (defaultPerfilBox.isNotEmpty ? defaultPerfilBox.getAt(0) : null);
+        if (perfilOffline != null) {
+          await userPerfilBox.put('perfil', perfilOffline);
+          debugPrint('Perfil offline migrado al box del usuario autenticado');
+        }
+      }
+
+      // Migrar sesiones desde el box por defecto
+      if (Hive.isBoxOpen(AppConstants.boxSesiones)) {
+        final defaultSesionesBox = Hive.box<Sesion>(AppConstants.boxSesiones);
+        if (defaultSesionesBox.isNotEmpty) {
+          await userSesionesBox.addAll(defaultSesionesBox.values);
+          debugPrint(
+            '${defaultSesionesBox.length} sesiones offline migradas al box del usuario autenticado',
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error al migrar datos offline al usuario: $e');
+    }
   }
 
   /// Limpiar datos locales del usuario cuando cierra sesión
@@ -386,6 +437,24 @@ class DataRepository extends ChangeNotifier {
     }
   }
 
+  /// Guardar perfil de usuario solo en el almacenamiento local (Hive).
+  ///
+  /// Úsese cuando se necesita persistir el perfil localmente sin arriesgar
+  /// sobreescribir datos en Firestore —por ejemplo, al crear un perfil
+  /// temporal durante el inicio de sesión antes de confirmar si Firestore
+  /// ya tiene uno. La sincronización con Firestore la realizará después
+  /// [sincronizarANube], que prioriza el perfil remoto como fuente de verdad.
+  Future<void> guardarPerfilLocal(PerfilUsuario perfil) async {
+    try {
+      final box = await _getPerfilBox();
+      await box.put('perfil', perfil);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error al guardar perfil localmente: $e');
+      rethrow;
+    }
+  }
+
   /// Eliminar perfil de usuario
   Future<void> eliminarPerfil() async {
     try {
@@ -466,9 +535,14 @@ class DataRepository extends ChangeNotifier {
       final sesionesLocales = boxSesiones.values.toList();
       debugPrint('Sesiones locales: ${sesionesLocales.length}');
 
-      // Obtener perfil local una sola vez
+      // Obtener perfil local y remoto para sincronización inteligente.
+      // Firestore es la fuente de verdad: si ya existe un perfil en la nube
+      // no lo sobreescribimos con la copia local (que podría ser incompleta
+      // si se creó a partir de los datos de Google cuando Firestore no estaba
+      // disponible temporalmente).
       final boxPerfil = await _getPerfilBox();
       final perfilLocal = boxPerfil.get('perfil');
+      final perfilRemoto = await _firestoreService.obtenerPerfil(_userId!);
 
       // 3. Filtrar sesiones locales que NO existen en la nube
       final sesionesNuevas = sesionesLocales.where((sesion) {
@@ -478,44 +552,47 @@ class DataRepository extends ChangeNotifier {
 
       debugPrint('Sesiones nuevas a subir: ${sesionesNuevas.length}');
 
-      // 4. Subir solo las sesiones nuevas y el perfil
+      // 4. Subir solo las sesiones nuevas.
+      // El perfil se gestiona por separado (ver paso 5) para garantizar que
+      // Firestore siempre sea la fuente de verdad.
       if (sesionesNuevas.isNotEmpty) {
         await _firestoreService.sincronizarDatosLocales(
           _userId!,
           sesionesNuevas,
-          perfilLocal,
+          null, // El perfil se sincroniza de forma independiente abajo
         );
+      }
+
+      // 5. Sincronización de perfil: Firestore tiene prioridad sobre el local.
+      // Si Firestore ya tiene un perfil, se usa como verdad única y se cachea
+      // en Hive. Solo se sube el perfil local si Firestore no tiene ninguno,
+      // evitando sobreescribir un perfil completo con uno mínimo creado a
+      // partir de los datos de Google.
+      if (perfilRemoto != null) {
+        await boxPerfil.put('perfil', perfilRemoto);
+        debugPrint('Perfil de Firestore usado como fuente de verdad');
       } else if (perfilLocal != null) {
-        // Si no hay sesiones nuevas pero hay perfil, sincronizarlo
-        debugPrint('No hay sesiones nuevas, sincronizando solo perfil...');
+        debugPrint('No hay perfil en Firestore, subiendo perfil local...');
         await _firestoreService.guardarPerfil(_userId!, perfilLocal);
       } else {
         debugPrint('No hay sesiones ni perfil para sincronizar');
       }
 
-      // 5. Sincronizar datos de gamificación
+      // 6. Sincronizar datos de gamificación
       await _sincronizarGamificacion(
         'Sincronizando datos de gamificación...',
         'Datos de gamificación sincronizados',
       );
 
-      // 6. Obtener sesiones finales de la nube después de la subida
+      // 7. Obtener sesiones finales de la nube después de la subida
       debugPrint('Descargando estado final desde la nube...');
       final sesionesFinal = await _firestoreService.obtenerSesiones(_userId!);
 
-      // 7. Actualizar almacenamiento local con datos de la nube (verdad única)
+      // 8. Actualizar almacenamiento local con datos de la nube (verdad única)
       // IMPORTANTE: Solo limpiamos después de confirmar que tenemos los datos de la nube
       debugPrint('Actualizando almacenamiento local con datos de la nube...');
       await boxSesiones.clear();
       await boxSesiones.addAll(sesionesFinal);
-
-      // 8. Cachear el perfil de la nube en Hive para que la UI lo encuentre
-      // de forma síncrona en initState (evita que se muestre un perfil vacío).
-      final perfilRemoto = await _firestoreService.obtenerPerfil(_userId!);
-      if (perfilRemoto != null) {
-        await boxPerfil.put('perfil', perfilRemoto);
-        debugPrint('Perfil remoto cacheado en Hive tras sincronización');
-      }
 
       debugPrint('Sincronización bidireccional completada: ${sesionesFinal.length} sesiones totales');
       

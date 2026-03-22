@@ -70,7 +70,12 @@ class _LoginScreenState extends State<LoginScreen> {
           final perfilExistente = await dataRepository.obtenerPerfil();
 
           if (perfilExistente == null || perfilExistente.nombre.trim().isEmpty) {
-            // Primera vez: crear perfil completo con datos de Google
+            // Primera vez o perfil sin nombre: crear perfil con datos de Google.
+            // Se guarda SOLO en local para no sobreescribir un posible perfil
+            // existente en Firestore que no pudo descargarse por un error
+            // transitorio (p.ej. red inestable durante el primer inicio de
+            // sesión). sincronizarANube() lo subirá a Firestore solo si allí
+            // no hay ya un perfil, usando Firestore como fuente de verdad.
             final nuevoPerfil = PerfilUsuario(
               nombre: user.displayName ?? 'Usuario',
               email: user.email,
@@ -78,8 +83,8 @@ class _LoginScreenState extends State<LoginScreen> {
               googleDisplayName: user.displayName,
               isFromGoogle: true,
             );
-            await dataRepository.guardarPerfil(nuevoPerfil);
-            debugPrint('Perfil creado automáticamente con datos de Google');
+            await dataRepository.guardarPerfilLocal(nuevoPerfil);
+            debugPrint('Perfil temporal guardado en local (se sincronizará a Firestore)');
           } else {
             // Perfil existente: actualizar campos de Google por si han cambiado
             // (foto, nombre visible, email). Las personalizaciones del usuario
