@@ -483,6 +483,9 @@ class AppLocalizationsEs extends AppLocalizations {
       '¿Seguro que deseas eliminar esta partida?';
 
   @override
+  String get gameAdded => 'Partida añadida';
+
+  @override
   String get gameUpdated => 'Partida actualizada';
 
   @override
