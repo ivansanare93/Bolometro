@@ -171,6 +171,7 @@
   "editGameTitle": "Edit Game",
   "deleteGameTitle": "Delete game",
   "deleteGameConfirmation": "Are you sure you want to delete this game?",
+  "gameAdded": "Game added",
   "gameUpdated": "Game updated",
   "gameDeletedSuccess": "Game deleted",
   "gameUpdateError": "Error saving changes. Please try again.",

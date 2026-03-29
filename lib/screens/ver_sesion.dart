@@ -8,6 +8,7 @@ import '../services/analytics_service.dart';
 import '../repositories/data_repository.dart';
 import '../widgets/score_sheet_pin_strip.dart';
 import 'editar_partida.dart';
+import 'registro_sesion.dart';
 import 'home.dart';
 import '../l10n/app_localizations.dart';
 
@@ -164,6 +165,62 @@ class _VerSesionState extends State<VerSesion> {
     }
   }
 
+  Future<void> _anadirPartida() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RegistroSesionScreen(
+          onGuardar: (nuevaPartida) async {
+            try {
+              final dataRepository = Provider.of<DataRepository>(context, listen: false);
+
+              final nuevasPartidas = List<Partida>.from(sesionActual.partidas)
+                ..add(nuevaPartida);
+
+              final sesionActualizada = sesionActual.copyWith(partidas: nuevasPartidas);
+              await dataRepository.actualizarSesion(sesionActualizada);
+
+              setState(() {
+                sesionActual = sesionActualizada;
+              });
+
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context)!.gameAdded),
+                    backgroundColor: Colors.green[600],
+                    duration: const Duration(seconds: 2),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            } on HiveError catch (e) {
+              debugPrint('Error de Hive al añadir partida: $e');
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context)!.gameUpdateError),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            } catch (e) {
+              debugPrint('Error al añadir partida: $e');
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context)!.gameUnexpectedUpdateError),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+          },
+        ),
+      ),
+    );
+  }
+
   /// Returns true if the game was recorded with the pin keyboard
   /// (i.e. at least one throw has pin selection data).
   bool _hasPinData(Partida partida) {
@@ -311,11 +368,21 @@ class _VerSesionState extends State<VerSesion> {
           ),
 
           // PARTIDAS
-          Text(
-            AppLocalizations.of(context)!.gamesListCount(sesionActual.partidas.length),
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppLocalizations.of(context)!.gamesListCount(sesionActual.partidas.length),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              ElevatedButton.icon(
+                onPressed: _anadirPartida,
+                icon: const Icon(Icons.add),
+                label: Text(AppLocalizations.of(context)!.addGame),
+              ),
+            ],
           ),
           const SizedBox(height: 10),
           if (sesionActual.partidas.isEmpty)

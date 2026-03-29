@@ -171,6 +171,7 @@
   "editGameTitle": "Editar Partida",
   "deleteGameTitle": "Eliminar partida",
   "deleteGameConfirmation": "¿Seguro que deseas eliminar esta partida?",
+  "gameAdded": "Partida añadida",
   "gameUpdated": "Partida actualizada",
   "gameDeletedSuccess": "Partida eliminada",
   "gameUpdateError": "Error al guardar cambios. Intenta nuevamente.",

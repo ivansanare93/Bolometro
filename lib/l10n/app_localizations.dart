@@ -1034,6 +1034,12 @@ abstract class AppLocalizations {
   /// **'¿Seguro que deseas eliminar esta partida?'**
   String get deleteGameConfirmation;
 
+  /// No description provided for @gameAdded.
+  ///
+  /// In es, this message translates to:
+  /// **'Partida añadida'**
+  String get gameAdded;
+
   /// No description provided for @gameUpdated.
   ///
   /// In es, this message translates to:
