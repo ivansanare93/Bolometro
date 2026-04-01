@@ -8,6 +8,7 @@ import 'l10n/app_localizations.dart';
 import 'theme/app_theme.dart';
 import 'providers/theme_provider.dart';
 import 'providers/language_provider.dart';
+import 'providers/keyboard_provider.dart';
 import 'utils/app_constants.dart';
 
 import 'models/partida.dart';
@@ -90,6 +91,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => LanguageProvider()),
+        ChangeNotifierProvider(create: (_) => KeyboardProvider()),
         ChangeNotifierProvider(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (_) => DataRepository()),
         ChangeNotifierProvider(create: (_) => EstadisticasCache()),

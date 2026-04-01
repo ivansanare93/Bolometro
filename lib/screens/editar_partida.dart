@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/partida.dart';
+import '../providers/keyboard_provider.dart';
 import '../services/analytics_service.dart';
 import '../utils/app_constants.dart';
 import '../utils/pines_a_tiro_utils.dart';
@@ -57,6 +58,16 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
       } catch (e) {
         debugPrint('Error logging screen view: $e');
       }
+      final keyboardProvider =
+          Provider.of<KeyboardProvider>(context, listen: false);
+      keyboardProvider.initializationFuture.then((_) {
+        if (mounted) {
+          setState(() {
+            _modoVisual = keyboardProvider.modoVisual;
+            mostrarSelectorpines = _modoVisual;
+          });
+        }
+      });
     });
     framesText = widget.partida.frames
         .map((f) => f.map((v) => v == '0' ? '-' : v).toList()..length = 3)
@@ -336,6 +347,8 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
                       mostrarSelectorpines = newModoVisual;
                       _actualizarTeclasDeshabilitadas();
                     });
+                    Provider.of<KeyboardProvider>(context, listen: false)
+                        .setModoVisual(newModoVisual);
                     if (newModoVisual) _scrollToBottom();
                   },
                   icon: Icon(
