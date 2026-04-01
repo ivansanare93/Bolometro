@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/partida.dart';
+import '../providers/keyboard_provider.dart';
 import '../services/analytics_service.dart';
 import '../services/draft_service.dart';
 import '../utils/app_constants.dart';
@@ -64,6 +65,18 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _restoreDraftIfAvailable();
+      final keyboardProvider =
+          Provider.of<KeyboardProvider>(context, listen: false);
+      keyboardProvider.initializationFuture.then((_) {
+        if (mounted) {
+          setState(() {
+            _modoVisual = keyboardProvider.modoVisual;
+            mostrarSelectorpines = _modoVisual;
+          });
+          _actualizarTeclasDeshabilitadas(
+              frame: _frameActivo, tiro: _tiroActivo);
+        }
+      });
       try {
         final analytics = Provider.of<AnalyticsService>(context, listen: false);
         analytics.logScreenView('register_game_screen');
@@ -460,6 +473,8 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
                           tiro: _tiroActivo,
                         );
                       });
+                      Provider.of<KeyboardProvider>(context, listen: false)
+                          .setModoVisual(newModoVisual);
                       if (newModoVisual) _scrollToBottom();
                     },
                     icon: Icon(
