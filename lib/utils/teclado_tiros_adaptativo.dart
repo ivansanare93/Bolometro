@@ -26,6 +26,11 @@ class TecladoTiros extends StatelessWidget {
       if (tiro == 0) {
         deshabilitadas.add('/'); // nunca puede ser spare en primer tiro
       } else if (tiro == 1) {
+        // No se puede anotar tiro 2 si aún no se ha registrado el tiro 1
+        if (t1.isEmpty) {
+          deshabilitadas.addAll([...numeros, 'X', '/', '-']);
+          return deshabilitadas;
+        }
         deshabilitadas.add('X'); // por defecto
         if (t1 == 'X') {
           // Strike en el primero → todo permitido menos '/'
@@ -43,6 +48,11 @@ class TecladoTiros extends StatelessWidget {
           }
         }
       } else if (tiro == 2) {
+        // No se puede anotar tiro 3 si no se han registrado los tiros 1 y 2
+        if (t1.isEmpty || t2.isEmpty) {
+          deshabilitadas.addAll([...numeros, 'X', '/', '-']);
+          return deshabilitadas;
+        }
         // --- Tercer tiro del frame 10 ---
         if (!(t1 == 'X' || t2 == '/' || t2 == 'X')) {
           // No hay derecho a tercer tiro
@@ -85,6 +95,11 @@ class TecladoTiros extends StatelessWidget {
       if (tiro == 0) {
         deshabilitadas.add('/'); // nunca puede ser spare
       } else if (tiro == 1) {
+        // No se puede anotar tiro 2 si aún no se ha registrado el tiro 1
+        if (t1.isEmpty) {
+          deshabilitadas.addAll([...numeros, 'X', '/', '-']);
+          return deshabilitadas;
+        }
         deshabilitadas.add('X'); // nunca puede ser strike en segundo tiro
         if (t1 == 'X') {
           // Strike en el primer tiro: bloquea TODO en tiro 2

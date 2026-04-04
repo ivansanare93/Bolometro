@@ -975,5 +975,9 @@
   "pinsPerThrow": "Pines por tiro",
   "@pinsPerThrow": {
     "description": "Etiqueta de la sección de detalle de pines por tiro en la vista de partida"
+  },
+  "mustRegisterThrow1First": "Debes registrar el tiro 1 antes de poder anotar el tiro 2",
+  "@mustRegisterThrow1First": {
+    "description": "Mensaje de error cuando el usuario intenta registrar el tiro 2 sin haber registrado el tiro 1"
   }
 }

@@ -840,5 +840,9 @@
   "pinsPerThrow": "Pins per throw",
   "@pinsPerThrow": {
     "description": "Label for the pin detail section per throw in the game view"
+  },
+  "mustRegisterThrow1First": "You must register throw 1 before recording throw 2",
+  "@mustRegisterThrow1First": {
+    "description": "Error message when the user tries to record throw 2 without having recorded throw 1"
   }
 }

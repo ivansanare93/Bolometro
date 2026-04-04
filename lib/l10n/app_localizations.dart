@@ -2647,6 +2647,8 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Pines por tiro'**
   String get pinsPerThrow;
+
+  String get mustRegisterThrow1First;
 }
 
 class _AppLocalizationsDelegate

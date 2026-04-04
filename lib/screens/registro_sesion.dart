@@ -288,6 +288,27 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
 
   // Cuando tocas un campo en modo visual
   void _onCampoVisualActivo(int frame, int tiro) {
+    // Validate throw order: throw 2 cannot be registered before throw 1
+    if (tiro == 1 && framesText[frame][0].isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.mustRegisterThrow1First),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+    // For frame 10, throw 3 cannot be registered before throws 1 and 2
+    if (frame == 9 && tiro == 2 &&
+        (framesText[9][0].isEmpty || framesText[9][1].isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.mustRegisterThrow1First),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
     setState(() {
       _frameActivo = frame;
       _tiroActivo = tiro;

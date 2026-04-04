@@ -1350,4 +1350,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get pinsPerThrow => 'Pines por tiro';
+
+  @override
+  String get mustRegisterThrow1First =>
+      'Debes registrar el tiro 1 antes de poder anotar el tiro 2';
 }
