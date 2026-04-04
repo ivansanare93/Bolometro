@@ -303,7 +303,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
         (framesText[9][0].isEmpty || framesText[9][1].isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.mustRegisterThrow1First),
+          content: Text(AppLocalizations.of(context)!.mustRegisterPreviousThrowsFirst),
           duration: const Duration(seconds: 3),
         ),
       );

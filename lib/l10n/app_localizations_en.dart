@@ -1344,4 +1344,8 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get mustRegisterThrow1First =>
       'You must register throw 1 before recording throw 2';
+
+  @override
+  String get mustRegisterPreviousThrowsFirst =>
+      'You must register the previous throws before recording throw 3';
 }

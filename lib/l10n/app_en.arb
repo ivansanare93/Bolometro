@@ -844,5 +844,9 @@
   "mustRegisterThrow1First": "You must register throw 1 before recording throw 2",
   "@mustRegisterThrow1First": {
     "description": "Error message when the user tries to record throw 2 without having recorded throw 1"
+  },
+  "mustRegisterPreviousThrowsFirst": "You must register the previous throws before recording throw 3",
+  "@mustRegisterPreviousThrowsFirst": {
+    "description": "Error message when the user tries to record throw 3 of frame 10 without throws 1 and 2"
   }
 }

@@ -979,5 +979,9 @@
   "mustRegisterThrow1First": "Debes registrar el tiro 1 antes de poder anotar el tiro 2",
   "@mustRegisterThrow1First": {
     "description": "Mensaje de error cuando el usuario intenta registrar el tiro 2 sin haber registrado el tiro 1"
+  },
+  "mustRegisterPreviousThrowsFirst": "Debes registrar los tiros anteriores antes de poder anotar el tiro 3",
+  "@mustRegisterPreviousThrowsFirst": {
+    "description": "Mensaje de error cuando el usuario intenta registrar el tiro 3 del frame 10 sin haber registrado los tiros 1 y 2"
   }
 }

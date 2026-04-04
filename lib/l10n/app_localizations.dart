@@ -2649,6 +2649,8 @@ abstract class AppLocalizations {
   String get pinsPerThrow;
 
   String get mustRegisterThrow1First;
+
+  String get mustRegisterPreviousThrowsFirst;
 }
 
 class _AppLocalizationsDelegate

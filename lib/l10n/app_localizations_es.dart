@@ -1354,4 +1354,8 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get mustRegisterThrow1First =>
       'Debes registrar el tiro 1 antes de poder anotar el tiro 2';
+
+  @override
+  String get mustRegisterPreviousThrowsFirst =>
+      'Debes registrar los tiros anteriores antes de poder anotar el tiro 3';
 }
