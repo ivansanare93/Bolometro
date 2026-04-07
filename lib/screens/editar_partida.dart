@@ -396,6 +396,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
                   ? (frame, tiro) => _onCampoVisualActivo(frame, tiro)
                   : (frame, tiro) {
                       mostrarTeclado.value = true;
+                      _actualizarTeclasDeshabilitadas();
                     },
               autoFocusEnabled: !_modoVisual,
               autoAdvanceFocus: true,
