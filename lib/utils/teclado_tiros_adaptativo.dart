@@ -36,10 +36,8 @@ class TecladoTiros extends StatelessWidget {
           if (primerValor != null) {
             for (var n in numeros) {
               final segundoValor = int.parse(n);
-              if (primerValor + segundoValor > 10) {
-                deshabilitadas.add(n);
-              } else if (primerValor + segundoValor == 10) {
-                // Suma exactamente 10 → debe registrarse como '/' (spare)
+              if (primerValor + segundoValor >= 10) {
+                // > 10 es imposible; == 10 debe registrarse como '/' (spare)
                 deshabilitadas.add(n);
               }
             }
