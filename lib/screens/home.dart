@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:hive/hive.dart';
+import 'email_auth_screen.dart';
 import 'registro_sesion.dart';
 import 'estadisticas.dart';
 import 'lista_sesiones.dart';
@@ -116,6 +117,7 @@ Future<void> _bootstrap(
                   icon: const Icon(Icons.settings),
                   tooltip: AppLocalizations.of(context)!.settings,
                   onPressed: () {
+                    final scaffoldContext = context;
                     showModalBottomSheet(
                       context: context,
                       shape: const RoundedRectangleBorder(
@@ -540,12 +542,49 @@ Future<void> _bootstrap(
                                 // ),
                               ] else ...[
                                 const Divider(height: 32),
-                                Text(
-                                  AppLocalizations.of(context)!.moreOptionsComingSoon,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey,
+                                ListTile(
+                                  leading: FaIcon(
+                                    FontAwesomeIcons.google,
+                                    color: cs.primary,
                                   ),
+                                  title: Text(
+                                    AppLocalizations.of(context)!.continueWithGoogle,
+                                  ),
+                                  onTap: () async {
+                                    Navigator.pop(context);
+                                    final success = await authService.signInWithGoogle();
+                                    if (success && authService.userId != null) {
+                                      await dataRepository.setUser(authService.userId);
+                                      if (scaffoldContext.mounted) {
+                                        Provider.of<AchievementService>(scaffoldContext, listen: false)
+                                            .updateSesionesBoxName(dataRepository.sesionesBoxName);
+                                      }
+                                    } else if (authService.errorMessage != null && scaffoldContext.mounted) {
+                                      ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+                                        SnackBar(
+                                          content: Text(authService.errorMessage!),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                                ListTile(
+                                  leading: Icon(
+                                    Icons.email_outlined,
+                                    color: cs.primary,
+                                  ),
+                                  title: Text(
+                                    AppLocalizations.of(context)!.continueWithEmail,
+                                  ),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    Navigator.of(scaffoldContext).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => const EmailAuthScreen(),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ],
                               
