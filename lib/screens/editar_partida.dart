@@ -520,7 +520,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
             ),
           ],
         ),
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        padding: EdgeInsets.fromLTRB(16, 12, 16, 16 + MediaQuery.of(context).padding.bottom),
         child: ElevatedButton.icon(
           onPressed: _guardar,
           icon: const Icon(Icons.save),
