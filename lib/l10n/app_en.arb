@@ -840,5 +840,45 @@
   "pinsPerThrow": "Pins per throw",
   "@pinsPerThrow": {
     "description": "Label for the pin detail section per throw in the game view"
+  },
+  "continueWithEmail": "Continue with Email",
+  "@continueWithEmail": {
+    "description": "Button to continue authentication using email and password"
+  },
+  "passwordResetSent": "Password reset email sent",
+  "@passwordResetSent": {
+    "description": "Confirmation message after sending a password reset email"
+  },
+  "createAccount": "Create Account",
+  "@createAccount": {
+    "description": "Button/title to create a new account"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Label for the password input field"
+  },
+  "enterPassword": "Enter your password",
+  "@enterPassword": {
+    "description": "Validation message asking user to enter a password"
+  },
+  "passwordTooShort": "Password must be at least 6 characters",
+  "@passwordTooShort": {
+    "description": "Validation message when the password is too short"
+  },
+  "passwordsDoNotMatch": "Passwords do not match",
+  "@passwordsDoNotMatch": {
+    "description": "Validation message when the two password fields do not match"
+  },
+  "forgotPassword": "Forgot password?",
+  "@forgotPassword": {
+    "description": "Link to trigger a password reset flow"
+  },
+  "alreadyHaveAccount": "Already have an account? Sign in",
+  "@alreadyHaveAccount": {
+    "description": "Link shown in register mode to switch to sign-in mode"
+  },
+  "noAccount": "Don't have an account? Register",
+  "@noAccount": {
+    "description": "Link shown in sign-in mode to switch to register mode"
   }
 }
