@@ -975,5 +975,45 @@
   "pinsPerThrow": "Pines por tiro",
   "@pinsPerThrow": {
     "description": "Etiqueta de la sección de detalle de pines por tiro en la vista de partida"
+  },
+  "continueWithEmail": "Continuar con correo electrónico",
+  "@continueWithEmail": {
+    "description": "Botón para continuar la autenticación usando correo electrónico y contraseña"
+  },
+  "passwordResetSent": "Correo de recuperación enviado",
+  "@passwordResetSent": {
+    "description": "Mensaje de confirmación tras enviar un correo de recuperación de contraseña"
+  },
+  "createAccount": "Crear cuenta",
+  "@createAccount": {
+    "description": "Botón/título para crear una nueva cuenta"
+  },
+  "password": "Contraseña",
+  "@password": {
+    "description": "Etiqueta del campo de contraseña"
+  },
+  "enterPassword": "Introduce tu contraseña",
+  "@enterPassword": {
+    "description": "Mensaje de validación que pide al usuario introducir una contraseña"
+  },
+  "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
+  "@passwordTooShort": {
+    "description": "Mensaje de validación cuando la contraseña es demasiado corta"
+  },
+  "passwordsDoNotMatch": "Las contraseñas no coinciden",
+  "@passwordsDoNotMatch": {
+    "description": "Mensaje de validación cuando los dos campos de contraseña no coinciden"
+  },
+  "forgotPassword": "¿Olvidaste tu contraseña?",
+  "@forgotPassword": {
+    "description": "Enlace para iniciar el flujo de recuperación de contraseña"
+  },
+  "alreadyHaveAccount": "¿Ya tienes cuenta? Inicia sesión",
+  "@alreadyHaveAccount": {
+    "description": "Enlace mostrado en el modo de registro para cambiar al modo de inicio de sesión"
+  },
+  "noAccount": "¿No tienes cuenta? Regístrate",
+  "@noAccount": {
+    "description": "Enlace mostrado en el modo de inicio de sesión para cambiar al modo de registro"
   }
 }
