@@ -1350,4 +1350,34 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get pinsPerThrow => 'Pines por tiro';
+
+  @override
+  String get continueWithEmail => 'Continuar con correo electrónico';
+
+  @override
+  String get passwordResetSent => 'Correo de recuperación enviado';
+
+  @override
+  String get createAccount => 'Crear cuenta';
+
+  @override
+  String get password => 'Contraseña';
+
+  @override
+  String get enterPassword => 'Introduce tu contraseña';
+
+  @override
+  String get passwordTooShort => 'La contraseña debe tener al menos 6 caracteres';
+
+  @override
+  String get passwordsDoNotMatch => 'Las contraseñas no coinciden';
+
+  @override
+  String get forgotPassword => '¿Olvidaste tu contraseña?';
+
+  @override
+  String get alreadyHaveAccount => '¿Ya tienes cuenta? Inicia sesión';
+
+  @override
+  String get noAccount => '¿No tienes cuenta? Regístrate';
 }

@@ -2647,6 +2647,66 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Pines por tiro'**
   String get pinsPerThrow;
+
+  /// Button to continue authentication using email and password
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar con correo electrónico'**
+  String get continueWithEmail;
+
+  /// Confirmation message after sending a password reset email
+  ///
+  /// In es, this message translates to:
+  /// **'Correo de recuperación enviado'**
+  String get passwordResetSent;
+
+  /// Button to create a new account
+  ///
+  /// In es, this message translates to:
+  /// **'Crear cuenta'**
+  String get createAccount;
+
+  /// Label for the password input field
+  ///
+  /// In es, this message translates to:
+  /// **'Contraseña'**
+  String get password;
+
+  /// Validation message asking user to enter a password
+  ///
+  /// In es, this message translates to:
+  /// **'Introduce tu contraseña'**
+  String get enterPassword;
+
+  /// Validation message when the password is too short
+  ///
+  /// In es, this message translates to:
+  /// **'La contraseña debe tener al menos 6 caracteres'**
+  String get passwordTooShort;
+
+  /// Validation message when the two password fields do not match
+  ///
+  /// In es, this message translates to:
+  /// **'Las contraseñas no coinciden'**
+  String get passwordsDoNotMatch;
+
+  /// Link to trigger a password reset flow
+  ///
+  /// In es, this message translates to:
+  /// **'¿Olvidaste tu contraseña?'**
+  String get forgotPassword;
+
+  /// Link for users who already have an account to sign in
+  ///
+  /// In es, this message translates to:
+  /// **'¿Ya tienes cuenta? Inicia sesión'**
+  String get alreadyHaveAccount;
+
+  /// Link for users who don't have an account to register
+  ///
+  /// In es, this message translates to:
+  /// **'¿No tienes cuenta? Regístrate'**
+  String get noAccount;
 }
 
 class _AppLocalizationsDelegate
