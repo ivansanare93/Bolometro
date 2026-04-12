@@ -285,7 +285,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                         return l10n.enterPassword;
                       }
                       if (value != _passwordController.text) {
-                        return 'Las contraseñas no coinciden';
+                        return l10n.passwordsDoNotMatch;
                       }
                       return null;
                     },

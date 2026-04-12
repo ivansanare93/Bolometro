@@ -2687,7 +2687,7 @@ abstract class AppLocalizations {
   /// No description provided for @passwordResetSent.
   ///
   /// In en, this message translates to:
-  /// **'Email sent. Check your inbox.'**
+  /// **'Password reset email sent. Check your inbox.'**
   String get passwordResetSent;
 
   /// No description provided for @createAccount.
@@ -2707,6 +2707,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No account? Register'**
   String get noAccount;
+
+  /// No description provided for @passwordsDoNotMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get passwordsDoNotMatch;
 }
 
 class _AppLocalizationsDelegate

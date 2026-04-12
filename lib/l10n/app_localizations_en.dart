@@ -1371,4 +1371,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noAccount => 'No account? Register';
+
+  @override
+  String get passwordsDoNotMatch => 'Passwords do not match';
 }
