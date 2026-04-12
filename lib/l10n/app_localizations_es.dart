@@ -1367,7 +1367,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get enterPassword => 'Introduce tu contraseña';
 
   @override
-  String get passwordTooShort => 'La contraseña debe tener al menos 6 caracteres';
+  String get passwordTooShort =>
+      'La contraseña debe tener al menos 6 caracteres';
 
   @override
   String get passwordsDoNotMatch => 'Las contraseñas no coinciden';
