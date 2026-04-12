@@ -12,9 +12,17 @@
   "@continueWithGoogle": {
     "description": "Botón para iniciar sesión con Google"
   },
+  "continueWithEmail": "Continuar con correo",
+  "@continueWithEmail": {
+    "description": "Botón para iniciar sesión con correo electrónico"
+  },
   "continueWithoutLogin": "Continuar sin iniciar sesión",
   "@continueWithoutLogin": {
     "description": "Botón para continuar sin autenticación"
+  },
+  "signInToSync": "Inicia sesión para sincronizar tus datos en la nube",
+  "@signInToSync": {
+    "description": "Texto informativo en ajustes cuando el usuario está en modo offline"
   },
   "home": "Inicio",
   "sessions": "Sesiones",

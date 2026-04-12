@@ -12,9 +12,17 @@
   "@continueWithGoogle": {
     "description": "Button to sign in with Google"
   },
+  "continueWithEmail": "Continue with Email",
+  "@continueWithEmail": {
+    "description": "Button to sign in with email"
+  },
   "continueWithoutLogin": "Continue without signing in",
   "@continueWithoutLogin": {
     "description": "Button to continue without authentication"
+  },
+  "signInToSync": "Sign in to sync your data to the cloud",
+  "@signInToSync": {
+    "description": "Informative text in settings when user is in offline mode"
   },
   "home": "Home",
   "sessions": "Sessions",

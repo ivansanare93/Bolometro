@@ -2654,6 +2654,12 @@ abstract class AppLocalizations {
   /// **'Continue with Email'**
   String get continueWithEmail;
 
+  /// Informative text in settings when user is in offline mode
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to sync your data to the cloud'**
+  String get signInToSync;
+
   /// No description provided for @password.
   ///
   /// In en, this message translates to:

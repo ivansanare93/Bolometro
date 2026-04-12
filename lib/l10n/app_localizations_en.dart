@@ -1345,6 +1345,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get continueWithEmail => 'Continue with Email';
 
   @override
+  String get signInToSync => 'Sign in to sync your data to the cloud';
+
+  @override
   String get password => 'Password';
 
   @override

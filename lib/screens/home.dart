@@ -13,6 +13,7 @@ import 'rankings_screen.dart';
 import 'achievements_screen.dart';
 import 'registro_completo_sesion.dart';
 import 'notas_screen.dart';
+import 'email_auth_screen.dart';
 import '../providers/theme_provider.dart';
 import '../providers/language_provider.dart';
 import '../models/perfil_usuario.dart';
@@ -541,11 +542,111 @@ Future<void> _bootstrap(
                               ] else ...[
                                 const Divider(height: 32),
                                 Text(
-                                  AppLocalizations.of(context)!.moreOptionsComingSoon,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey,
+                                  AppLocalizations.of(context)!.signInToSync,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: cs.onSurface.withOpacity(0.6),
                                   ),
+                                ),
+                                const SizedBox(height: 12),
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: const FaIcon(FontAwesomeIcons.google),
+                                  title: Text(
+                                    AppLocalizations.of(context)!.continueWithGoogle,
+                                  ),
+                                  onTap: () async {
+                                    final authService = Provider.of<AuthService>(
+                                      context,
+                                      listen: false,
+                                    );
+                                    final dataRepository = Provider.of<DataRepository>(
+                                      context,
+                                      listen: false,
+                                    );
+                                    final analyticsService = Provider.of<AnalyticsService>(
+                                      context,
+                                      listen: false,
+                                    );
+                                    final achievementService = Provider.of<AchievementService>(
+                                      context,
+                                      listen: false,
+                                    );
+                                    Navigator.pop(context);
+                                    final success = await authService.signInWithGoogle();
+                                    if (success && authService.userId != null) {
+                                      try {
+                                        await analyticsService.logLogin('google');
+                                      } catch (e) {
+                                        debugPrint('Error logging login: $e');
+                                      }
+                                      await dataRepository.setUser(authService.userId);
+                                      achievementService.updateSesionesBoxName(dataRepository.sesionesBoxName);
+                                      try {
+                                        final user = authService.user;
+                                        if (user != null) {
+                                          final perfilExistente = await dataRepository.obtenerPerfil();
+                                          if (perfilExistente == null || perfilExistente.nombre.trim().isEmpty) {
+                                            final nuevoPerfil = PerfilUsuario(
+                                              nombre: user.displayName ?? 'Usuario',
+                                              email: user.email,
+                                              googlePhotoUrl: user.photoURL,
+                                              googleDisplayName: user.displayName,
+                                              isFromGoogle: true,
+                                            );
+                                            await dataRepository.guardarPerfilLocal(nuevoPerfil);
+                                          } else {
+                                            final fotoActualizada = user.photoURL != null &&
+                                                user.photoURL != perfilExistente.googlePhotoUrl;
+                                            final nombreActualizado = user.displayName != null &&
+                                                user.displayName != perfilExistente.googleDisplayName;
+                                            final emailActualizado = user.email != null &&
+                                                user.email != perfilExistente.email;
+                                            if (fotoActualizada || nombreActualizado || emailActualizado) {
+                                              final perfilActualizado = perfilExistente.copyWith(
+                                                googlePhotoUrl: user.photoURL,
+                                                googleDisplayName: user.displayName,
+                                                email: user.email ?? perfilExistente.email,
+                                                isFromGoogle: true,
+                                              );
+                                              await dataRepository.guardarPerfil(perfilActualizado);
+                                            }
+                                          }
+                                        }
+                                      } catch (e) {
+                                        debugPrint('Error al crear/actualizar perfil desde Google: $e');
+                                      }
+                                      try {
+                                        await dataRepository.sincronizarANube();
+                                      } catch (e) {
+                                        debugPrint('Error al sincronizar datos: $e');
+                                      }
+                                    } else if (authService.errorMessage != null) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(authService.errorMessage!),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                ),
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: const Icon(Icons.email_outlined),
+                                  title: Text(
+                                    AppLocalizations.of(context)!.continueWithEmail,
+                                  ),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => const EmailAuthScreen(),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ],
                               

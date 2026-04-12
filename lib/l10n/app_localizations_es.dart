@@ -1355,6 +1355,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get continueWithEmail => 'Continuar con correo';
 
   @override
+  String get signInToSync => 'Inicia sesión para sincronizar tus datos en la nube';
+
+  @override
   String get password => 'Contraseña';
 
   @override
