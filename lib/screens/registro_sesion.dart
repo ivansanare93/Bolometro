@@ -565,12 +565,13 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
 
                     if (_frameActivo == 9) {
                       if (_tiroActivo == 1) {
-                        final tiro1 = pinesPorTiro[9][0] ?? [];
-                        if (tiro1.length == 10) {
-                          pinesIniciales = [];
-                        } else {
-                          pinesIniciales = tiro1;
-                        }
+                        // Always start with an empty selection; the pins
+                        // knocked in tiro 1 are shown as disabled (greyed out)
+                        // via pinesDeshabilitados, which already provides the
+                        // visual feedback. Pre-selecting them caused those pin
+                        // numbers to be included in 'seleccionados', making
+                        // the recorded count for tiro 2 incorrectly high.
+                        pinesIniciales = [];
                       } else if (_tiroActivo == 2) {
                         final tiro1 = pinesPorTiro[9][0] ?? [];
                         final tiro2 = pinesPorTiro[9][1] ?? [];
