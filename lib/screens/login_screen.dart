@@ -7,6 +7,7 @@ import '../repositories/data_repository.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../models/perfil_usuario.dart';
 import '../l10n/app_localizations.dart';
+import 'email_auth_screen.dart';
 
 /// Pantalla de inicio de sesión con Google
 class LoginScreen extends StatefulWidget {
@@ -145,6 +146,12 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _handleEmailSignIn() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const EmailAuthScreen()),
+    );
+  }
+
   Future<void> _continueOffline() async {
     final dataRepository = Provider.of<DataRepository>(context, listen: false);
     
@@ -258,6 +265,25 @@ class _LoginScreenState extends State<LoginScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   backgroundColor: cs.primary,
                   foregroundColor: cs.onPrimary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Botón de inicio de sesión con correo electrónico
+              OutlinedButton.icon(
+                onPressed: _isProcessing ? null : _handleEmailSignIn,
+                icon: const Icon(Icons.email_outlined, size: 20),
+                label: Text(
+                  l10n.continueWithEmail,
+                  style: const TextStyle(fontSize: 16),
+                ),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  foregroundColor: cs.primary,
+                  side: BorderSide(color: cs.primary),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
