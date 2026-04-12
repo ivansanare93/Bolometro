@@ -148,6 +148,124 @@ Consulta AUTENTICACION.md para más detalles.''';
     }
   }
 
+  /// Iniciar sesión con correo electrónico y contraseña
+  Future<bool> signInWithEmail(String email, String password) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      final UserCredential userCredential =
+          await _auth.signInWithEmailAndPassword(
+        email: email.trim(),
+        password: password,
+      );
+
+      _user = userCredential.user;
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _errorMessage = _emailAuthErrorMessage(e);
+      _isLoading = false;
+      notifyListeners();
+      debugPrint('FirebaseAuthException en signInWithEmail: ${e.code} - ${e.message}');
+      return false;
+    } catch (e) {
+      _errorMessage = 'Error inesperado al iniciar sesión.\n'
+          'Por favor, intenta nuevamente.';
+      _isLoading = false;
+      notifyListeners();
+      debugPrint('Error inesperado en signInWithEmail: $e');
+      return false;
+    }
+  }
+
+  /// Registrar una nueva cuenta con correo electrónico y contraseña
+  Future<bool> registerWithEmail(String email, String password) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      final UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
+        email: email.trim(),
+        password: password,
+      );
+
+      _user = userCredential.user;
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _errorMessage = _emailAuthErrorMessage(e);
+      _isLoading = false;
+      notifyListeners();
+      debugPrint('FirebaseAuthException en registerWithEmail: ${e.code} - ${e.message}');
+      return false;
+    } catch (e) {
+      _errorMessage = 'Error inesperado al crear la cuenta.\n'
+          'Por favor, intenta nuevamente.';
+      _isLoading = false;
+      notifyListeners();
+      debugPrint('Error inesperado en registerWithEmail: $e');
+      return false;
+    }
+  }
+
+  /// Enviar correo de restablecimiento de contraseña
+  Future<bool> resetPassword(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim());
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _errorMessage = _emailAuthErrorMessage(e);
+      notifyListeners();
+      debugPrint('FirebaseAuthException en resetPassword: ${e.code} - ${e.message}');
+      return false;
+    } catch (e) {
+      _errorMessage = 'Error inesperado. Por favor, intenta nuevamente.';
+      notifyListeners();
+      debugPrint('Error inesperado en resetPassword: $e');
+      return false;
+    }
+  }
+
+  /// Traduce los códigos de error de Firebase Auth para email/contraseña
+  String _emailAuthErrorMessage(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'user-not-found':
+        return 'No existe ninguna cuenta con este correo electrónico.';
+      case 'wrong-password':
+      case 'invalid-credential':
+        return 'Correo o contraseña incorrectos.\n'
+            'Por favor, verifica tus datos e intenta nuevamente.';
+      case 'invalid-email':
+        return 'El formato del correo electrónico no es válido.';
+      case 'user-disabled':
+        return 'Esta cuenta ha sido deshabilitada.\n'
+            'Contacta al soporte para más información.';
+      case 'email-already-in-use':
+        return 'Ya existe una cuenta con este correo electrónico.\n'
+            'Intenta iniciar sesión o usa otro correo.';
+      case 'weak-password':
+        return 'La contraseña es demasiado débil.\n'
+            'Debe tener al menos 6 caracteres.';
+      case 'too-many-requests':
+        return 'Demasiados intentos fallidos.\n'
+            'Intenta nuevamente más tarde.';
+      case 'network-request-failed':
+        return 'Error de red.\n'
+            'Verifica tu conexión a Internet e intenta nuevamente.';
+      case 'operation-not-allowed':
+        return 'El inicio de sesión con correo no está habilitado.\n'
+            'Contacta al administrador de la aplicación.';
+      default:
+        return 'Error de autenticación: ${e.message ?? e.code}';
+    }
+  }
+
   /// Cerrar sesión
   Future<void> signOut() async {
     try {
