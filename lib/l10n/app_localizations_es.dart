@@ -1398,5 +1398,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get updateLater => 'Más tarde';
 
   @override
-  String get updateOpenStoreFailed => 'No se pudo abrir la tienda de aplicaciones';
+  String get updateOpenStoreFailed =>
+      'No se pudo abrir la tienda de aplicaciones';
 }
