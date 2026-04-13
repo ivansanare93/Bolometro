@@ -286,6 +286,24 @@ class FriendsService {
     }
   }
 
+  /// Obtiene la URL de la foto de perfil actual de un usuario desde su documento en Firestore
+  Future<String?> _fetchFriendPhotoUrl(String friendUserId) async {
+    try {
+      final doc = await _firestore.collection('users').doc(friendUserId).get();
+      final data = doc.data();
+      if (data != null) {
+        final perfil = data['perfil'] as Map<String, dynamic>?;
+        if (perfil != null) {
+          return UrlUtils.sanitizePhotoUrl(perfil['googlePhotoUrl'] as String?);
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error al obtener foto de perfil de $friendUserId: $e');
+      return null;
+    }
+  }
+
   /// Obtener lista de amigos
   Future<List<Friend>> obtenerAmigos(String userId) async {
     try {
@@ -293,9 +311,20 @@ class FriendsService {
           .orderBy('fechaAmistad', descending: true)
           .get();
 
-      return querySnapshot.docs
+      final friends = querySnapshot.docs
           .map((doc) => Friend.fromJson(doc.data() as Map<String, dynamic>))
           .toList();
+
+      // Obtener las fotos de perfil actuales en paralelo
+      final photoFutures = friends.map((f) => _fetchFriendPhotoUrl(f.userId));
+      final photos = await Future.wait(photoFutures);
+
+      return [
+        for (int i = 0; i < friends.length; i++)
+          photos[i] != null
+              ? friends[i].copyWith(photoUrl: photos[i])
+              : friends[i],
+      ];
     } catch (e) {
       debugPrint('Error al obtener lista de amigos: $e');
       return [];
@@ -444,10 +473,21 @@ class FriendsService {
     return _getFriendsCollection(userId)
         .orderBy('fechaAmistad', descending: true)
         .snapshots()
-        .map((snapshot) {
-      return snapshot.docs
+        .asyncMap((snapshot) async {
+      final friends = snapshot.docs
           .map((doc) => Friend.fromJson(doc.data() as Map<String, dynamic>))
           .toList();
+
+      // Obtener las fotos de perfil actuales en paralelo
+      final photoFutures = friends.map((f) => _fetchFriendPhotoUrl(f.userId));
+      final photos = await Future.wait(photoFutures);
+
+      return [
+        for (int i = 0; i < friends.length; i++)
+          photos[i] != null
+              ? friends[i].copyWith(photoUrl: photos[i])
+              : friends[i],
+      ];
     });
   }
 

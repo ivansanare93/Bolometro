@@ -8,6 +8,7 @@ import '../utils/estadisticas_utils.dart';
 import '../models/sesion.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/url_utils.dart';
 import '../widgets/safe_network_image.dart';
 import 'comparison_screen.dart';
 import 'home.dart';
@@ -62,7 +63,7 @@ class _RankingsScreenState extends State<RankingsScreen> {
         'userId': userId,
         'nombre': currentUser?.displayName ?? localizations.you,
         'email': currentUser?.email,
-        'photoUrl': currentUser?.photoURL,
+        'photoUrl': UrlUtils.sanitizePhotoUrl(currentUser?.photoURL),
         'esUsuarioActual': true,
         ...misEstadisticas,
       });
