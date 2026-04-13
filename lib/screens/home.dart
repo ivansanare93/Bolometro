@@ -102,8 +102,8 @@ Future<void> _bootstrap(
   }
 
   /// Comprueba en Firestore si hay una nueva versión disponible y,
-  /// en caso afirmativo, muestra el diálogo de actualización.
-  /// Solo se ejecuta una vez por sesión.
+  /// en caso afirmativo, muestra el diálogo de actualización una única vez
+  /// por ejecución de la app (el guard de sesión vive en [UpdateService]).
   Future<void> _checkForUpdate() async {
     if (!mounted) return;
     try {
