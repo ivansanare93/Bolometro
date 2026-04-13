@@ -1396,4 +1396,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get updateLater => 'Más tarde';
+
+  @override
+  String get updateOpenStoreFailed => 'No se pudo abrir la tienda de aplicaciones';
 }

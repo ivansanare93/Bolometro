@@ -79,7 +79,11 @@ class UpdateService {
     final remoteParts = _parseParts(remote);
     final currentParts = _parseParts(current);
 
-    for (int i = 0; i < remoteParts.length; i++) {
+    final maxLen = remoteParts.length > currentParts.length
+        ? remoteParts.length
+        : currentParts.length;
+
+    for (int i = 0; i < maxLen; i++) {
       final r = i < remoteParts.length ? remoteParts[i] : 0;
       final c = i < currentParts.length ? currentParts[i] : 0;
       if (r > c) return true;

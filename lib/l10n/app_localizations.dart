@@ -2737,6 +2737,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Más tarde'**
   String get updateLater;
+
+  /// Mensaje de error cuando no se puede abrir la URL de la tienda
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo abrir la tienda de aplicaciones'**
+  String get updateOpenStoreFailed;
 }
 
 class _AppLocalizationsDelegate

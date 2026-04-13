@@ -22,11 +22,15 @@ class UpdateDialog extends StatelessWidget {
     );
   }
 
-  Future<void> _openStore() async {
+  Future<void> _openStore(BuildContext context) async {
     final uri = Uri.tryParse(updateInfo.updateUrl);
     if (uri == null) return;
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.updateOpenStoreFailed)),
+      );
     }
   }
 
@@ -83,7 +87,7 @@ class UpdateDialog extends StatelessWidget {
               child: Text(l10n.updateLater),
             ),
           FilledButton.icon(
-            onPressed: _openStore,
+            onPressed: () => _openStore(context),
             icon: const Icon(Icons.download),
             label: Text(l10n.updateNow),
           ),

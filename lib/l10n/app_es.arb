@@ -1035,5 +1035,9 @@
   "updateLater": "Más tarde",
   "@updateLater": {
     "description": "Botón para posponer la actualización"
+  },
+  "updateOpenStoreFailed": "No se pudo abrir la tienda de aplicaciones",
+  "@updateOpenStoreFailed": {
+    "description": "Mensaje de error cuando no se puede abrir la URL de la tienda"
   }
 }

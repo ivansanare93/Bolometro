@@ -1385,4 +1385,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateLater => 'Later';
+
+  @override
+  String get updateOpenStoreFailed => 'Could not open the app store';
 }

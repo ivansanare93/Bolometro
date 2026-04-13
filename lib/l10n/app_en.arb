@@ -900,5 +900,9 @@
   "updateLater": "Later",
   "@updateLater": {
     "description": "Button to postpone the update"
+  },
+  "updateOpenStoreFailed": "Could not open the app store",
+  "@updateOpenStoreFailed": {
+    "description": "Error message when the store URL cannot be launched"
   }
 }
