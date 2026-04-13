@@ -1381,4 +1381,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noAccount => '¿No tienes cuenta? Regístrate';
+
+  @override
+  String get updateAvailable => '¡Nueva versión disponible!';
+
+  @override
+  String get updateVersion => 'Versión';
+
+  @override
+  String get updateChangelog => 'Novedades';
+
+  @override
+  String get updateNow => 'Actualizar';
+
+  @override
+  String get updateLater => 'Más tarde';
 }

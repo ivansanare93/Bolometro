@@ -880,5 +880,25 @@
   "noAccount": "Don't have an account? Register",
   "@noAccount": {
     "description": "Link shown in sign-in mode to switch to register mode"
+  },
+  "updateAvailable": "New version available!",
+  "@updateAvailable": {
+    "description": "Title of the update dialog"
+  },
+  "updateVersion": "Version",
+  "@updateVersion": {
+    "description": "Label preceding the new version number"
+  },
+  "updateChangelog": "What's new",
+  "@updateChangelog": {
+    "description": "Heading for the changelog of the new version"
+  },
+  "updateNow": "Update",
+  "@updateNow": {
+    "description": "Button to go to the store and update the app"
+  },
+  "updateLater": "Later",
+  "@updateLater": {
+    "description": "Button to postpone the update"
   }
 }
