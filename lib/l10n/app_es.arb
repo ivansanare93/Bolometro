@@ -1015,5 +1015,29 @@
   "noAccount": "¿No tienes cuenta? Regístrate",
   "@noAccount": {
     "description": "Enlace mostrado en el modo de inicio de sesión para cambiar al modo de registro"
+  },
+  "updateAvailable": "¡Nueva versión disponible!",
+  "@updateAvailable": {
+    "description": "Título del diálogo de actualización"
+  },
+  "updateVersion": "Versión",
+  "@updateVersion": {
+    "description": "Etiqueta que precede al número de la nueva versión"
+  },
+  "updateChangelog": "Novedades",
+  "@updateChangelog": {
+    "description": "Encabezado de la lista de cambios de la nueva versión"
+  },
+  "updateNow": "Actualizar",
+  "@updateNow": {
+    "description": "Botón para ir a la tienda y actualizar la app"
+  },
+  "updateLater": "Más tarde",
+  "@updateLater": {
+    "description": "Botón para posponer la actualización"
+  },
+  "updateOpenStoreFailed": "No se pudo abrir la tienda de aplicaciones",
+  "@updateOpenStoreFailed": {
+    "description": "Mensaje de error cuando no se puede abrir la URL de la tienda"
   }
 }

@@ -2707,6 +2707,42 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'¿No tienes cuenta? Regístrate'**
   String get noAccount;
+
+  /// Título del diálogo de actualización
+  ///
+  /// In es, this message translates to:
+  /// **'¡Nueva versión disponible!'**
+  String get updateAvailable;
+
+  /// Etiqueta que precede al número de la nueva versión
+  ///
+  /// In es, this message translates to:
+  /// **'Versión'**
+  String get updateVersion;
+
+  /// Encabezado de la lista de cambios de la nueva versión
+  ///
+  /// In es, this message translates to:
+  /// **'Novedades'**
+  String get updateChangelog;
+
+  /// Botón para ir a la tienda y actualizar la app
+  ///
+  /// In es, this message translates to:
+  /// **'Actualizar'**
+  String get updateNow;
+
+  /// Botón para posponer la actualización
+  ///
+  /// In es, this message translates to:
+  /// **'Más tarde'**
+  String get updateLater;
+
+  /// Mensaje de error cuando no se puede abrir la URL de la tienda
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo abrir la tienda de aplicaciones'**
+  String get updateOpenStoreFailed;
 }
 
 class _AppLocalizationsDelegate

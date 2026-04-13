@@ -99,6 +99,13 @@ service cloud.firestore {
       }
     }
     
+    // Configuración pública de la app (versión mínima, URL de actualización, etc.)
+    // Lectura pública sin autenticación; escritura denegada desde el cliente.
+    match /app_config/{document} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Denegar acceso a cualquier otra ruta
     match /{document=**} {
       allow read, write: if false;

@@ -22,9 +22,11 @@ import '../services/auth_service.dart';
 import '../services/draft_service.dart';
 import '../services/analytics_service.dart';
 import '../services/achievement_service.dart';
+import '../services/update_service.dart';
 import '../repositories/data_repository.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/skeleton_loaders.dart';
+import '../widgets/update_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool mostrarAppBar;
@@ -52,6 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
       } catch (e) {
         debugPrint('Error logging screen view: $e');
       }
+      _checkForUpdate();
     });
   }
 
@@ -95,6 +98,23 @@ Future<void> _bootstrap(
         _perfilBoxFuture =
             Hive.openBox<PerfilUsuario>(dataRepository.perfilBoxName);
       });
+    }
+  }
+
+  /// Comprueba en Firestore si hay una nueva versión disponible y,
+  /// en caso afirmativo, muestra el diálogo de actualización.
+  /// Solo se ejecuta una vez por sesión.
+  Future<void> _checkForUpdate() async {
+    if (!mounted) return;
+    try {
+      final languageCode =
+          Provider.of<LanguageProvider>(context, listen: false).locale.languageCode;
+      final updateInfo = await UpdateService().checkForUpdate(languageCode: languageCode);
+      if (updateInfo != null && mounted) {
+        await UpdateDialog.show(context, updateInfo);
+      }
+    } catch (e) {
+      debugPrint('Error al comprobar actualización: $e');
     }
   }
 
