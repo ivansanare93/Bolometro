@@ -1039,5 +1039,93 @@
   "updateOpenStoreFailed": "No se pudo abrir la tienda de aplicaciones",
   "@updateOpenStoreFailed": {
     "description": "Mensaje de error cuando no se puede abrir la URL de la tienda"
+  },
+  "filterDateRange": "Período",
+  "@filterDateRange": {
+    "description": "Etiqueta para el filtro de rango de fechas en estadísticas"
+  },
+  "filterLastNGames": "Partidas",
+  "@filterLastNGames": {
+    "description": "Etiqueta para el filtro de últimas N partidas en estadísticas"
+  },
+  "datePresetLast7Days": "Últ. 7 días",
+  "@datePresetLast7Days": {
+    "description": "Preset de rango de fechas: últimos 7 días"
+  },
+  "datePresetLast30Days": "Últ. 30 días",
+  "@datePresetLast30Days": {
+    "description": "Preset de rango de fechas: últimos 30 días"
+  },
+  "datePresetLast90Days": "Últ. 90 días",
+  "@datePresetLast90Days": {
+    "description": "Preset de rango de fechas: últimos 90 días"
+  },
+  "datePresetThisMonth": "Este mes",
+  "@datePresetThisMonth": {
+    "description": "Preset de rango de fechas: este mes"
+  },
+  "datePresetThisYear": "Este año",
+  "@datePresetThisYear": {
+    "description": "Preset de rango de fechas: este año"
+  },
+  "datePresetAllTime": "Siempre",
+  "@datePresetAllTime": {
+    "description": "Preset de rango de fechas: todo el tiempo"
+  },
+  "datePresetCustom": "Personalizado",
+  "@datePresetCustom": {
+    "description": "Preset de rango de fechas: rango personalizado"
+  },
+  "lastNAll": "Todas",
+  "@lastNAll": {
+    "description": "Opción del filtro últimas N partidas: todas las partidas"
+  },
+  "lastN10": "Últ. 10",
+  "@lastN10": {
+    "description": "Opción del filtro últimas N partidas: últimas 10"
+  },
+  "lastN25": "Últ. 25",
+  "@lastN25": {
+    "description": "Opción del filtro últimas N partidas: últimas 25"
+  },
+  "lastN50": "Últ. 50",
+  "@lastN50": {
+    "description": "Opción del filtro últimas N partidas: últimas 50"
+  },
+  "selectDateRange": "Seleccionar rango de fechas",
+  "@selectDateRange": {
+    "description": "Título del selector de rango de fechas personalizado"
+  },
+  "tooltipMovingAverage": "Promedio móvil calculado sobre las últimas 5 partidas. Suaviza las variaciones individuales.",
+  "@tooltipMovingAverage": {
+    "description": "Texto de ayuda para el gráfico de promedio móvil"
+  },
+  "tooltipHistogram": "Distribución de tus puntuaciones en rangos de 20 puntos.",
+  "@tooltipHistogram": {
+    "description": "Texto de ayuda para el histograma de puntuaciones"
+  },
+  "tooltipSpareConversion": "Porcentaje de veces que convertiste el spare cuando tuviste la oportunidad.",
+  "@tooltipSpareConversion": {
+    "description": "Texto de ayuda para la tasa de conversión de spare"
+  },
+  "tooltipFirstBall": "Promedio de pinos derribados en el primer tiro de cada frame.",
+  "@tooltipFirstBall": {
+    "description": "Texto de ayuda para el promedio de primera bola"
+  },
+  "stickyKpiAverage": "Promedio",
+  "@stickyKpiAverage": {
+    "description": "Etiqueta del KPI de promedio en el header fijo"
+  },
+  "stickyKpiBest": "Mejor",
+  "@stickyKpiBest": {
+    "description": "Etiqueta del KPI de mejor puntuación en el header fijo"
+  },
+  "stickyKpiWorst": "Peor",
+  "@stickyKpiWorst": {
+    "description": "Etiqueta del KPI de peor puntuación en el header fijo"
+  },
+  "stickyKpiGames": "Partidas",
+  "@stickyKpiGames": {
+    "description": "Etiqueta del KPI de total de partidas en el header fijo"
   }
 }

@@ -217,4 +217,68 @@ void main() {
       expect(stats.containsKey('totalSesiones'), isTrue);
     });
   });
+
+  group('EstadisticasCache – filter-keyed cache', () {
+    late EstadisticasCache cache;
+
+    Sesion _makeSesion(int total, String tipo) => Sesion(
+          fecha: DateTime.now(),
+          lugar: 'Test',
+          tipo: tipo,
+          partidas: [
+            Partida(
+              total: total,
+              frames: List.generate(
+                AppConstants.totalFrames,
+                (_) => [AppConstants.simboloStrike],
+              ),
+            ),
+          ],
+        );
+
+    setUp(() {
+      cache = EstadisticasCache();
+    });
+
+    test('diferentes claves de filtro producen caches independientes', () {
+      final sesiones = [
+        _makeSesion(150, AppConstants.tipoEntrenamiento),
+        _makeSesion(200, AppConstants.tipoCompeticion),
+      ];
+
+      final statsAll = cache.getEstadisticas(sesiones, filterKey: 'Todos_allTime_all');
+      final statsTraining = cache.getEstadisticas(
+        [sesiones[0]],
+        filterKey: 'Entrenamiento_allTime_all',
+      );
+
+      // Different filter keys ⟹ different results
+      expect(statsAll['totalPartidas'], equals(2));
+      expect(statsTraining['totalPartidas'], equals(1));
+    });
+
+    test('misma clave de filtro reutiliza el cache', () {
+      final sesiones = [_makeSesion(150, AppConstants.tipoEntrenamiento)];
+      const key = 'Todos_allTime_all';
+
+      final stats1 = cache.getEstadisticas(sesiones, filterKey: key);
+      final stats2 = cache.getEstadisticas(sesiones, filterKey: key);
+
+      // Same object reference ⟹ cache was reused
+      expect(identical(stats1, stats2), isTrue);
+    });
+
+    test('invalidateCache borra también las entradas con clave de filtro', () {
+      final sesiones = [_makeSesion(150, AppConstants.tipoEntrenamiento)];
+      const key = 'Todos_allTime_all';
+
+      cache.getEstadisticas(sesiones, filterKey: key);
+      cache.invalidateCache();
+      expect(cache.hasCache, isFalse);
+
+      // After invalidation a new call should recalculate (not error)
+      final stats = cache.getEstadisticas(sesiones, filterKey: key);
+      expect(stats['totalPartidas'], equals(1));
+    });
+  });
 }

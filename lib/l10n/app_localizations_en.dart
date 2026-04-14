@@ -1388,4 +1388,74 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateOpenStoreFailed => 'Could not open the app store';
+
+  @override
+  String get filterDateRange => 'Period';
+
+  @override
+  String get filterLastNGames => 'Games';
+
+  @override
+  String get datePresetLast7Days => 'Last 7 d';
+
+  @override
+  String get datePresetLast30Days => 'Last 30 d';
+
+  @override
+  String get datePresetLast90Days => 'Last 90 d';
+
+  @override
+  String get datePresetThisMonth => 'This month';
+
+  @override
+  String get datePresetThisYear => 'This year';
+
+  @override
+  String get datePresetAllTime => 'All time';
+
+  @override
+  String get datePresetCustom => 'Custom';
+
+  @override
+  String get lastNAll => 'All';
+
+  @override
+  String get lastN10 => 'Last 10';
+
+  @override
+  String get lastN25 => 'Last 25';
+
+  @override
+  String get lastN50 => 'Last 50';
+
+  @override
+  String get selectDateRange => 'Select date range';
+
+  @override
+  String get tooltipMovingAverage =>
+      'Moving average calculated over the last 5 games. Smoothes out individual variations.';
+
+  @override
+  String get tooltipHistogram =>
+      'Distribution of your scores in 20-point ranges.';
+
+  @override
+  String get tooltipSpareConversion =>
+      'Percentage of times you converted the spare when given the opportunity.';
+
+  @override
+  String get tooltipFirstBall =>
+      'Average pins knocked down on the first throw of each frame.';
+
+  @override
+  String get stickyKpiAverage => 'Average';
+
+  @override
+  String get stickyKpiBest => 'Best';
+
+  @override
+  String get stickyKpiWorst => 'Worst';
+
+  @override
+  String get stickyKpiGames => 'Games';
 }
