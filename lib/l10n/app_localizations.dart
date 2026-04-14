@@ -2744,136 +2744,136 @@ abstract class AppLocalizations {
   /// **'No se pudo abrir la tienda de aplicaciones'**
   String get updateOpenStoreFailed;
 
-  /// No description provided for @filterDateRange.
+  /// Etiqueta para el filtro de rango de fechas en estadísticas
   ///
-  /// In en, this message translates to:
-  /// **'Period'**
+  /// In es, this message translates to:
+  /// **'Período'**
   String get filterDateRange;
 
-  /// No description provided for @filterLastNGames.
+  /// Etiqueta para el filtro de últimas N partidas en estadísticas
   ///
-  /// In en, this message translates to:
-  /// **'Games'**
+  /// In es, this message translates to:
+  /// **'Partidas'**
   String get filterLastNGames;
 
-  /// No description provided for @datePresetLast7Days.
+  /// Preset de rango de fechas: últimos 7 días
   ///
-  /// In en, this message translates to:
-  /// **'Last 7 d'**
+  /// In es, this message translates to:
+  /// **'Últ. 7 días'**
   String get datePresetLast7Days;
 
-  /// No description provided for @datePresetLast30Days.
+  /// Preset de rango de fechas: últimos 30 días
   ///
-  /// In en, this message translates to:
-  /// **'Last 30 d'**
+  /// In es, this message translates to:
+  /// **'Últ. 30 días'**
   String get datePresetLast30Days;
 
-  /// No description provided for @datePresetLast90Days.
+  /// Preset de rango de fechas: últimos 90 días
   ///
-  /// In en, this message translates to:
-  /// **'Last 90 d'**
+  /// In es, this message translates to:
+  /// **'Últ. 90 días'**
   String get datePresetLast90Days;
 
-  /// No description provided for @datePresetThisMonth.
+  /// Preset de rango de fechas: este mes
   ///
-  /// In en, this message translates to:
-  /// **'This month'**
+  /// In es, this message translates to:
+  /// **'Este mes'**
   String get datePresetThisMonth;
 
-  /// No description provided for @datePresetThisYear.
+  /// Preset de rango de fechas: este año
   ///
-  /// In en, this message translates to:
-  /// **'This year'**
+  /// In es, this message translates to:
+  /// **'Este año'**
   String get datePresetThisYear;
 
-  /// No description provided for @datePresetAllTime.
+  /// Preset de rango de fechas: todo el tiempo
   ///
-  /// In en, this message translates to:
-  /// **'All time'**
+  /// In es, this message translates to:
+  /// **'Siempre'**
   String get datePresetAllTime;
 
-  /// No description provided for @datePresetCustom.
+  /// Preset de rango de fechas: rango personalizado
   ///
-  /// In en, this message translates to:
-  /// **'Custom'**
+  /// In es, this message translates to:
+  /// **'Personalizado'**
   String get datePresetCustom;
 
-  /// No description provided for @lastNAll.
+  /// Opción del filtro últimas N partidas: todas las partidas
   ///
-  /// In en, this message translates to:
-  /// **'All'**
+  /// In es, this message translates to:
+  /// **'Todas'**
   String get lastNAll;
 
-  /// No description provided for @lastN10.
+  /// Opción del filtro últimas N partidas: últimas 10
   ///
-  /// In en, this message translates to:
-  /// **'Last 10'**
+  /// In es, this message translates to:
+  /// **'Últ. 10'**
   String get lastN10;
 
-  /// No description provided for @lastN25.
+  /// Opción del filtro últimas N partidas: últimas 25
   ///
-  /// In en, this message translates to:
-  /// **'Last 25'**
+  /// In es, this message translates to:
+  /// **'Últ. 25'**
   String get lastN25;
 
-  /// No description provided for @lastN50.
+  /// Opción del filtro últimas N partidas: últimas 50
   ///
-  /// In en, this message translates to:
-  /// **'Last 50'**
+  /// In es, this message translates to:
+  /// **'Últ. 50'**
   String get lastN50;
 
-  /// No description provided for @selectDateRange.
+  /// Título del selector de rango de fechas personalizado
   ///
-  /// In en, this message translates to:
-  /// **'Select date range'**
+  /// In es, this message translates to:
+  /// **'Seleccionar rango de fechas'**
   String get selectDateRange;
 
-  /// No description provided for @tooltipMovingAverage.
+  /// Texto de ayuda para el gráfico de promedio móvil
   ///
-  /// In en, this message translates to:
-  /// **'Moving average calculated over the last 5 games. Smoothes out individual variations.'**
+  /// In es, this message translates to:
+  /// **'Promedio móvil calculado sobre las últimas 5 partidas. Suaviza las variaciones individuales.'**
   String get tooltipMovingAverage;
 
-  /// No description provided for @tooltipHistogram.
+  /// Texto de ayuda para el histograma de puntuaciones
   ///
-  /// In en, this message translates to:
-  /// **'Distribution of your scores in 20-point ranges.'**
+  /// In es, this message translates to:
+  /// **'Distribución de tus puntuaciones en rangos de 20 puntos.'**
   String get tooltipHistogram;
 
-  /// No description provided for @tooltipSpareConversion.
+  /// Texto de ayuda para la tasa de conversión de spare
   ///
-  /// In en, this message translates to:
-  /// **'Percentage of times you converted the spare when given the opportunity.'**
+  /// In es, this message translates to:
+  /// **'Porcentaje de veces que convertiste el spare cuando tuviste la oportunidad.'**
   String get tooltipSpareConversion;
 
-  /// No description provided for @tooltipFirstBall.
+  /// Texto de ayuda para el promedio de primera bola
   ///
-  /// In en, this message translates to:
-  /// **'Average pins knocked down on the first throw of each frame.'**
+  /// In es, this message translates to:
+  /// **'Promedio de pinos derribados en el primer tiro de cada frame.'**
   String get tooltipFirstBall;
 
-  /// No description provided for @stickyKpiAverage.
+  /// Etiqueta del KPI de promedio en el header fijo
   ///
-  /// In en, this message translates to:
-  /// **'Average'**
+  /// In es, this message translates to:
+  /// **'Promedio'**
   String get stickyKpiAverage;
 
-  /// No description provided for @stickyKpiBest.
+  /// Etiqueta del KPI de mejor puntuación en el header fijo
   ///
-  /// In en, this message translates to:
-  /// **'Best'**
+  /// In es, this message translates to:
+  /// **'Mejor'**
   String get stickyKpiBest;
 
-  /// No description provided for @stickyKpiWorst.
+  /// Etiqueta del KPI de peor puntuación en el header fijo
   ///
-  /// In en, this message translates to:
-  /// **'Worst'**
+  /// In es, this message translates to:
+  /// **'Peor'**
   String get stickyKpiWorst;
 
-  /// No description provided for @stickyKpiGames.
+  /// Etiqueta del KPI de total de partidas en el header fijo
   ///
-  /// In en, this message translates to:
-  /// **'Games'**
+  /// In es, this message translates to:
+  /// **'Partidas'**
   String get stickyKpiGames;
 }
 

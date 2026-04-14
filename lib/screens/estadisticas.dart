@@ -188,9 +188,11 @@ class _EstadisticasPantallaCompletaState
 
   String _labelForPreset(DateRangePreset p, AppLocalizations l10n) {
     switch (p) {
+      case DateRangePreset.allTime:
+        return l10n.datePresetAllTime;
       case DateRangePreset.last7Days:
         return l10n.datePresetLast7Days;
-      case DateRangePreset.last30Days:
+      case DateRangePreset.last30Days:q
         return l10n.datePresetLast30Days;
       case DateRangePreset.last90Days:
         return l10n.datePresetLast90Days;
@@ -198,8 +200,6 @@ class _EstadisticasPantallaCompletaState
         return l10n.datePresetThisMonth;
       case DateRangePreset.thisYear:
         return l10n.datePresetThisYear;
-      case DateRangePreset.allTime:
-        return l10n.datePresetAllTime;
       case DateRangePreset.custom:
         return l10n.datePresetCustom;
     }
