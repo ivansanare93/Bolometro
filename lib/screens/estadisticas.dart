@@ -504,6 +504,7 @@ class _EstadisticasPantallaCompletaState
                       ),
                       const SizedBox(height: 4),
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
                             AppLocalizations.of(context)!.recentEvolution,
@@ -1182,8 +1183,6 @@ class _DateChip extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 12,
-              fontWeight:
-                  selected ? FontWeight.bold : FontWeight.normal,
               color: selected
                   ? colorScheme.onPrimary
                   : colorScheme.onSurface.withOpacity(0.75),
