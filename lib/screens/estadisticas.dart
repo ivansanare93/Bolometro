@@ -934,55 +934,58 @@ class _EstadisticasPantallaCompletaState
     );
     String? errorText;
 
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) {
-        return StatefulBuilder(builder: (ctx, setDialogState) {
-          return AlertDialog(
-            title: Text(l10n.goalEditTitle),
-            content: TextField(
-              controller: controller,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(
-                hintText: l10n.goalEditHint,
-                errorText: errorText,
-              ),
-              autofocus: true,
-              onChanged: (_) {
-                if (errorText != null) {
-                  setDialogState(() => errorText = null);
-                }
-              },
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: Text(l10n.cancel),
-              ),
-              FilledButton(
-                onPressed: () async {
-                  final value = double.tryParse(controller.text.trim());
-                  if (value == null ||
-                      value < GoalService.minAverageGoal ||
-                      value > GoalService.maxAverageGoal) {
-                    setDialogState(() => errorText = l10n.goalEditInvalid);
-                    return;
-                  }
-                  await GoalService.saveAverageGoal(value);
-                  if (mounted) {
-                    setState(() => _averageGoal = value);
-                    Navigator.of(ctx).pop();
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) {
+          return StatefulBuilder(builder: (ctx, setDialogState) {
+            return AlertDialog(
+              title: Text(l10n.goalEditTitle),
+              content: TextField(
+                controller: controller,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  hintText: l10n.goalEditHint,
+                  errorText: errorText,
+                ),
+                autofocus: true,
+                onChanged: (_) {
+                  if (errorText != null) {
+                    setDialogState(() => errorText = null);
                   }
                 },
-                child: Text(l10n.save),
               ),
-            ],
-          );
-        });
-      },
-    );
-    controller.dispose();
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: Text(l10n.cancel),
+                ),
+                FilledButton(
+                  onPressed: () async {
+                    final value = double.tryParse(controller.text.trim());
+                    if (value == null ||
+                        value < GoalService.minAverageGoal ||
+                        value > GoalService.maxAverageGoal) {
+                      setDialogState(() => errorText = l10n.goalEditInvalid);
+                      return;
+                    }
+                    await GoalService.saveAverageGoal(value);
+                    if (mounted) {
+                      setState(() => _averageGoal = value);
+                      Navigator.of(ctx).pop();
+                    }
+                  },
+                  child: Text(l10n.save),
+                ),
+              ],
+            );
+          });
+        },
+      );
+    } finally {
+      controller.dispose();
+    }
   }
 
   /// Full filter bar: session type + date range presets + last-N-games chips.

@@ -4,6 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 ///
 /// Uses [SharedPreferences] — the same persistence layer used by [DraftService]
 /// and the theme/locale settings — so no new dependency is required.
+///
+/// All methods are static; the private constructor [GoalService._] prevents
+/// instantiation since this class is purely a namespace for utility functions.
 class GoalService {
   GoalService._();
 
