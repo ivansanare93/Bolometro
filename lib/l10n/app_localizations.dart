@@ -2743,6 +2743,138 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No se pudo abrir la tienda de aplicaciones'**
   String get updateOpenStoreFailed;
+
+  /// No description provided for @filterDateRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Period'**
+  String get filterDateRange;
+
+  /// No description provided for @filterLastNGames.
+  ///
+  /// In en, this message translates to:
+  /// **'Games'**
+  String get filterLastNGames;
+
+  /// No description provided for @datePresetLast7Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 d'**
+  String get datePresetLast7Days;
+
+  /// No description provided for @datePresetLast30Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30 d'**
+  String get datePresetLast30Days;
+
+  /// No description provided for @datePresetLast90Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 90 d'**
+  String get datePresetLast90Days;
+
+  /// No description provided for @datePresetThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get datePresetThisMonth;
+
+  /// No description provided for @datePresetThisYear.
+  ///
+  /// In en, this message translates to:
+  /// **'This year'**
+  String get datePresetThisYear;
+
+  /// No description provided for @datePresetAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get datePresetAllTime;
+
+  /// No description provided for @datePresetCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get datePresetCustom;
+
+  /// No description provided for @lastNAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get lastNAll;
+
+  /// No description provided for @lastN10.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 10'**
+  String get lastN10;
+
+  /// No description provided for @lastN25.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 25'**
+  String get lastN25;
+
+  /// No description provided for @lastN50.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 50'**
+  String get lastN50;
+
+  /// No description provided for @selectDateRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Select date range'**
+  String get selectDateRange;
+
+  /// No description provided for @tooltipMovingAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Moving average calculated over the last 5 games. Smoothes out individual variations.'**
+  String get tooltipMovingAverage;
+
+  /// No description provided for @tooltipHistogram.
+  ///
+  /// In en, this message translates to:
+  /// **'Distribution of your scores in 20-point ranges.'**
+  String get tooltipHistogram;
+
+  /// No description provided for @tooltipSpareConversion.
+  ///
+  /// In en, this message translates to:
+  /// **'Percentage of times you converted the spare when given the opportunity.'**
+  String get tooltipSpareConversion;
+
+  /// No description provided for @tooltipFirstBall.
+  ///
+  /// In en, this message translates to:
+  /// **'Average pins knocked down on the first throw of each frame.'**
+  String get tooltipFirstBall;
+
+  /// No description provided for @stickyKpiAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Average'**
+  String get stickyKpiAverage;
+
+  /// No description provided for @stickyKpiBest.
+  ///
+  /// In en, this message translates to:
+  /// **'Best'**
+  String get stickyKpiBest;
+
+  /// No description provided for @stickyKpiWorst.
+  ///
+  /// In en, this message translates to:
+  /// **'Worst'**
+  String get stickyKpiWorst;
+
+  /// No description provided for @stickyKpiGames.
+  ///
+  /// In en, this message translates to:
+  /// **'Games'**
+  String get stickyKpiGames;
 }
 
 class _AppLocalizationsDelegate

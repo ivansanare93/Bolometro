@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 import '../models/sesion.dart';
 import '../models/partida.dart';
@@ -8,6 +7,7 @@ import '../services/analytics_service.dart';
 import '../utils/estadisticas_utils.dart';
 import '../utils/estadisticas_cache.dart';
 import '../utils/app_constants.dart';
+import '../utils/stats_filter.dart';
 import '../theme/app_theme.dart';
 import '../widgets/estadisticas/kpi_card_dinamico.dart';
 import '../widgets/estadisticas/racha_card.dart';
@@ -15,6 +15,7 @@ import '../widgets/estadisticas/pastel_porcentajes.dart';
 import '../widgets/estadisticas/top_partidas_widget.dart';
 import '../widgets/estadisticas/mini_grafico_promedio_movil.dart';
 import '../widgets/estadisticas/histograma_puntuaciones.dart';
+import '../widgets/info_tooltip_icon.dart';
 import 'home.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/skeleton_loaders.dart';
@@ -35,13 +36,15 @@ class _EstadisticasPantallaCompletaState
   static const double _kGoodSpareConversionRate = 50.0;
 
   late Future<List<Sesion>> _sesionesFuture;
-  String _filtroTipo = AppConstants.tipoTodos;
   bool _hasLoggedView = false;
-  
+
+  // Active filter state
+  StatsFilter _filter = const StatsFilter();
+
   // Cache for filtered sessions to avoid recalculating on every build
   List<Sesion>? _cachedSesiones;
   List<Sesion>? _cachedFilteredSesiones;
-  String? _cachedFiltroTipo;
+  StatsFilter? _cachedFilter;
 
   @override
   void initState() {
@@ -61,33 +64,120 @@ class _EstadisticasPantallaCompletaState
     final dataRepository = Provider.of<DataRepository>(context, listen: false);
     _sesionesFuture = dataRepository.obtenerSesiones();
   }
-  
+
+  // ---------------------------------------------------------------------------
+  // Filtering logic
+  // ---------------------------------------------------------------------------
+
+  /// Returns the subset of [sesiones] that matches the active [_filter].
+  ///
+  /// Steps:
+  /// 1. Filter by session type.
+  /// 2. Filter by date range preset (or custom range).
+  /// 3. Expand to individual games, sort by session date asc, then apply the
+  ///    "last N games" limit to produce the final list of [Sesion]s (wrapped
+  ///    so that stats calculations see only the limited games).
   List<Sesion> _getFilteredSesiones(List<Sesion> sesiones) {
-    // Return cached result if filters haven't changed and data is the same
-    final sesionesSame = _cachedSesiones != null && 
-                         _cachedSesiones!.length == sesiones.length &&
-                         (_cachedSesiones!.isEmpty || 
-                          _cachedSesiones!.first == sesiones.first);
-    
+    final sesionesSame = _cachedSesiones != null &&
+        _cachedSesiones!.length == sesiones.length &&
+        (_cachedSesiones!.isEmpty ||
+            identical(_cachedSesiones!.first, sesiones.first));
+
     if (sesionesSame &&
-        _cachedFiltroTipo == _filtroTipo &&
+        _cachedFilter == _filter &&
         _cachedFilteredSesiones != null) {
       return _cachedFilteredSesiones!;
     }
-    
-    // Apply filters
+
     List<Sesion> filtered = sesiones;
-    if (_filtroTipo != AppConstants.tipoTodos) {
-      filtered = filtered.where((s) => s.tipo == _filtroTipo).toList();
+
+    // 1. Filter by tipo
+    if (_filter.tipo != AppConstants.tipoTodos) {
+      filtered = filtered.where((s) => s.tipo == _filter.tipo).toList();
     }
-    
-    // Cache the result
+
+    // 2. Filter by date range
+    final dateRange = _effectiveDateRange();
+    if (dateRange != null) {
+      final start = DateTime(
+          dateRange.start.year, dateRange.start.month, dateRange.start.day);
+      final end = DateTime(
+              dateRange.end.year, dateRange.end.month, dateRange.end.day)
+          .add(const Duration(days: 1));
+      filtered = filtered
+          .where((s) =>
+              !s.fecha.isBefore(start) && s.fecha.isBefore(end))
+          .toList();
+    }
+
+    // 3. Apply "last N games" limit.
+    //    Collect all games in chronological order, keep the last N, then
+    //    reconstruct the session list so that only those games are included.
+    final limit = _filter.lastN.limit;
+    if (limit != null) {
+      // Build flat list: (sesion, partida) sorted by sesion.fecha ascending.
+      final sortedSesiones = List<Sesion>.from(filtered)
+        ..sort((a, b) => a.fecha.compareTo(b.fecha));
+
+      final allPairs = <(Sesion, Partida)>[];
+      for (final s in sortedSesiones) {
+        for (final p in s.partidas) {
+          allPairs.add((s, p));
+        }
+      }
+
+      final limited = allPairs.length > limit
+          ? allPairs.sublist(allPairs.length - limit)
+          : allPairs;
+
+      // Rebuild minimal Sesion list preserving the original objects but with
+      // only the selected games.
+      final sesionToPartidas = <Sesion, List<Partida>>{};
+      for (final (s, p) in limited) {
+        sesionToPartidas.putIfAbsent(s, () => []).add(p);
+      }
+      filtered = sesionToPartidas.entries
+          .map((e) => e.key.copyWith(partidas: e.value))
+          .toList()
+        ..sort((a, b) => a.fecha.compareTo(b.fecha));
+    }
+
     _cachedSesiones = sesiones;
-    _cachedFiltroTipo = _filtroTipo;
+    _cachedFilter = _filter;
     _cachedFilteredSesiones = filtered;
-    
+
     return filtered;
   }
+
+  /// Returns the effective [DateTimeRange] for the active preset, or null for
+  /// [DateRangePreset.allTime].
+  DateTimeRange? _effectiveDateRange() {
+    final now = DateTime.now();
+    switch (_filter.datePreset) {
+      case DateRangePreset.allTime:
+        return null;
+      case DateRangePreset.last7Days:
+        return DateTimeRange(
+            start: now.subtract(const Duration(days: 7)), end: now);
+      case DateRangePreset.last30Days:
+        return DateTimeRange(
+            start: now.subtract(const Duration(days: 30)), end: now);
+      case DateRangePreset.last90Days:
+        return DateTimeRange(
+            start: now.subtract(const Duration(days: 90)), end: now);
+      case DateRangePreset.thisMonth:
+        return DateTimeRange(
+            start: DateTime(now.year, now.month, 1), end: now);
+      case DateRangePreset.thisYear:
+        return DateTimeRange(start: DateTime(now.year, 1, 1), end: now);
+      case DateRangePreset.custom:
+        return _filter.customRange;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // L10n helpers
+  // ---------------------------------------------------------------------------
 
   String _translateTipo(String tipo, AppLocalizations l10n) {
     if (tipo == AppConstants.tipoEntrenamiento) return l10n.training;
@@ -95,6 +185,42 @@ class _EstadisticasPantallaCompletaState
     if (tipo == AppConstants.tipoTodos) return l10n.all;
     return tipo;
   }
+
+  String _labelForPreset(DateRangePreset p, AppLocalizations l10n) {
+    switch (p) {
+      case DateRangePreset.last7Days:
+        return l10n.datePresetLast7Days;
+      case DateRangePreset.last30Days:
+        return l10n.datePresetLast30Days;
+      case DateRangePreset.last90Days:
+        return l10n.datePresetLast90Days;
+      case DateRangePreset.thisMonth:
+        return l10n.datePresetThisMonth;
+      case DateRangePreset.thisYear:
+        return l10n.datePresetThisYear;
+      case DateRangePreset.allTime:
+        return l10n.datePresetAllTime;
+      case DateRangePreset.custom:
+        return l10n.datePresetCustom;
+    }
+  }
+
+  String _labelForLastN(LastNGames n, AppLocalizations l10n) {
+    switch (n) {
+      case LastNGames.all:
+        return l10n.lastNAll;
+      case LastNGames.last10:
+        return l10n.lastN10;
+      case LastNGames.last25:
+        return l10n.lastN25;
+      case LastNGames.last50:
+        return l10n.lastN50;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Build
+  // ---------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -161,82 +287,7 @@ class _EstadisticasPantallaCompletaState
           if (partidas.isEmpty) {
             return Column(
               children: [
-                // Filtro visual optimizado - Fixed at the top
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: isDark ? Theme.of(context).colorScheme.surface : Colors.grey[100],
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.38),
-                        width: 1.3,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(context).colorScheme.primary.withOpacity(isDark ? 0.13 : 0.06),
-                          blurRadius: 7,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-                    child: Row(
-                      children: [
-                        Icon(Icons.filter_list_rounded, color: Theme.of(context).colorScheme.primary, size: 22),
-                        const SizedBox(width: 10),
-                        Text(
-                          AppLocalizations.of(context)!.filter,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.84),
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              value: _filtroTipo,
-                              borderRadius: BorderRadius.circular(12),
-                              isExpanded: true,
-                              icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).colorScheme.primary),
-                              dropdownColor: isDark ? Theme.of(context).colorScheme.surface : Colors.white,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurface,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              items: AppConstants.tiposSesionConTodos
-                                  .map(
-                                    (tipo) => DropdownMenuItem(
-                                      value: tipo,
-                                      child: Text(
-                                        _translateTipo(tipo, l10n),
-                                        style: TextStyle(
-                                          color: Theme.of(context).colorScheme.onSurface.withOpacity(
-                                            tipo == _filtroTipo ? 1.0 : 0.72,
-                                          ),
-                                          fontWeight: tipo == _filtroTipo
-                                              ? FontWeight.bold
-                                              : FontWeight.normal,
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (v) {
-                                setState(() {
-                                  _filtroTipo = v ?? AppConstants.tipoTodos;
-                                });
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                _buildFilterBar(l10n, isDark),
                 // Centered "no data" message
                 Expanded(
                   child: Center(
@@ -255,7 +306,10 @@ class _EstadisticasPantallaCompletaState
 
           // Usar cache de estadísticas (provider registrado en main.dart)
           final estadisticasCache = Provider.of<EstadisticasCache>(context, listen: false);
-          final stats = estadisticasCache.getEstadisticas(sesiones);
+          final stats = estadisticasCache.getEstadisticas(
+            sesiones,
+            filterKey: _filter.cacheKey,
+          );
 
           // Log analytics after successful data load (only once)
           if (!_hasLoggedView) {
@@ -264,7 +318,7 @@ class _EstadisticasPantallaCompletaState
               if (!mounted) return;
               try {
                 final analytics = Provider.of<AnalyticsService>(context, listen: false);
-                analytics.logStatisticsViewed('all');
+                analytics.logStatisticsViewed(_filter.cacheKey);
               } catch (e) {
                 debugPrint('Error logging statistics view: $e');
               }
@@ -277,8 +331,6 @@ class _EstadisticasPantallaCompletaState
           final promedioUlt10 = stats['promedioUltimas10'] as double;
           final mejor = (stats['mejorPartida'] as Partida?)?.total ?? 0;
           final peor = (stats['peorPartida'] as Partida?)?.total ?? 0;
-          final mejorEntrenamiento = stats['mejorEntrenamiento'] as int;
-          final mejorCompeticion = stats['mejorCompeticion'] as int;
           final rachaStrike = stats['rachaStrikes'] as int;
           final rachaSpare = stats['rachaSpares'] as int;
           final porcentajes = stats['porcentajes'] as Map<String, double>;
@@ -314,367 +366,351 @@ class _EstadisticasPantallaCompletaState
               ? Colors.white.withOpacity(AppTheme.textCardOpacity)
               : Colors.black87;
 
-          return ListView(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 14),
-            children: [
-              // Filtro visual optimizado
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isDark ? Theme.of(context).colorScheme.surface : Colors.grey[100],
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.38),
-                      width: 1.3,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(isDark ? 0.13 : 0.06),
-                        blurRadius: 7,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-                  child: Row(
-                    children: [
-                      Icon(Icons.filter_list_rounded, color: Theme.of(context).colorScheme.primary, size: 22),
-                      const SizedBox(width: 10),
-                      Text(
-                        AppLocalizations.of(context)!.filter,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.84),
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: _filtroTipo,
-                            borderRadius: BorderRadius.circular(12),
-                            isExpanded: true,
-                            icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).colorScheme.primary),
-                            dropdownColor: isDark ? Theme.of(context).colorScheme.surface : Colors.white,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurface,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            items: AppConstants.tiposSesionConTodos
-                                .map(
-                                  (tipo) => DropdownMenuItem(
-                                    value: tipo,
-                                    child: Text(
-                                      _translateTipo(tipo, l10n),
-                                      style: TextStyle(
-                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(
-                                          tipo == _filtroTipo ? 1.0 : 0.72,
-                                        ),
-                                        fontWeight: tipo == _filtroTipo
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (v) {
-                              setState(() {
-                                _filtroTipo = v ?? AppConstants.tipoTodos;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
+          return CustomScrollView(
+            slivers: [
+              // ── FILTER BAR ──────────────────────────────────────────────────
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 14, vertical: 12),
+                  child: _buildFilterBar(l10n, isDark),
+                ),
+              ),
+
+              // ── STICKY KPI SUMMARY HEADER ────────────────────────────────
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _KpiStickyDelegate(
+                  minHeight: 72,
+                  maxHeight: 72,
+                  child: _buildKpiStickyBar(
+                    promedio: promedio,
+                    mejor: mejor,
+                    peor: peor,
+                    totalPartidas: partidas.length,
+                    isDark: isDark,
+                    l10n: l10n,
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
 
-              // ── SECCIÓN 1: ESTADÍSTICAS GENERALES ──────────────────────────
-              _buildSectionHeader(
-                title: l10n.statsGeneralSection,
-                icon: Icons.bar_chart_rounded,
-                color: Colors.blue[700]!,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                AppLocalizations.of(context)!.quickScoreSummary,
-                style: TextStyle(fontSize: 12, color: greyColor),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              RepaintBoundary(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
+              // ── MAIN CONTENT ─────────────────────────────────────────────
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 8, horizontal: 14),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      KpiCardDinamico(
-                        label: AppLocalizations.of(context)!.average,
-                        value: promedio.toStringAsFixed(1),
+                      // ── SECCIÓN 1: ESTADÍSTICAS GENERALES ──────────────────
+                      _buildSectionHeader(
+                        title: l10n.statsGeneralSection,
                         icon: Icons.bar_chart_rounded,
                         color: Colors.blue[700]!,
-                        esSubida: promedio >= promedioUlt10, // comparación básica
                       ),
-                      KpiCardDinamico(
-                        label: AppLocalizations.of(context)!.averageLast5,
-                        value: promedioUlt5.toStringAsFixed(1),
-                        icon: Icons.trending_up_rounded,
+                      const SizedBox(height: 4),
+                      Text(
+                        AppLocalizations.of(context)!.quickScoreSummary,
+                        style: TextStyle(fontSize: 12, color: greyColor),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      RepaintBoundary(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              KpiCardDinamico(
+                                label: AppLocalizations.of(context)!.average,
+                                value: promedio.toStringAsFixed(1),
+                                icon: Icons.bar_chart_rounded,
+                                color: Colors.blue[700]!,
+                                esSubida: promedio >= promedioUlt10,
+                              ),
+                              KpiCardDinamico(
+                                label: AppLocalizations.of(context)!.averageLast5,
+                                value: promedioUlt5.toStringAsFixed(1),
+                                icon: Icons.trending_up_rounded,
+                                color: Colors.purple[600]!,
+                                esSubida: promedioUlt5 > promedioUlt10,
+                              ),
+                              KpiCardDinamico(
+                                label: AppLocalizations.of(context)!.best,
+                                value: '$mejor',
+                                icon: Icons.emoji_events_rounded,
+                                color: Colors.green[600]!,
+                                esSubida: true,
+                              ),
+                              KpiCardDinamico(
+                                label: AppLocalizations.of(context)!.worst,
+                                value: '$peor',
+                                icon: Icons.sentiment_dissatisfied_rounded,
+                                color: Colors.red[400]!,
+                                esSubida: false,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          RachaBadge(
+                            label: AppLocalizations.of(context)!.strikes,
+                            valor: rachaStrike,
+                            icon: Icons.flash_on,
+                            color: Colors.blue[700]!,
+                          ),
+                          RachaBadge(
+                            label: AppLocalizations.of(context)!.spares,
+                            valor: rachaSpare,
+                            icon: Icons.bolt,
+                            color: Colors.green[600]!,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        AppLocalizations.of(context)!.longestStreakDescription,
+                        style: TextStyle(fontSize: 12, color: greyColor),
+                        textAlign: TextAlign.center,
+                      ),
+
+                      const SizedBox(height: 14),
+                      Text(
+                        AppLocalizations.of(context)!.percentageStrikesSparesMisses,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: greyColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 3),
+                      PastelPorcentajes(
+                        porcentajeStrikes: porcentajes['strikes']!,
+                        porcentajeSpares: porcentajes['spares']!,
+                        porcentajeFallos: porcentajes['fallos']!,
+                      ),
+
+                      // ── SECCIÓN 2: EVOLUCIÓN Y DISTRIBUCIÓN ────────────────
+                      const SizedBox(height: 8),
+                      _buildSectionHeader(
+                        title: l10n.statsEvolutionSection,
+                        icon: Icons.show_chart_rounded,
                         color: Colors.purple[600]!,
-                        esSubida: promedioUlt5 > promedioUlt10,
                       ),
-                      KpiCardDinamico(
-                        label: AppLocalizations.of(context)!.best,
-                        value: "$mejor",
+                      const SizedBox(height: 4),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            AppLocalizations.of(context)!.recentEvolution,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: greyColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          InfoTooltipIcon(
+                              message: l10n.tooltipMovingAverage),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      MiniGraficoPromedioMovil(promedios: miniPromedios),
+
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Text(
+                            AppLocalizations.of(context)!.scoreDistribution,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(width: 4),
+                          InfoTooltipIcon(
+                              message: l10n.tooltipHistogram),
+                        ],
+                      ),
+                      Text(
+                        AppLocalizations.of(context)!.gamesGroupedByRange,
+                        style: TextStyle(fontSize: 12, color: greyColor),
+                      ),
+                      const SizedBox(height: 4),
+                      HistogramaPuntuaciones(histograma: histograma),
+
+                      // ── SECCIÓN 3: MEJORES Y PEORES ────────────────────────
+                      const SizedBox(height: 8),
+                      _buildSectionHeader(
+                        title: l10n.statsBestWorstSection,
                         icon: Icons.emoji_events_rounded,
-                        color: Colors.green[600]!,
-                        esSubida: true,
+                        color: Colors.orange[700]!,
                       ),
-                      KpiCardDinamico(
-                        label: AppLocalizations.of(context)!.worst,
-                        value: "$peor",
-                        icon: Icons.sentiment_dissatisfied_rounded,
-                        color: Colors.red[400]!,
-                        esSubida: false,
+                      const SizedBox(height: 4),
+                      Text(
+                        AppLocalizations.of(context)!.topBestWorstGames,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: greyColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
+                      const SizedBox(height: 6),
+                      TopPartidasWidget(
+                        partidas: top3,
+                        titulo: AppLocalizations.of(context)!.top3BestGames,
+                        color: Colors.indigo,
+                      ),
+                      TopPartidasWidget(
+                        partidas: peores3,
+                        titulo: AppLocalizations.of(context)!.top3WorstGames,
+                        color: Colors.red,
+                      ),
+
+                      const SizedBox(height: 12),
+                      Text(
+                        AppLocalizations.of(context)!.bestWorstSessionDescription,
+                        style: TextStyle(fontSize: 12, color: greyColor),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      if (sesionRecord != null)
+                        Card(
+                          color: recordCardColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 16,
+                              horizontal: 20,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.star,
+                                    color: Colors.green[400], size: 28),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    '${AppLocalizations.of(context)!.personalRecord}\n${AppLocalizations.of(context)!.gamesWithAverage(sesionRecord.partidas.length, _formatearFechaCorta(sesionRecord.fecha), EstadisticasUtils.promedioSesion(sesionRecord).toStringAsFixed(1))}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: textCardColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      if (sesionPeor != null)
+                        Card(
+                          color: worstCardColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 16,
+                              horizontal: 20,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.error_outline,
+                                  color: Colors.red[300],
+                                  size: 28,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    '${AppLocalizations.of(context)!.worstSession} ${AppLocalizations.of(context)!.gamesWithAverage(sesionPeor.partidas.length, _formatearFechaCorta(sesionPeor.fecha), EstadisticasUtils.promedioSesion(sesionPeor).toStringAsFixed(1))}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: textCardColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                      // ── SECCIÓN 4: ESTADÍSTICAS DE PINES ──────────────────
+                      if (hayEstadisticasPines) ...[
+                        const SizedBox(height: 8),
+                        _buildSectionHeader(
+                          title: l10n.pinStatsSection,
+                          icon: Icons.adjust_rounded,
+                          color: Colors.teal[600]!,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          AppLocalizations.of(context)!.pinStatsNote,
+                          style: TextStyle(fontSize: 11, color: greyColor),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        RepaintBoundary(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                if (promedioPrimerTiro != null)
+                                  KpiCardDinamico(
+                                    label: AppLocalizations.of(context)!
+                                        .firstBallAvg,
+                                    value: promedioPrimerTiro
+                                        .toStringAsFixed(1),
+                                    icon: Icons.looks_one_rounded,
+                                    color: Colors.teal[600]!,
+                                    esSubida: promedioPrimerTiro >=
+                                        _kGoodFirstBallAverage,
+                                  ),
+                                if (tasaConversionSpare != null)
+                                  KpiCardDinamico(
+                                    label: AppLocalizations.of(context)!
+                                        .spareConversionRate,
+                                    value:
+                                        '${tasaConversionSpare.toStringAsFixed(1)}%',
+                                    icon: Icons.adjust_rounded,
+                                    color: Colors.deepOrange[600]!,
+                                    esSubida: tasaConversionSpare >=
+                                        _kGoodSpareConversionRate,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        if (conversionSparePorPin.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          _buildSectionHeader(
+                            title: l10n.perPinSpareStats,
+                            icon: Icons.pin_drop_rounded,
+                            color: Colors.deepOrange[600]!,
+                            tooltipText: l10n.tooltipSpareConversion,
+                          ),
+                          const SizedBox(height: 4),
+                          PerPinHeatmap(
+                            data: buildPerPinHeatmapData(
+                                conversionSparePorPin),
+                          ),
+                          const SizedBox(height: 8),
+                          _buildPerPinSpareTable(
+                              conversionSparePorPin, l10n),
+                        ],
+                      ],
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
               ),
-
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  RachaBadge(
-                    label: AppLocalizations.of(context)!.strikes,
-                    valor: rachaStrike,
-                    icon: Icons.flash_on,
-                    color: Colors.blue[700]!,
-                  ),
-                  RachaBadge(
-                    label: AppLocalizations.of(context)!.spares,
-                    valor: rachaSpare,
-                    icon: Icons.bolt,
-                    color: Colors.green[600]!,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                AppLocalizations.of(context)!.longestStreakDescription,
-                style: TextStyle(fontSize: 12, color: greyColor),
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: 14),
-              Text(
-                AppLocalizations.of(context)!.percentageStrikesSparesMisses,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: greyColor,
-                  fontWeight: FontWeight.w500,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 3),
-              PastelPorcentajes(
-                porcentajeStrikes: porcentajes["strikes"]!,
-                porcentajeSpares: porcentajes["spares"]!,
-                porcentajeFallos: porcentajes["fallos"]!,
-              ),
-
-              // ── SECCIÓN 2: EVOLUCIÓN Y DISTRIBUCIÓN ───────────────────────
-              const SizedBox(height: 8),
-              _buildSectionHeader(
-                title: l10n.statsEvolutionSection,
-                icon: Icons.show_chart_rounded,
-                color: Colors.purple[600]!,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                AppLocalizations.of(context)!.recentEvolution,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: greyColor,
-                  fontWeight: FontWeight.w500,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 3),
-              MiniGraficoPromedioMovil(promedios: miniPromedios),
-
-              const SizedBox(height: 16),
-              Text(
-                AppLocalizations.of(context)!.scoreDistribution,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-              ),
-              Text(
-                AppLocalizations.of(context)!.gamesGroupedByRange,
-                style: TextStyle(fontSize: 12, color: greyColor),
-              ),
-              const SizedBox(height: 4),
-              HistogramaPuntuaciones(histograma: histograma),
-
-              // ── SECCIÓN 3: MEJORES Y PEORES ────────────────────────────────
-              const SizedBox(height: 8),
-              _buildSectionHeader(
-                title: l10n.statsBestWorstSection,
-                icon: Icons.emoji_events_rounded,
-                color: Colors.orange[700]!,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                AppLocalizations.of(context)!.topBestWorstGames,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: greyColor,
-                  fontWeight: FontWeight.w500,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 6),
-              TopPartidasWidget(
-                partidas: top3,
-                titulo: AppLocalizations.of(context)!.top3BestGames,
-                color: Colors.indigo,
-              ),
-              TopPartidasWidget(
-                partidas: peores3,
-                titulo: AppLocalizations.of(context)!.top3WorstGames,
-                color: Colors.red,
-              ),
-
-              const SizedBox(height: 12),
-              Text(
-                AppLocalizations.of(context)!.bestWorstSessionDescription,
-                style: TextStyle(fontSize: 12, color: greyColor),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              if (sesionRecord != null)
-                Card(
-                  color: recordCardColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 16,
-                      horizontal: 20,
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.star, color: Colors.green[400], size: 28),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            "${AppLocalizations.of(context)!.personalRecord}\n${AppLocalizations.of(context)!.gamesWithAverage(sesionRecord.partidas.length, _formatearFechaCorta(sesionRecord.fecha), EstadisticasUtils.promedioSesion(sesionRecord).toStringAsFixed(1))}",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: textCardColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              if (sesionPeor != null)
-                Card(
-                  color: worstCardColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 16,
-                      horizontal: 20,
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          color: Colors.red[300],
-                          size: 28,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            "${AppLocalizations.of(context)!.worstSession} ${AppLocalizations.of(context)!.gamesWithAverage(sesionPeor.partidas.length, _formatearFechaCorta(sesionPeor.fecha), EstadisticasUtils.promedioSesion(sesionPeor).toStringAsFixed(1))}",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: textCardColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-              // ── SECCIÓN 4: ESTADÍSTICAS DE PINES ──────────────────────────
-              if (hayEstadisticasPines) ...[
-                const SizedBox(height: 8),
-                _buildSectionHeader(
-                  title: l10n.pinStatsSection,
-                  icon: Icons.adjust_rounded,
-                  color: Colors.teal[600]!,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  AppLocalizations.of(context)!.pinStatsNote,
-                  style: TextStyle(fontSize: 11, color: greyColor),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                RepaintBoundary(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        if (promedioPrimerTiro != null)
-                          KpiCardDinamico(
-                            label: AppLocalizations.of(context)!.firstBallAvg,
-                            value: promedioPrimerTiro.toStringAsFixed(1),
-                            icon: Icons.looks_one_rounded,
-                            color: Colors.teal[600]!,
-                            esSubida: promedioPrimerTiro >= _kGoodFirstBallAverage,
-                          ),
-                        if (tasaConversionSpare != null)
-                          KpiCardDinamico(
-                            label: AppLocalizations.of(context)!.spareConversionRate,
-                            value: '${tasaConversionSpare.toStringAsFixed(1)}%',
-                            icon: Icons.adjust_rounded,
-                            color: Colors.deepOrange[600]!,
-                            esSubida: tasaConversionSpare >= _kGoodSpareConversionRate,
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-                if (conversionSparePorPin.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  _buildSectionHeader(
-                    title: l10n.perPinSpareStats,
-                    icon: Icons.pin_drop_rounded,
-                    color: Colors.deepOrange[600]!,
-                  ),
-                  const SizedBox(height: 4),
-                  PerPinHeatmap(
-                    data: buildPerPinHeatmapData(conversionSparePorPin),
-                  ),
-                  const SizedBox(height: 8),
-                  _buildPerPinSpareTable(conversionSparePorPin, l10n),
-                ],
-              ],
-              const SizedBox(height: 20),
             ],
           );
         },
@@ -683,7 +719,7 @@ class _EstadisticasPantallaCompletaState
   }
 
   String _formatearFechaCorta(DateTime fecha) {
-    return "${fecha.day.toString().padLeft(2, '0')}/${fecha.month.toString().padLeft(2, '0')}/${fecha.year}";
+    return '${fecha.day.toString().padLeft(2, '0')}/${fecha.month.toString().padLeft(2, '0')}/${fecha.year}';
   }
 
   /// Builds a compact table showing per-pin spare conversion stats.
@@ -757,10 +793,246 @@ class _EstadisticasPantallaCompletaState
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // Helper methods
+  // ---------------------------------------------------------------------------
+
+  /// Full filter bar: session type + date range presets + last-N-games chips.
+  Widget _buildFilterBar(AppLocalizations l10n, bool isDark) {
+    final primary = Theme.of(context).colorScheme.primary;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark
+            ? Theme.of(context).colorScheme.surface
+            : Colors.grey[100],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: primary.withOpacity(0.38),
+          width: 1.3,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: primary.withOpacity(isDark ? 0.13 : 0.06),
+            blurRadius: 7,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Row 1: session type ────────────────────────────────────────
+          Row(
+            children: [
+              Icon(Icons.filter_list_rounded, color: primary, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                l10n.filter,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: onSurface.withOpacity(0.84),
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _filter.tipo,
+                    borderRadius: BorderRadius.circular(12),
+                    isExpanded: true,
+                    icon: Icon(Icons.arrow_drop_down, color: primary),
+                    dropdownColor: isDark
+                        ? Theme.of(context).colorScheme.surface
+                        : Colors.white,
+                    style: TextStyle(
+                      color: onSurface,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    items: AppConstants.tiposSesionConTodos
+                        .map(
+                          (tipo) => DropdownMenuItem(
+                            value: tipo,
+                            child: Text(
+                              _translateTipo(tipo, l10n),
+                              style: TextStyle(
+                                color: onSurface.withOpacity(
+                                  tipo == _filter.tipo ? 1.0 : 0.72,
+                                ),
+                                fontWeight: tipo == _filter.tipo
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) => setState(
+                      () => _filter = _filter.copyWith(
+                        tipo: v ?? AppConstants.tipoTodos,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // ── Row 2: date range presets ──────────────────────────────────
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Text(
+                '${l10n.filterDateRange}:',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: onSurface.withOpacity(0.65),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      for (final preset in DateRangePreset.values)
+                        _DateChip(
+                          label: _labelForPreset(preset, l10n),
+                          selected: _filter.datePreset == preset,
+                          onTap: () async {
+                            if (preset == DateRangePreset.custom) {
+                              final picked = await showDateRangePicker(
+                                context: context,
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime.now(),
+                                initialDateRange: _filter.customRange,
+                                helpText: l10n.selectDateRange,
+                                builder: (ctx, child) => Theme(
+                                  data: Theme.of(ctx),
+                                  child: child!,
+                                ),
+                              );
+                              if (picked != null) {
+                                setState(
+                                  () => _filter = _filter.copyWith(
+                                    datePreset: DateRangePreset.custom,
+                                    customRange: picked,
+                                  ),
+                                );
+                              }
+                            } else {
+                              setState(
+                                () => _filter = _filter.copyWith(
+                                  datePreset: preset,
+                                  clearCustomRange: true,
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // ── Row 3: last-N-games ────────────────────────────────────────
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Text(
+                '${l10n.filterLastNGames}:',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: onSurface.withOpacity(0.65),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      for (final n in LastNGames.values)
+                        _DateChip(
+                          label: _labelForLastN(n, l10n),
+                          selected: _filter.lastN == n,
+                          onTap: () => setState(
+                            () => _filter = _filter.copyWith(lastN: n),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Sticky KPI summary bar (4 metrics).
+  Widget _buildKpiStickyBar({
+    required double promedio,
+    required int mejor,
+    required int peor,
+    required int totalPartidas,
+    required bool isDark,
+    required AppLocalizations l10n,
+  }) {
+    final bg = isDark
+        ? Theme.of(context).colorScheme.surface.withOpacity(0.97)
+        : Theme.of(context).colorScheme.surface.withOpacity(0.97);
+    return Material(
+      elevation: 2,
+      color: bg,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: Row(
+          children: [
+            _StickyKpi(
+              label: l10n.stickyKpiAverage,
+              value: promedio.toStringAsFixed(1),
+              icon: Icons.bar_chart_rounded,
+              color: Colors.blue[700]!,
+            ),
+            _StickyKpi(
+              label: l10n.stickyKpiBest,
+              value: '$mejor',
+              icon: Icons.emoji_events_rounded,
+              color: Colors.green[600]!,
+            ),
+            _StickyKpi(
+              label: l10n.stickyKpiWorst,
+              value: '$peor',
+              icon: Icons.sentiment_dissatisfied_rounded,
+              color: Colors.red[400]!,
+            ),
+            _StickyKpi(
+              label: l10n.stickyKpiGames,
+              value: '$totalPartidas',
+              icon: Icons.sports_score_rounded,
+              color: Colors.purple[600]!,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSectionHeader({
     required String title,
     required IconData icon,
     required Color color,
+    String? tooltipText,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -777,6 +1049,10 @@ class _EstadisticasPantallaCompletaState
               letterSpacing: 0.2,
             ),
           ),
+          if (tooltipText != null) ...[
+            const SizedBox(width: 4),
+            InfoTooltipIcon(message: tooltipText, color: color.withOpacity(0.6)),
+          ],
           const SizedBox(width: 10),
           Expanded(
             child: Divider(
@@ -785,6 +1061,134 @@ class _EstadisticasPantallaCompletaState
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Helper delegate for the pinned KPI sliver ────────────────────────────────
+
+class _KpiStickyDelegate extends SliverPersistentHeaderDelegate {
+  const _KpiStickyDelegate({
+    required this.minHeight,
+    required this.maxHeight,
+    required this.child,
+  });
+
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
+
+  @override
+  double get minExtent => minHeight;
+
+  @override
+  double get maxExtent => maxHeight;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(child: child);
+  }
+
+  @override
+  bool shouldRebuild(_KpiStickyDelegate oldDelegate) {
+    return oldDelegate.minHeight != minHeight ||
+        oldDelegate.maxHeight != maxHeight ||
+        oldDelegate.child != child;
+  }
+}
+
+// ── Compact KPI tile used in the sticky header ───────────────────────────────
+
+class _StickyKpi extends StatelessWidget {
+  const _StickyKpi({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              color: color,
+            ),
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Small chip used in the filter rows ──────────────────────────────────────
+
+class _DateChip extends StatelessWidget {
+  const _DateChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: selected
+                ? colorScheme.primary
+                : colorScheme.primary.withOpacity(0.10),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: selected
+                  ? colorScheme.primary
+                  : colorScheme.primary.withOpacity(0.30),
+              width: 1,
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: selected
+                  ? colorScheme.onPrimary
+                  : colorScheme.onSurface.withOpacity(0.75),
+            ),
+          ),
+        ),
       ),
     );
   }

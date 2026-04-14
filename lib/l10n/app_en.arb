@@ -904,5 +904,93 @@
   "updateOpenStoreFailed": "Could not open the app store",
   "@updateOpenStoreFailed": {
     "description": "Error message when the store URL cannot be launched"
+  },
+  "filterDateRange": "Period",
+  "@filterDateRange": {
+    "description": "Label for the date range filter on the statistics screen"
+  },
+  "filterLastNGames": "Games",
+  "@filterLastNGames": {
+    "description": "Label for the last-N-games filter on the statistics screen"
+  },
+  "datePresetLast7Days": "Last 7 d",
+  "@datePresetLast7Days": {
+    "description": "Date range preset: last 7 days"
+  },
+  "datePresetLast30Days": "Last 30 d",
+  "@datePresetLast30Days": {
+    "description": "Date range preset: last 30 days"
+  },
+  "datePresetLast90Days": "Last 90 d",
+  "@datePresetLast90Days": {
+    "description": "Date range preset: last 90 days"
+  },
+  "datePresetThisMonth": "This month",
+  "@datePresetThisMonth": {
+    "description": "Date range preset: this month"
+  },
+  "datePresetThisYear": "This year",
+  "@datePresetThisYear": {
+    "description": "Date range preset: this year"
+  },
+  "datePresetAllTime": "All time",
+  "@datePresetAllTime": {
+    "description": "Date range preset: all time"
+  },
+  "datePresetCustom": "Custom",
+  "@datePresetCustom": {
+    "description": "Date range preset: custom date range"
+  },
+  "lastNAll": "All",
+  "@lastNAll": {
+    "description": "Last-N-games filter option: all games"
+  },
+  "lastN10": "Last 10",
+  "@lastN10": {
+    "description": "Last-N-games filter option: last 10 games"
+  },
+  "lastN25": "Last 25",
+  "@lastN25": {
+    "description": "Last-N-games filter option: last 25 games"
+  },
+  "lastN50": "Last 50",
+  "@lastN50": {
+    "description": "Last-N-games filter option: last 50 games"
+  },
+  "selectDateRange": "Select date range",
+  "@selectDateRange": {
+    "description": "Title for the custom date range picker"
+  },
+  "tooltipMovingAverage": "Moving average calculated over the last 5 games. Smoothes out individual variations.",
+  "@tooltipMovingAverage": {
+    "description": "Help text for the moving average chart"
+  },
+  "tooltipHistogram": "Distribution of your scores in 20-point ranges.",
+  "@tooltipHistogram": {
+    "description": "Help text for the score histogram"
+  },
+  "tooltipSpareConversion": "Percentage of times you converted the spare when given the opportunity.",
+  "@tooltipSpareConversion": {
+    "description": "Help text for the spare conversion rate"
+  },
+  "tooltipFirstBall": "Average pins knocked down on the first throw of each frame.",
+  "@tooltipFirstBall": {
+    "description": "Help text for the first-ball average"
+  },
+  "stickyKpiAverage": "Average",
+  "@stickyKpiAverage": {
+    "description": "KPI label for average in the sticky header"
+  },
+  "stickyKpiBest": "Best",
+  "@stickyKpiBest": {
+    "description": "KPI label for best score in the sticky header"
+  },
+  "stickyKpiWorst": "Worst",
+  "@stickyKpiWorst": {
+    "description": "KPI label for worst score in the sticky header"
+  },
+  "stickyKpiGames": "Games",
+  "@stickyKpiGames": {
+    "description": "KPI label for total games in the sticky header"
   }
 }

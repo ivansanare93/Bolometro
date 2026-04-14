@@ -1400,4 +1400,74 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get updateOpenStoreFailed =>
       'No se pudo abrir la tienda de aplicaciones';
+
+  @override
+  String get filterDateRange => 'Período';
+
+  @override
+  String get filterLastNGames => 'Partidas';
+
+  @override
+  String get datePresetLast7Days => 'Últ. 7 días';
+
+  @override
+  String get datePresetLast30Days => 'Últ. 30 días';
+
+  @override
+  String get datePresetLast90Days => 'Últ. 90 días';
+
+  @override
+  String get datePresetThisMonth => 'Este mes';
+
+  @override
+  String get datePresetThisYear => 'Este año';
+
+  @override
+  String get datePresetAllTime => 'Siempre';
+
+  @override
+  String get datePresetCustom => 'Personalizado';
+
+  @override
+  String get lastNAll => 'Todas';
+
+  @override
+  String get lastN10 => 'Últ. 10';
+
+  @override
+  String get lastN25 => 'Últ. 25';
+
+  @override
+  String get lastN50 => 'Últ. 50';
+
+  @override
+  String get selectDateRange => 'Seleccionar rango de fechas';
+
+  @override
+  String get tooltipMovingAverage =>
+      'Promedio móvil calculado sobre las últimas 5 partidas. Suaviza las variaciones individuales.';
+
+  @override
+  String get tooltipHistogram =>
+      'Distribución de tus puntuaciones en rangos de 20 puntos.';
+
+  @override
+  String get tooltipSpareConversion =>
+      'Porcentaje de veces que convertiste el spare cuando tuviste la oportunidad.';
+
+  @override
+  String get tooltipFirstBall =>
+      'Promedio de pinos derribados en el primer tiro de cada frame.';
+
+  @override
+  String get stickyKpiAverage => 'Promedio';
+
+  @override
+  String get stickyKpiBest => 'Mejor';
+
+  @override
+  String get stickyKpiWorst => 'Peor';
+
+  @override
+  String get stickyKpiGames => 'Partidas';
 }

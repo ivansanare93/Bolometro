@@ -12,14 +12,29 @@ class EstadisticasCache extends ChangeNotifier {
   int _lastSesionesCount = 0;
   int _lastPartidasCount = 0;
 
-  /// Obtener estadísticas con cache
-  Map<String, dynamic> getEstadisticas(List<Sesion> sesiones) {
+  // Filter-keyed cache entries used when filters are active.
+  final Map<String, Map<String, dynamic>> _filteredCache = {};
+  final Map<String, DateTime> _filteredCacheTimestamps = {};
+
+  /// Obtener estadísticas con cache, vinculadas a una clave de filtro.
+  ///
+  /// [filterKey] should be a stable string that uniquely identifies the active
+  /// filter combination (e.g. [StatsFilter.cacheKey]). When it is empty the
+  /// un-keyed legacy cache is used, which is keyed only on session/game counts.
+  Map<String, dynamic> getEstadisticas(
+    List<Sesion> sesiones, {
+    String filterKey = '',
+  }) {
     final todasPartidas = <Partida>[];
     for (final sesion in sesiones) {
       todasPartidas.addAll(sesion.partidas);
     }
 
-    // Verificar si necesitamos recalcular
+    if (filterKey.isNotEmpty) {
+      return _getWithFilterKey(sesiones, todasPartidas, filterKey);
+    }
+
+    // Legacy path: keyed on counts.
     if (_shouldRefresh(sesiones.length, todasPartidas.length)) {
       _cache = _calcularEstadisticas(sesiones, todasPartidas);
       _lastUpdate = DateTime.now();
@@ -29,6 +44,28 @@ class EstadisticasCache extends ChangeNotifier {
     }
 
     return _cache ?? {};
+  }
+
+  Map<String, dynamic> _getWithFilterKey(
+    List<Sesion> sesiones,
+    List<Partida> partidas,
+    String filterKey,
+  ) {
+    final existing = _filteredCache[filterKey];
+    final ts = _filteredCacheTimestamps[filterKey];
+    final expired = ts == null ||
+        DateTime.now().difference(ts).inMinutes >
+            AppConstants.cacheExpirationMinutes;
+
+    if (existing != null && !expired) {
+      return existing;
+    }
+
+    final result = _calcularEstadisticas(sesiones, partidas);
+    _filteredCache[filterKey] = result;
+    _filteredCacheTimestamps[filterKey] = DateTime.now();
+    notifyListeners();
+    return result;
   }
 
   /// Determinar si el cache debe refrescarse
@@ -177,6 +214,8 @@ class EstadisticasCache extends ChangeNotifier {
     _lastUpdate = null;
     _lastSesionesCount = 0;
     _lastPartidasCount = 0;
+    _filteredCache.clear();
+    _filteredCacheTimestamps.clear();
     notifyListeners();
   }
 
