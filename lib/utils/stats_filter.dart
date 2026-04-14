@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 /// Presets for date-range filtering on the statistics screen.
 enum DateRangePreset {
+  allTime,
   last7Days,
   last30Days,
   last90Days,
   thisMonth,
   thisYear,
-  allTime,
   custom,
 }
 
