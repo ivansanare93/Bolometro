@@ -2876,88 +2876,88 @@ abstract class AppLocalizations {
   /// **'Partidas'**
   String get stickyKpiGames;
 
-  /// No description provided for @stickyKpiTrend.
+  /// Etiqueta del KPI de tendencia en el header fijo
   ///
-  /// In en, this message translates to:
-  /// **'Trend'**
+  /// In es, this message translates to:
+  /// **'Tendencia'**
   String get stickyKpiTrend;
 
-  /// No description provided for @stickyKpiConsistency.
+  /// Etiqueta del KPI de consistencia en el header fijo
   ///
-  /// In en, this message translates to:
-  /// **'Consistency'**
+  /// In es, this message translates to:
+  /// **'Consistencia'**
   String get stickyKpiConsistency;
 
-  /// No description provided for @trendNotAvailable.
+  /// Valor cuando no hay suficientes partidas para calcular la tendencia
   ///
-  /// In en, this message translates to:
+  /// In es, this message translates to:
   /// **'N/A'**
   String get trendNotAvailable;
 
-  /// No description provided for @tooltipTrend.
+  /// Texto de ayuda para el KPI de tendencia
   ///
-  /// In en, this message translates to:
-  /// **'Average difference between your last 10 games and the previous 10 (or 5 vs 5 if not enough games).'**
+  /// In es, this message translates to:
+  /// **'Diferencia de promedio entre tus últimas 10 partidas y las 10 anteriores (o 5 vs 5 si no hay suficientes).'**
   String get tooltipTrend;
 
-  /// No description provided for @tooltipConsistency.
+  /// Texto de ayuda para el KPI de consistencia
   ///
-  /// In en, this message translates to:
-  /// **'Standard deviation of your scores. Lower = more consistent.'**
+  /// In es, this message translates to:
+  /// **'Desviación estándar de tus puntuaciones. Menor = más regular.'**
   String get tooltipConsistency;
 
-  /// No description provided for @insightsSection.
+  /// Título de la sección de insights en estadísticas
   ///
-  /// In en, this message translates to:
+  /// In es, this message translates to:
   /// **'Insights'**
   String get insightsSection;
 
-  /// No description provided for @goalSection.
+  /// Título de la sección de meta/objetivo en estadísticas
   ///
-  /// In en, this message translates to:
-  /// **'Average goal'**
+  /// In es, this message translates to:
+  /// **'Meta de promedio'**
   String get goalSection;
 
-  /// No description provided for @goalProgress.
+  /// Texto de progreso hacia la meta, con puntos restantes
   ///
-  /// In en, this message translates to:
-  /// **'{points} pts to go'**
+  /// In es, this message translates to:
+  /// **'Te faltan {points} pts para la meta'**
   String goalProgress(String points);
 
-  /// No description provided for @goalAchieved.
+  /// Mensaje cuando el usuario alcanza la meta
   ///
-  /// In en, this message translates to:
-  /// **'Goal reached! 🎯'**
+  /// In es, this message translates to:
+  /// **'¡Meta alcanzada! 🎯'**
   String get goalAchieved;
 
-  /// No description provided for @goalEditTitle.
+  /// Título del diálogo de edición de meta
   ///
-  /// In en, this message translates to:
-  /// **'Edit average goal'**
+  /// In es, this message translates to:
+  /// **'Editar meta de promedio'**
   String get goalEditTitle;
 
-  /// No description provided for @goalEditHint.
+  /// Texto de pista para el campo de meta en el diálogo
   ///
-  /// In en, this message translates to:
-  /// **'Target score (1–300)'**
+  /// In es, this message translates to:
+  /// **'Puntuación objetivo (1–300)'**
   String get goalEditHint;
 
-  /// No description provided for @goalEditInvalid.
+  /// Mensaje de validación cuando el valor ingresado no es válido
   ///
-  /// In en, this message translates to:
-  /// **'Enter a value between 1 and 300'**
+  /// In es, this message translates to:
+  /// **'Introduce un valor entre 1 y 300'**
   String get goalEditInvalid;
 
-  /// No description provided for @goalTooltip.
+  /// Texto de ayuda para la sección de metas
   ///
-  /// In en, this message translates to:
-  /// **'Set a target average to stay motivated. Progress is shown here.'**
+  /// In es, this message translates to:
+  /// **'Define un promedio objetivo para motivarte. El progreso se muestra aquí.'**
   String get goalTooltip;
 
-  /// No description provided for @goalSetPrompt.
+  /// Mensaje cuando aún no hay meta configurada
   ///
-  /// In en, this message translates to:
-  /// **'Tap ✏️ to set your average goal.'**
+  /// In es, this message translates to:
+  /// **'Toca el icono ✏️ para definir tu meta de promedio.'**
   String get goalSetPrompt;
 }
 

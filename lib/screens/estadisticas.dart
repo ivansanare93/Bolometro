@@ -204,7 +204,7 @@ class _EstadisticasPantallaCompletaState
         return l10n.datePresetAllTime;
       case DateRangePreset.last7Days:
         return l10n.datePresetLast7Days;
-      case DateRangePreset.last30Days:q
+      case DateRangePreset.last30Days:
         return l10n.datePresetLast30Days;
       case DateRangePreset.last90Days:
         return l10n.datePresetLast90Days;

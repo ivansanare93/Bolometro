@@ -1483,7 +1483,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goalSection => 'Average goal';
 
   @override
-  String goalProgress(String points) => '$points pts to go';
+  String goalProgress(String points) {
+    return '$points pts to go';
+  }
 
   @override
   String get goalAchieved => 'Goal reached! 🎯';

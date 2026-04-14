@@ -1495,7 +1495,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get goalSection => 'Meta de promedio';
 
   @override
-  String goalProgress(String points) => 'Te faltan $points pts para la meta';
+  String goalProgress(String points) {
+    return 'Te faltan $points pts para la meta';
+  }
 
   @override
   String get goalAchieved => '¡Meta alcanzada! 🎯';
@@ -1514,5 +1516,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Define un promedio objetivo para motivarte. El progreso se muestra aquí.';
 
   @override
-  String get goalSetPrompt => 'Toca el icono ✏️ para definir tu meta de promedio.';
+  String get goalSetPrompt =>
+      'Toca el icono ✏️ para definir tu meta de promedio.';
 }
