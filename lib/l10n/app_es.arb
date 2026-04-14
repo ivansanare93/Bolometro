@@ -1127,5 +1127,66 @@
   "stickyKpiGames": "Partidas",
   "@stickyKpiGames": {
     "description": "Etiqueta del KPI de total de partidas en el header fijo"
+  },
+  "stickyKpiTrend": "Tendencia",
+  "@stickyKpiTrend": {
+    "description": "Etiqueta del KPI de tendencia en el header fijo"
+  },
+  "stickyKpiConsistency": "Consistencia",
+  "@stickyKpiConsistency": {
+    "description": "Etiqueta del KPI de consistencia en el header fijo"
+  },
+  "trendNotAvailable": "N/A",
+  "@trendNotAvailable": {
+    "description": "Valor cuando no hay suficientes partidas para calcular la tendencia"
+  },
+  "tooltipTrend": "Diferencia de promedio entre tus últimas 10 partidas y las 10 anteriores (o 5 vs 5 si no hay suficientes).",
+  "@tooltipTrend": {
+    "description": "Texto de ayuda para el KPI de tendencia"
+  },
+  "tooltipConsistency": "Desviación estándar de tus puntuaciones. Menor = más regular.",
+  "@tooltipConsistency": {
+    "description": "Texto de ayuda para el KPI de consistencia"
+  },
+  "insightsSection": "Insights",
+  "@insightsSection": {
+    "description": "Título de la sección de insights en estadísticas"
+  },
+  "goalSection": "Meta de promedio",
+  "@goalSection": {
+    "description": "Título de la sección de meta/objetivo en estadísticas"
+  },
+  "goalProgress": "Te faltan {points} pts para la meta",
+  "@goalProgress": {
+    "description": "Texto de progreso hacia la meta, con puntos restantes",
+    "placeholders": {
+      "points": {
+        "type": "String"
+      }
+    }
+  },
+  "goalAchieved": "¡Meta alcanzada! 🎯",
+  "@goalAchieved": {
+    "description": "Mensaje cuando el usuario alcanza la meta"
+  },
+  "goalEditTitle": "Editar meta de promedio",
+  "@goalEditTitle": {
+    "description": "Título del diálogo de edición de meta"
+  },
+  "goalEditHint": "Puntuación objetivo (1–300)",
+  "@goalEditHint": {
+    "description": "Texto de pista para el campo de meta en el diálogo"
+  },
+  "goalEditInvalid": "Introduce un valor entre 1 y 300",
+  "@goalEditInvalid": {
+    "description": "Mensaje de validación cuando el valor ingresado no es válido"
+  },
+  "goalTooltip": "Define un promedio objetivo para motivarte. El progreso se muestra aquí.",
+  "@goalTooltip": {
+    "description": "Texto de ayuda para la sección de metas"
+  },
+  "goalSetPrompt": "Toca el icono ✏️ para definir tu meta de promedio.",
+  "@goalSetPrompt": {
+    "description": "Mensaje cuando aún no hay meta configurada"
   }
 }

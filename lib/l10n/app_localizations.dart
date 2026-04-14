@@ -2875,6 +2875,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Games'**
   String get stickyKpiGames;
+
+  /// No description provided for @stickyKpiTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Trend'**
+  String get stickyKpiTrend;
+
+  /// No description provided for @stickyKpiConsistency.
+  ///
+  /// In en, this message translates to:
+  /// **'Consistency'**
+  String get stickyKpiConsistency;
+
+  /// No description provided for @trendNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'N/A'**
+  String get trendNotAvailable;
+
+  /// No description provided for @tooltipTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Average difference between your last 10 games and the previous 10 (or 5 vs 5 if not enough games).'**
+  String get tooltipTrend;
+
+  /// No description provided for @tooltipConsistency.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard deviation of your scores. Lower = more consistent.'**
+  String get tooltipConsistency;
+
+  /// No description provided for @insightsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Insights'**
+  String get insightsSection;
+
+  /// No description provided for @goalSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Average goal'**
+  String get goalSection;
+
+  /// No description provided for @goalProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{points} pts to go'**
+  String goalProgress(String points);
+
+  /// No description provided for @goalAchieved.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal reached! 🎯'**
+  String get goalAchieved;
+
+  /// No description provided for @goalEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit average goal'**
+  String get goalEditTitle;
+
+  /// No description provided for @goalEditHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Target score (1–300)'**
+  String get goalEditHint;
+
+  /// No description provided for @goalEditInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a value between 1 and 300'**
+  String get goalEditInvalid;
+
+  /// No description provided for @goalTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a target average to stay motivated. Progress is shown here.'**
+  String get goalTooltip;
+
+  /// No description provided for @goalSetPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap ✏️ to set your average goal.'**
+  String get goalSetPrompt;
 }
 
 class _AppLocalizationsDelegate

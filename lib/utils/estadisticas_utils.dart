@@ -263,6 +263,52 @@ class EstadisticasUtils {
     };
   }
 
+  /// Calcula el delta de tendencia comparando el promedio de las últimas [n]
+  /// partidas contra las [n] anteriores.
+  ///
+  /// Estrategia de degradación:
+  /// - Si hay ≥ 20 partidas: compara las últimas 10 vs las 10 anteriores.
+  /// - Si hay ≥ 10 partidas: compara las últimas 5 vs las 5 anteriores.
+  /// - Si hay < 10 partidas: retorna null (no hay suficientes datos).
+  ///
+  /// Un valor positivo indica mejora; negativo indica caída.
+  static double? calcularTendenciaDelta(List<Partida> partidas) {
+    final int n;
+    if (partidas.length >= 20) {
+      n = 10;
+    } else if (partidas.length >= 10) {
+      n = 5;
+    } else {
+      return null;
+    }
+
+    final ultimas = partidas.sublist(partidas.length - n);
+    final anteriores = partidas.sublist(partidas.length - 2 * n, partidas.length - n);
+
+    final promUltimas =
+        ultimas.fold<int>(0, (sum, p) => sum + p.total) / ultimas.length;
+    final promAnteriores =
+        anteriores.fold<int>(0, (sum, p) => sum + p.total) / anteriores.length;
+
+    return promUltimas - promAnteriores;
+  }
+
+  /// Calcula la consistencia (desviación estándar poblacional) de los totales
+  /// de las [partidas] proporcionadas.
+  ///
+  /// Un valor más bajo indica mayor regularidad.
+  /// Retorna 0.0 si hay menos de 2 partidas.
+  static double calcularConsistencia(List<Partida> partidas) {
+    if (partidas.length < 2) return 0.0;
+    final promedio =
+        partidas.fold<int>(0, (sum, p) => sum + p.total) / partidas.length;
+    final sumaCuadrados = partidas.fold<double>(
+      0,
+      (sum, p) => sum + (p.total - promedio) * (p.total - promedio),
+    );
+    return sqrt(sumaCuadrados / partidas.length);
+  }
+
   /// Promedio de pinos derribados en el primer tiro usando datos visuales de pines.
   /// Devuelve null si no hay partidas con datos de pines registrados.
   /// Solo se puede calcular cuando el usuario ha usado el teclado de pines.
