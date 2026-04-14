@@ -397,8 +397,8 @@ class _EstadisticasPantallaCompletaState
               SliverPersistentHeader(
                 pinned: true,
                 delegate: _KpiStickyDelegate(
-                  minHeight: 96,
-                  maxHeight: 96,
+                  minHeight: 110,
+                  maxHeight: 110,
                   child: _buildKpiStickyBar(
                     promedio: promedio,
                     mejor: mejor,
