@@ -932,12 +932,16 @@ class _EstadisticasPantallaCompletaState
       text: _averageGoal?.toStringAsFixed(0) ??
           GoalService.defaultAverageGoal.toStringAsFixed(0),
     );
-    String? errorText;
 
     try {
-      await showDialog<void>(
+      // The dialog returns the newly saved value (or null if cancelled).
+      // setState is intentionally called *after* showDialog returns so that
+      // the parent widget is never rebuilt while the dialog is still mounted,
+      // which prevents the '_dependents.isEmpty' Flutter assertion crash.
+      final double? newGoal = await showDialog<double>(
         context: context,
         builder: (ctx) {
+          String? errorText;
           return StatefulBuilder(builder: (ctx, setDialogState) {
             return AlertDialog(
               title: Text(l10n.goalEditTitle),
@@ -971,9 +975,8 @@ class _EstadisticasPantallaCompletaState
                       return;
                     }
                     await GoalService.saveAverageGoal(value);
-                    if (mounted) {
-                      setState(() => _averageGoal = value);
-                      Navigator.of(ctx).pop();
+                    if (ctx.mounted) {
+                      Navigator.of(ctx).pop(value);
                     }
                   },
                   child: Text(l10n.save),
@@ -983,6 +986,10 @@ class _EstadisticasPantallaCompletaState
           });
         },
       );
+
+      if (newGoal != null && mounted) {
+        setState(() => _averageGoal = newGoal);
+      }
     } finally {
       controller.dispose();
     }
