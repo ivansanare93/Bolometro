@@ -776,4 +776,119 @@ void main() {
       expect(result, isEmpty);
     });
   });
+
+  // ---------------------------------------------------------------------------
+  group('EstadisticasUtils - calcularTendenciaDelta', () {
+    Partida _makePartida(int total) => Partida(
+          fecha: DateTime(2024, 1, 1),
+          total: total,
+          frames: [],
+        );
+
+    test('returns null when fewer than 10 partidas', () {
+      final partidas = List.generate(9, (_) => _makePartida(150));
+      expect(EstadisticasUtils.calcularTendenciaDelta(partidas), isNull);
+    });
+
+    test('returns null for empty list', () {
+      expect(EstadisticasUtils.calcularTendenciaDelta([]), isNull);
+    });
+
+    test('compares last 5 vs previous 5 when 10–19 games', () {
+      // Previous 5: 100 each → avg 100.  Last 5: 150 each → avg 150.
+      final partidas = [
+        ...List.generate(5, (_) => _makePartida(100)),
+        ...List.generate(5, (_) => _makePartida(150)),
+      ];
+      final delta = EstadisticasUtils.calcularTendenciaDelta(partidas);
+      expect(delta, closeTo(50.0, 0.001));
+    });
+
+    test('compares last 10 vs previous 10 when >= 20 games', () {
+      // Previous 10: 100 each → avg 100.  Last 10: 120 each → avg 120.
+      final partidas = [
+        ...List.generate(10, (_) => _makePartida(100)),
+        ...List.generate(10, (_) => _makePartida(120)),
+      ];
+      final delta = EstadisticasUtils.calcularTendenciaDelta(partidas);
+      expect(delta, closeTo(20.0, 0.001));
+    });
+
+    test('returns negative delta when recent performance is worse', () {
+      // Previous 10: 150 each → avg 150.  Last 10: 130 each → avg 130.
+      final partidas = [
+        ...List.generate(10, (_) => _makePartida(150)),
+        ...List.generate(10, (_) => _makePartida(130)),
+      ];
+      final delta = EstadisticasUtils.calcularTendenciaDelta(partidas);
+      expect(delta, closeTo(-20.0, 0.001));
+    });
+
+    test('returns zero delta when performance is identical', () {
+      final partidas = List.generate(20, (_) => _makePartida(150));
+      final delta = EstadisticasUtils.calcularTendenciaDelta(partidas);
+      expect(delta, closeTo(0.0, 0.001));
+    });
+
+    test('uses last 5 vs 5 at exactly 10 games', () {
+      final partidas = [
+        ...List.generate(5, (_) => _makePartida(100)),
+        ...List.generate(5, (_) => _makePartida(200)),
+      ];
+      final delta = EstadisticasUtils.calcularTendenciaDelta(partidas);
+      expect(delta, closeTo(100.0, 0.001));
+    });
+
+    test('uses last 10 vs 10 at exactly 20 games', () {
+      final partidas = [
+        ...List.generate(10, (_) => _makePartida(100)),
+        ...List.generate(10, (_) => _makePartida(200)),
+      ];
+      final delta = EstadisticasUtils.calcularTendenciaDelta(partidas);
+      expect(delta, closeTo(100.0, 0.001));
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  group('EstadisticasUtils - calcularConsistencia', () {
+    Partida _makePartida(int total) => Partida(
+          fecha: DateTime(2024, 1, 1),
+          total: total,
+          frames: [],
+        );
+
+    test('returns 0.0 for empty list', () {
+      expect(EstadisticasUtils.calcularConsistencia([]), equals(0.0));
+    });
+
+    test('returns 0.0 for single game', () {
+      expect(
+          EstadisticasUtils.calcularConsistencia([_makePartida(150)]),
+          equals(0.0));
+    });
+
+    test('returns 0.0 when all scores are identical', () {
+      final partidas = List.generate(5, (_) => _makePartida(150));
+      expect(EstadisticasUtils.calcularConsistencia(partidas), equals(0.0));
+    });
+
+    test('computes correct standard deviation for known values', () {
+      // Values: 100, 200 → mean 150, deviations -50 and +50
+      // variance = (2500 + 2500) / 2 = 2500, std = 50
+      final partidas = [_makePartida(100), _makePartida(200)];
+      expect(
+          EstadisticasUtils.calcularConsistencia(partidas),
+          closeTo(50.0, 0.001));
+    });
+
+    test('lower consistency value for more uniform scores', () {
+      // Uniform: 150, 150, 150 → std = 0
+      // Varied:  100, 150, 200 → std > 0
+      final uniform = List.generate(3, (_) => _makePartida(150));
+      final varied = [_makePartida(100), _makePartida(150), _makePartida(200)];
+      expect(
+          EstadisticasUtils.calcularConsistencia(uniform),
+          lessThan(EstadisticasUtils.calcularConsistencia(varied)));
+    });
+  });
 }
