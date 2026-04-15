@@ -4,7 +4,6 @@ import '../models/sesion.dart';
 import '../models/partida.dart';
 import '../repositories/data_repository.dart';
 import '../services/analytics_service.dart';
-import '../services/goal_service.dart';
 import '../utils/estadisticas_utils.dart';
 import '../utils/estadisticas_cache.dart';
 import '../utils/app_constants.dart';
@@ -47,9 +46,6 @@ class _EstadisticasPantallaCompletaState
   List<Sesion>? _cachedFilteredSesiones;
   StatsFilter? _cachedFilter;
 
-  // Goal / objective state
-  double? _averageGoal;
-
   @override
   void initState() {
     super.initState();
@@ -62,14 +58,6 @@ class _EstadisticasPantallaCompletaState
       }
     });
     _cargarSesiones();
-    _loadGoal();
-  }
-
-  Future<void> _loadGoal() async {
-    final goal = await GoalService.loadAverageGoal();
-    if (mounted) {
-      setState(() => _averageGoal = goal);
-    }
   }
 
   void _cargarSesiones() {
@@ -200,8 +188,6 @@ class _EstadisticasPantallaCompletaState
 
   String _labelForPreset(DateRangePreset p, AppLocalizations l10n) {
     switch (p) {
-      case DateRangePreset.allTime:
-        return l10n.datePresetAllTime;
       case DateRangePreset.last7Days:
         return l10n.datePresetLast7Days;
       case DateRangePreset.last30Days:
@@ -212,6 +198,8 @@ class _EstadisticasPantallaCompletaState
         return l10n.datePresetThisMonth;
       case DateRangePreset.thisYear:
         return l10n.datePresetThisYear;
+      case DateRangePreset.allTime:
+        return l10n.datePresetAllTime;
       case DateRangePreset.custom:
         return l10n.datePresetCustom;
     }
@@ -339,6 +327,7 @@ class _EstadisticasPantallaCompletaState
 
           // --- OBTENER DATOS DEL CACHE ---
           final promedio = stats['promedioGeneral'] as double;
+          final promedioUlt5 = stats['promedioUltimas5'] as double;
           final promedioUlt10 = stats['promedioUltimas10'] as double;
           final mejor = (stats['mejorPartida'] as Partida?)?.total ?? 0;
           final peor = (stats['peorPartida'] as Partida?)?.total ?? 0;
@@ -364,10 +353,6 @@ class _EstadisticasPantallaCompletaState
           final tasaConversionSpare = stats['tasaConversionSpare'] as double?;
           final conversionSparePorPin = stats['conversionSparePorPin'] as Map<String, List<int>>? ?? {};
           final hayEstadisticasPines = promedioPrimerTiro != null || tasaConversionSpare != null;
-
-          // Insights: tendencia y consistencia
-          final tendenciaDelta = stats['tendenciaDelta'] as double?;
-          final consistencia = stats['consistencia'] as double;
           
           // Extract theme colors once to avoid repeated lookups
           final greyColor = Colors.grey[700];
@@ -396,15 +381,13 @@ class _EstadisticasPantallaCompletaState
               SliverPersistentHeader(
                 pinned: true,
                 delegate: _KpiStickyDelegate(
-                  minHeight: 110,
-                  maxHeight: 110,
+                  minHeight: 72,
+                  maxHeight: 72,
                   child: _buildKpiStickyBar(
                     promedio: promedio,
                     mejor: mejor,
                     peor: peor,
                     totalPartidas: partidas.length,
-                    tendenciaDelta: tendenciaDelta,
-                    consistencia: consistencia,
                     isDark: isDark,
                     l10n: l10n,
                   ),
@@ -443,6 +426,13 @@ class _EstadisticasPantallaCompletaState
                                 icon: Icons.bar_chart_rounded,
                                 color: Colors.blue[700]!,
                                 esSubida: promedio >= promedioUlt10,
+                              ),
+                              KpiCardDinamico(
+                                label: AppLocalizations.of(context)!.averageLast5,
+                                value: promedioUlt5.toStringAsFixed(1),
+                                icon: Icons.trending_up_rounded,
+                                color: Colors.purple[600]!,
+                                esSubida: promedioUlt5 > promedioUlt10,
                               ),
                               KpiCardDinamico(
                                 label: AppLocalizations.of(context)!.best,
@@ -717,17 +707,6 @@ class _EstadisticasPantallaCompletaState
                         ],
                       ],
                       const SizedBox(height: 20),
-
-                      // ── SECCIÓN 5: METAS ──────────────────────────────────
-                      _buildSectionHeader(
-                        title: l10n.goalSection,
-                        icon: Icons.flag_rounded,
-                        color: Colors.indigo[600]!,
-                        tooltipText: l10n.goalTooltip,
-                      ),
-                      _buildGoalSection(promedio, l10n, isDark),
-
-                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
@@ -817,175 +796,6 @@ class _EstadisticasPantallaCompletaState
   // ---------------------------------------------------------------------------
   // Helper methods
   // ---------------------------------------------------------------------------
-
-  /// Goal / meta section: progress bar toward the configured average goal.
-  Widget _buildGoalSection(
-      double promedio, AppLocalizations l10n, bool isDark) {
-    final cardBg = isDark ? Colors.grey[850]! : Colors.grey[50]!;
-    final goal = _averageGoal;
-
-    return Card(
-      color: cardBg,
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.flag_rounded, color: Colors.indigo[600], size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    l10n.goalSection,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 14),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit_rounded, size: 20),
-                  tooltip: l10n.goalEditTitle,
-                  onPressed: () => _showGoalDialog(l10n),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (goal == null)
-              Text(
-                l10n.goalSetPrompt,
-                style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? Colors.white54 : Colors.black54),
-              )
-            else ...[
-              // Progress bar
-              Builder(builder: (context) {
-                final progress = (promedio / goal).clamp(0.0, 1.0);
-                final achieved = promedio >= goal;
-                final remaining = goal - promedio;
-                final color = achieved ? Colors.green[600]! : Colors.indigo[400]!;
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '${l10n.stickyKpiAverage}: ${promedio.toStringAsFixed(1)}',
-                          style: const TextStyle(
-                              fontSize: 13, fontWeight: FontWeight.w500),
-                        ),
-                        Text(
-                          '${l10n.goalSection}: ${goal.toStringAsFixed(0)}',
-                          style: TextStyle(
-                              fontSize: 13,
-                              color: isDark ? Colors.white60 : Colors.black54),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        minHeight: 10,
-                        backgroundColor: color.withOpacity(0.18),
-                        valueColor: AlwaysStoppedAnimation<Color>(color),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      achieved
-                          ? l10n.goalAchieved
-                          : l10n.goalProgress(
-                              remaining.toStringAsFixed(1)),
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: color,
-                      ),
-                    ),
-                  ],
-                );
-              }),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Shows a dialog to edit the average goal.
-  Future<void> _showGoalDialog(AppLocalizations l10n) async {
-    final controller = TextEditingController(
-      text: _averageGoal?.toStringAsFixed(0) ??
-          GoalService.defaultAverageGoal.toStringAsFixed(0),
-    );
-
-    try {
-      // The dialog returns the newly saved value (or null if cancelled).
-      // setState is intentionally called *after* showDialog returns so that
-      // the parent widget is never rebuilt while the dialog is still mounted,
-      // which prevents the '_dependents.isEmpty' Flutter assertion crash.
-      final double? newGoal = await showDialog<double>(
-        context: context,
-        builder: (ctx) {
-          String? errorText;
-          return StatefulBuilder(builder: (ctx, setDialogState) {
-            return AlertDialog(
-              title: Text(l10n.goalEditTitle),
-              content: TextField(
-                controller: controller,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(
-                  hintText: l10n.goalEditHint,
-                  errorText: errorText,
-                ),
-                autofocus: true,
-                onChanged: (_) {
-                  if (errorText != null) {
-                    setDialogState(() => errorText = null);
-                  }
-                },
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(ctx).pop(),
-                  child: Text(l10n.cancel),
-                ),
-                FilledButton(
-                  onPressed: () async {
-                    final value = double.tryParse(controller.text.trim());
-                    if (value == null ||
-                        value < GoalService.minAverageGoal ||
-                        value > GoalService.maxAverageGoal) {
-                      setDialogState(() => errorText = l10n.goalEditInvalid);
-                      return;
-                    }
-                    await GoalService.saveAverageGoal(value);
-                    if (ctx.mounted) {
-                      Navigator.of(ctx).pop(value);
-                    }
-                  },
-                  child: Text(l10n.save),
-                ),
-              ],
-            );
-          });
-        },
-      );
-
-      if (newGoal != null && mounted) {
-        setState(() => _averageGoal = newGoal);
-      }
-    } finally {
-      controller.dispose();
-    }
-  }
 
   /// Full filter bar: session type + date range presets + last-N-games chips.
   Widget _buildFilterBar(AppLocalizations l10n, bool isDark) {
@@ -1169,93 +979,48 @@ class _EstadisticasPantallaCompletaState
     );
   }
 
-  /// Sticky KPI summary bar – 6 metrics in 2 rows of 3.
-  ///
-  /// Row 1: Average, Best, Worst
-  /// Row 2: Games, Trend, Consistency
+  /// Sticky KPI summary bar (4 metrics).
   Widget _buildKpiStickyBar({
     required double promedio,
     required int mejor,
     required int peor,
     required int totalPartidas,
-    required double? tendenciaDelta,
-    required double consistencia,
     required bool isDark,
     required AppLocalizations l10n,
   }) {
-    final bg = Theme.of(context).colorScheme.surface.withOpacity(0.97);
-
-    // Format trend value and pick color
-    final String trendValue;
-    final Color trendColor;
-    if (tendenciaDelta == null) {
-      trendValue = l10n.trendNotAvailable;
-      trendColor = Colors.grey[500]!;
-    } else {
-      final sign = tendenciaDelta >= 0 ? '+' : '';
-      trendValue = '$sign${tendenciaDelta.toStringAsFixed(1)}';
-      trendColor = tendenciaDelta >= 0 ? Colors.green[600]! : Colors.red[400]!;
-    }
-
+    final bg = isDark
+        ? Theme.of(context).colorScheme.surface.withOpacity(0.97)
+        : Theme.of(context).colorScheme.surface.withOpacity(0.97);
     return Material(
       elevation: 2,
       color: bg,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: Row(
           children: [
-            // Row 1: Average, Best, Worst
-            Row(
-              children: [
-                _StickyKpi(
-                  label: l10n.stickyKpiAverage,
-                  value: promedio.toStringAsFixed(1),
-                  icon: Icons.bar_chart_rounded,
-                  color: Colors.blue[700]!,
-                ),
-                _StickyKpi(
-                  label: l10n.stickyKpiBest,
-                  value: '$mejor',
-                  icon: Icons.emoji_events_rounded,
-                  color: Colors.green[600]!,
-                ),
-                _StickyKpi(
-                  label: l10n.stickyKpiWorst,
-                  value: '$peor',
-                  icon: Icons.sentiment_dissatisfied_rounded,
-                  color: Colors.red[400]!,
-                ),
-              ],
+            _StickyKpi(
+              label: l10n.stickyKpiAverage,
+              value: promedio.toStringAsFixed(1),
+              icon: Icons.bar_chart_rounded,
+              color: Colors.blue[700]!,
             ),
-            // Row 2: Games, Trend, Consistency
-            Row(
-              children: [
-                _StickyKpi(
-                  label: l10n.stickyKpiGames,
-                  value: '$totalPartidas',
-                  icon: Icons.sports_score_rounded,
-                  color: Colors.purple[600]!,
-                ),
-                _StickyKpiWithTooltip(
-                  label: l10n.stickyKpiTrend,
-                  value: trendValue,
-                  icon: tendenciaDelta == null
-                      ? Icons.trending_neutral_rounded
-                      : (tendenciaDelta >= 0
-                          ? Icons.trending_up_rounded
-                          : Icons.trending_down_rounded),
-                  color: trendColor,
-                  tooltip: l10n.tooltipTrend,
-                ),
-                _StickyKpiWithTooltip(
-                  label: l10n.stickyKpiConsistency,
-                  value: consistencia.toStringAsFixed(1),
-                  icon: Icons.show_chart_rounded,
-                  color: Colors.teal[600]!,
-                  tooltip: l10n.tooltipConsistency,
-                ),
-              ],
+            _StickyKpi(
+              label: l10n.stickyKpiBest,
+              value: '$mejor',
+              icon: Icons.emoji_events_rounded,
+              color: Colors.green[600]!,
+            ),
+            _StickyKpi(
+              label: l10n.stickyKpiWorst,
+              value: '$peor',
+              icon: Icons.sentiment_dissatisfied_rounded,
+              color: Colors.red[400]!,
+            ),
+            _StickyKpi(
+              label: l10n.stickyKpiGames,
+              value: '$totalPartidas',
+              icon: Icons.sports_score_rounded,
+              color: Colors.purple[600]!,
             ),
           ],
         ),
@@ -1355,76 +1120,25 @@ class _StickyKpi extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(height: 1),
+          Icon(icon, color: color, size: 18),
+          const SizedBox(height: 2),
           Text(
             value,
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 13,
+              fontSize: 15,
               color: color,
             ),
           ),
           Text(
             label,
             style: TextStyle(
-              fontSize: 9,
+              fontSize: 10,
               color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
             ),
             overflow: TextOverflow.ellipsis,
           ),
         ],
-      ),
-    );
-  }
-}
-
-// ── Compact KPI tile with tooltip ─────────────────────────────────────────────
-
-class _StickyKpiWithTooltip extends StatelessWidget {
-  const _StickyKpiWithTooltip({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-    required this.tooltip,
-  });
-
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-  final String tooltip;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Tooltip(
-        message: tooltip,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 16),
-            const SizedBox(height: 1),
-            Text(
-              value,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: color,
-              ),
-            ),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 9,
-                color:
-                    Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
       ),
     );
   }
