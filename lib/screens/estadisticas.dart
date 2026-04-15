@@ -339,7 +339,6 @@ class _EstadisticasPantallaCompletaState
 
           // --- OBTENER DATOS DEL CACHE ---
           final promedio = stats['promedioGeneral'] as double;
-          final promedioUlt5 = stats['promedioUltimas5'] as double;
           final promedioUlt10 = stats['promedioUltimas10'] as double;
           final mejor = (stats['mejorPartida'] as Partida?)?.total ?? 0;
           final peor = (stats['peorPartida'] as Partida?)?.total ?? 0;
@@ -444,13 +443,6 @@ class _EstadisticasPantallaCompletaState
                                 icon: Icons.bar_chart_rounded,
                                 color: Colors.blue[700]!,
                                 esSubida: promedio >= promedioUlt10,
-                              ),
-                              KpiCardDinamico(
-                                label: AppLocalizations.of(context)!.averageLast5,
-                                value: promedioUlt5.toStringAsFixed(1),
-                                icon: Icons.trending_up_rounded,
-                                color: Colors.purple[600]!,
-                                esSubida: promedioUlt5 > promedioUlt10,
                               ),
                               KpiCardDinamico(
                                 label: AppLocalizations.of(context)!.best,
