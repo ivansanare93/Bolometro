@@ -156,10 +156,6 @@ class EstadisticasCache extends ChangeNotifier {
     final tasaConversionSpare = EstadisticasUtils.calcularTasaConversionSpare(partidas);
     final conversionSparePorPin = EstadisticasUtils.calcularConversionSparePorPin(partidas);
 
-    // Insights: tendencia y consistencia
-    final tendenciaDelta = EstadisticasUtils.calcularTendenciaDelta(partidas);
-    final consistencia = EstadisticasUtils.calcularConsistencia(partidas);
-
     return {
       'porcentajes': porcentajes,
       'rachaStrikes': rachaStrikes,
@@ -182,8 +178,6 @@ class EstadisticasCache extends ChangeNotifier {
       'promedioPrimerTiro': promedioPrimerTiro,
       'tasaConversionSpare': tasaConversionSpare,
       'conversionSparePorPin': conversionSparePorPin,
-      'tendenciaDelta': tendenciaDelta,
-      'consistencia': consistencia,
     };
   }
 
@@ -211,8 +205,6 @@ class EstadisticasCache extends ChangeNotifier {
       'promedioPrimerTiro': null,
       'tasaConversionSpare': null,
       'conversionSparePorPin': <String, List<int>>{},
-      'tendenciaDelta': null,
-      'consistencia': 0.0,
     };
   }
 
