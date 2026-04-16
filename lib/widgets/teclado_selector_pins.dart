@@ -260,7 +260,7 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
     }
 
     // Blocked when second-throw is active but first throw hasn't been recorded
-    // yet — mirrors the numeric keyboard's behaviour of disabling all keys.
+    // yet — mirrors the numeric keyboard's behavior of disabling all keys.
     final bool bloqueado = esSegundoTiro &&
         !mostrarPleno && !mostrarRemate && !mostrarFallo;
 
