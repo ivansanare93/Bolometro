@@ -159,10 +159,12 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Center(
-                  child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2))),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
             )
           else
             IconButton(
