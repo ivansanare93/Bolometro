@@ -27,7 +27,10 @@ class TecladoTiros extends StatelessWidget {
         deshabilitadas.add('/'); // nunca puede ser spare en primer tiro
       } else if (tiro == 1) {
         deshabilitadas.add('X'); // por defecto
-        if (t1 == 'X') {
+        if (t1.isEmpty) {
+          // Primera tirada vacía: bloquea todo el segundo tiro
+          deshabilitadas.addAll(numeros + ['X', '/', '-']);
+        } else if (t1 == 'X') {
           // Strike en el primero → todo permitido menos '/'
           deshabilitadas.clear();
           deshabilitadas.add('/');
@@ -87,7 +90,10 @@ class TecladoTiros extends StatelessWidget {
         deshabilitadas.add('/'); // nunca puede ser spare
       } else if (tiro == 1) {
         deshabilitadas.add('X'); // nunca puede ser strike en segundo tiro
-        if (t1 == 'X') {
+        if (t1.isEmpty) {
+          // Primera tirada vacía: bloquea TODO en tiro 2
+          deshabilitadas.addAll(numeros + ['X', '/', '-']);
+        } else if (t1 == 'X') {
           // Strike en el primer tiro: bloquea TODO en tiro 2
           deshabilitadas.addAll(numeros);
           deshabilitadas.add('/');
