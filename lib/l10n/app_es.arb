@@ -764,6 +764,79 @@
   "@created": {
     "description": "Etiqueta de fecha de creación"
   },
+  "noteCategory": "Categoría",
+  "@noteCategory": {
+    "description": "Etiqueta del campo categoría de una nota"
+  },
+  "noteCategoryNone": "Sin categoría",
+  "@noteCategoryNone": {
+    "description": "Texto de sugerencia cuando no hay categoría asignada"
+  },
+  "noteCategoryGeneral": "General",
+  "@noteCategoryGeneral": {
+    "description": "Categoría: General"
+  },
+  "noteCategoryOil": "Patrón de aceite",
+  "@noteCategoryOil": {
+    "description": "Categoría: Patrón de aceite"
+  },
+  "noteCategoryTechnique": "Técnica",
+  "@noteCategoryTechnique": {
+    "description": "Categoría: Técnica"
+  },
+  "noteCategoryEquipment": "Equipamiento",
+  "@noteCategoryEquipment": {
+    "description": "Categoría: Equipamiento"
+  },
+  "noteCategoryMental": "Juego Mental",
+  "@noteCategoryMental": {
+    "description": "Categoría: Juego Mental"
+  },
+  "noteCategoryAlley": "Bolera",
+  "@noteCategoryAlley": {
+    "description": "Categoría: Bolera"
+  },
+  "noteFavorite": "Favorita",
+  "@noteFavorite": {
+    "description": "Tooltip para marcar/desmarcar una nota como favorita"
+  },
+  "noteColorLabel": "Color de la nota",
+  "@noteColorLabel": {
+    "description": "Etiqueta del selector de color de nota"
+  },
+  "sortNotes": "Ordenar notas",
+  "@sortNotes": {
+    "description": "Título del diálogo de ordenación de notas"
+  },
+  "sortNewest": "Más recientes",
+  "@sortNewest": {
+    "description": "Opción de ordenación: más recientes primero"
+  },
+  "sortOldest": "Más antiguas",
+  "@sortOldest": {
+    "description": "Opción de ordenación: más antiguas primero"
+  },
+  "sortByTitle": "Por título",
+  "@sortByTitle": {
+    "description": "Opción de ordenación: por título"
+  },
+  "sortFavFirst": "Favoritas primero",
+  "@sortFavFirst": {
+    "description": "Opción de ordenación: favoritas primero"
+  },
+  "noteWordCount": "{count} palabras",
+  "@noteWordCount": {
+    "description": "Número de palabras en el contenido de la nota",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterAll": "Todas",
+  "@filterAll": {
+    "description": "Filtro para mostrar todas las notas"
+  },
   "discardChanges": "Descartar cambios",
   "@discardChanges": {
     "description": "Título del diálogo de confirmación para descartar cambios"

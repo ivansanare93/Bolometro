@@ -1199,6 +1199,57 @@ class AppLocalizationsEs extends AppLocalizations {
   String get created => 'Creado';
 
   @override
+  String get noteCategory => 'Categoría';
+
+  @override
+  String get noteCategoryNone => 'Sin categoría';
+
+  @override
+  String get noteCategoryGeneral => 'General';
+
+  @override
+  String get noteCategoryOil => 'Patrón de aceite';
+
+  @override
+  String get noteCategoryTechnique => 'Técnica';
+
+  @override
+  String get noteCategoryEquipment => 'Equipamiento';
+
+  @override
+  String get noteCategoryMental => 'Juego Mental';
+
+  @override
+  String get noteCategoryAlley => 'Bolera';
+
+  @override
+  String get noteFavorite => 'Favorita';
+
+  @override
+  String get noteColorLabel => 'Color de la nota';
+
+  @override
+  String get sortNotes => 'Ordenar notas';
+
+  @override
+  String get sortNewest => 'Más recientes';
+
+  @override
+  String get sortOldest => 'Más antiguas';
+
+  @override
+  String get sortByTitle => 'Por título';
+
+  @override
+  String get sortFavFirst => 'Favoritas primero';
+
+  @override
+  String noteWordCount(int count) => '$count palabras';
+
+  @override
+  String get filterAll => 'Todas';
+
+  @override
   String get discardChanges => 'Descartar cambios';
 
   @override

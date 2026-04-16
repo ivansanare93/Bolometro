@@ -53,17 +53,51 @@ class VerNotaScreen extends StatelessWidget {
     }
   }
 
+  String _categoryLabel(BuildContext context, String? key) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (key) {
+      case NotaCategoria.general:
+        return l10n.noteCategoryGeneral;
+      case NotaCategoria.aceite:
+        return l10n.noteCategoryOil;
+      case NotaCategoria.tecnica:
+        return l10n.noteCategoryTechnique;
+      case NotaCategoria.equipamiento:
+        return l10n.noteCategoryEquipment;
+      case NotaCategoria.mental:
+        return l10n.noteCategoryMental;
+      case NotaCategoria.bolera:
+        return l10n.noteCategoryAlley;
+      default:
+        return l10n.noteCategoryNone;
+    }
+  }
+
+  Color _accentColor(BuildContext context) {
+    if (nota.colorValue != null) {
+      return Color(nota.colorValue! | 0xFF000000);
+    }
+    return Theme.of(context).colorScheme.primary;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final accent = _accentColor(context);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.viewNote),
         centerTitle: true,
         actions: [
+          // Favourite indicator (read-only; tap to go to edit)
+          if (nota.favorita)
+            const Padding(
+              padding: EdgeInsets.only(right: 4),
+              child: Icon(Icons.star_rounded, color: Colors.amber),
+            ),
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             tooltip: l10n.editNote,
@@ -91,7 +125,7 @@ class VerNotaScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title heading
+            // Title heading with accent bar
             IntrinsicHeight(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -99,7 +133,7 @@ class VerNotaScreen extends StatelessWidget {
                   Container(
                     width: 4,
                     decoration: BoxDecoration(
-                      color: cs.primary,
+                      color: accent,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -117,6 +151,17 @@ class VerNotaScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 12),
+
+            // Category chip
+            if (nota.categoria != null) ...[
+              Chip(
+                avatar: const Icon(Icons.label_outline, size: 16),
+                label: Text(_categoryLabel(context, nota.categoria)),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              const SizedBox(height: 8),
+            ],
 
             // Dates row
             Row(

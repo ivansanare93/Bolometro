@@ -629,6 +629,79 @@
   "@created": {
     "description": "Label for creation date"
   },
+  "noteCategory": "Category",
+  "@noteCategory": {
+    "description": "Label for the note category field"
+  },
+  "noteCategoryNone": "No category",
+  "@noteCategoryNone": {
+    "description": "Hint text when no category is assigned"
+  },
+  "noteCategoryGeneral": "General",
+  "@noteCategoryGeneral": {
+    "description": "Category: General"
+  },
+  "noteCategoryOil": "Oil Pattern",
+  "@noteCategoryOil": {
+    "description": "Category: Oil Pattern"
+  },
+  "noteCategoryTechnique": "Technique",
+  "@noteCategoryTechnique": {
+    "description": "Category: Technique"
+  },
+  "noteCategoryEquipment": "Equipment",
+  "@noteCategoryEquipment": {
+    "description": "Category: Equipment"
+  },
+  "noteCategoryMental": "Mental Game",
+  "@noteCategoryMental": {
+    "description": "Category: Mental Game"
+  },
+  "noteCategoryAlley": "Bowling Alley",
+  "@noteCategoryAlley": {
+    "description": "Category: Bowling Alley"
+  },
+  "noteFavorite": "Favourite",
+  "@noteFavorite": {
+    "description": "Tooltip to mark/unmark a note as favourite"
+  },
+  "noteColorLabel": "Note colour",
+  "@noteColorLabel": {
+    "description": "Label for the note colour selector"
+  },
+  "sortNotes": "Sort notes",
+  "@sortNotes": {
+    "description": "Title for the sort notes dialog"
+  },
+  "sortNewest": "Newest first",
+  "@sortNewest": {
+    "description": "Sort option: newest first"
+  },
+  "sortOldest": "Oldest first",
+  "@sortOldest": {
+    "description": "Sort option: oldest first"
+  },
+  "sortByTitle": "By title",
+  "@sortByTitle": {
+    "description": "Sort option: by title"
+  },
+  "sortFavFirst": "Favourites first",
+  "@sortFavFirst": {
+    "description": "Sort option: favourites first"
+  },
+  "noteWordCount": "{count} words",
+  "@noteWordCount": {
+    "description": "Number of words in note content",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterAll": "All",
+  "@filterAll": {
+    "description": "Filter chip to show all notes"
+  },
   "discardChanges": "Discard changes",
   "@discardChanges": {
     "description": "Title for the discard changes confirmation dialog"

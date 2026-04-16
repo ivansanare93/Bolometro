@@ -21,13 +21,16 @@ class NotaAdapter extends TypeAdapter<Nota> {
       contenido: fields[1] as String,
       fechaCreacion: fields[2] as DateTime,
       fechaModificacion: fields[3] as DateTime,
+      categoria: fields[4] as String?,
+      favorita: fields[5] == null ? false : fields[5] as bool,
+      colorValue: fields[6] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Nota obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.titulo)
       ..writeByte(1)
@@ -35,7 +38,13 @@ class NotaAdapter extends TypeAdapter<Nota> {
       ..writeByte(2)
       ..write(obj.fechaCreacion)
       ..writeByte(3)
-      ..write(obj.fechaModificacion);
+      ..write(obj.fechaModificacion)
+      ..writeByte(4)
+      ..write(obj.categoria)
+      ..writeByte(5)
+      ..write(obj.favorita)
+      ..writeByte(6)
+      ..write(obj.colorValue);
   }
 
   @override
