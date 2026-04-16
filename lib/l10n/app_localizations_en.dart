@@ -1236,7 +1236,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sortFavFirst => 'Favourites first';
 
   @override
-  String noteWordCount(int count) => '$count words';
+  String noteWordCount(int count) {
+    return '$count words';
+  }
 
   @override
   String get filterAll => 'All';

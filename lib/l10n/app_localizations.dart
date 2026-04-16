@@ -2378,7 +2378,7 @@ abstract class AppLocalizations {
   /// **'Categoría'**
   String get noteCategory;
 
-  /// Texto de sugerencia para el campo categoría (sin categoría asignada)
+  /// Texto de sugerencia cuando no hay categoría asignada
   ///
   /// In es, this message translates to:
   /// **'Sin categoría'**
@@ -2468,7 +2468,7 @@ abstract class AppLocalizations {
   /// **'{count} palabras'**
   String noteWordCount(int count);
 
-  /// Filtro para mostrar todas las notas (sin filtro de categoría)
+  /// Filtro para mostrar todas las notas
   ///
   /// In es, this message translates to:
   /// **'Todas'**
