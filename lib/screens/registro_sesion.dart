@@ -595,6 +595,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
                       isFrame10: _frameActivo == 9,
                       tiroActual: _tiroActivo!,
                       frames: framesText,
+                      frameActual: _frameActivo!,
                     );
                   },
                 )

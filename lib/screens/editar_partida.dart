@@ -462,6 +462,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
                     isFrame10: _frameActivo == 9,
                     tiroActual: _tiroActivo!,
                     frames: framesText,
+                    frameActual: _frameActivo!,
                   );
                 },
               )
