@@ -10,6 +10,7 @@ class SelectorpinesWidget extends StatefulWidget {
   final bool isFrame10;
   final int tiroActual; // 0 = primer tiro, 1 = segundo tiro, 2 = tercero
   final List<List<String>> frames; // lista completa de frames
+  final int frameActual; // 0-indexed current frame (0–9)
 
   const SelectorpinesWidget({
     super.key,
@@ -19,6 +20,7 @@ class SelectorpinesWidget extends StatefulWidget {
     required this.isFrame10,
     required this.tiroActual,
     required this.frames,
+    required this.frameActual,
   });
 
   @override
@@ -180,23 +182,30 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
         mostrarRemate = false;
         mostrarFallo = true;
       } else if (esSegundoTiro) {
-        final primerTiroStrike = tiro1 == AppConstants.simboloStrike;
-        if (primerTiroStrike) {
-          // Después de strike → tablero reseteado
-          mostrarPleno = !todosCaidos;
+        if (tiro1.isEmpty) {
+          // Primera tirada sin registrar → bloquear todo (igual que teclado numérico)
+          mostrarPleno = false;
           mostrarRemate = false;
-          mostrarFallo = true;
+          mostrarFallo = false;
         } else {
-          final pinosTiro1 = _parseTiro(tiro1, '');
-          final quedanPinos = AppConstants.maxPinesBowling - pinosTiro1;
-          if (quedanPinos > 0) {
-            mostrarPleno = false;
-            mostrarRemate = !todosCaidos;
+          final primerTiroStrike = tiro1 == AppConstants.simboloStrike;
+          if (primerTiroStrike) {
+            // Después de strike → tablero reseteado
+            mostrarPleno = !todosCaidos;
+            mostrarRemate = false;
             mostrarFallo = true;
           } else {
-            mostrarPleno = false;
-            mostrarRemate = false;
-            mostrarFallo = true; // aún puede fallar (ej. cero pinos)
+            final pinosTiro1 = _parseTiro(tiro1, '');
+            final quedanPinos = AppConstants.maxPinesBowling - pinosTiro1;
+            if (quedanPinos > 0) {
+              mostrarPleno = false;
+              mostrarRemate = !todosCaidos;
+              mostrarFallo = true;
+            } else {
+              mostrarPleno = false;
+              mostrarRemate = false;
+              mostrarFallo = true; // aún puede fallar (ej. cero pinos)
+            }
           }
         }
       } else if (esTercerTiro) {
@@ -231,10 +240,29 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
       }
     } else {
       // Frames 1-9
-      mostrarPleno = esPrimerTiro && !todosCaidos;
-      mostrarRemate = esSegundoTiro && !todosCaidos;
-      mostrarFallo = true;
+      if (esSegundoTiro) {
+        final primerTiroTexto = widget.frames[widget.frameActual][0];
+        if (primerTiroTexto.isEmpty) {
+          // Primera tirada sin registrar → bloquear todo (igual que teclado numérico)
+          mostrarPleno = false;
+          mostrarRemate = false;
+          mostrarFallo = false;
+        } else {
+          mostrarPleno = false;
+          mostrarRemate = !todosCaidos;
+          mostrarFallo = true;
+        }
+      } else {
+        mostrarPleno = !todosCaidos; // esPrimerTiro
+        mostrarRemate = false;
+        mostrarFallo = true;
+      }
     }
+
+    // Blocked when second-throw is active but first throw hasn't been recorded
+    // yet — mirrors the numeric keyboard's behaviour of disabling all keys.
+    final bool bloqueado = !mostrarPleno && !mostrarRemate && !mostrarFallo &&
+        (esSegundoTiro || esTercerTiro);
 
     return AnimatedBuilder(
       animation: _shakeController,
@@ -408,11 +436,14 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
                     child: ElevatedButton.icon(
                       icon: const Icon(Icons.check),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green[700],
+                        backgroundColor: bloqueado
+                            ? Colors.grey[400]
+                            : Colors.green[700],
                         foregroundColor: Colors.white,
                         minimumSize: const Size.fromHeight(46),
                       ),
-                      onPressed: () => widget.onAceptar(seleccionados),
+                      onPressed:
+                          bloqueado ? null : () => widget.onAceptar(seleccionados),
                       label: Text(l10n.accept),
                     ),
                   ),
