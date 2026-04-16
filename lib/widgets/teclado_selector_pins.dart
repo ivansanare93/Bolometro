@@ -261,8 +261,8 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
 
     // Blocked when second-throw is active but first throw hasn't been recorded
     // yet — mirrors the numeric keyboard's behaviour of disabling all keys.
-    final bool bloqueado = !mostrarPleno && !mostrarRemate && !mostrarFallo &&
-        (esSegundoTiro || esTercerTiro);
+    final bool bloqueado = esSegundoTiro &&
+        !mostrarPleno && !mostrarRemate && !mostrarFallo;
 
     return AnimatedBuilder(
       animation: _shakeController,
@@ -437,9 +437,11 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
                       icon: const Icon(Icons.check),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: bloqueado
-                            ? Colors.grey[400]
+                            ? cs.onSurface.withOpacity(0.12)
                             : Colors.green[700],
-                        foregroundColor: Colors.white,
+                        foregroundColor: bloqueado
+                            ? cs.onSurface.withOpacity(0.38)
+                            : Colors.white,
                         minimumSize: const Size.fromHeight(46),
                       ),
                       onPressed:
