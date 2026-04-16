@@ -2372,6 +2372,108 @@ abstract class AppLocalizations {
   /// **'Creado'**
   String get created;
 
+  /// Etiqueta del campo categoría de una nota
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría'**
+  String get noteCategory;
+
+  /// Texto de sugerencia para el campo categoría (sin categoría asignada)
+  ///
+  /// In es, this message translates to:
+  /// **'Sin categoría'**
+  String get noteCategoryNone;
+
+  /// Categoría: General
+  ///
+  /// In es, this message translates to:
+  /// **'General'**
+  String get noteCategoryGeneral;
+
+  /// Categoría: Patrón de aceite
+  ///
+  /// In es, this message translates to:
+  /// **'Patrón de aceite'**
+  String get noteCategoryOil;
+
+  /// Categoría: Técnica
+  ///
+  /// In es, this message translates to:
+  /// **'Técnica'**
+  String get noteCategoryTechnique;
+
+  /// Categoría: Equipamiento
+  ///
+  /// In es, this message translates to:
+  /// **'Equipamiento'**
+  String get noteCategoryEquipment;
+
+  /// Categoría: Juego Mental
+  ///
+  /// In es, this message translates to:
+  /// **'Juego Mental'**
+  String get noteCategoryMental;
+
+  /// Categoría: Bolera
+  ///
+  /// In es, this message translates to:
+  /// **'Bolera'**
+  String get noteCategoryAlley;
+
+  /// Tooltip para marcar/desmarcar una nota como favorita
+  ///
+  /// In es, this message translates to:
+  /// **'Favorita'**
+  String get noteFavorite;
+
+  /// Etiqueta del selector de color de nota
+  ///
+  /// In es, this message translates to:
+  /// **'Color de la nota'**
+  String get noteColorLabel;
+
+  /// Título del diálogo de ordenación de notas
+  ///
+  /// In es, this message translates to:
+  /// **'Ordenar notas'**
+  String get sortNotes;
+
+  /// Opción de ordenación: más recientes primero
+  ///
+  /// In es, this message translates to:
+  /// **'Más recientes'**
+  String get sortNewest;
+
+  /// Opción de ordenación: más antiguas primero
+  ///
+  /// In es, this message translates to:
+  /// **'Más antiguas'**
+  String get sortOldest;
+
+  /// Opción de ordenación: por título
+  ///
+  /// In es, this message translates to:
+  /// **'Por título'**
+  String get sortByTitle;
+
+  /// Opción de ordenación: favoritas primero
+  ///
+  /// In es, this message translates to:
+  /// **'Favoritas primero'**
+  String get sortFavFirst;
+
+  /// Número de palabras en el contenido de la nota
+  ///
+  /// In es, this message translates to:
+  /// **'{count} palabras'**
+  String noteWordCount(int count);
+
+  /// Filtro para mostrar todas las notas (sin filtro de categoría)
+  ///
+  /// In es, this message translates to:
+  /// **'Todas'**
+  String get filterAll;
+
   /// Título del diálogo de confirmación para descartar cambios
   ///
   /// In es, this message translates to:
