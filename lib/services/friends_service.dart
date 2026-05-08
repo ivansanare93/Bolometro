@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/friend.dart';
 import '../models/friend_request.dart';
-import '../models/perfil_usuario.dart';
 import '../exceptions/sync_exceptions.dart';
 import '../utils/url_utils.dart';
 import 'notification_service.dart';
@@ -12,6 +11,17 @@ import 'notification_service.dart';
 class FriendsService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final NotificationService _notificationService = NotificationService();
+
+  String? _extractProfilePhoto(Map<String, dynamic>? perfil) {
+    if (perfil == null) {
+      return null;
+    }
+
+    return UrlUtils.resolvePreferredPhoto(
+      avatarPath: perfil['avatarPath'] as String?,
+      googlePhotoUrl: perfil['googlePhotoUrl'] as String?,
+    );
+  }
 
   /// Obtener referencia a la colección de amigos del usuario
   CollectionReference _getFriendsCollection(String userId) {
@@ -52,7 +62,7 @@ class FriendsService {
         'userId': doc.id,
         'nombre': perfil['nombre'] ?? '',
         'email': perfil['email'] ?? email,
-        'photoUrl': UrlUtils.sanitizePhotoUrl(perfil['googlePhotoUrl']),
+        'photoUrl': _extractProfilePhoto(perfil),
       };
     } catch (e) {
       debugPrint('Error al buscar usuario por email: $e');
@@ -86,7 +96,7 @@ class FriendsService {
         'userId': doc.id,
         'nombre': perfil['nombre'] ?? '',
         'email': perfil['email'],
-        'photoUrl': UrlUtils.sanitizePhotoUrl(perfil['googlePhotoUrl']),
+        'photoUrl': _extractProfilePhoto(perfil),
         'friendCode': perfil['friendCode'],
       };
     } catch (e) {
@@ -233,7 +243,7 @@ class FriendsService {
         userId: userId,
         nombre: currentUserPerfil?['nombre'] ?? '',
         email: currentUserPerfil?['email'],
-        photoUrl: UrlUtils.sanitizePhotoUrl(currentUserPerfil?['googlePhotoUrl']),
+        photoUrl: _extractProfilePhoto(currentUserPerfil),
         fechaAmistad: DateTime.now(),
       );
 
@@ -293,9 +303,7 @@ class FriendsService {
       final data = doc.data();
       if (data != null) {
         final perfil = data['perfil'] as Map<String, dynamic>?;
-        if (perfil != null) {
-          return UrlUtils.sanitizePhotoUrl(perfil['googlePhotoUrl'] as String?);
-        }
+        return _extractProfilePhoto(perfil);
       }
       return null;
     } catch (e) {

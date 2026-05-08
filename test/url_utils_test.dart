@@ -36,6 +36,32 @@ void main() {
         expect(UrlUtils.isValidHttpUrl('ftp://example.com'), false);
         expect(UrlUtils.isValidHttpUrl('data:image/png;base64,abc123'), false);
       });
+
+      test('trims surrounding whitespace before validating', () {
+        expect(UrlUtils.isValidHttpUrl(' https://example.com/photo.jpg '), true);
+      });
+    });
+
+    group('isLocalFilePath', () {
+      test('returns true for absolute local paths', () {
+        expect(
+          UrlUtils.isLocalFilePath('/data/user/0/com.bolometro/cache/avatar.jpg'),
+          true,
+        );
+      });
+
+      test('returns true for file URIs', () {
+        expect(
+          UrlUtils.isLocalFilePath('file:///data/user/0/com.bolometro/cache/avatar.jpg'),
+          true,
+        );
+      });
+
+      test('returns false for remote URLs or invalid values', () {
+        expect(UrlUtils.isLocalFilePath('https://example.com/avatar.jpg'), false);
+        expect(UrlUtils.isLocalFilePath('avatar.jpg'), false);
+        expect(UrlUtils.isLocalFilePath(null), false);
+      });
     });
 
     group('sanitizePhotoUrl', () {
@@ -47,6 +73,13 @@ void main() {
       test('returns valid HTTPS URLs unchanged', () {
         const url = 'https://lh3.googleusercontent.com/a/photo.jpg';
         expect(UrlUtils.sanitizePhotoUrl(url), url);
+      });
+
+      test('trims valid HTTPS URLs', () {
+        expect(
+          UrlUtils.sanitizePhotoUrl(' https://lh3.googleusercontent.com/a/photo.jpg '),
+          'https://lh3.googleusercontent.com/a/photo.jpg',
+        );
       });
 
       test('returns null for file:// URLs', () {
@@ -64,6 +97,70 @@ void main() {
       test('returns null for invalid URLs', () {
         expect(UrlUtils.sanitizePhotoUrl('not a url'), null);
         expect(UrlUtils.sanitizePhotoUrl('ftp://example.com'), null);
+      });
+    });
+
+    group('sanitizeLocalPhotoPath', () {
+      test('returns local absolute paths unchanged', () {
+        const path = '/data/user/0/com.bolometro/cache/avatar.jpg';
+        expect(UrlUtils.sanitizeLocalPhotoPath(path), path);
+      });
+
+      test('returns trimmed file URIs unchanged', () {
+        expect(
+          UrlUtils.sanitizeLocalPhotoPath(' file:///data/user/0/com.bolometro/cache/avatar.jpg '),
+          'file:///data/user/0/com.bolometro/cache/avatar.jpg',
+        );
+      });
+
+      test('returns null for remote URLs', () {
+        expect(
+          UrlUtils.sanitizeLocalPhotoPath('https://example.com/avatar.jpg'),
+          null,
+        );
+      });
+    });
+
+    group('resolvePreferredPhoto', () {
+      test('prioritizes local avatar paths over remote photos', () {
+        expect(
+          UrlUtils.resolvePreferredPhoto(
+            avatarPath: '/data/user/0/com.bolometro/cache/avatar.jpg',
+            googlePhotoUrl: 'https://example.com/google.jpg',
+          ),
+          '/data/user/0/com.bolometro/cache/avatar.jpg',
+        );
+      });
+
+      test('allows remote avatarPath values', () {
+        expect(
+          UrlUtils.resolvePreferredPhoto(
+            avatarPath: 'https://example.com/custom-avatar.jpg',
+            googlePhotoUrl: 'https://example.com/google.jpg',
+          ),
+          'https://example.com/custom-avatar.jpg',
+        );
+      });
+
+      test('falls back to Google and auth photos', () {
+        expect(
+          UrlUtils.resolvePreferredPhoto(
+            avatarPath: 'avatar.jpg',
+            googlePhotoUrl: 'https://example.com/google.jpg',
+            fallbackPhotoUrl: 'https://example.com/auth.jpg',
+          ),
+          'https://example.com/google.jpg',
+        );
+      });
+
+      test('returns null when no candidate is usable', () {
+        expect(
+          UrlUtils.resolvePreferredPhoto(
+            avatarPath: 'avatar.jpg',
+            googlePhotoUrl: 'ftp://example.com/google.jpg',
+          ),
+          null,
+        );
       });
     });
   });

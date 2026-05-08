@@ -5,6 +5,7 @@ import '../models/friend_request.dart';
 import '../services/auth_service.dart';
 import '../services/friends_service.dart';
 import '../l10n/app_localizations.dart';
+import '../repositories/data_repository.dart';
 import '../utils/url_utils.dart';
 import '../widgets/safe_network_image.dart';
 import 'home.dart';
@@ -340,12 +341,20 @@ class _FriendsScreenState extends State<FriendsScreen>
               // Enviar solicitud
               final currentUser = authService.user;
               if (currentUser == null) return;
+              final dataRepository =
+                  Provider.of<DataRepository>(context, listen: false);
+              final perfilActual = await dataRepository.obtenerPerfil();
 
               final success = await _friendsService.enviarSolicitudAmistad(
                 fromUserId: currentUser.uid,
-                fromUserName: currentUser.displayName ?? 'Usuario',
+                fromUserName:
+                    perfilActual?.nombre ?? currentUser.displayName ?? 'Usuario',
                 fromUserEmail: currentUser.email,
-                fromUserPhotoUrl: UrlUtils.sanitizePhotoUrl(currentUser.photoURL),
+                fromUserPhotoUrl: UrlUtils.resolvePreferredPhoto(
+                  avatarPath: perfilActual?.avatarPath,
+                  googlePhotoUrl: perfilActual?.googlePhotoUrl,
+                  fallbackPhotoUrl: currentUser.photoURL,
+                ),
                 toUserId: user['userId'],
               );
 

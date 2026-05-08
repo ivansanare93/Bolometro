@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../utils/url_utils.dart';
 
@@ -18,14 +21,26 @@ class SafeNetworkImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sanitizedUrl = UrlUtils.sanitizePhotoUrl(photoUrl);
-    
+    final normalizedSource = UrlUtils.sanitizeLocalPhotoPath(photoUrl) ??
+        UrlUtils.sanitizePhotoUrl(photoUrl);
+    ImageProvider? imageProvider;
+
+    if (normalizedSource != null) {
+      if (UrlUtils.isValidHttpUrl(normalizedSource)) {
+        imageProvider = NetworkImage(normalizedSource);
+      } else if (!kIsWeb) {
+        imageProvider = FileImage(
+          normalizedSource.startsWith('file://')
+            ? File.fromUri(Uri.parse(normalizedSource))
+            : File(normalizedSource),
+        );
+      }
+    }
+
     return CircleAvatar(
       radius: radius,
-      backgroundImage: sanitizedUrl != null 
-          ? NetworkImage(sanitizedUrl)
-          : null,
-      child: sanitizedUrl == null && fallbackText.isNotEmpty
+      foregroundImage: imageProvider,
+      child: fallbackText.isNotEmpty
           ? Text(fallbackText[0].toUpperCase())
           : null,
     );
