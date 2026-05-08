@@ -52,6 +52,7 @@ class _RankingsScreenState extends State<RankingsScreen> {
 
       // Obtener estadísticas propias
       final misSesiones = await dataRepository.obtenerSesiones();
+      final miPerfil = await dataRepository.obtenerPerfil();
       final misEstadisticas = _calcularEstadisticas(misSesiones, _selectedPeriod);
 
       final rankings = <Map<String, dynamic>>[];
@@ -61,9 +62,13 @@ class _RankingsScreenState extends State<RankingsScreen> {
       final localizations = AppLocalizations.of(context)!;
       rankings.add({
         'userId': userId,
-        'nombre': currentUser?.displayName ?? localizations.you,
+        'nombre': miPerfil?.nombre ?? currentUser?.displayName ?? localizations.you,
         'email': currentUser?.email,
-        'photoUrl': UrlUtils.sanitizePhotoUrl(currentUser?.photoURL),
+        'photoUrl': UrlUtils.resolvePreferredPhoto(
+          avatarPath: miPerfil?.avatarPath,
+          googlePhotoUrl: miPerfil?.googlePhotoUrl,
+          fallbackPhotoUrl: currentUser?.photoURL,
+        ),
         'esUsuarioActual': true,
         ...misEstadisticas,
       });
