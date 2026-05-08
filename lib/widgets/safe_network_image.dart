@@ -29,19 +29,18 @@ class SafeNetworkImage extends StatelessWidget {
       if (UrlUtils.isValidHttpUrl(normalizedSource)) {
         imageProvider = NetworkImage(normalizedSource);
       } else if (!kIsWeb) {
-        final imageFile = normalizedSource.startsWith('file://')
+        imageProvider = FileImage(
+          normalizedSource.startsWith('file://')
             ? File.fromUri(Uri.parse(normalizedSource))
-            : File(normalizedSource);
-        if (imageFile.existsSync()) {
-          imageProvider = FileImage(imageFile);
-        }
+            : File(normalizedSource),
+        );
       }
     }
 
     return CircleAvatar(
       radius: radius,
-      backgroundImage: imageProvider,
-      child: imageProvider == null && fallbackText.isNotEmpty
+      foregroundImage: imageProvider,
+      child: fallbackText.isNotEmpty
           ? Text(fallbackText[0].toUpperCase())
           : null,
     );
