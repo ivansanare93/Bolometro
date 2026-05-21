@@ -224,9 +224,10 @@ class _VerSesionState extends State<VerSesion> {
   Future<void> _editarLugarSesion() async {
     final l10n = AppLocalizations.of(context)!;
     final dataRepository = Provider.of<DataRepository>(context, listen: false);
-    final controller = TextEditingController(text: sesionActual.lugar.trim());
+    TextEditingController? controller;
     String? nuevoLugar;
     try {
+      controller = TextEditingController(text: sesionActual.lugar.trim());
       nuevoLugar = await showDialog<String>(
         context: context,
         builder: (dialogContext) => AlertDialog(
@@ -247,14 +248,14 @@ class _VerSesionState extends State<VerSesion> {
             ),
             TextButton(
               onPressed: () =>
-                  Navigator.pop(dialogContext, controller.text),
+                  Navigator.pop(dialogContext, controller!.text),
               child: Text(l10n.save),
             ),
           ],
         ),
       );
     } finally {
-      controller.dispose();
+      controller?.dispose();
     }
 
     final lugarNormalizado = nuevoLugar?.trim();
