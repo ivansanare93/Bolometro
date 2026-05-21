@@ -70,7 +70,9 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
       });
     });
     framesText = widget.partida.frames
-        .map((f) => f.map((v) => v == '0' ? '-' : v).toList()..length = 3)
+        .map(
+          (f) => f.map(formatearTiroParaMostrar).toList()..length = 3,
+        )
         .toList();
     notas = widget.partida.notas;
     erroresPorTiro = _obtenerErroresPorTiro(framesText);
