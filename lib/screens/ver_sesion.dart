@@ -222,41 +222,37 @@ class _VerSesionState extends State<VerSesion> {
   }
 
   Future<void> _editarLugarSesion() async {
-    final l10n = AppLocalizations.of(context)!;
     final dataRepository = Provider.of<DataRepository>(context, listen: false);
-    TextEditingController? controller;
-    String? nuevoLugar;
-    try {
-      controller = TextEditingController(text: sesionActual.lugar.trim());
-      nuevoLugar = await showDialog<String>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Text('${l10n.edit} ${l10n.location}'),
-          content: TextField(
-            controller: controller,
+    var valorLugar = sesionActual.lugar.trim();
+    final nuevoLugar = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        final dialogL10n = AppLocalizations.of(dialogContext)!;
+        return AlertDialog(
+          title: Text('${dialogL10n.edit} ${dialogL10n.location}'),
+          content: TextFormField(
+            initialValue: valorLugar,
             decoration: InputDecoration(
-              labelText: l10n.location,
+              labelText: dialogL10n.location,
               border: const OutlineInputBorder(),
             ),
             textInputAction: TextInputAction.done,
             autofocus: true,
+            onChanged: (value) => valorLugar = value,
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: Text(l10n.cancel),
+              child: Text(dialogL10n.cancel),
             ),
             TextButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, controller!.text),
-              child: Text(l10n.save),
+              onPressed: () => Navigator.pop(dialogContext, valorLugar),
+              child: Text(dialogL10n.save),
             ),
           ],
-        ),
-      );
-    } finally {
-      controller?.dispose();
-    }
+        );
+      },
+    );
 
     final lugarNormalizado = nuevoLugar?.trim();
     if (!mounted ||
@@ -264,6 +260,7 @@ class _VerSesionState extends State<VerSesion> {
         lugarNormalizado == sesionActual.lugar) {
       return;
     }
+    final l10n = AppLocalizations.of(context)!;
 
     try {
       final sesionActualizada = sesionActual.copyWith(lugar: lugarNormalizado);
