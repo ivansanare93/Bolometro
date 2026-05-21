@@ -247,7 +247,7 @@ class _VerSesionState extends State<VerSesion> {
             ),
             TextButton(
               onPressed: () =>
-                  Navigator.pop(dialogContext, controller.text.trim()),
+                  Navigator.pop(dialogContext, controller.text),
               child: Text(l10n.save),
             ),
           ],
