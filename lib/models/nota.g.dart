@@ -6,6 +6,52 @@ part of 'nota.dart';
 // TypeAdapterGenerator
 // **************************************************************************
 
+class NotaAdjuntoAdapter extends TypeAdapter<NotaAdjunto> {
+  @override
+  final int typeId = 18;
+
+  @override
+  NotaAdjunto read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return NotaAdjunto(
+      id: fields[0] as String,
+      tipo: fields[1] as String?,
+      localPath: fields[2] as String,
+      remoteUrl: fields[3] as String?,
+      createdAt: fields[4] as DateTime?,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, NotaAdjunto obj) {
+    writer
+      ..writeByte(5)
+      ..writeByte(0)
+      ..write(obj.id)
+      ..writeByte(1)
+      ..write(obj.tipo)
+      ..writeByte(2)
+      ..write(obj.localPath)
+      ..writeByte(3)
+      ..write(obj.remoteUrl)
+      ..writeByte(4)
+      ..write(obj.createdAt);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NotaAdjuntoAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
 class NotaAdapter extends TypeAdapter<Nota> {
   @override
   final int typeId = 2;
@@ -35,13 +81,17 @@ class NotaAdapter extends TypeAdapter<Nota> {
       patronAceite: fields[15] as String?,
       equipamientoUsado: fields[16] as String?,
       condicionPista: fields[17] as String?,
+      adjuntos: (fields[18] as List?)?.cast<NotaAdjunto>(),
+      revisarAntesProximaSesion: fields[19] == null ? false : fields[19] as bool,
+      fechaRevision: fields[20] as DateTime?,
+      fechaEliminacion: fields[21] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Nota obj) {
     writer
-      ..writeByte(18)
+      ..writeByte(22)
       ..writeByte(0)
       ..write(obj.titulo)
       ..writeByte(1)
@@ -77,7 +127,15 @@ class NotaAdapter extends TypeAdapter<Nota> {
       ..writeByte(16)
       ..write(obj.equipamientoUsado)
       ..writeByte(17)
-      ..write(obj.condicionPista);
+      ..write(obj.condicionPista)
+      ..writeByte(18)
+      ..write(obj.adjuntos)
+      ..writeByte(19)
+      ..write(obj.revisarAntesProximaSesion)
+      ..writeByte(20)
+      ..write(obj.fechaRevision)
+      ..writeByte(21)
+      ..write(obj.fechaEliminacion);
   }
 
   @override

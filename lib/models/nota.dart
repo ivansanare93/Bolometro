@@ -56,6 +56,75 @@ class NotaEstado {
   ];
 }
 
+class NotaAdjuntoTipo {
+  static const String imagen = 'imagen';
+
+  static const List<String> values = [imagen];
+}
+
+@HiveType(typeId: 18)
+class NotaAdjunto {
+  @HiveField(0)
+  String id;
+
+  @HiveField(1)
+  String tipo;
+
+  @HiveField(2)
+  String localPath;
+
+  @HiveField(3)
+  String? remoteUrl;
+
+  @HiveField(4)
+  DateTime createdAt;
+
+  NotaAdjunto({
+    required this.id,
+    String? tipo,
+    required this.localPath,
+    this.remoteUrl,
+    DateTime? createdAt,
+  })  : tipo = _normalizeAdjuntoTipo(tipo),
+        createdAt = createdAt ?? DateTime.now();
+
+  NotaAdjunto copyWith({
+    String? id,
+    String? tipo,
+    String? localPath,
+    Object? remoteUrl = _sentinel,
+    DateTime? createdAt,
+  }) {
+    return NotaAdjunto(
+      id: id ?? this.id,
+      tipo: tipo ?? this.tipo,
+      localPath: localPath ?? this.localPath,
+      remoteUrl: remoteUrl == _sentinel ? this.remoteUrl : remoteUrl as String?,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'tipo': tipo,
+        'localPath': localPath,
+        'remoteUrl': remoteUrl,
+        'createdAt': createdAt.toIso8601String(),
+      };
+
+  factory NotaAdjunto.fromJson(Map<String, dynamic> json) => NotaAdjunto(
+        id: (json['id'] as String?)?.trim().isNotEmpty == true
+            ? (json['id'] as String).trim()
+            : _generateStableId(),
+        tipo: json['tipo'] as String?,
+        localPath: (json['localPath'] as String?)?.trim() ?? '',
+        remoteUrl: json['remoteUrl'] as String?,
+        createdAt: json['createdAt'] != null
+            ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
+            : DateTime.now(),
+      );
+}
+
 @HiveType(typeId: 2)
 class Nota extends HiveObject {
   @HiveField(0)
@@ -126,6 +195,22 @@ class Nota extends HiveObject {
   @HiveField(17)
   String? condicionPista;
 
+  /// Attached evidence files (currently image-first).
+  @HiveField(18)
+  List<NotaAdjunto> adjuntos;
+
+  /// Whether this note should be reviewed before next session.
+  @HiveField(19)
+  bool revisarAntesProximaSesion;
+
+  /// Optional explicit review date.
+  @HiveField(20)
+  DateTime? fechaRevision;
+
+  /// Soft delete marker for cloud sync reconciliation.
+  @HiveField(21)
+  DateTime? fechaEliminacion;
+
   Nota({
     required this.titulo,
     required this.contenido,
@@ -145,10 +230,15 @@ class Nota extends HiveObject {
     this.patronAceite,
     this.equipamientoUsado,
     this.condicionPista,
+    List<NotaAdjunto>? adjuntos,
+    this.revisarAntesProximaSesion = false,
+    this.fechaRevision,
+    this.fechaEliminacion,
   })  : id = (id == null || id.trim().isEmpty) ? _generateStableId() : id.trim(),
         tipo = _normalizeTipo(tipo, categoria),
         estado = _normalizeEstado(estado),
-        tags = _normalizeTags(tags);
+        tags = _normalizeTags(tags),
+        adjuntos = _normalizeAdjuntos(adjuntos);
 
   static List<String> normalizeTagsFromText(String rawTags) {
     return _normalizeTags(rawTags.split(RegExp(r'[,\n]')).toList());
@@ -173,6 +263,10 @@ class Nota extends HiveObject {
     Object? patronAceite = _sentinel,
     Object? equipamientoUsado = _sentinel,
     Object? condicionPista = _sentinel,
+    List<NotaAdjunto>? adjuntos,
+    bool? revisarAntesProximaSesion,
+    Object? fechaRevision = _sentinel,
+    Object? fechaEliminacion = _sentinel,
   }) {
     return Nota(
       titulo: titulo ?? this.titulo,
@@ -202,6 +296,14 @@ class Nota extends HiveObject {
       condicionPista: condicionPista == _sentinel
           ? this.condicionPista
           : condicionPista as String?,
+      adjuntos: adjuntos ?? this.adjuntos,
+      revisarAntesProximaSesion:
+          revisarAntesProximaSesion ?? this.revisarAntesProximaSesion,
+      fechaRevision:
+          fechaRevision == _sentinel ? this.fechaRevision : fechaRevision as DateTime?,
+      fechaEliminacion: fechaEliminacion == _sentinel
+          ? this.fechaEliminacion
+          : fechaEliminacion as DateTime?,
     );
   }
 
@@ -224,13 +326,25 @@ class Nota extends HiveObject {
         'patronAceite': patronAceite,
         'equipamientoUsado': equipamientoUsado,
         'condicionPista': condicionPista,
+        'adjuntos': adjuntos.map((a) => a.toJson()).toList(),
+        'revisarAntesProximaSesion': revisarAntesProximaSesion,
+        'fechaRevision': fechaRevision?.toIso8601String(),
+        'fechaEliminacion': fechaEliminacion?.toIso8601String(),
+        // aliases for cloud sync readability
+        'createdAt': fechaCreacion.toIso8601String(),
+        'updatedAt': fechaModificacion.toIso8601String(),
+        'deletedAt': fechaEliminacion?.toIso8601String(),
       };
 
   factory Nota.fromJson(Map<String, dynamic> json) => Nota(
         titulo: json['titulo'] as String,
         contenido: json['contenido'] as String,
-        fechaCreacion: DateTime.parse(json['fechaCreacion'] as String),
-        fechaModificacion: DateTime.parse(json['fechaModificacion'] as String),
+        fechaCreacion:
+            _parseDateTime(json['fechaCreacion'] ?? json['createdAt']) ??
+                DateTime.now(),
+        fechaModificacion:
+            _parseDateTime(json['fechaModificacion'] ?? json['updatedAt']) ??
+                DateTime.now(),
         categoria: json['categoria'] as String?,
         favorita: json['favorita'] as bool? ?? false,
         colorValue: json['colorValue'] as int?,
@@ -247,6 +361,15 @@ class Nota extends HiveObject {
         patronAceite: json['patronAceite'] as String?,
         equipamientoUsado: json['equipamientoUsado'] as String?,
         condicionPista: json['condicionPista'] as String?,
+        adjuntos: (json['adjuntos'] as List<dynamic>?)
+            ?.whereType<Map>()
+            .map((e) => NotaAdjunto.fromJson(Map<String, dynamic>.from(e)))
+            .toList(),
+        revisarAntesProximaSesion:
+            json['revisarAntesProximaSesion'] as bool? ?? false,
+        fechaRevision: _parseDateTime(json['fechaRevision']),
+        fechaEliminacion:
+            _parseDateTime(json['fechaEliminacion'] ?? json['deletedAt']),
       );
 }
 
@@ -262,6 +385,14 @@ List<String> _normalizeTags(List<String>? tags) {
       .toList();
   normalized.sort();
   return normalized;
+}
+
+List<NotaAdjunto> _normalizeAdjuntos(List<NotaAdjunto>? adjuntos) {
+  if (adjuntos == null) return <NotaAdjunto>[];
+  return adjuntos
+      .where((a) => a.localPath.trim().isNotEmpty || (a.remoteUrl ?? '').trim().isNotEmpty)
+      .map((a) => a.copyWith(tipo: _normalizeAdjuntoTipo(a.tipo)))
+      .toList();
 }
 
 final Random _idRandom = Random();
@@ -307,4 +438,18 @@ String _normalizeEstado(String? estado) {
     return normalized;
   }
   return NotaEstado.pendiente;
+}
+
+String _normalizeAdjuntoTipo(String? tipo) {
+  final normalized = tipo?.trim().toLowerCase();
+  if (normalized != null && NotaAdjuntoTipo.values.contains(normalized)) {
+    return normalized;
+  }
+  return NotaAdjuntoTipo.imagen;
+}
+
+DateTime? _parseDateTime(dynamic value) {
+  if (value == null) return null;
+  if (value is DateTime) return value;
+  return DateTime.tryParse(value.toString());
 }

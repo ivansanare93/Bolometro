@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:math';
 import '../models/sesion.dart';
+import '../models/nota.dart';
 import '../models/perfil_usuario.dart';
 import '../models/user_progress.dart';
 import '../models/achievement.dart';
@@ -74,6 +75,11 @@ class FirestoreService {
   /// Obtener referencia al documento de perfil del usuario
   DocumentReference _getPerfilDocument(String userId) {
     return _firestore.collection('users').doc(userId);
+  }
+
+  /// Obtener referencia a la colección de notas del usuario
+  CollectionReference _getNotasCollection(String userId) {
+    return _firestore.collection('users').doc(userId).collection('notas');
   }
 
   /// Obtener referencia al documento de progreso del usuario
@@ -180,6 +186,72 @@ class FirestoreService {
       debugPrint('Sesión eliminada de Firestore: $docId');
     } catch (e) {
       debugPrint('Error al eliminar sesión de Firestore: $e');
+      rethrow;
+    }
+  }
+
+  /// Guardar o actualizar una nota en Firestore
+  Future<void> guardarNota(String userId, Nota nota) async {
+    try {
+      await _getNotasCollection(userId).doc(nota.id).set(
+            nota.toJson(),
+            SetOptions(merge: true),
+          );
+      debugPrint('Nota guardada en Firestore: ${nota.id}');
+    } catch (e) {
+      debugPrint('Error al guardar nota en Firestore: $e');
+      rethrow;
+    }
+  }
+
+  /// Obtener notas del usuario desde Firestore
+  Future<List<Nota>> obtenerNotas(
+    String userId, {
+    bool includeDeleted = false,
+  }) async {
+    try {
+      final snapshot = await _getNotasCollection(userId).get();
+      final notas = snapshot.docs
+          .map((doc) => Nota.fromJson(doc.data() as Map<String, dynamic>))
+          .toList();
+      if (includeDeleted) return notas;
+      return notas.where((n) => n.fechaEliminacion == null).toList();
+    } catch (e) {
+      debugPrint('Error al obtener notas desde Firestore: $e');
+      return [];
+    }
+  }
+
+  /// Marca una nota como eliminada (soft delete)
+  Future<void> marcarNotaEliminada(
+    String userId,
+    String notaId,
+    DateTime deletedAt,
+  ) async {
+    try {
+      await _getNotasCollection(userId).doc(notaId).set(
+        {
+          'fechaEliminacion': deletedAt.toIso8601String(),
+          'deletedAt': deletedAt.toIso8601String(),
+          'fechaModificacion': deletedAt.toIso8601String(),
+          'updatedAt': deletedAt.toIso8601String(),
+        },
+        SetOptions(merge: true),
+      );
+      debugPrint('Nota marcada como eliminada en Firestore: $notaId');
+    } catch (e) {
+      debugPrint('Error al marcar nota eliminada en Firestore: $e');
+      rethrow;
+    }
+  }
+
+  /// Eliminar una nota de Firestore (hard delete)
+  Future<void> eliminarNotaFisica(String userId, String notaId) async {
+    try {
+      await _getNotasCollection(userId).doc(notaId).delete();
+      debugPrint('Nota eliminada físicamente de Firestore: $notaId');
+    } catch (e) {
+      debugPrint('Error al eliminar nota físicamente de Firestore: $e');
       rethrow;
     }
   }
