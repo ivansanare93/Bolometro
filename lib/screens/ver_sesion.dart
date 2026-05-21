@@ -224,33 +224,37 @@ class _VerSesionState extends State<VerSesion> {
   Future<void> _editarLugarSesion() async {
     final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: sesionActual.lugar);
-
-    final nuevoLugar = await showDialog<String>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text('${l10n.edit} ${l10n.location}'),
-        content: TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            labelText: l10n.location,
-            border: const OutlineInputBorder(),
+    String? nuevoLugar;
+    try {
+      nuevoLugar = await showDialog<String>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text('${l10n.edit} ${l10n.location}'),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              labelText: l10n.location,
+              border: const OutlineInputBorder(),
+            ),
+            textInputAction: TextInputAction.done,
+            autofocus: true,
           ),
-          textInputAction: TextInputAction.done,
-          autofocus: true,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, controller.text.trim()),
+              child: Text(l10n.save),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: Text(l10n.save),
-          ),
-        ],
-      ),
-    );
-    controller.dispose();
+      );
+    } finally {
+      controller.dispose();
+    }
 
     if (!mounted || nuevoLugar == null || nuevoLugar == sesionActual.lugar) {
       return;
