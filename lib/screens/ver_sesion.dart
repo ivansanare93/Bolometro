@@ -224,7 +224,7 @@ class _VerSesionState extends State<VerSesion> {
   Future<void> _editarLugarSesion() async {
     final l10n = AppLocalizations.of(context)!;
     final dataRepository = Provider.of<DataRepository>(context, listen: false);
-    final controller = TextEditingController(text: sesionActual.lugar);
+    final controller = TextEditingController(text: sesionActual.lugar.trim());
     String? nuevoLugar;
     try {
       nuevoLugar = await showDialog<String>(
@@ -260,7 +260,7 @@ class _VerSesionState extends State<VerSesion> {
     final lugarNormalizado = nuevoLugar?.trim();
     if (!mounted ||
         lugarNormalizado == null ||
-        lugarNormalizado == sesionActual.lugar.trim()) {
+        lugarNormalizado == sesionActual.lugar) {
       return;
     }
 
