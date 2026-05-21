@@ -14,6 +14,7 @@ import 'rankings_screen.dart';
 import 'achievements_screen.dart';
 import 'registro_completo_sesion.dart';
 import 'notas_screen.dart';
+import 'feedback_screen.dart';
 import '../providers/theme_provider.dart';
 import '../providers/language_provider.dart';
 import '../models/perfil_usuario.dart';
@@ -294,6 +295,22 @@ Future<void> _bootstrap(
                               
                               if (authService.isAuthenticated) ...[
                                 const Divider(height: 32),
+                                ListTile(
+                                  leading: Icon(
+                                    Icons.feedback_outlined,
+                                    color: cs.primary,
+                                  ),
+                                  title: Text(AppLocalizations.of(context)!.sendFeedback),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    Navigator.of(scaffoldContext).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => const FeedbackScreen(),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                const Divider(height: 12),
                                 ListTile(
                                   leading: Icon(
                                     Icons.sync,

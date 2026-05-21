@@ -30,6 +30,14 @@ void main() {
       expect(() => analyticsService.logSessionCreated('training'), returnsNormally);
       expect(() => analyticsService.logGameCreated(150), returnsNormally);
       expect(() => analyticsService.logLogin('google'), returnsNormally);
+      expect(
+        () => analyticsService.logFeedbackSubmitted(
+          type: 'suggestion',
+          hasEmail: true,
+          hasRating: false,
+        ),
+        returnsNormally,
+      );
     });
   });
 }

@@ -112,6 +112,51 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Feedback enviado desde la app (solo creación para usuarios autenticados)
+    match /feedback/{feedbackId} {
+      allow create: if request.auth != null
+                    && request.resource.data.keys().hasOnly([
+                      'userId',
+                      'type',
+                      'message',
+                      'email',
+                      'authEmail',
+                      'rating',
+                      'createdAt',
+                      'appVersion',
+                      'platform',
+                      'languageCode',
+                      'status'
+                    ])
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.type in ['suggestion', 'bug', 'other']
+                    && request.resource.data.message is string
+                    && request.resource.data.message.size() > 0
+                    && request.resource.data.message.size() <= 2000
+                    && (!('email' in request.resource.data)
+                        || (request.resource.data.email is string
+                            && request.resource.data.email.size() <= 254))
+                    && (!('authEmail' in request.resource.data)
+                        || (request.resource.data.authEmail is string
+                            && request.resource.data.authEmail.size() <= 254))
+                    && (!('rating' in request.resource.data)
+                        || (request.resource.data.rating is int
+                            && request.resource.data.rating >= 1
+                            && request.resource.data.rating <= 5))
+                    && request.resource.data.createdAt == request.time
+                    && request.resource.data.appVersion is string
+                    && request.resource.data.appVersion.size() > 0
+                    && request.resource.data.appVersion.size() <= 32
+                    && request.resource.data.platform is string
+                    && request.resource.data.platform.size() > 0
+                    && request.resource.data.platform.size() <= 16
+                    && request.resource.data.languageCode is string
+                    && request.resource.data.languageCode.size() > 0
+                    && request.resource.data.languageCode.size() <= 10
+                    && request.resource.data.status == 'new';
+      allow read, update, delete: if false;
+    }
+
     // Denegar acceso a cualquier otra ruta
     match /{document=**} {
       allow read, write: if false;

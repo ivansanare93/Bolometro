@@ -1037,4 +1037,29 @@ class DataRepository extends ChangeNotifier {
     }
     return null;
   }
+
+  /// Submit app feedback to Firestore.
+  Future<void> submitFeedback({
+    required String userId,
+    required String type,
+    required String message,
+    required String appVersion,
+    required String platform,
+    required String languageCode,
+    String? email,
+    String? authEmail,
+    int? rating,
+  }) async {
+    await _firestoreService.submitFeedback(
+      userId: userId,
+      type: type,
+      message: message,
+      appVersion: appVersion,
+      platform: platform,
+      languageCode: languageCode,
+      email: email,
+      authEmail: authEmail,
+      rating: rating,
+    );
+  }
 }
