@@ -84,6 +84,10 @@ class Nota extends HiveObject {
   })  : id = (id == null || id.trim().isEmpty) ? _generateStableId() : id.trim(),
         tags = _normalizeTags(tags);
 
+  static List<String> normalizeTagsFromText(String rawTags) {
+    return _normalizeTags(rawTags.split(RegExp(r'[,\n]')).toList());
+  }
+
   Nota copyWith({
     String? titulo,
     String? contenido,
@@ -156,7 +160,7 @@ const Object _sentinel = Object();
 List<String> _normalizeTags(List<String>? tags) {
   if (tags == null) return <String>[];
   final normalized = tags
-      .map((t) => t.trim())
+      .map((t) => t.toString().trim().toLowerCase())
       .where((t) => t.isNotEmpty)
       .toSet()
       .toList();
@@ -164,8 +168,12 @@ List<String> _normalizeTags(List<String>? tags) {
   return normalized;
 }
 
+final Random _idRandom = Random();
+int _idCounter = 0;
+
 String _generateStableId() {
   final now = DateTime.now().microsecondsSinceEpoch;
-  final random = Random().nextInt(1 << 32);
-  return '${now}_$random';
+  _idCounter = (_idCounter + 1) & 0xFFFFF;
+  final random = _idRandom.nextInt(1 << 32);
+  return '${now}_${_idCounter}_$random';
 }

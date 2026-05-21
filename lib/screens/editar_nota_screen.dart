@@ -188,14 +188,7 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
   }
 
   List<String> _parseTags() {
-    final tags = _tagsController.text
-        .split(RegExp(r'[,\n]'))
-        .map((t) => t.trim().toLowerCase())
-        .where((t) => t.isNotEmpty)
-        .toSet()
-        .toList();
-    tags.sort();
-    return tags;
+    return Nota.normalizeTagsFromText(_tagsController.text);
   }
 
   String _sessionIdFromSesion(Sesion sesion) =>

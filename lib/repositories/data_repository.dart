@@ -369,12 +369,21 @@ class DataRepository extends ChangeNotifier {
   /// Esto evita duplicados al editar notas legacy guardadas con claves enteras.
   Future<void> _normalizarNotasBox(Box<Nota> box) async {
     final claves = box.keys.toList();
+    final notasPorActualizar = <dynamic, Nota>{};
+    final clavesParaEliminar = <dynamic>[];
     for (final key in claves) {
       final nota = box.get(key);
       if (nota == null) continue;
       if (key == nota.id) continue;
-      await box.put(nota.id, nota.copyWith());
-      await box.delete(key);
+      notasPorActualizar[nota.id] = nota.copyWith();
+      clavesParaEliminar.add(key);
+    }
+
+    if (notasPorActualizar.isNotEmpty) {
+      await box.putAll(notasPorActualizar);
+    }
+    if (clavesParaEliminar.isNotEmpty) {
+      await box.deleteAll(clavesParaEliminar);
     }
   }
 

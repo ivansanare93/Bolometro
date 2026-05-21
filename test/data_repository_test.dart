@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:bolometro/repositories/data_repository.dart';
@@ -204,9 +206,11 @@ void main() {
 
   group('DataRepository - Notas', () {
     late DataRepository repository;
+    late Directory tempDir;
 
     setUp(() async {
-      Hive.init('test_hive_notas');
+      tempDir = Directory.systemTemp.createTempSync('test_hive_notas_');
+      Hive.init(tempDir.path);
 
       if (!Hive.isAdapterRegistered(1)) {
         Hive.registerAdapter(SesionAdapter());
@@ -228,6 +232,9 @@ void main() {
     tearDown(() async {
       await Hive.deleteFromDisk();
       await Hive.close();
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+      }
     });
 
     test('guardarNota debe persistir id y metadatos de fase 1', () async {
