@@ -221,6 +221,71 @@ class _VerSesionState extends State<VerSesion> {
     );
   }
 
+  Future<void> _editarLugarSesion() async {
+    final dataRepository = Provider.of<DataRepository>(context, listen: false);
+    var valorLugar = sesionActual.lugar.trim();
+    final nuevoLugar = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        final dialogL10n = AppLocalizations.of(dialogContext)!;
+        return AlertDialog(
+          title: Text('${dialogL10n.edit} ${dialogL10n.location}'),
+          content: TextFormField(
+            initialValue: valorLugar,
+            decoration: InputDecoration(
+              labelText: dialogL10n.location,
+              border: const OutlineInputBorder(),
+            ),
+            textInputAction: TextInputAction.done,
+            autofocus: true,
+            onChanged: (value) => valorLugar = value,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(dialogL10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, valorLugar),
+              child: Text(dialogL10n.save),
+            ),
+          ],
+        );
+      },
+    );
+
+    final lugarNormalizado = nuevoLugar?.trim();
+    if (!mounted ||
+        lugarNormalizado == null ||
+        lugarNormalizado == sesionActual.lugar) {
+      return;
+    }
+    final l10n = AppLocalizations.of(context)!;
+
+    try {
+      final sesionActualizada = sesionActual.copyWith(lugar: lugarNormalizado);
+      await dataRepository.actualizarSesion(sesionActualizada);
+
+      if (!mounted) return;
+      setState(() {
+        sesionActual = sesionActualizada;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.saveSuccess)),
+      );
+    } catch (e) {
+      debugPrint('Error al actualizar lugar de sesión: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.sessionSaveErrorMessage),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   /// Returns true if the game was recorded with the pin keyboard
   /// (i.e. at least one throw has pin selection data).
   bool _hasPinData(Partida partida) {
@@ -266,6 +331,11 @@ class _VerSesionState extends State<VerSesion> {
           '$tipoLabel • ${sesionActual.lugar.isNotEmpty ? sesionActual.lugar : l10n.noLocation}',
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_location_alt),
+            tooltip: AppLocalizations.of(context)!.edit,
+            onPressed: _editarLugarSesion,
+          ),
           IconButton(
             icon: const Icon(Icons.home),
             tooltip: AppLocalizations.of(context)!.home,
