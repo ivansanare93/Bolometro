@@ -218,7 +218,24 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
         final habilitarTercerTiro = primerTiroStrike || spareEnPrimerosDos;
 
         if (habilitarTercerTiro) {
-          mostrarRemate = !todosCaidos;
+          // All 10 pins are available when:
+          //  - spare in throws 1+2 (pins reset after spare)
+          //  - X + X  (second strike resets the lane)
+          //  - X + -  (miss on second; no pins knocked, all still standing)
+          //  - X + '' (defensive: tiro2 not yet recorded)
+          // Otherwise (X + N where N>0) only the remaining (10-N) pins stand
+          // → show Spare button.
+          final todosLosPinesDisponibles = spareEnPrimerosDos ||
+              (primerTiroStrike &&
+                  (tiro2 == AppConstants.simboloStrike || // X+X case
+                      tiro2 == AppConstants.simboloFallo || // X+miss case
+                      tiro2.isEmpty)); // defensive fallback
+
+          if (todosLosPinesDisponibles) {
+            mostrarPleno = !todosCaidos;
+          } else {
+            mostrarRemate = !todosCaidos;
+          }
           mostrarFallo = true;
 
           // Resetear pinos una sola vez, sin bucles de build
