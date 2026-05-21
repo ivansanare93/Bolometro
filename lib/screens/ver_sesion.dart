@@ -221,6 +221,63 @@ class _VerSesionState extends State<VerSesion> {
     );
   }
 
+  Future<void> _editarLugarSesion() async {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController(text: sesionActual.lugar);
+
+    final nuevoLugar = await showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('${l10n.edit} ${l10n.location}'),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            labelText: l10n.location,
+            border: const OutlineInputBorder(),
+          ),
+          textInputAction: TextInputAction.done,
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: Text(l10n.save),
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted || nuevoLugar == null || nuevoLugar == sesionActual.lugar) {
+      return;
+    }
+
+    try {
+      final dataRepository = Provider.of<DataRepository>(context, listen: false);
+      final sesionActualizada = sesionActual.copyWith(lugar: nuevoLugar);
+      await dataRepository.actualizarSesion(sesionActualizada);
+
+      setState(() {
+        sesionActual = sesionActualizada;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.saveSuccess)),
+      );
+    } catch (e) {
+      debugPrint('Error al actualizar lugar de sesión: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.sessionSaveErrorMessage),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   /// Returns true if the game was recorded with the pin keyboard
   /// (i.e. at least one throw has pin selection data).
   bool _hasPinData(Partida partida) {
@@ -266,6 +323,11 @@ class _VerSesionState extends State<VerSesion> {
           '$tipoLabel • ${sesionActual.lugar.isNotEmpty ? sesionActual.lugar : l10n.noLocation}',
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_location_alt),
+            tooltip: AppLocalizations.of(context)!.edit,
+            onPressed: _editarLugarSesion,
+          ),
           IconButton(
             icon: const Icon(Icons.home),
             tooltip: AppLocalizations.of(context)!.home,
