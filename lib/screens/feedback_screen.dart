@@ -64,16 +64,15 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     try {
       final packageInfo = await PackageInfo.fromPlatform();
       final normalizedEmail = _emailController.text.trim();
-      final contactEmail = normalizedEmail.isNotEmpty
-          ? normalizedEmail
-          : authService.user?.email;
+      final contactEmail = normalizedEmail.isNotEmpty ? normalizedEmail : null;
+      final authEmail = authService.user?.email;
 
       await dataRepository.submitFeedback(
         userId: authService.userId!,
         type: _selectedType,
         message: _messageController.text.trim(),
         email: contactEmail,
-        authEmail: authService.user?.email,
+        authEmail: authEmail,
         rating: _rating,
         appVersion: packageInfo.version,
         platform: Platform.operatingSystem,
@@ -82,7 +81,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
       await analyticsService.logFeedbackSubmitted(
         type: _selectedType,
-        hasEmail: contactEmail != null && contactEmail.isNotEmpty,
+        hasEmail: (contactEmail != null && contactEmail.isNotEmpty) ||
+            (authEmail != null && authEmail.isNotEmpty),
         hasRating: _rating != null,
       );
 
