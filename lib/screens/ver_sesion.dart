@@ -257,12 +257,15 @@ class _VerSesionState extends State<VerSesion> {
       controller.dispose();
     }
 
-    if (!mounted || nuevoLugar == null || nuevoLugar == sesionActual.lugar) {
+    final lugarNormalizado = nuevoLugar?.trim();
+    if (!mounted ||
+        lugarNormalizado == null ||
+        lugarNormalizado == sesionActual.lugar.trim()) {
       return;
     }
 
     try {
-      final sesionActualizada = sesionActual.copyWith(lugar: nuevoLugar);
+      final sesionActualizada = sesionActual.copyWith(lugar: lugarNormalizado);
       await dataRepository.actualizarSesion(sesionActualizada);
 
       if (!mounted) return;
