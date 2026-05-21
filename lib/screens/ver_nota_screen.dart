@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../models/nota.dart';
 import '../models/sesion.dart';
 import '../repositories/data_repository.dart';
@@ -70,6 +74,72 @@ class _VerNotaScreenState extends State<VerNotaScreen> {
     final repo = Provider.of<DataRepository>(context, listen: false);
     setState(() => nota.archivada = !nota.archivada);
     await repo.actualizarNota(nota);
+  }
+
+  String _label(BuildContext context, String es, String en) {
+    return Localizations.localeOf(context).languageCode == 'es' ? es : en;
+  }
+
+  String _buildShareText(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final metadata = <String>[
+      if (nota.categoria != null)
+        '${l10n.noteCategory}: ${_categoryLabel(context, nota.categoria)}',
+      '${l10n.noteType}: ${_typeLabel(context, nota.tipo)}',
+      '${l10n.noteStatus}: ${_statusLabel(context, nota.estado)}',
+      if ((nota.bolera ?? '').isNotEmpty) '${l10n.noteBowlingAlley}: ${nota.bolera}',
+      if ((nota.patronAceite ?? '').isNotEmpty) '${l10n.noteOilPattern}: ${nota.patronAceite}',
+      if ((nota.equipamientoUsado ?? '').isNotEmpty)
+        '${l10n.noteBallOrEquipment}: ${nota.equipamientoUsado}',
+      if ((nota.condicionPista ?? '').isNotEmpty)
+        '${l10n.noteLaneCondition}: ${nota.condicionPista}',
+      if (nota.tags.isNotEmpty) 'Tags: ${nota.tags.map((t) => '#$t').join(' ')}',
+      '${l10n.modified}: ${_formatFecha(nota.fechaModificacion)}',
+    ];
+    return '${nota.titulo}\n\n${nota.contenido}\n\n${metadata.join('\n')}';
+  }
+
+  Future<void> _compartirNota() async {
+    await Share.share(_buildShareText(context), subject: nota.titulo);
+  }
+
+  String _buildMarkdown(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final b = StringBuffer();
+    b.writeln('# ${nota.titulo}');
+    b.writeln();
+    b.writeln('- ${l10n.created}: ${_formatFecha(nota.fechaCreacion)}');
+    b.writeln('- ${l10n.modified}: ${_formatFecha(nota.fechaModificacion)}');
+    b.writeln('- ${l10n.noteType}: ${_typeLabel(context, nota.tipo)}');
+    b.writeln('- ${l10n.noteStatus}: ${_statusLabel(context, nota.estado)}');
+    if (nota.categoria != null) {
+      b.writeln('- ${l10n.noteCategory}: ${_categoryLabel(context, nota.categoria)}');
+    }
+    if (nota.tags.isNotEmpty) {
+      b.writeln('- Tags: ${nota.tags.map((t) => '#$t').join(' ')}');
+    }
+    if (nota.revisarAntesProximaSesion) {
+      b.writeln(
+        '- ${_label(context, 'Revisar antes de próxima sesión', 'Review before next session')}: ✅',
+      );
+    }
+    if (nota.fechaRevision != null) {
+      b.writeln('- ${_label(context, 'Fecha de revisión', 'Review date')}: ${DateFormat('dd/MM/yyyy').format(nota.fechaRevision!)}');
+    }
+    b.writeln();
+    b.writeln('## ${l10n.noteContent}');
+    b.writeln();
+    b.writeln(nota.contenido.isEmpty ? '-' : nota.contenido);
+    return b.toString();
+  }
+
+  Future<void> _exportarMarkdown() async {
+    final dir = await getTemporaryDirectory();
+    final safeName =
+        nota.titulo.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+    final file = File('${dir.path}/nota_${safeName.isEmpty ? nota.id : safeName}.md');
+    await file.writeAsString(_buildMarkdown(context));
+    await Share.shareXFiles([XFile(file.path)], text: nota.titulo);
   }
 
   Future<void> _abrirSesionRelacionada() async {
@@ -196,6 +266,26 @@ class _VerNotaScreenState extends State<VerNotaScreen> {
         title: Text(l10n.viewNote),
         centerTitle: true,
         actions: [
+          PopupMenuButton<String>(
+            tooltip: _label(context, 'Compartir/Exportar', 'Share/Export'),
+            onSelected: (value) async {
+              if (value == 'share') {
+                await _compartirNota();
+              } else if (value == 'export') {
+                await _exportarMarkdown();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'share',
+                child: Text(l10n.share),
+              ),
+              PopupMenuItem(
+                value: 'export',
+                child: Text(l10n.export),
+              ),
+            ],
+          ),
           IconButton(
             icon: Icon(nota.pinned ? Icons.push_pin : Icons.push_pin_outlined),
             tooltip: nota.pinned ? l10n.noteUnpin : l10n.notePin,
@@ -351,6 +441,77 @@ class _VerNotaScreenState extends State<VerNotaScreen> {
                       ),
                     )
                     .toList(),
+              ),
+            ],
+            if (nota.adjuntos.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                _label(context, 'Adjuntos', 'Attachments'),
+                style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: nota.adjuntos.map((adjunto) {
+                  final localExists = adjunto.localPath.isNotEmpty &&
+                      File(adjunto.localPath).existsSync();
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: SizedBox(
+                      width: 92,
+                      height: 92,
+                      child: localExists
+                          ? Image.file(File(adjunto.localPath), fit: BoxFit.cover)
+                          : (adjunto.remoteUrl ?? '').isNotEmpty
+                              ? Image.network(
+                                  adjunto.remoteUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    color: cs.surfaceVariant,
+                                    child: const Icon(Icons.broken_image_outlined),
+                                  ),
+                                )
+                              : Container(
+                                  color: cs.surfaceVariant,
+                                  child: const Icon(Icons.image_not_supported_outlined),
+                                ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+            if (nota.revisarAntesProximaSesion || nota.fechaRevision != null) ...[
+              const SizedBox(height: 12),
+              Card(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _label(context, 'Revisión', 'Review'),
+                        style: textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      if (nota.revisarAntesProximaSesion)
+                        Text(
+                          _label(
+                            context,
+                            'Marcada para revisar antes de próxima sesión',
+                            'Marked to review before next session',
+                          ),
+                        ),
+                      if (nota.fechaRevision != null)
+                        Text(
+                          '${_label(context, 'Fecha de revisión', 'Review date')}: ${DateFormat('dd/MM/yyyy').format(nota.fechaRevision!)}',
+                        ),
+                    ],
+                  ),
+                ),
               ),
             ],
             if (nota.relatedSessionId != null && nota.relatedSessionId!.isNotEmpty) ...[

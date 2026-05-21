@@ -34,10 +34,17 @@ void main() {
       if (!Hive.isAdapterRegistered(10)) {
         Hive.registerAdapter(PerfilUsuarioAdapter());
       }
+      if (!Hive.isAdapterRegistered(2)) {
+        Hive.registerAdapter(NotaAdapter());
+      }
+      if (!Hive.isAdapterRegistered(18)) {
+        Hive.registerAdapter(NotaAdjuntoAdapter());
+      }
 
       // Abrir boxes necesarios
       await Hive.openBox<Sesion>(AppConstants.boxSesiones);
       await Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+      await Hive.openBox<Nota>(AppConstants.boxNotas);
 
       repository = DataRepository();
     });
@@ -218,6 +225,9 @@ void main() {
       if (!Hive.isAdapterRegistered(2)) {
         Hive.registerAdapter(NotaAdapter());
       }
+      if (!Hive.isAdapterRegistered(18)) {
+        Hive.registerAdapter(NotaAdjuntoAdapter());
+      }
       if (!Hive.isAdapterRegistered(10)) {
         Hive.registerAdapter(PerfilUsuarioAdapter());
       }
@@ -253,6 +263,16 @@ void main() {
         patronAceite: 'House 40ft',
         equipamientoUsado: 'Phaze II',
         condicionPista: 'Transición media',
+        adjuntos: [
+          NotaAdjunto(
+            id: 'a1',
+            tipo: NotaAdjuntoTipo.imagen,
+            localPath: '/tmp/example.jpg',
+            createdAt: DateTime.now(),
+          ),
+        ],
+        revisarAntesProximaSesion: true,
+        fechaRevision: DateTime.now().add(const Duration(days: 2)),
       );
 
       await repository.guardarNota(nota);
@@ -270,6 +290,9 @@ void main() {
       expect(notas.first.patronAceite, 'House 40ft');
       expect(notas.first.equipamientoUsado, 'Phaze II');
       expect(notas.first.condicionPista, 'Transición media');
+      expect(notas.first.adjuntos, hasLength(1));
+      expect(notas.first.revisarAntesProximaSesion, isTrue);
+      expect(notas.first.fechaRevision, isNotNull);
     });
 
     test('notas deben estar separadas por usuario', () async {
@@ -325,6 +348,27 @@ void main() {
       expect(notas.first.patronAceite, isNull);
       expect(notas.first.equipamientoUsado, isNull);
       expect(notas.first.condicionPista, isNull);
+      expect(notas.first.adjuntos, isEmpty);
+      expect(notas.first.revisarAntesProximaSesion, isFalse);
+      expect(notas.first.fechaRevision, isNull);
+      expect(notas.first.fechaEliminacion, isNull);
+    });
+
+    test('eliminarNota debe aplicar soft delete y ocultarla de obtenerNotas', () async {
+      final nota = Nota(
+        titulo: 'Nota temporal',
+        contenido: 'Contenido',
+        fechaCreacion: DateTime.now(),
+        fechaModificacion: DateTime.now(),
+      );
+
+      await repository.guardarNota(nota);
+      var visibles = await repository.obtenerNotas();
+      expect(visibles, hasLength(1));
+
+      await repository.eliminarNota(visibles.first);
+      visibles = await repository.obtenerNotas();
+      expect(visibles, isEmpty);
     });
   });
 }

@@ -390,8 +390,15 @@ class DataRepository extends ChangeNotifier {
   /// Obtener todas las notas
   Future<List<Nota>> obtenerNotas() async {
     try {
+      if (_isOnlineMode && _userId != null) {
+        await _sincronizarNotasConNube();
+      }
       final box = await _getNotasBox();
-      return box.values.toList().reversed.toList();
+      final notasActivas = box.values
+          .where((n) => n.fechaEliminacion == null)
+          .toList()
+        ..sort((a, b) => b.fechaModificacion.compareTo(a.fechaModificacion));
+      return notasActivas;
     } catch (e) {
       debugPrint('Error al obtener notas: $e');
       return [];
@@ -402,7 +409,13 @@ class DataRepository extends ChangeNotifier {
   Future<void> guardarNota(Nota nota) async {
     try {
       final box = await _getNotasBox();
+      final ahora = DateTime.now();
+      nota.fechaModificacion = ahora;
+      nota.fechaEliminacion = null;
       await box.put(nota.id, nota);
+      if (_isOnlineMode && _userId != null) {
+        await _firestoreService.guardarNota(_userId!, nota);
+      }
       notifyListeners();
     } catch (e) {
       debugPrint('Error al guardar nota: $e');
@@ -414,7 +427,11 @@ class DataRepository extends ChangeNotifier {
   Future<void> actualizarNota(Nota nota) async {
     try {
       final box = await _getNotasBox();
+      nota.fechaModificacion = DateTime.now();
       await box.put(nota.id, nota);
+      if (_isOnlineMode && _userId != null) {
+        await _firestoreService.guardarNota(_userId!, nota);
+      }
       notifyListeners();
     } catch (e) {
       debugPrint('Error al actualizar nota: $e');
@@ -426,15 +443,63 @@ class DataRepository extends ChangeNotifier {
   Future<void> eliminarNota(Nota nota) async {
     try {
       final box = await _getNotasBox();
-      if (box.containsKey(nota.id)) {
-        await box.delete(nota.id);
-      } else if (nota.key != null) {
-        await box.delete(nota.key);
+      final ahora = DateTime.now();
+      nota.fechaEliminacion = ahora;
+      nota.fechaModificacion = ahora;
+      await box.put(nota.id, nota);
+      if (_isOnlineMode && _userId != null) {
+        await _firestoreService.marcarNotaEliminada(_userId!, nota.id, ahora);
       }
       notifyListeners();
     } catch (e) {
       debugPrint('Error al eliminar nota: $e');
       rethrow;
+    }
+  }
+
+  DateTime _notaVersion(Nota nota) {
+    final deletedAt = nota.fechaEliminacion;
+    if (deletedAt != null && deletedAt.isAfter(nota.fechaModificacion)) {
+      return deletedAt;
+    }
+    return nota.fechaModificacion;
+  }
+
+  Future<void> _sincronizarNotasConNube() async {
+    if (!_isOnlineMode || _userId == null) return;
+
+    final box = await _getNotasBox();
+    final notasLocales = box.values.toList();
+    final notasRemotas = await _firestoreService.obtenerNotas(
+      _userId!,
+      includeDeleted: true,
+    );
+
+    final localesById = {for (final n in notasLocales) n.id: n};
+    final remotasById = {for (final n in notasRemotas) n.id: n};
+    final allIds = <String>{...localesById.keys, ...remotasById.keys};
+
+    for (final id in allIds) {
+      final local = localesById[id];
+      final remote = remotasById[id];
+
+      if (local == null && remote != null) {
+        await box.put(id, remote);
+        continue;
+      }
+      if (remote == null && local != null) {
+        await _firestoreService.guardarNota(_userId!, local);
+        continue;
+      }
+      if (local == null || remote == null) continue;
+
+      final localVersion = _notaVersion(local);
+      final remoteVersion = _notaVersion(remote);
+      if (remoteVersion.isAfter(localVersion)) {
+        await box.put(id, remote);
+      } else if (localVersion.isAfter(remoteVersion)) {
+        await _firestoreService.guardarNota(_userId!, local);
+      }
     }
   }
 
@@ -642,15 +707,27 @@ class DataRepository extends ChangeNotifier {
         'Datos de gamificación sincronizados',
       );
 
+      // 6.1 Sincronizar notas con reconciliación por última modificación
+      await _sincronizarNotasConNube();
+
       // 7. Obtener sesiones finales de la nube después de la subida
       debugPrint('Descargando estado final desde la nube...');
       final sesionesFinal = await _firestoreService.obtenerSesiones(_userId!);
+      final notasFinal = await _firestoreService.obtenerNotas(
+        _userId!,
+        includeDeleted: true,
+      );
 
       // 8. Actualizar almacenamiento local con datos de la nube (verdad única)
       // IMPORTANTE: Solo limpiamos después de confirmar que tenemos los datos de la nube
       debugPrint('Actualizando almacenamiento local con datos de la nube...');
       await boxSesiones.clear();
       await boxSesiones.addAll(sesionesFinal);
+      final boxNotas = await _getNotasBox();
+      await boxNotas.clear();
+      for (final nota in notasFinal) {
+        await boxNotas.put(nota.id, nota);
+      }
 
       debugPrint('Sincronización bidireccional completada: ${sesionesFinal.length} sesiones totales');
       
@@ -751,6 +828,17 @@ class DataRepository extends ChangeNotifier {
         await boxPerfil.put('perfil', perfilRemoto);
       }
 
+      // Obtener notas desde Firestore (incluyendo soft deleted para reconciliación)
+      final notasRemotas = await _firestoreService.obtenerNotas(
+        _userId!,
+        includeDeleted: true,
+      );
+      final boxNotas = await _getNotasBox();
+      await boxNotas.clear();
+      for (final nota in notasRemotas) {
+        await boxNotas.put(nota.id, nota);
+      }
+
       // Obtener y guardar datos de gamificación desde Firestore
       try {
         debugPrint('Descargando datos de gamificación...');
@@ -777,7 +865,9 @@ class DataRepository extends ChangeNotifier {
         // Continuar sin gamificación si hay error
       }
 
-      debugPrint('Descarga completada: ${sesionesRemotas.length} sesiones');
+      debugPrint(
+        'Descarga completada: ${sesionesRemotas.length} sesiones, ${notasRemotas.length} notas',
+      );
 
       _isSyncing = false;
       notifyListeners();
@@ -852,6 +942,9 @@ class DataRepository extends ChangeNotifier {
       final boxSesiones = await _getSesionesBox();
       final sesionesLocales = boxSesiones.values.toList();
       debugPrint('Sesiones locales a subir: ${sesionesLocales.length}');
+      final boxNotas = await _getNotasBox();
+      final notasLocales = boxNotas.values.toList();
+      debugPrint('Notas locales a subir: ${notasLocales.length}');
 
       // 2. Obtener perfil local
       final boxPerfil = await _getPerfilBox();
@@ -872,13 +965,27 @@ class DataRepository extends ChangeNotifier {
         perfilLocal,
       );
 
+      // 4.1 Limpiar y subir todas las notas locales
+      final notasRemotas = await _firestoreService.obtenerNotas(
+        _userId!,
+        includeDeleted: true,
+      );
+      for (final notaRemota in notasRemotas) {
+        await _firestoreService.eliminarNotaFisica(_userId!, notaRemota.id);
+      }
+      for (final notaLocal in notasLocales) {
+        await _firestoreService.guardarNota(_userId!, notaLocal);
+      }
+
       // 5. Subir datos de gamificación
       await _sincronizarGamificacion(
         'Subiendo datos de gamificación...',
         'Datos de gamificación subidos',
       );
 
-      debugPrint('Subida completada: ${sesionesLocales.length} sesiones en la nube');
+      debugPrint(
+        'Subida completada: ${sesionesLocales.length} sesiones y ${notasLocales.length} notas en la nube',
+      );
 
       _isSyncing = false;
       notifyListeners();

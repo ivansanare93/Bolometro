@@ -58,6 +58,9 @@ void main() async {
   if (!Hive.isAdapterRegistered(2)) {
     Hive.registerAdapter(NotaAdapter());
   }
+  if (!Hive.isAdapterRegistered(18)) {
+    Hive.registerAdapter(NotaAdjuntoAdapter());
+  }
   if (!Hive.isAdapterRegistered(10)) {
     Hive.registerAdapter(PerfilUsuarioAdapter());
   }

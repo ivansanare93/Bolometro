@@ -260,6 +260,35 @@ class _NotasScreenState extends State<NotasScreen> {
     }).length;
   }
 
+  int get _notasPendientesRevisionCount {
+    final ahora = DateTime.now();
+    return _notas.where((n) {
+      if (n.archivada || n.fechaEliminacion != null) return false;
+      if (n.revisarAntesProximaSesion) return true;
+      final fechaRevision = n.fechaRevision;
+      return fechaRevision != null &&
+          (fechaRevision.isBefore(ahora) ||
+              fechaRevision.isAtSameMomentAs(ahora));
+    }).length;
+  }
+
+  String _label(BuildContext context, String es, String en) {
+    return Localizations.localeOf(context).languageCode == 'es' ? es : en;
+  }
+
+  String _topKey(Iterable<String> values, String fallback) {
+    final count = <String, int>{};
+    for (final value in values) {
+      final key = value.trim();
+      if (key.isEmpty) continue;
+      count[key] = (count[key] ?? 0) + 1;
+    }
+    if (count.isEmpty) return fallback;
+    final ordered = count.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    return ordered.first.key;
+  }
+
   String _categoryLabel(BuildContext context, String? key) {
     final l10n = AppLocalizations.of(context)!;
     switch (key) {
@@ -394,6 +423,11 @@ class _NotasScreenState extends State<NotasScreen> {
     final estadosUsados =
         NotaEstado.values.where(estadosPresentes.contains).toList();
     final notasPorValidarCount = _notasPorValidarCount;
+    final notasPendientesRevisionCount = _notasPendientesRevisionCount;
+    final topTag = _topKey(_notas.expand((n) => n.tags), '-');
+    final topBolera =
+        _topKey(_notas.map((n) => n.bolera ?? ''), _label(context, 'Sin datos', 'No data'));
+    final conAdjuntosCount = _notas.where((n) => n.adjuntos.isNotEmpty).length;
 
     return Scaffold(
       appBar: AppBar(
@@ -474,6 +508,58 @@ class _NotasScreenState extends State<NotasScreen> {
                               style: TextStyle(color: cs.onTertiaryContainer),
                             ),
                           ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          if (!_cargando)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+              child: Card(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      Chip(
+                        avatar: const Icon(Icons.analytics_outlined, size: 16),
+                        label: Text(
+                          '${_label(context, 'Tipos', 'Types')}: ${tiposUsados.length}',
+                        ),
+                      ),
+                      Chip(
+                        avatar: const Icon(Icons.rule_outlined, size: 16),
+                        label: Text(
+                          '${_label(context, 'Estados', 'Statuses')}: ${estadosUsados.length}',
+                        ),
+                      ),
+                      Chip(
+                        avatar: const Icon(Icons.tag_outlined, size: 16),
+                        label: Text(
+                          '${_label(context, 'Top tag', 'Top tag')}: $topTag',
+                        ),
+                      ),
+                      Chip(
+                        avatar: const Icon(Icons.place_outlined, size: 16),
+                        label: Text(
+                          '${_label(context, 'Bolera frecuente', 'Frequent alley')}: $topBolera',
+                        ),
+                      ),
+                      Chip(
+                        avatar: const Icon(Icons.attach_file_outlined, size: 16),
+                        label: Text(
+                          '${_label(context, 'Con adjuntos', 'With attachments')}: $conAdjuntosCount',
+                        ),
+                      ),
+                      Chip(
+                        avatar: const Icon(Icons.notifications_active_outlined, size: 16),
+                        label: Text(
+                          '${_label(context, 'Pendientes de revisar', 'Pending review')}: $notasPendientesRevisionCount',
                         ),
                       ),
                     ],
@@ -851,6 +937,15 @@ class _NotasScreenState extends State<NotasScreen> {
                                                       size: 16,
                                                       color: cs.outline,
                                                     ),
+                                                    ),
+                                                if (nota.adjuntos.isNotEmpty)
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(left: 4),
+                                                    child: Icon(
+                                                      Icons.attach_file_outlined,
+                                                      size: 16,
+                                                      color: cs.outline,
+                                                    ),
                                                   ),
                                               ],
                                             ),
@@ -970,6 +1065,39 @@ class _NotasScreenState extends State<NotasScreen> {
                                                       ),
                                                     )
                                                     .toList(),
+                                              ),
+                                            ],
+                                            if (nota.revisarAntesProximaSesion ||
+                                                nota.fechaRevision != null) ...[
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.notifications_active_outlined,
+                                                    size: 12,
+                                                    color: cs.tertiary,
+                                                  ),
+                                                  const SizedBox(width: 3),
+                                                  Expanded(
+                                                    child: Text(
+                                                      nota.fechaRevision == null
+                                                          ? _label(
+                                                              context,
+                                                              'Revisar antes de próxima sesión',
+                                                              'Review before next session',
+                                                            )
+                                                          : '${_label(context, 'Revisión', 'Review')}: ${DateFormat('dd/MM/yyyy').format(nota.fechaRevision!)}',
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodySmall
+                                                          ?.copyWith(
+                                                            color: cs.tertiary,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ],
                                             if (nota.contenido.isNotEmpty) ...[

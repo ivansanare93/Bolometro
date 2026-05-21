@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/nota.dart';
@@ -129,6 +132,9 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
   bool _archivada = false;
   int? _colorValue;
   String? _relatedSessionId;
+  List<NotaAdjunto> _adjuntos = [];
+  bool _revisarAntesProximaSesion = false;
+  DateTime? _fechaRevision;
   bool _cargandoSesiones = true;
   List<Sesion> _sesiones = [];
 
@@ -156,6 +162,12 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
     _archivada = widget.nota?.archivada ?? false;
     _colorValue = widget.nota?.colorValue;
     _relatedSessionId = widget.nota?.relatedSessionId ?? widget.initialRelatedSessionId;
+    _adjuntos = (widget.nota?.adjuntos ?? const <NotaAdjunto>[])
+        .map((a) => a.copyWith())
+        .toList();
+    _revisarAntesProximaSesion =
+        widget.nota?.revisarAntesProximaSesion ?? false;
+    _fechaRevision = widget.nota?.fechaRevision;
     _contenidoController.addListener(() => setState(() {}));
     _cargarSesiones();
 
@@ -208,6 +220,51 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
 
   List<String> _parseTags() {
     return Nota.normalizeTagsFromText(_tagsController.text);
+  }
+
+  String _label(BuildContext context, String es, String en) {
+    return Localizations.localeOf(context).languageCode == 'es' ? es : en;
+  }
+
+  Future<void> _agregarAdjuntosImagen() async {
+    final picker = ImagePicker();
+    final selected = await picker.pickMultiImage(imageQuality: 80);
+    if (selected.isEmpty || !mounted) return;
+    setState(() {
+      final existingPaths = _adjuntos.map((a) => a.localPath).toSet();
+      for (final file in selected) {
+        if (existingPaths.contains(file.path)) continue;
+        _adjuntos.add(
+          NotaAdjunto(
+            id: 'att_${DateTime.now().microsecondsSinceEpoch}_${file.path.hashCode}',
+            tipo: NotaAdjuntoTipo.imagen,
+            localPath: file.path,
+            createdAt: DateTime.now(),
+          ),
+        );
+      }
+    });
+  }
+
+  void _eliminarAdjunto(NotaAdjunto adjunto) {
+    setState(() {
+      _adjuntos.removeWhere((a) => a.id == adjunto.id);
+    });
+  }
+
+  Future<void> _seleccionarFechaRevision() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      firstDate: DateTime(now.year - 1),
+      lastDate: DateTime(now.year + 5),
+      initialDate: _fechaRevision ?? now,
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      _fechaRevision = DateTime(picked.year, picked.month, picked.day, 9);
+      _revisarAntesProximaSesion = true;
+    });
   }
 
   String _sessionIdFromSesion(Sesion sesion) =>
@@ -284,12 +341,15 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
           equipamientoUsado: _equipamientoController.text.trim().isEmpty
               ? null
               : _equipamientoController.text.trim(),
-          condicionPista: _condicionPistaController.text.trim().isEmpty
-              ? null
-              : _condicionPistaController.text.trim(),
-        );
-        await repo.guardarNota(nuevaNota);
-      } else {
+           condicionPista: _condicionPistaController.text.trim().isEmpty
+               ? null
+               : _condicionPistaController.text.trim(),
+           adjuntos: _adjuntos,
+           revisarAntesProximaSesion: _revisarAntesProximaSesion,
+           fechaRevision: _fechaRevision,
+         );
+         await repo.guardarNota(nuevaNota);
+       } else {
         widget.nota!.titulo = _tituloController.text.trim();
         widget.nota!.contenido = _contenidoController.text.trim();
         widget.nota!.fechaModificacion = ahora;
@@ -312,11 +372,15 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
             _equipamientoController.text.trim().isEmpty
             ? null
             : _equipamientoController.text.trim();
-        widget.nota!.condicionPista = _condicionPistaController.text.trim().isEmpty
-            ? null
-            : _condicionPistaController.text.trim();
-        await repo.actualizarNota(widget.nota!);
-      }
+         widget.nota!.condicionPista = _condicionPistaController.text.trim().isEmpty
+             ? null
+             : _condicionPistaController.text.trim();
+         widget.nota!.adjuntos = _adjuntos;
+         widget.nota!.revisarAntesProximaSesion = _revisarAntesProximaSesion;
+         widget.nota!.fechaRevision = _fechaRevision;
+         widget.nota!.fechaEliminacion = null;
+         await repo.actualizarNota(widget.nota!);
+       }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -631,6 +695,100 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
               textCapitalization: TextCapitalization.none,
             ),
             const SizedBox(height: 16),
+            InputDecorator(
+              decoration: InputDecoration(
+                labelText: _label(context, 'Adjuntos', 'Attachments'),
+                border: const OutlineInputBorder(),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _adjuntos
+                        .map(
+                          (adjunto) => Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: SizedBox(
+                                  width: 72,
+                                  height: 72,
+                                  child: File(adjunto.localPath).existsSync()
+                                      ? Image.file(
+                                          File(adjunto.localPath),
+                                          fit: BoxFit.cover,
+                                        )
+                                      : Container(
+                                          color: cs.surfaceVariant,
+                                          child: Icon(
+                                            Icons.image_not_supported_outlined,
+                                            color: cs.outline,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                              Positioned(
+                                right: -6,
+                                top: -6,
+                                child: IconButton(
+                                  iconSize: 18,
+                                  visualDensity: VisualDensity.compact,
+                                  onPressed: () => _eliminarAdjunto(adjunto),
+                                  icon: const Icon(Icons.cancel_rounded),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: _agregarAdjuntosImagen,
+                    icon: const Icon(Icons.add_photo_alternate_outlined),
+                    label: Text(_label(context, 'Añadir imágenes', 'Add images')),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            SwitchListTile.adaptive(
+              contentPadding: EdgeInsets.zero,
+              value: _revisarAntesProximaSesion,
+              onChanged: (v) => setState(() {
+                _revisarAntesProximaSesion = v;
+                if (!v) _fechaRevision = null;
+              }),
+              title: Text(
+                _label(
+                  context,
+                  'Revisar antes de próxima sesión',
+                  'Review before next session',
+                ),
+              ),
+            ),
+            if (_revisarAntesProximaSesion) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _fechaRevision == null
+                          ? _label(context, 'Sin fecha de revisión', 'No review date')
+                          : '${_label(context, 'Fecha de revisión', 'Review date')}: ${DateFormat('dd/MM/yyyy').format(_fechaRevision!)}',
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: _seleccionarFechaRevision,
+                    icon: const Icon(Icons.event_outlined),
+                    label: Text(_label(context, 'Elegir fecha', 'Pick date')),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+            ],
             InputDecorator(
               decoration: InputDecoration(
                 labelText: l10n.noteRelatedSession,
