@@ -339,8 +339,9 @@ class Nota extends HiveObject {
   factory Nota.fromJson(Map<String, dynamic> json) => Nota(
         titulo: json['titulo'] as String,
         contenido: json['contenido'] as String,
-        fechaCreacion: _parseDateTime(json['fechaCreacion'] ?? json['createdAt']) ??
-            DateTime.now(),
+        fechaCreacion:
+            _parseDateTime(json['fechaCreacion'] ?? json['createdAt']) ??
+                DateTime.now(),
         fechaModificacion:
             _parseDateTime(json['fechaModificacion'] ?? json['updatedAt']) ??
                 DateTime.now(),

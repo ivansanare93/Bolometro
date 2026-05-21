@@ -207,7 +207,7 @@ class FirestoreService {
   /// Obtener notas del usuario desde Firestore
   Future<List<Nota>> obtenerNotas(
     String userId, {
-    bool includeDeleted = true,
+    bool includeDeleted = false,
   }) async {
     try {
       final snapshot = await _getNotasCollection(userId).get();

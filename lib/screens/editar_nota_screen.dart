@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -19,6 +20,11 @@ const List<int> _kNoteColors = [
   0xFFCE93D8, // purple
   0xFFB0BEC5, // grey-blue
 ];
+
+// Default review time to keep reminders visible early in the day.
+const int _kDefaultReviewHour = 9;
+const int _kAttachmentIdRandomBound = 1 << 20;
+final Random _attachmentIdRandom = Random();
 
 class _NoteTemplate {
   final String id;
@@ -135,6 +141,7 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
   List<NotaAdjunto> _adjuntos = [];
   bool _revisarAntesProximaSesion = false;
   DateTime? _fechaRevision;
+  int _attachmentCounter = 0;
   bool _cargandoSesiones = true;
   List<Sesion> _sesiones = [];
 
@@ -234,9 +241,11 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
       final existingPaths = _adjuntos.map((a) => a.localPath).toSet();
       for (final file in selected) {
         if (existingPaths.contains(file.path)) continue;
+        _attachmentCounter++;
         _adjuntos.add(
           NotaAdjunto(
-            id: 'att_${DateTime.now().microsecondsSinceEpoch}_${file.path.hashCode}',
+            id:
+                'att_${DateTime.now().microsecondsSinceEpoch}_${file.path.hashCode}_$_attachmentCounter_${_attachmentIdRandom.nextInt(_kAttachmentIdRandomBound)}',
             tipo: NotaAdjuntoTipo.imagen,
             localPath: file.path,
             createdAt: DateTime.now(),
@@ -262,7 +271,12 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
     );
     if (picked == null || !mounted) return;
     setState(() {
-      _fechaRevision = DateTime(picked.year, picked.month, picked.day, 9);
+      _fechaRevision = DateTime(
+        picked.year,
+        picked.month,
+        picked.day,
+        _kDefaultReviewHour,
+      );
       _revisarAntesProximaSesion = true;
     });
   }
@@ -378,6 +392,7 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
          widget.nota!.adjuntos = _adjuntos;
          widget.nota!.revisarAntesProximaSesion = _revisarAntesProximaSesion;
          widget.nota!.fechaRevision = _fechaRevision;
+         // Any explicit edit is treated as a restore if the note was soft-deleted.
          widget.nota!.fechaEliminacion = null;
          await repo.actualizarNota(widget.nota!);
        }

@@ -394,10 +394,11 @@ class DataRepository extends ChangeNotifier {
         await _sincronizarNotasConNube();
       }
       final box = await _getNotasBox();
-      final notasActivas = box.values
-          .where((n) => n.fechaEliminacion == null)
-          .toList()
-        ..sort((a, b) => b.fechaModificacion.compareTo(a.fechaModificacion));
+      final notasActivas =
+          box.values.where((n) => n.fechaEliminacion == null).toList();
+      notasActivas.sort(
+        (a, b) => b.fechaModificacion.compareTo(a.fechaModificacion),
+      );
       return notasActivas;
     } catch (e) {
       debugPrint('Error al obtener notas: $e');
@@ -459,7 +460,9 @@ class DataRepository extends ChangeNotifier {
 
   DateTime _notaVersion(Nota nota) {
     final deletedAt = nota.fechaEliminacion;
-    if (deletedAt != null && deletedAt.isAfter(nota.fechaModificacion)) {
+    if (deletedAt != null &&
+        (deletedAt.isAfter(nota.fechaModificacion) ||
+            deletedAt.isAtSameMomentAs(nota.fechaModificacion))) {
       return deletedAt;
     }
     return nota.fechaModificacion;

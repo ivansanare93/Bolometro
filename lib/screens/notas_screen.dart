@@ -276,7 +276,7 @@ class _NotasScreenState extends State<NotasScreen> {
     return Localizations.localeOf(context).languageCode == 'es' ? es : en;
   }
 
-  String _topKey(Iterable<String> values, String fallback) {
+  String _mostFrequentValue(Iterable<String> values, String fallback) {
     final count = <String, int>{};
     for (final value in values) {
       final key = value.trim();
@@ -284,8 +284,8 @@ class _NotasScreenState extends State<NotasScreen> {
       count[key] = (count[key] ?? 0) + 1;
     }
     if (count.isEmpty) return fallback;
-    final ordered = count.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
+    final ordered = count.entries.toList();
+    ordered.sort((a, b) => b.value.compareTo(a.value));
     return ordered.first.key;
   }
 
@@ -424,9 +424,9 @@ class _NotasScreenState extends State<NotasScreen> {
         NotaEstado.values.where(estadosPresentes.contains).toList();
     final notasPorValidarCount = _notasPorValidarCount;
     final notasPendientesRevisionCount = _notasPendientesRevisionCount;
-    final topTag = _topKey(_notas.expand((n) => n.tags), '-');
+    final topTag = _mostFrequentValue(_notas.expand((n) => n.tags), '-');
     final topBolera =
-        _topKey(_notas.map((n) => n.bolera ?? ''), _label(context, 'Sin datos', 'No data'));
+        _mostFrequentValue(_notas.map((n) => n.bolera ?? ''), _label(context, 'Sin datos', 'No data'));
     final conAdjuntosCount = _notas.where((n) => n.adjuntos.isNotEmpty).length;
 
     return Scaffold(
