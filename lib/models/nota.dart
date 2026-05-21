@@ -275,6 +275,8 @@ String _generateStableId() {
 }
 
 String _normalizeTipo(String? tipo, String? categoria) {
+  // Keep lowercase normalization for backward compatibility with legacy data
+  // that may have mixed-case values from older versions.
   final normalized = tipo?.trim().toLowerCase();
   if (normalized != null && NotaTipo.values.contains(normalized)) {
     return normalized;

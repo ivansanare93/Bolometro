@@ -26,6 +26,7 @@ class VerSesion extends StatefulWidget {
 
 class _VerSesionState extends State<VerSesion> {
   late Sesion sesionActual;
+  late Future<List<Nota>> _relatedNotesFuture;
 
   @override
   void initState() {
@@ -39,6 +40,7 @@ class _VerSesionState extends State<VerSesion> {
       }
     });
     sesionActual = widget.sesion;
+    _relatedNotesFuture = _obtenerNotasRelacionadas();
   }
 
   Future<void> _editarPartida(int index) async {
@@ -309,6 +311,12 @@ class _VerSesionState extends State<VerSesion> {
     return relacionadas;
   }
 
+  void _refreshRelatedNotes() {
+    setState(() {
+      _relatedNotesFuture = _obtenerNotasRelacionadas();
+    });
+  }
+
   String _statusLabel(AppLocalizations l10n, String estado) {
     switch (estado) {
       case NotaEstado.pendiente:
@@ -381,7 +389,7 @@ class _VerSesionState extends State<VerSesion> {
                 ),
               );
               if (created == true && mounted) {
-                setState(() {});
+                _refreshRelatedNotes();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(AppLocalizations.of(context)!.noteSaved),
@@ -493,7 +501,7 @@ class _VerSesionState extends State<VerSesion> {
           ),
 
           FutureBuilder<List<Nota>>(
-            future: _obtenerNotasRelacionadas(),
+            future: _relatedNotesFuture,
             builder: (context, snapshot) {
               final notas = snapshot.data ?? const <Nota>[];
               return Card(
@@ -531,7 +539,7 @@ class _VerSesionState extends State<VerSesion> {
                                 ),
                               );
                               if (created == true && mounted) {
-                                setState(() {});
+                                _refreshRelatedNotes();
                               }
                             },
                             icon: const Icon(Icons.add, size: 16),
@@ -540,9 +548,12 @@ class _VerSesionState extends State<VerSesion> {
                         ],
                       ),
                       if (snapshot.connectionState == ConnectionState.waiting)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 8),
-                          child: LinearProgressIndicator(minHeight: 2),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Semantics(
+                            label: l10n.loading,
+                            child: const LinearProgressIndicator(minHeight: 2),
+                          ),
                         )
                       else if (notas.isEmpty)
                         Padding(
@@ -573,7 +584,7 @@ class _VerSesionState extends State<VerSesion> {
                                 ),
                               );
                               if (changed == true && mounted) {
-                                setState(() {});
+                                _refreshRelatedNotes();
                               }
                             },
                           ),

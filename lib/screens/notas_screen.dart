@@ -388,8 +388,11 @@ class _NotasScreenState extends State<NotasScreen> {
     final cs = Theme.of(context).colorScheme;
     final categoriasUsadas = _categoriasUsadas;
     final tagsUsados = _tagsUsados;
-    final tiposUsados = NotaTipo.values.where((tipo) => _notas.any((n) => n.tipo == tipo)).toList();
-    final estadosUsados = NotaEstado.values.where((estado) => _notas.any((n) => n.estado == estado)).toList();
+    final tiposPresentes = _notas.map((n) => n.tipo).toSet();
+    final estadosPresentes = _notas.map((n) => n.estado).toSet();
+    final tiposUsados = NotaTipo.values.where(tiposPresentes.contains).toList();
+    final estadosUsados =
+        NotaEstado.values.where(estadosPresentes.contains).toList();
     final notasPorValidarCount = _notasPorValidarCount;
 
     return Scaffold(
@@ -445,16 +448,35 @@ class _NotasScreenState extends State<NotasScreen> {
               child: Material(
                 color: cs.tertiaryContainer,
                 borderRadius: BorderRadius.circular(12),
-                child: ListTile(
-                  dense: true,
-                  leading: Icon(Icons.pending_actions_rounded, color: cs.onTertiaryContainer),
-                  title: Text(
-                    l10n.notesPendingValidationCount(notasPorValidarCount),
-                    style: TextStyle(color: cs.onTertiaryContainer, fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: Text(
-                    l10n.notesPendingValidation,
-                    style: TextStyle(color: cs.onTertiaryContainer),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.pending_actions_rounded,
+                          color: cs.onTertiaryContainer),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.notesPendingValidationCount(
+                                  notasPorValidarCount),
+                              style: TextStyle(
+                                color: cs.onTertiaryContainer,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              l10n.notesPendingValidation,
+                              style: TextStyle(color: cs.onTertiaryContainer),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -832,73 +854,106 @@ class _NotasScreenState extends State<NotasScreen> {
                                                   ),
                                               ],
                                             ),
-                                             if (nota.categoria != null) ...[
-                                               const SizedBox(height: 4),
-                                               Chip(
+                                            if (nota.categoria != null) ...[
+                                              const SizedBox(height: 4),
+                                              Chip(
                                                 label: Text(
                                                   _categoryLabel(
                                                       context, nota.categoria),
-                                                  style: const TextStyle(
-                                                      fontSize: 11),
+                                                  style:
+                                                      const TextStyle(fontSize: 11),
                                                 ),
                                                 padding: EdgeInsets.zero,
                                                 materialTapTargetSize:
                                                     MaterialTapTargetSize
                                                         .shrinkWrap,
-                                                 visualDensity:
-                                                     VisualDensity.compact,
-                                               ),
-                                             ],
-                                             const SizedBox(height: 4),
-                                             Wrap(
-                                               spacing: 6,
-                                               runSpacing: 4,
-                                               children: [
-                                                 Chip(
-                                                   label: Text(
-                                                     _typeLabel(context, nota.tipo),
-                                                     style: const TextStyle(fontSize: 11),
-                                                   ),
-                                                   padding: EdgeInsets.zero,
-                                                   materialTapTargetSize:
-                                                       MaterialTapTargetSize.shrinkWrap,
-                                                   visualDensity: VisualDensity.compact,
-                                                 ),
-                                                 Chip(
-                                                   avatar: nota.estado == NotaEstado.validado
-                                                       ? const Icon(Icons.verified_outlined, size: 14)
-                                                       : nota.estado == NotaEstado.descartado
-                                                           ? const Icon(Icons.block_outlined, size: 14)
-                                                           : const Icon(Icons.pending_actions_outlined, size: 14),
-                                                   label: Text(
-                                                     _statusLabel(context, nota.estado),
-                                                     style: const TextStyle(fontSize: 11),
-                                                   ),
-                                                   padding: EdgeInsets.zero,
-                                                   materialTapTargetSize:
-                                                       MaterialTapTargetSize.shrinkWrap,
-                                                   visualDensity: VisualDensity.compact,
-                                                 ),
-                                               ],
-                                             ),
-                                             if ((nota.bolera ?? '').isNotEmpty ||
-                                                 (nota.patronAceite ?? '').isNotEmpty ||
-                                                 (nota.equipamientoUsado ?? '').isNotEmpty ||
-                                                 (nota.condicionPista ?? '').isNotEmpty) ...[
-                                               const SizedBox(height: 4),
-                                               Text(
-                                                 [
-                                                   if ((nota.bolera ?? '').isNotEmpty) '${l10n.noteBowlingAlley}: ${nota.bolera}',
-                                                   if ((nota.patronAceite ?? '').isNotEmpty) '${l10n.noteOilPattern}: ${nota.patronAceite}',
-                                                   if ((nota.equipamientoUsado ?? '').isNotEmpty) '${l10n.noteBallOrEquipment}: ${nota.equipamientoUsado}',
-                                                   if ((nota.condicionPista ?? '').isNotEmpty) '${l10n.noteLaneCondition}: ${nota.condicionPista}',
-                                                 ].join(' • '),
-                                                 maxLines: 1,
-                                                 overflow: TextOverflow.ellipsis,
-                                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.outline),
-                                               ),
-                                             ],
-                                             if (nota.tags.isNotEmpty) ...[
+                                                visualDensity:
+                                                    VisualDensity.compact,
+                                              ),
+                                            ],
+                                            const SizedBox(height: 4),
+                                            Wrap(
+                                              spacing: 6,
+                                              runSpacing: 4,
+                                              children: [
+                                                Chip(
+                                                  label: Text(
+                                                    _typeLabel(context, nota.tipo),
+                                                    style:
+                                                        const TextStyle(fontSize: 11),
+                                                  ),
+                                                  padding: EdgeInsets.zero,
+                                                  materialTapTargetSize:
+                                                      MaterialTapTargetSize
+                                                          .shrinkWrap,
+                                                  visualDensity:
+                                                      VisualDensity.compact,
+                                                ),
+                                                Chip(
+                                                  avatar: nota.estado ==
+                                                          NotaEstado.validado
+                                                      ? const Icon(
+                                                          Icons.verified_outlined,
+                                                          size: 14)
+                                                      : nota.estado ==
+                                                              NotaEstado.descartado
+                                                          ? const Icon(
+                                                              Icons.block_outlined,
+                                                              size: 14)
+                                                          : const Icon(
+                                                              Icons
+                                                                  .pending_actions_outlined,
+                                                              size: 14),
+                                                  label: Text(
+                                                    _statusLabel(
+                                                        context, nota.estado),
+                                                    style: const TextStyle(
+                                                        fontSize: 11),
+                                                  ),
+                                                  padding: EdgeInsets.zero,
+                                                  materialTapTargetSize:
+                                                      MaterialTapTargetSize
+                                                          .shrinkWrap,
+                                                  visualDensity:
+                                                      VisualDensity.compact,
+                                                ),
+                                              ],
+                                            ),
+                                            if ((nota.bolera ?? '').isNotEmpty ||
+                                                (nota.patronAceite ?? '')
+                                                    .isNotEmpty ||
+                                                (nota.equipamientoUsado ?? '')
+                                                    .isNotEmpty ||
+                                                (nota.condicionPista ?? '')
+                                                    .isNotEmpty) ...[
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                [
+                                                  if ((nota.bolera ?? '')
+                                                      .isNotEmpty)
+                                                    '${l10n.noteBowlingAlley}: ${nota.bolera}',
+                                                  if ((nota.patronAceite ?? '')
+                                                      .isNotEmpty)
+                                                    '${l10n.noteOilPattern}: ${nota.patronAceite}',
+                                                  if ((nota.equipamientoUsado ??
+                                                          '')
+                                                      .isNotEmpty)
+                                                    '${l10n.noteBallOrEquipment}: ${nota.equipamientoUsado}',
+                                                  if ((nota.condicionPista ?? '')
+                                                      .isNotEmpty)
+                                                    '${l10n.noteLaneCondition}: ${nota.condicionPista}',
+                                                ].join(' • '),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.copyWith(
+                                                      color: cs.outline,
+                                                    ),
+                                              ),
+                                            ],
+                                            if (nota.tags.isNotEmpty) ...[
                                               const SizedBox(height: 4),
                                               Wrap(
                                                 spacing: 4,

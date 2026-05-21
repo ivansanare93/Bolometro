@@ -220,13 +220,32 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
     return '$date • $place';
   }
 
+  String _defaultTipoForCategory(String category) {
+    switch (category) {
+      case NotaCategoria.tecnica:
+        return NotaTipo.tecnica;
+      case NotaCategoria.aceite:
+        return NotaTipo.aceite;
+      case NotaCategoria.equipamiento:
+        return NotaTipo.equipamiento;
+      case NotaCategoria.mental:
+        return NotaTipo.mental;
+      case NotaCategoria.bolera:
+        return NotaTipo.pista;
+      default:
+        return NotaTipo.review;
+    }
+  }
+
   void _aplicarPlantilla(_NoteTemplate template) {
     final l10n = AppLocalizations.of(context)!;
     setState(() {
       _tituloController.text = template.title(l10n);
       _contenidoController.text = template.content(l10n);
       _categoria = template.category;
-      _tipo = template.id;
+      _tipo = NotaTipo.values.contains(template.id)
+          ? template.id
+          : _defaultTipoForCategory(template.category);
       _tagsController.text = template.tags.join(', ');
     });
   }
