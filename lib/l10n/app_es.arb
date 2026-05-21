@@ -1041,6 +1041,22 @@
   "@noteFilterAllStatuses": {
     "description": "Filtro para quitar filtro por estado en notas"
   },
+  "noteAdvancedFilters": "Filtros avanzados",
+  "@noteAdvancedFilters": {
+    "description": "Etiqueta del botón para abrir el panel de filtros avanzados"
+  },
+  "noteResetFilters": "Restablecer",
+  "@noteResetFilters": {
+    "description": "Etiqueta del botón para restablecer todos los filtros de notas"
+  },
+  "noteSummary": "Resumen",
+  "@noteSummary": {
+    "description": "Título de la sección de resumen/insights en el panel de filtros"
+  },
+  "noteSortOrder": "Ordenar por",
+  "@noteSortOrder": {
+    "description": "Título de la sección de orden en el panel de filtros"
+  },
   "notesPendingValidation": "Notas pendientes o por validar para revisar antes de la próxima sesión",
   "@notesPendingValidation": {
     "description": "Mensaje de apoyo para destacar notas pendientes de validación"

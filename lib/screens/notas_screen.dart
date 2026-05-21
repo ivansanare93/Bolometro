@@ -239,7 +239,7 @@ class _NotasScreenState extends State<NotasScreen> {
   }
 
   String _formatFecha(DateTime fecha) {
-    return DateFormat('dd/MM/yyyy HH:mm').format(fecha);
+    return DateFormat('dd/MM/yy').format(fecha);
   }
 
   List<String> get _categoriasUsadas {
@@ -248,7 +248,12 @@ class _NotasScreenState extends State<NotasScreen> {
   }
 
   List<String> get _tagsUsados {
-    final tags = _notas.expand((n) => n.tags).map((t) => t.trim()).where((t) => t.isNotEmpty).toSet().toList();
+    final tags = _notas
+        .expand((n) => n.tags)
+        .map((t) => t.trim())
+        .where((t) => t.isNotEmpty)
+        .toSet()
+        .toList();
     tags.sort();
     return tags;
   }
@@ -270,6 +275,15 @@ class _NotasScreenState extends State<NotasScreen> {
           (fechaRevision.isBefore(ahora) ||
               fechaRevision.isAtSameMomentAs(ahora));
     }).length;
+  }
+
+  int get _activeAdvancedFiltersCount {
+    int count = 0;
+    if (_categoriaFiltro != null) count++;
+    if (_tagFiltro != null) count++;
+    if (_tipoFiltro != null) count++;
+    if (_estadoFiltro != null) count++;
+    return count;
   }
 
   String _label(BuildContext context, String es, String en) {
@@ -351,63 +365,355 @@ class _NotasScreenState extends State<NotasScreen> {
     return Theme.of(context).colorScheme.primary;
   }
 
-  void _mostrarSortDialog() {
+  Color _statusColor(ColorScheme cs, String estado) {
+    switch (estado) {
+      case NotaEstado.validado:
+        return cs.primary;
+      case NotaEstado.descartado:
+        return cs.error;
+      case NotaEstado.probado:
+        return cs.secondary;
+      default:
+        return cs.outline;
+    }
+  }
+
+  String _cleanPreview(String content) {
+    return content
+        .replaceAll(r'\n', ' ')
+        .replaceAll('\n', ' ')
+        .replaceAll('\r', ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+  }
+
+  void _mostrarFiltrosBottomSheet() {
     final l10n = AppLocalizations.of(context)!;
-    showDialog<void>(
+    final categoriasUsadas = _categoriasUsadas;
+    final tagsUsados = _tagsUsados;
+    final tiposPresentes = _notas.map((n) => n.tipo).toSet();
+    final estadosPresentes = _notas.map((n) => n.estado).toSet();
+    final tiposUsados =
+        NotaTipo.values.where(tiposPresentes.contains).toList();
+    final estadosUsados =
+        NotaEstado.values.where(estadosPresentes.contains).toList();
+
+    showModalBottomSheet<void>(
       context: context,
-      builder: (ctx) => SimpleDialog(
-        title: Text(l10n.sortNotes),
-        children: [
-          _SortTile(
-            label: l10n.sortNewest,
-            icon: Icons.arrow_downward,
-            selected: _sortMode == _SortMode.newest,
-            onTap: () {
-              setState(() {
-                _sortMode = _SortMode.newest;
-                _notasFiltradas = _aplicarFiltroYOrden(_notas);
-              });
-              Navigator.pop(ctx);
-            },
-          ),
-          _SortTile(
-            label: l10n.sortOldest,
-            icon: Icons.arrow_upward,
-            selected: _sortMode == _SortMode.oldest,
-            onTap: () {
-              setState(() {
-                _sortMode = _SortMode.oldest;
-                _notasFiltradas = _aplicarFiltroYOrden(_notas);
-              });
-              Navigator.pop(ctx);
-            },
-          ),
-          _SortTile(
-            label: l10n.sortByTitle,
-            icon: Icons.sort_by_alpha,
-            selected: _sortMode == _SortMode.title,
-            onTap: () {
-              setState(() {
-                _sortMode = _SortMode.title;
-                _notasFiltradas = _aplicarFiltroYOrden(_notas);
-              });
-              Navigator.pop(ctx);
-            },
-          ),
-          _SortTile(
-            label: l10n.sortFavFirst,
-            icon: Icons.star_outline_rounded,
-            selected: _sortMode == _SortMode.favFirst,
-            onTap: () {
-              setState(() {
-                _sortMode = _SortMode.favFirst;
-                _notasFiltradas = _aplicarFiltroYOrden(_notas);
-              });
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          void updateFilter(VoidCallback fn) {
+            setState(fn);
+            setSheetState(() {});
+          }
+
+          final topTag = _mostFrequentValue(
+            _notas.expand((n) => n.tags),
+            _label(context, '-', '-'),
+          );
+          final topBolera = _mostFrequentValue(
+            _notas.map((n) => n.bolera ?? ''),
+            _label(context, 'Sin datos', 'No data'),
+          );
+          final conAdjuntosCount =
+              _notas.where((n) => n.adjuntos.isNotEmpty).length;
+
+          return DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            minChildSize: 0.4,
+            maxChildSize: 0.92,
+            expand: false,
+            builder: (_, scrollController) => Column(
+              children: [
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 10),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 8, 4),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          l10n.noteAdvancedFilters,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      if (_activeAdvancedFiltersCount > 0 ||
+                          _sortMode != _SortMode.newest)
+                        TextButton(
+                          onPressed: () {
+                            updateFilter(() {
+                              _categoriaFiltro = null;
+                              _tagFiltro = null;
+                              _tipoFiltro = null;
+                              _estadoFiltro = null;
+                              _sortMode = _SortMode.newest;
+                              _notasFiltradas =
+                                  _aplicarFiltroYOrden(_notas);
+                            });
+                          },
+                          child: Text(l10n.noteResetFilters),
+                        ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(sheetCtx),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: ListView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+                    children: [
+                      _SheetSectionTitle(title: l10n.noteSortOrder),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: [
+                          _buildSortChip(
+                              setSheetState,
+                              l10n.sortNewest,
+                              Icons.arrow_downward,
+                              _SortMode.newest),
+                          _buildSortChip(
+                              setSheetState,
+                              l10n.sortOldest,
+                              Icons.arrow_upward,
+                              _SortMode.oldest),
+                          _buildSortChip(
+                              setSheetState,
+                              l10n.sortByTitle,
+                              Icons.sort_by_alpha,
+                              _SortMode.title),
+                          _buildSortChip(
+                              setSheetState,
+                              l10n.sortFavFirst,
+                              Icons.star_outline_rounded,
+                              _SortMode.favFirst),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      if (categoriasUsadas.isNotEmpty) ...[
+                        _SheetSectionTitle(
+                            title: l10n.noteFilterAllCategories),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
+                          children: [
+                            FilterChip(
+                              label: Text(l10n.filterAll),
+                              selected: _categoriaFiltro == null,
+                              onSelected: (_) => updateFilter(() {
+                                _categoriaFiltro = null;
+                                _notasFiltradas =
+                                    _aplicarFiltroYOrden(_notas);
+                              }),
+                            ),
+                            ...categoriasUsadas.map(
+                              (cat) => FilterChip(
+                                label:
+                                    Text(_categoryLabel(context, cat)),
+                                selected: _categoriaFiltro == cat,
+                                onSelected: (_) => updateFilter(() {
+                                  _categoriaFiltro =
+                                      _categoriaFiltro == cat
+                                          ? null
+                                          : cat;
+                                  _notasFiltradas =
+                                      _aplicarFiltroYOrden(_notas);
+                                }),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      if (tiposUsados.isNotEmpty) ...[
+                        _SheetSectionTitle(
+                            title: l10n.noteFilterAllTypes),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
+                          children: [
+                            FilterChip(
+                              label: Text(l10n.filterAll),
+                              selected: _tipoFiltro == null,
+                              onSelected: (_) => updateFilter(() {
+                                _tipoFiltro = null;
+                                _notasFiltradas =
+                                    _aplicarFiltroYOrden(_notas);
+                              }),
+                            ),
+                            ...tiposUsados.map(
+                              (tipo) => FilterChip(
+                                label: Text(_typeLabel(context, tipo)),
+                                selected: _tipoFiltro == tipo,
+                                onSelected: (_) => updateFilter(() {
+                                  _tipoFiltro =
+                                      _tipoFiltro == tipo ? null : tipo;
+                                  _notasFiltradas =
+                                      _aplicarFiltroYOrden(_notas);
+                                }),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      if (estadosUsados.isNotEmpty) ...[
+                        _SheetSectionTitle(
+                            title: l10n.noteFilterAllStatuses),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
+                          children: [
+                            FilterChip(
+                              label: Text(l10n.filterAll),
+                              selected: _estadoFiltro == null,
+                              onSelected: (_) => updateFilter(() {
+                                _estadoFiltro = null;
+                                _notasFiltradas =
+                                    _aplicarFiltroYOrden(_notas);
+                              }),
+                            ),
+                            ...estadosUsados.map(
+                              (estado) => FilterChip(
+                                label:
+                                    Text(_statusLabel(context, estado)),
+                                selected: _estadoFiltro == estado,
+                                onSelected: (_) => updateFilter(() {
+                                  _estadoFiltro =
+                                      _estadoFiltro == estado
+                                          ? null
+                                          : estado;
+                                  _notasFiltradas =
+                                      _aplicarFiltroYOrden(_notas);
+                                }),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      if (tagsUsados.isNotEmpty) ...[
+                        _SheetSectionTitle(
+                            title: l10n.noteFilterAllTags),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
+                          children: [
+                            FilterChip(
+                              label: Text(l10n.filterAll),
+                              selected: _tagFiltro == null,
+                              onSelected: (_) => updateFilter(() {
+                                _tagFiltro = null;
+                                _notasFiltradas =
+                                    _aplicarFiltroYOrden(_notas);
+                              }),
+                            ),
+                            ...tagsUsados.map(
+                              (tag) => FilterChip(
+                                label: Text('#$tag'),
+                                selected: _tagFiltro == tag,
+                                onSelected: (_) => updateFilter(() {
+                                  _tagFiltro =
+                                      _tagFiltro == tag ? null : tag;
+                                  _notasFiltradas =
+                                      _aplicarFiltroYOrden(_notas);
+                                }),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      const Divider(),
+                      const SizedBox(height: 8),
+                      _SheetSectionTitle(title: l10n.noteSummary),
+                      _SummaryGrid(
+                        items: [
+                          _SummaryItem(
+                            icon: Icons.notes_outlined,
+                            label: _label(context, 'Total', 'Total'),
+                            value: '${_notas.length}',
+                          ),
+                          _SummaryItem(
+                            icon: Icons.tag_outlined,
+                            label:
+                                _label(context, 'Top tag', 'Top tag'),
+                            value: topTag,
+                          ),
+                          _SummaryItem(
+                            icon: Icons.place_outlined,
+                            label: _label(context, 'Bolera frecuente',
+                                'Frequent alley'),
+                            value: topBolera,
+                          ),
+                          _SummaryItem(
+                            icon: Icons.attach_file_outlined,
+                            label: _label(context, 'Con adjuntos',
+                                'With attachments'),
+                            value: '$conAdjuntosCount',
+                          ),
+                          _SummaryItem(
+                            icon: Icons.notifications_active_outlined,
+                            label: _label(context, 'Por revisar',
+                                'Pending review'),
+                            value: '$_notasPendientesRevisionCount',
+                          ),
+                          _SummaryItem(
+                            icon: Icons.pending_actions_outlined,
+                            label: _label(
+                                context, 'Por validar', 'To validate'),
+                            value: '$_notasPorValidarCount',
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSortChip(
+    StateSetter setSheetState,
+    String label,
+    IconData icon,
+    _SortMode mode,
+  ) {
+    return FilterChip(
+      avatar: Icon(icon, size: 16),
+      label: Text(label),
+      selected: _sortMode == mode,
+      onSelected: (_) {
+        setState(() {
+          _sortMode = mode;
+          _notasFiltradas = _aplicarFiltroYOrden(_notas);
+        });
+        setSheetState(() {});
+      },
     );
   }
 
@@ -415,19 +721,8 @@ class _NotasScreenState extends State<NotasScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
-    final categoriasUsadas = _categoriasUsadas;
-    final tagsUsados = _tagsUsados;
-    final tiposPresentes = _notas.map((n) => n.tipo).toSet();
-    final estadosPresentes = _notas.map((n) => n.estado).toSet();
-    final tiposUsados = NotaTipo.values.where(tiposPresentes.contains).toList();
-    final estadosUsados =
-        NotaEstado.values.where(estadosPresentes.contains).toList();
     final notasPorValidarCount = _notasPorValidarCount;
-    final notasPendientesRevisionCount = _notasPendientesRevisionCount;
-    final topTag = _mostFrequentValue(_notas.expand((n) => n.tags), '-');
-    final topBolera =
-        _mostFrequentValue(_notas.map((n) => n.bolera ?? ''), _label(context, 'Sin datos', 'No data'));
-    final conAdjuntosCount = _notas.where((n) => n.adjuntos.isNotEmpty).length;
+    final activeAdvanced = _activeAdvancedFiltersCount;
 
     return Scaffold(
       appBar: AppBar(
@@ -435,13 +730,8 @@ class _NotasScreenState extends State<NotasScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.sort),
-            tooltip: l10n.sortNotes,
-            onPressed: _mostrarSortDialog,
-          ),
-          IconButton(
             icon: const Icon(Icons.home),
-            tooltip: AppLocalizations.of(context)!.home,
+            tooltip: l10n.home,
             onPressed: () {
               Navigator.pushAndRemoveUntil(
                 context,
@@ -454,8 +744,9 @@ class _NotasScreenState extends State<NotasScreen> {
       ),
       body: Column(
         children: [
+          // Search bar
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
             child: TextField(
               controller: _busquedaController,
               decoration: InputDecoration(
@@ -476,146 +767,54 @@ class _NotasScreenState extends State<NotasScreen> {
               ),
             ),
           ),
-          if (!_cargando && notasPorValidarCount > 0)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-              child: Material(
-                color: cs.tertiaryContainer,
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.pending_actions_rounded,
-                          color: cs.onTertiaryContainer),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.notesPendingValidationCount(
-                                  notasPorValidarCount),
-                              style: TextStyle(
-                                color: cs.onTertiaryContainer,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              l10n.notesPendingValidation,
-                              style: TextStyle(color: cs.onTertiaryContainer),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          if (!_cargando)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-              child: Card(
-                margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      Chip(
-                        avatar: const Icon(Icons.analytics_outlined, size: 16),
-                        label: Text(
-                          '${_label(context, 'Tipos', 'Types')}: ${tiposUsados.length}',
-                        ),
-                      ),
-                      Chip(
-                        avatar: const Icon(Icons.rule_outlined, size: 16),
-                        label: Text(
-                          '${_label(context, 'Estados', 'Statuses')}: ${estadosUsados.length}',
-                        ),
-                      ),
-                      Chip(
-                        avatar: const Icon(Icons.tag_outlined, size: 16),
-                        label: Text(
-                          '${_label(context, 'Top tag', 'Top tag')}: $topTag',
-                        ),
-                      ),
-                      Chip(
-                        avatar: const Icon(Icons.place_outlined, size: 16),
-                        label: Text(
-                          '${_label(context, 'Bolera frecuente', 'Frequent alley')}: $topBolera',
-                        ),
-                      ),
-                      Chip(
-                        avatar: const Icon(Icons.attach_file_outlined, size: 16),
-                        label: Text(
-                          '${_label(context, 'Con adjuntos', 'With attachments')}: $conAdjuntosCount',
-                        ),
-                      ),
-                      Chip(
-                        avatar: const Icon(Icons.notifications_active_outlined, size: 16),
-                        label: Text(
-                          '${_label(context, 'Pendientes de revisar', 'Pending review')}: $notasPendientesRevisionCount',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+          // Quick filter row
           if (!_cargando)
             SizedBox(
-              height: 44,
+              height: 40,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: Text(l10n.filterAll),
-                      selected: _archiveFilter == _ArchiveFilter.all,
-                      onSelected: (_) {
-                        setState(() {
-                          _archiveFilter = _ArchiveFilter.all;
-                          _notasFiltradas = _aplicarFiltroYOrden(_notas);
-                        });
-                      },
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.only(right: 6),
                     child: FilterChip(
                       label: Text(l10n.noteFilterActive),
                       selected: _archiveFilter == _ArchiveFilter.active,
                       onSelected: (_) {
                         setState(() {
-                          _archiveFilter = _ArchiveFilter.active;
+                          _archiveFilter =
+                              _archiveFilter == _ArchiveFilter.active
+                                  ? _ArchiveFilter.all
+                                  : _ArchiveFilter.active;
                           _notasFiltradas = _aplicarFiltroYOrden(_notas);
                         });
                       },
+                      visualDensity: VisualDensity.compact,
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.only(right: 6),
                     child: FilterChip(
                       label: Text(l10n.noteFilterArchived),
-                      selected: _archiveFilter == _ArchiveFilter.archived,
+                      selected:
+                          _archiveFilter == _ArchiveFilter.archived,
                       onSelected: (_) {
                         setState(() {
-                          _archiveFilter = _ArchiveFilter.archived;
+                          _archiveFilter =
+                              _archiveFilter == _ArchiveFilter.archived
+                                  ? _ArchiveFilter.all
+                                  : _ArchiveFilter.archived;
                           _notasFiltradas = _aplicarFiltroYOrden(_notas);
                         });
                       },
+                      visualDensity: VisualDensity.compact,
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.only(right: 6),
                     child: FilterChip(
+                      avatar: const Icon(Icons.push_pin_outlined,
+                          size: 16),
                       label: Text(l10n.notePin),
                       selected: _soloPinned,
                       onSelected: (_) {
@@ -624,192 +823,96 @@ class _NotasScreenState extends State<NotasScreen> {
                           _notasFiltradas = _aplicarFiltroYOrden(_notas);
                         });
                       },
+                      visualDensity: VisualDensity.compact,
                     ),
                   ),
-                ],
-              ),
-            ),
-          if (!_cargando && categoriasUsadas.isNotEmpty)
-            SizedBox(
-              height: 44,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                children: [
                   Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: Text(l10n.noteFilterAllCategories),
-                      selected: _categoriaFiltro == null,
-                      onSelected: (_) {
-                        setState(() {
-                          _categoriaFiltro = null;
-                          _notasFiltradas = _aplicarFiltroYOrden(_notas);
-                        });
-                      },
-                    ),
-                  ),
-                  ...categoriasUsadas.map(
-                    (cat) => Padding(
-                      padding: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Badge(
+                      isLabelVisible: activeAdvanced > 0,
+                      label: Text('$activeAdvanced'),
                       child: FilterChip(
-                        label: Text(_categoryLabel(context, cat)),
-                        selected: _categoriaFiltro == cat,
-                        onSelected: (_) {
-                          setState(() {
-                            _categoriaFiltro = _categoriaFiltro == cat ? null : cat;
-                            _notasFiltradas = _aplicarFiltroYOrden(_notas);
-                          });
-                        },
+                        avatar: const Icon(Icons.tune_outlined, size: 16),
+                        label: Text(l10n.noteAdvancedFilters),
+                        selected: activeAdvanced > 0,
+                        onSelected: (_) =>
+                            _mostrarFiltrosBottomSheet(),
+                        visualDensity: VisualDensity.compact,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-          if (!_cargando && tagsUsados.isNotEmpty)
-            SizedBox(
-              height: 44,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: Text(l10n.noteFilterAllTags),
-                      selected: _tagFiltro == null,
-                      onSelected: (_) {
-                        setState(() {
-                          _tagFiltro = null;
-                          _notasFiltradas = _aplicarFiltroYOrden(_notas);
-                        });
-                      },
-                    ),
-                  ),
-                  ...tagsUsados.map(
-                    (tag) => Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        label: Text('#$tag'),
-                        selected: _tagFiltro == tag,
-                        onSelected: (_) {
-                          setState(() {
-                            _tagFiltro = _tagFiltro == tag ? null : tag;
-                            _notasFiltradas = _aplicarFiltroYOrden(_notas);
-                          });
-                        },
+          // Compact pending validation notice
+          if (!_cargando && notasPorValidarCount > 0)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 2),
+              child: Material(
+                color: cs.tertiaryContainer,
+                borderRadius: BorderRadius.circular(10),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 7),
+                  child: Row(
+                    children: [
+                      Icon(Icons.pending_actions_rounded,
+                          size: 16, color: cs.onTertiaryContainer),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          l10n.notesPendingValidationCount(
+                              notasPorValidarCount),
+                          style: TextStyle(
+                            color: cs.onTertiaryContainer,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
-          if (!_cargando && tiposUsados.isNotEmpty)
-            SizedBox(
-              height: 44,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: Text(l10n.noteFilterAllTypes),
-                      selected: _tipoFiltro == null,
-                      onSelected: (_) {
-                        setState(() {
-                          _tipoFiltro = null;
-                          _notasFiltradas = _aplicarFiltroYOrden(_notas);
-                        });
-                      },
-                    ),
-                  ),
-                  ...tiposUsados.map(
-                    (tipo) => Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        label: Text(_typeLabel(context, tipo)),
-                        selected: _tipoFiltro == tipo,
-                        onSelected: (_) {
-                          setState(() {
-                            _tipoFiltro = _tipoFiltro == tipo ? null : tipo;
-                            _notasFiltradas = _aplicarFiltroYOrden(_notas);
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          if (!_cargando && estadosUsados.isNotEmpty)
-            SizedBox(
-              height: 44,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: Text(l10n.noteFilterAllStatuses),
-                      selected: _estadoFiltro == null,
-                      onSelected: (_) {
-                        setState(() {
-                          _estadoFiltro = null;
-                          _notasFiltradas = _aplicarFiltroYOrden(_notas);
-                        });
-                      },
-                    ),
-                  ),
-                  ...estadosUsados.map(
-                    (estado) => Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        label: Text(_statusLabel(context, estado)),
-                        selected: _estadoFiltro == estado,
-                        onSelected: (_) {
-                          setState(() {
-                            _estadoFiltro = _estadoFiltro == estado ? null : estado;
-                            _notasFiltradas = _aplicarFiltroYOrden(_notas);
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          // Notes list
           Expanded(
             child: _cargando
                 ? const Center(child: CircularProgressIndicator())
                 : _notasFiltradas.isEmpty
                     ? Center(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 24),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('📓', style: TextStyle(fontSize: 48)),
+                              const Text('📓',
+                                  style: TextStyle(fontSize: 48)),
                               const SizedBox(height: 12),
                               Text(
                                 l10n.noNotes,
-                                style: Theme.of(context).textTheme.titleMedium,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium,
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 l10n.noNotesHint,
-                                style: Theme.of(context).textTheme.bodySmall,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall,
                                 textAlign: TextAlign.center,
                               ),
                               if (_busquedaController.text.isEmpty) ...[
                                 const SizedBox(height: 16),
                                 ElevatedButton.icon(
-                                  onPressed: () => _abrirNueva(templateId: 'tecnica'),
+                                  onPressed: () => _abrirNueva(
+                                      templateId: 'tecnica'),
                                   icon: const Icon(Icons.auto_awesome),
-                                  label: Text(l10n.noteCreateFromTemplate),
+                                  label:
+                                      Text(l10n.noteCreateFromTemplate),
                                 ),
                               ],
                             ],
@@ -817,16 +920,16 @@ class _NotasScreenState extends State<NotasScreen> {
                         ),
                       )
                     : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 80),
+                        padding: const EdgeInsets.fromLTRB(12, 4, 12, 88),
                         itemCount: _notasFiltradas.length,
                         itemBuilder: (context, index) {
                           final nota = _notasFiltradas[index];
-                          final accent = _accentColor(context, nota);
                           return Dismissible(
                             key: ValueKey(nota.id),
                             direction: DismissDirection.endToStart,
                             background: Container(
-                              margin: const EdgeInsets.symmetric(vertical: 4),
+                              margin:
+                                  const EdgeInsets.symmetric(vertical: 3),
                               decoration: BoxDecoration(
                                 color: cs.error,
                                 borderRadius: BorderRadius.circular(12),
@@ -836,11 +939,12 @@ class _NotasScreenState extends State<NotasScreen> {
                               child: const Icon(
                                 Icons.delete_sweep_outlined,
                                 color: Colors.white,
-                                size: 28,
+                                size: 26,
                               ),
                             ),
                             confirmDismiss: (_) async {
-                              final l10n = AppLocalizations.of(context)!;
+                              final l10n =
+                                  AppLocalizations.of(context)!;
                               return await showDialog<bool>(
                                 context: context,
                                 builder: (ctx) => AlertDialog(
@@ -848,14 +952,17 @@ class _NotasScreenState extends State<NotasScreen> {
                                   content: Text(nota.titulo),
                                   actions: [
                                     TextButton(
-                                      onPressed: () => Navigator.pop(ctx, false),
+                                      onPressed: () =>
+                                          Navigator.pop(ctx, false),
                                       child: Text(l10n.cancel),
                                     ),
                                     TextButton(
-                                      onPressed: () => Navigator.pop(ctx, true),
+                                      onPressed: () =>
+                                          Navigator.pop(ctx, true),
                                       style: TextButton.styleFrom(
-                                        foregroundColor:
-                                            Theme.of(ctx).colorScheme.error,
+                                        foregroundColor: Theme.of(ctx)
+                                            .colorScheme
+                                            .error,
                                       ),
                                       child: Text(l10n.delete),
                                     ),
@@ -864,318 +971,7 @@ class _NotasScreenState extends State<NotasScreen> {
                               );
                             },
                             onDismissed: (_) => _eliminarNota(nota),
-                            child: Card(
-                              margin: const EdgeInsets.symmetric(vertical: 4),
-                              elevation: 2,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(12),
-                                onTap: () => _abrirVer(nota),
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(16, 14, 8, 14),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 4,
-                                        height: 52,
-                                        decoration: BoxDecoration(
-                                          color: accent,
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                if (nota.pinned)
-                                                  const Padding(
-                                                    padding: EdgeInsets.only(
-                                                        right: 4),
-                                                    child: Icon(
-                                                      Icons.push_pin,
-                                                      size: 16,
-                                                    ),
-                                                  ),
-                                                Expanded(
-                                                  child: Text(
-                                                    nota.titulo,
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 15,
-                                                    ),
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                ),
-                                                if (nota.favorita)
-                                                  const Padding(
-                                                    padding:
-                                                        EdgeInsets.only(left: 4),
-                                                    child: Icon(
-                                                      Icons.star_rounded,
-                                                      size: 16,
-                                                      color: Colors.amber,
-                                                    ),
-                                                  ),
-                                                if (nota.archivada)
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 4),
-                                                    child: Icon(
-                                                      Icons.archive_outlined,
-                                                      size: 16,
-                                                      color: cs.outline,
-                                                    ),
-                                                    ),
-                                                if (nota.adjuntos.isNotEmpty)
-                                                  Padding(
-                                                    padding: const EdgeInsets.only(left: 4),
-                                                    child: Icon(
-                                                      Icons.attach_file_outlined,
-                                                      size: 16,
-                                                      color: cs.outline,
-                                                    ),
-                                                  ),
-                                              ],
-                                            ),
-                                            if (nota.categoria != null) ...[
-                                              const SizedBox(height: 4),
-                                              Chip(
-                                                label: Text(
-                                                  _categoryLabel(
-                                                      context, nota.categoria),
-                                                  style:
-                                                      const TextStyle(fontSize: 11),
-                                                ),
-                                                padding: EdgeInsets.zero,
-                                                materialTapTargetSize:
-                                                    MaterialTapTargetSize
-                                                        .shrinkWrap,
-                                                visualDensity:
-                                                    VisualDensity.compact,
-                                              ),
-                                            ],
-                                            const SizedBox(height: 4),
-                                            Wrap(
-                                              spacing: 6,
-                                              runSpacing: 4,
-                                              children: [
-                                                Chip(
-                                                  label: Text(
-                                                    _typeLabel(context, nota.tipo),
-                                                    style:
-                                                        const TextStyle(fontSize: 11),
-                                                  ),
-                                                  padding: EdgeInsets.zero,
-                                                  materialTapTargetSize:
-                                                      MaterialTapTargetSize
-                                                          .shrinkWrap,
-                                                  visualDensity:
-                                                      VisualDensity.compact,
-                                                ),
-                                                Chip(
-                                                  avatar: nota.estado ==
-                                                          NotaEstado.validado
-                                                      ? const Icon(
-                                                          Icons.verified_outlined,
-                                                          size: 14)
-                                                      : nota.estado ==
-                                                              NotaEstado.descartado
-                                                          ? const Icon(
-                                                              Icons.block_outlined,
-                                                              size: 14)
-                                                          : const Icon(
-                                                              Icons
-                                                                  .pending_actions_outlined,
-                                                              size: 14),
-                                                  label: Text(
-                                                    _statusLabel(
-                                                        context, nota.estado),
-                                                    style: const TextStyle(
-                                                        fontSize: 11),
-                                                  ),
-                                                  padding: EdgeInsets.zero,
-                                                  materialTapTargetSize:
-                                                      MaterialTapTargetSize
-                                                          .shrinkWrap,
-                                                  visualDensity:
-                                                      VisualDensity.compact,
-                                                ),
-                                              ],
-                                            ),
-                                            if ((nota.bolera ?? '').isNotEmpty ||
-                                                (nota.patronAceite ?? '')
-                                                    .isNotEmpty ||
-                                                (nota.equipamientoUsado ?? '')
-                                                    .isNotEmpty ||
-                                                (nota.condicionPista ?? '')
-                                                    .isNotEmpty) ...[
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                [
-                                                  if ((nota.bolera ?? '')
-                                                      .isNotEmpty)
-                                                    '${l10n.noteBowlingAlley}: ${nota.bolera}',
-                                                  if ((nota.patronAceite ?? '')
-                                                      .isNotEmpty)
-                                                    '${l10n.noteOilPattern}: ${nota.patronAceite}',
-                                                  if ((nota.equipamientoUsado ??
-                                                          '')
-                                                      .isNotEmpty)
-                                                    '${l10n.noteBallOrEquipment}: ${nota.equipamientoUsado}',
-                                                  if ((nota.condicionPista ?? '')
-                                                      .isNotEmpty)
-                                                    '${l10n.noteLaneCondition}: ${nota.condicionPista}',
-                                                ].join(' • '),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodySmall
-                                                    ?.copyWith(
-                                                      color: cs.outline,
-                                                    ),
-                                              ),
-                                            ],
-                                            if (nota.tags.isNotEmpty) ...[
-                                              const SizedBox(height: 4),
-                                              Wrap(
-                                                spacing: 4,
-                                                runSpacing: 4,
-                                                children: nota.tags
-                                                    .take(3)
-                                                    .map(
-                                                      (tag) => Text(
-                                                        '#$tag',
-                                                        style: TextStyle(
-                                                          fontSize: 11,
-                                                          color: cs.primary,
-                                                        ),
-                                                      ),
-                                                    )
-                                                    .toList(),
-                                              ),
-                                            ],
-                                            if (nota.revisarAntesProximaSesion ||
-                                                nota.fechaRevision != null) ...[
-                                              const SizedBox(height: 4),
-                                              Row(
-                                                children: [
-                                                  Icon(
-                                                    Icons.notifications_active_outlined,
-                                                    size: 12,
-                                                    color: cs.tertiary,
-                                                  ),
-                                                  const SizedBox(width: 3),
-                                                  Expanded(
-                                                    child: Text(
-                                                      nota.fechaRevision == null
-                                                          ? _label(
-                                                              context,
-                                                              'Revisar antes de próxima sesión',
-                                                              'Review before next session',
-                                                            )
-                                                          : '${_label(context, 'Revisión', 'Review')}: ${DateFormat('dd/MM/yyyy').format(nota.fechaRevision!)}',
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodySmall
-                                                          ?.copyWith(
-                                                            color: cs.tertiary,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                            if (nota.contenido.isNotEmpty) ...[
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                nota.contenido,
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodySmall
-                                                    ?.copyWith(
-                                                      color: cs.onSurface
-                                                          .withOpacity(0.7),
-                                                    ),
-                                              ),
-                                            ],
-                                            const SizedBox(height: 6),
-                                            Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.edit_calendar_outlined,
-                                                  size: 12,
-                                                  color: cs.outline,
-                                                ),
-                                                const SizedBox(width: 3),
-                                                Text(
-                                                  _formatFecha(
-                                                      nota.fechaModificacion),
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall
-                                                      ?.copyWith(
-                                                          color: cs.outline),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      PopupMenuButton<String>(
-                                        onSelected: (value) {
-                                          if (value == 'pin') {
-                                            _togglePinned(nota);
-                                          } else if (value == 'archive') {
-                                            _toggleArchived(nota);
-                                          } else if (value == 'delete') {
-                                            _confirmarEliminar(nota);
-                                          }
-                                        },
-                                        itemBuilder: (context) => [
-                                          PopupMenuItem(
-                                            value: 'pin',
-                                            child: Text(
-                                              nota.pinned
-                                                  ? l10n.noteUnpin
-                                                  : l10n.notePin,
-                                            ),
-                                          ),
-                                          PopupMenuItem(
-                                            value: 'archive',
-                                            child: Text(
-                                              nota.archivada
-                                                  ? l10n.noteUnarchive
-                                                  : l10n.noteArchive,
-                                            ),
-                                          ),
-                                          PopupMenuItem(
-                                            value: 'delete',
-                                            child: Text(l10n.delete),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
+                            child: _buildNoteCard(context, nota),
                           );
                         },
                       ),
@@ -1189,39 +985,375 @@ class _NotasScreenState extends State<NotasScreen> {
       ),
     );
   }
+
+  Widget _buildNoteCard(BuildContext context, Nota nota) {
+    final l10n = AppLocalizations.of(context)!;
+    final cs = Theme.of(context).colorScheme;
+    final accent = _accentColor(context, nota);
+    final preview = _cleanPreview(nota.contenido);
+    final visibleTags = nota.tags.take(2).toList();
+    final hasMoreTags = nota.tags.length > 2;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 3),
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => _abrirVer(nota),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 11, 4, 11),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Accent bar
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
+                child: Container(
+                  width: 3,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: accent,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              ),
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title row
+                    Row(
+                      children: [
+                        if (nota.pinned)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 4),
+                            child: Icon(Icons.push_pin,
+                                size: 13, color: cs.primary),
+                          ),
+                        Expanded(
+                          child: Text(
+                            nota.titulo,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (nota.favorita)
+                          const Padding(
+                            padding: EdgeInsets.only(left: 4),
+                            child: Icon(Icons.star_rounded,
+                                size: 14, color: Colors.amber),
+                          ),
+                        if (nota.archivada)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4),
+                            child: Icon(Icons.archive_outlined,
+                                size: 14, color: cs.outline),
+                          ),
+                        if (nota.adjuntos.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4),
+                            child: Icon(Icons.attach_file_outlined,
+                                size: 14, color: cs.outline),
+                          ),
+                      ],
+                    ),
+                    // Content preview
+                    if (preview.isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        preview,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style:
+                            Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: cs.onSurface.withOpacity(0.65),
+                                  height: 1.4,
+                                ),
+                      ),
+                    ],
+                    const SizedBox(height: 6),
+                    // Status + type chips + date row
+                    Row(
+                      children: [
+                        _CompactChip(
+                          label: _statusLabel(context, nota.estado),
+                          color: _statusColor(cs, nota.estado),
+                        ),
+                        const SizedBox(width: 5),
+                        _CompactChip(
+                          label: _typeLabel(context, nota.tipo),
+                        ),
+                        const Spacer(),
+                        Row(
+                          children: [
+                            Icon(Icons.edit_calendar_outlined,
+                                size: 11, color: cs.outline),
+                            const SizedBox(width: 2),
+                            Text(
+                              _formatFecha(nota.fechaModificacion),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                      color: cs.outline, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    // Tags
+                    if (visibleTags.isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          ...visibleTags.map(
+                            (tag) => Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: Text(
+                                '#$tag',
+                                style: TextStyle(
+                                    fontSize: 11, color: cs.primary),
+                              ),
+                            ),
+                          ),
+                          if (hasMoreTags)
+                            Text(
+                              '+${nota.tags.length - 2}',
+                              style: TextStyle(
+                                  fontSize: 11, color: cs.outline),
+                            ),
+                        ],
+                      ),
+                    ],
+                    // Context metadata (compact single line)
+                    if ((nota.bolera ?? '').isNotEmpty ||
+                        (nota.patronAceite ?? '').isNotEmpty ||
+                        (nota.equipamientoUsado ?? '').isNotEmpty ||
+                        (nota.condicionPista ?? '').isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        [
+                          if ((nota.bolera ?? '').isNotEmpty)
+                            nota.bolera!,
+                          if ((nota.patronAceite ?? '').isNotEmpty)
+                            nota.patronAceite!,
+                          if ((nota.equipamientoUsado ?? '').isNotEmpty)
+                            nota.equipamientoUsado!,
+                          if ((nota.condicionPista ?? '').isNotEmpty)
+                            nota.condicionPista!,
+                        ].join(' · '),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(
+                                color: cs.outline, fontSize: 11),
+                      ),
+                    ],
+                    // Revision reminder
+                    if (nota.revisarAntesProximaSesion ||
+                        nota.fechaRevision != null) ...[
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          Icon(Icons.notifications_active_outlined,
+                              size: 11, color: cs.tertiary),
+                          const SizedBox(width: 3),
+                          Expanded(
+                            child: Text(
+                              nota.fechaRevision == null
+                                  ? _label(
+                                      context,
+                                      'Revisar antes de próxima sesión',
+                                      'Review before next session',
+                                    )
+                                  : '${_label(context, 'Revisión', 'Review')}: ${DateFormat('dd/MM/yy').format(nota.fechaRevision!)}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                      color: cs.tertiary,
+                                      fontSize: 11),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              // Actions menu
+              PopupMenuButton<String>(
+                iconSize: 20,
+                padding: EdgeInsets.zero,
+                onSelected: (value) {
+                  if (value == 'pin') {
+                    _togglePinned(nota);
+                  } else if (value == 'archive') {
+                    _toggleArchived(nota);
+                  } else if (value == 'delete') {
+                    _confirmarEliminar(nota);
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'pin',
+                    child: Text(nota.pinned
+                        ? l10n.noteUnpin
+                        : l10n.notePin),
+                  ),
+                  PopupMenuItem(
+                    value: 'archive',
+                    child: Text(nota.archivada
+                        ? l10n.noteUnarchive
+                        : l10n.noteArchive),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Text(l10n.delete),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _SortTile extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final VoidCallback onTap;
+// ── Helper widgets ────────────────────────────────────────────────────────────
 
-  const _SortTile({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    required this.onTap,
-  });
+class _CompactChip extends StatelessWidget {
+  final String label;
+  final Color? color;
+
+  const _CompactChip({required this.label, this.color});
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return SimpleDialogOption(
-      onPressed: onTap,
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: selected ? cs.primary : cs.onSurface),
-          const SizedBox(width: 12),
-          Expanded(
-              child: Text(label,
-                  style: TextStyle(
-                      color: selected ? cs.primary : null,
-                      fontWeight:
-                          selected ? FontWeight.bold : FontWeight.normal))),
-          if (selected) Icon(Icons.check, size: 18, color: cs.primary),
-        ],
+    final chipColor = color ?? cs.outline;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: chipColor.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: chipColor.withOpacity(0.3), width: 0.8),
       ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          color: chipColor,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+}
+
+class _SheetSectionTitle extends StatelessWidget {
+  final String title;
+
+  const _SheetSectionTitle({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
+      ),
+    );
+  }
+}
+
+class _SummaryItem {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _SummaryItem(
+      {required this.icon, required this.label, required this.value});
+}
+
+class _SummaryGrid extends StatelessWidget {
+  final List<_SummaryItem> items;
+
+  const _SummaryGrid({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 2.8,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+      ),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return Container(
+          padding:
+              const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            children: [
+              Icon(item.icon, size: 16, color: cs.primary),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      item.value,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: cs.onSurface,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      item.label,
+                      style:
+                          TextStyle(fontSize: 10, color: cs.outline),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
