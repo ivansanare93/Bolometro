@@ -29,13 +29,19 @@ class NotaAdapter extends TypeAdapter<Nota> {
       pinned: fields[9] == null ? false : fields[9] as bool,
       archivada: fields[10] == null ? false : fields[10] as bool,
       relatedSessionId: fields[11] as String?,
+      tipo: fields[12] as String?,
+      estado: fields[13] as String?,
+      bolera: fields[14] as String?,
+      patronAceite: fields[15] as String?,
+      equipamientoUsado: fields[16] as String?,
+      condicionPista: fields[17] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Nota obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(18)
       ..writeByte(0)
       ..write(obj.titulo)
       ..writeByte(1)
@@ -59,7 +65,19 @@ class NotaAdapter extends TypeAdapter<Nota> {
       ..writeByte(10)
       ..write(obj.archivada)
       ..writeByte(11)
-      ..write(obj.relatedSessionId);
+      ..write(obj.relatedSessionId)
+      ..writeByte(12)
+      ..write(obj.tipo)
+      ..writeByte(13)
+      ..write(obj.estado)
+      ..writeByte(14)
+      ..write(obj.bolera)
+      ..writeByte(15)
+      ..write(obj.patronAceite)
+      ..writeByte(16)
+      ..write(obj.equipamientoUsado)
+      ..writeByte(17)
+      ..write(obj.condicionPista);
   }
 
   @override

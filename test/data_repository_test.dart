@@ -237,7 +237,7 @@ void main() {
       }
     });
 
-    test('guardarNota debe persistir id y metadatos de fase 1', () async {
+    test('guardarNota debe persistir estructura y metadatos de fase 2', () async {
       final nota = Nota(
         titulo: 'Lectura pista',
         contenido: 'Comienza a secarse en tablero 8',
@@ -247,6 +247,12 @@ void main() {
         pinned: true,
         archivada: false,
         relatedSessionId: '12345',
+        tipo: NotaTipo.pista,
+        estado: NotaEstado.probado,
+        bolera: 'Bolera Centro',
+        patronAceite: 'House 40ft',
+        equipamientoUsado: 'Phaze II',
+        condicionPista: 'Transición media',
       );
 
       await repository.guardarNota(nota);
@@ -258,6 +264,12 @@ void main() {
       expect(notas.first.pinned, isTrue);
       expect(notas.first.archivada, isFalse);
       expect(notas.first.relatedSessionId, '12345');
+      expect(notas.first.tipo, NotaTipo.pista);
+      expect(notas.first.estado, NotaEstado.probado);
+      expect(notas.first.bolera, 'Bolera Centro');
+      expect(notas.first.patronAceite, 'House 40ft');
+      expect(notas.first.equipamientoUsado, 'Phaze II');
+      expect(notas.first.condicionPista, 'Transición media');
     });
 
     test('notas deben estar separadas por usuario', () async {
@@ -293,6 +305,26 @@ void main() {
       notasUser2 = await repository.obtenerNotas();
       expect(notasUser2, hasLength(1));
       expect(notasUser2.first.titulo, 'Nota user2');
+    });
+
+    test('nota legacy sin campos nuevos debe tener defaults compatibles', () async {
+      final nota = Nota(
+        titulo: 'Nota legacy',
+        contenido: 'Contenido',
+        fechaCreacion: DateTime.now(),
+        fechaModificacion: DateTime.now(),
+      );
+
+      await repository.guardarNota(nota);
+      final notas = await repository.obtenerNotas();
+
+      expect(notas, hasLength(1));
+      expect(notas.first.tipo, NotaTipo.review);
+      expect(notas.first.estado, NotaEstado.pendiente);
+      expect(notas.first.bolera, isNull);
+      expect(notas.first.patronAceite, isNull);
+      expect(notas.first.equipamientoUsado, isNull);
+      expect(notas.first.condicionPista, isNull);
     });
   });
 }

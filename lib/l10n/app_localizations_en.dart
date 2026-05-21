@@ -1215,6 +1215,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noteCategoryAlley => 'Bowling Alley';
 
   @override
+  String get noteType => 'Type';
+
+  @override
+  String get noteTypeTechnique => 'Technique';
+
+  @override
+  String get noteTypeLane => 'Lane';
+
+  @override
+  String get noteTypeOil => 'Oil';
+
+  @override
+  String get noteTypeEquipment => 'Equipment';
+
+  @override
+  String get noteTypeMental => 'Mental';
+
+  @override
+  String get noteTypeReview => 'Review';
+
+  @override
+  String get noteStatus => 'Status';
+
+  @override
+  String get noteStatusPending => 'Pending';
+
+  @override
+  String get noteStatusTested => 'Tested';
+
+  @override
+  String get noteStatusValidated => 'Validated';
+
+  @override
+  String get noteStatusDiscarded => 'Discarded';
+
+  @override
   String get noteFavorite => 'Favourite';
 
   @override
@@ -1303,6 +1339,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noteTagsHint => 'Example: spare, timing, dry lane';
 
   @override
+  String get noteContext => 'Context';
+
+  @override
+  String get noteBowlingAlley => 'Bowling alley';
+
+  @override
+  String get noteOilPattern => 'Oil pattern';
+
+  @override
+  String get noteBallOrEquipment => 'Ball / equipment';
+
+  @override
+  String get noteLaneCondition => 'Lane condition';
+
+  @override
   String get noteRelatedSession => 'Related session';
 
   @override
@@ -1343,6 +1394,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noteFilterAllTags => 'All tags';
+
+  @override
+  String get noteFilterAllTypes => 'All types';
+
+  @override
+  String get noteFilterAllStatuses => 'All statuses';
+
+  @override
+  String get notesPendingValidation =>
+      'Pending or unvalidated notes to review before the next session';
+
+  @override
+  String notesPendingValidationCount(int count) {
+    return '$count notes to validate';
+  }
+
+  @override
+  String sessionRelatedNotes(int count) {
+    return 'Related notes ($count)';
+  }
+
+  @override
+  String get sessionNoRelatedNotes => 'No notes linked to this session yet';
 
   @override
   String get noteCreateFromTemplate => 'Create from template';

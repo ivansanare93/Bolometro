@@ -22,6 +22,40 @@ class NotaCategoria {
   ];
 }
 
+/// Structured note type keys for bowling learning logs.
+class NotaTipo {
+  static const String tecnica = 'tecnica';
+  static const String pista = 'pista';
+  static const String aceite = 'aceite';
+  static const String equipamiento = 'equipamiento';
+  static const String mental = 'mental';
+  static const String review = 'review';
+
+  static const List<String> values = [
+    tecnica,
+    pista,
+    aceite,
+    equipamiento,
+    mental,
+    review,
+  ];
+}
+
+/// Validation lifecycle state for notes.
+class NotaEstado {
+  static const String pendiente = 'pendiente';
+  static const String probado = 'probado';
+  static const String validado = 'validado';
+  static const String descartado = 'descartado';
+
+  static const List<String> values = [
+    pendiente,
+    probado,
+    validado,
+    descartado,
+  ];
+}
+
 @HiveType(typeId: 2)
 class Nota extends HiveObject {
   @HiveField(0)
@@ -68,6 +102,30 @@ class Nota extends HiveObject {
   @HiveField(11)
   String? relatedSessionId;
 
+  /// Structured type of note (technique, lane, oil, equipment, mental, review).
+  @HiveField(12)
+  String tipo;
+
+  /// Validation state of the note (pending, tested, validated, discarded).
+  @HiveField(13)
+  String estado;
+
+  /// Optional context metadata: bowling alley.
+  @HiveField(14)
+  String? bolera;
+
+  /// Optional context metadata: oil pattern.
+  @HiveField(15)
+  String? patronAceite;
+
+  /// Optional context metadata: ball/equipment used.
+  @HiveField(16)
+  String? equipamientoUsado;
+
+  /// Optional context metadata: lane condition.
+  @HiveField(17)
+  String? condicionPista;
+
   Nota({
     required this.titulo,
     required this.contenido,
@@ -81,7 +139,15 @@ class Nota extends HiveObject {
     this.pinned = false,
     this.archivada = false,
     this.relatedSessionId,
+    String? tipo,
+    String? estado,
+    this.bolera,
+    this.patronAceite,
+    this.equipamientoUsado,
+    this.condicionPista,
   })  : id = (id == null || id.trim().isEmpty) ? _generateStableId() : id.trim(),
+        tipo = _normalizeTipo(tipo, categoria),
+        estado = _normalizeEstado(estado),
         tags = _normalizeTags(tags);
 
   static List<String> normalizeTagsFromText(String rawTags) {
@@ -101,6 +167,12 @@ class Nota extends HiveObject {
     bool? pinned,
     bool? archivada,
     Object? relatedSessionId = _sentinel,
+    String? tipo,
+    String? estado,
+    Object? bolera = _sentinel,
+    Object? patronAceite = _sentinel,
+    Object? equipamientoUsado = _sentinel,
+    Object? condicionPista = _sentinel,
   }) {
     return Nota(
       titulo: titulo ?? this.titulo,
@@ -118,6 +190,18 @@ class Nota extends HiveObject {
       relatedSessionId: relatedSessionId == _sentinel
           ? this.relatedSessionId
           : relatedSessionId as String?,
+      tipo: tipo ?? this.tipo,
+      estado: estado ?? this.estado,
+      bolera: bolera == _sentinel ? this.bolera : bolera as String?,
+      patronAceite: patronAceite == _sentinel
+          ? this.patronAceite
+          : patronAceite as String?,
+      equipamientoUsado: equipamientoUsado == _sentinel
+          ? this.equipamientoUsado
+          : equipamientoUsado as String?,
+      condicionPista: condicionPista == _sentinel
+          ? this.condicionPista
+          : condicionPista as String?,
     );
   }
 
@@ -134,6 +218,12 @@ class Nota extends HiveObject {
         'pinned': pinned,
         'archivada': archivada,
         'relatedSessionId': relatedSessionId,
+        'tipo': tipo,
+        'estado': estado,
+        'bolera': bolera,
+        'patronAceite': patronAceite,
+        'equipamientoUsado': equipamientoUsado,
+        'condicionPista': condicionPista,
       };
 
   factory Nota.fromJson(Map<String, dynamic> json) => Nota(
@@ -151,6 +241,12 @@ class Nota extends HiveObject {
         pinned: json['pinned'] as bool? ?? false,
         archivada: json['archivada'] as bool? ?? false,
         relatedSessionId: json['relatedSessionId'] as String?,
+        tipo: json['tipo'] as String?,
+        estado: json['estado'] as String?,
+        bolera: json['bolera'] as String?,
+        patronAceite: json['patronAceite'] as String?,
+        equipamientoUsado: json['equipamientoUsado'] as String?,
+        condicionPista: json['condicionPista'] as String?,
       );
 }
 
@@ -176,4 +272,39 @@ String _generateStableId() {
   _idCounter = (_idCounter + 1) & 0xFFFFF;
   final random = _idRandom.nextInt(1 << 32);
   return '${now}_${_idCounter}_$random';
+}
+
+String _normalizeTipo(String? tipo, String? categoria) {
+  // Keep lowercase normalization for backward compatibility with legacy data
+  // that may have mixed-case values from older versions.
+  final normalized = tipo?.trim().toLowerCase();
+  if (normalized != null && NotaTipo.values.contains(normalized)) {
+    return normalized;
+  }
+  return _defaultTipoFromCategoria(categoria);
+}
+
+String _defaultTipoFromCategoria(String? categoria) {
+  switch (categoria) {
+    case NotaCategoria.tecnica:
+      return NotaTipo.tecnica;
+    case NotaCategoria.aceite:
+      return NotaTipo.aceite;
+    case NotaCategoria.equipamiento:
+      return NotaTipo.equipamiento;
+    case NotaCategoria.mental:
+      return NotaTipo.mental;
+    case NotaCategoria.bolera:
+      return NotaTipo.pista;
+    default:
+      return NotaTipo.review;
+  }
+}
+
+String _normalizeEstado(String? estado) {
+  final normalized = estado?.trim().toLowerCase();
+  if (normalized != null && NotaEstado.values.contains(normalized)) {
+    return normalized;
+  }
+  return NotaEstado.pendiente;
 }

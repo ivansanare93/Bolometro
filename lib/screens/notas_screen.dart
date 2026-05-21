@@ -26,6 +26,8 @@ class _NotasScreenState extends State<NotasScreen> {
 
   String? _categoriaFiltro;
   String? _tagFiltro;
+  String? _tipoFiltro;
+  String? _estadoFiltro;
   _SortMode _sortMode = _SortMode.newest;
   _ArchiveFilter _archiveFilter = _ArchiveFilter.active;
   bool _soloPinned = false;
@@ -68,18 +70,30 @@ class _NotasScreenState extends State<NotasScreen> {
       final tagsText = n.tags.join(' ').toLowerCase();
       final categoryText = (n.categoria ?? '').toLowerCase();
       final relatedSessionText = (n.relatedSessionId ?? '').toLowerCase();
+      final alleyText = (n.bolera ?? '').toLowerCase();
+      final oilPatternText = (n.patronAceite ?? '').toLowerCase();
+      final equipText = (n.equipamientoUsado ?? '').toLowerCase();
+      final laneConditionText = (n.condicionPista ?? '').toLowerCase();
 
       final matchQuery = query.isEmpty ||
           n.titulo.toLowerCase().contains(query) ||
           n.contenido.toLowerCase().contains(query) ||
           tagsText.contains(query) ||
           categoryText.contains(query) ||
-          relatedSessionText.contains(query);
+          relatedSessionText.contains(query) ||
+          n.tipo.toLowerCase().contains(query) ||
+          n.estado.toLowerCase().contains(query) ||
+          alleyText.contains(query) ||
+          oilPatternText.contains(query) ||
+          equipText.contains(query) ||
+          laneConditionText.contains(query);
 
       final matchCategoria =
           _categoriaFiltro == null || n.categoria == _categoriaFiltro;
 
       final matchTag = _tagFiltro == null || n.tags.contains(_tagFiltro);
+      final matchTipo = _tipoFiltro == null || n.tipo == _tipoFiltro;
+      final matchEstado = _estadoFiltro == null || n.estado == _estadoFiltro;
 
       final matchArchivo = switch (_archiveFilter) {
         _ArchiveFilter.active => !n.archivada,
@@ -92,6 +106,8 @@ class _NotasScreenState extends State<NotasScreen> {
       return matchQuery &&
           matchCategoria &&
           matchTag &&
+          matchTipo &&
+          matchEstado &&
           matchArchivo &&
           matchPinned;
     }).toList();
@@ -237,6 +253,13 @@ class _NotasScreenState extends State<NotasScreen> {
     return tags;
   }
 
+  int get _notasPorValidarCount {
+    return _notas.where((n) {
+      if (n.archivada) return false;
+      return n.estado == NotaEstado.pendiente || n.estado == NotaEstado.probado;
+    }).length;
+  }
+
   String _categoryLabel(BuildContext context, String? key) {
     final l10n = AppLocalizations.of(context)!;
     switch (key) {
@@ -254,6 +277,41 @@ class _NotasScreenState extends State<NotasScreen> {
         return l10n.noteCategoryAlley;
       default:
         return l10n.noteCategoryNone;
+    }
+  }
+
+  String _typeLabel(BuildContext context, String key) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (key) {
+      case NotaTipo.tecnica:
+        return l10n.noteTypeTechnique;
+      case NotaTipo.pista:
+        return l10n.noteTypeLane;
+      case NotaTipo.aceite:
+        return l10n.noteTypeOil;
+      case NotaTipo.equipamiento:
+        return l10n.noteTypeEquipment;
+      case NotaTipo.mental:
+        return l10n.noteTypeMental;
+      case NotaTipo.review:
+      default:
+        return l10n.noteTypeReview;
+    }
+  }
+
+  String _statusLabel(BuildContext context, String key) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (key) {
+      case NotaEstado.pendiente:
+        return l10n.noteStatusPending;
+      case NotaEstado.probado:
+        return l10n.noteStatusTested;
+      case NotaEstado.validado:
+        return l10n.noteStatusValidated;
+      case NotaEstado.descartado:
+        return l10n.noteStatusDiscarded;
+      default:
+        return l10n.noteStatusPending;
     }
   }
 
@@ -330,6 +388,12 @@ class _NotasScreenState extends State<NotasScreen> {
     final cs = Theme.of(context).colorScheme;
     final categoriasUsadas = _categoriasUsadas;
     final tagsUsados = _tagsUsados;
+    final tiposPresentes = _notas.map((n) => n.tipo).toSet();
+    final estadosPresentes = _notas.map((n) => n.estado).toSet();
+    final tiposUsados = NotaTipo.values.where(tiposPresentes.contains).toList();
+    final estadosUsados =
+        NotaEstado.values.where(estadosPresentes.contains).toList();
+    final notasPorValidarCount = _notasPorValidarCount;
 
     return Scaffold(
       appBar: AppBar(
@@ -378,6 +442,45 @@ class _NotasScreenState extends State<NotasScreen> {
               ),
             ),
           ),
+          if (!_cargando && notasPorValidarCount > 0)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+              child: Material(
+                color: cs.tertiaryContainer,
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.pending_actions_rounded,
+                          color: cs.onTertiaryContainer),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.notesPendingValidationCount(
+                                  notasPorValidarCount),
+                              style: TextStyle(
+                                color: cs.onTertiaryContainer,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              l10n.notesPendingValidation,
+                              style: TextStyle(color: cs.onTertiaryContainer),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           if (!_cargando)
             SizedBox(
               height: 44,
@@ -507,6 +610,82 @@ class _NotasScreenState extends State<NotasScreen> {
                         onSelected: (_) {
                           setState(() {
                             _tagFiltro = _tagFiltro == tag ? null : tag;
+                            _notasFiltradas = _aplicarFiltroYOrden(_notas);
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (!_cargando && tiposUsados.isNotEmpty)
+            SizedBox(
+              height: 44,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(l10n.noteFilterAllTypes),
+                      selected: _tipoFiltro == null,
+                      onSelected: (_) {
+                        setState(() {
+                          _tipoFiltro = null;
+                          _notasFiltradas = _aplicarFiltroYOrden(_notas);
+                        });
+                      },
+                    ),
+                  ),
+                  ...tiposUsados.map(
+                    (tipo) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        label: Text(_typeLabel(context, tipo)),
+                        selected: _tipoFiltro == tipo,
+                        onSelected: (_) {
+                          setState(() {
+                            _tipoFiltro = _tipoFiltro == tipo ? null : tipo;
+                            _notasFiltradas = _aplicarFiltroYOrden(_notas);
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (!_cargando && estadosUsados.isNotEmpty)
+            SizedBox(
+              height: 44,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(l10n.noteFilterAllStatuses),
+                      selected: _estadoFiltro == null,
+                      onSelected: (_) {
+                        setState(() {
+                          _estadoFiltro = null;
+                          _notasFiltradas = _aplicarFiltroYOrden(_notas);
+                        });
+                      },
+                    ),
+                  ),
+                  ...estadosUsados.map(
+                    (estado) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        label: Text(_statusLabel(context, estado)),
+                        selected: _estadoFiltro == estado,
+                        onSelected: (_) {
+                          setState(() {
+                            _estadoFiltro = _estadoFiltro == estado ? null : estado;
                             _notasFiltradas = _aplicarFiltroYOrden(_notas);
                           });
                         },
@@ -681,8 +860,8 @@ class _NotasScreenState extends State<NotasScreen> {
                                                 label: Text(
                                                   _categoryLabel(
                                                       context, nota.categoria),
-                                                  style: const TextStyle(
-                                                      fontSize: 11),
+                                                  style:
+                                                      const TextStyle(fontSize: 11),
                                                 ),
                                                 padding: EdgeInsets.zero,
                                                 materialTapTargetSize:
@@ -690,6 +869,88 @@ class _NotasScreenState extends State<NotasScreen> {
                                                         .shrinkWrap,
                                                 visualDensity:
                                                     VisualDensity.compact,
+                                              ),
+                                            ],
+                                            const SizedBox(height: 4),
+                                            Wrap(
+                                              spacing: 6,
+                                              runSpacing: 4,
+                                              children: [
+                                                Chip(
+                                                  label: Text(
+                                                    _typeLabel(context, nota.tipo),
+                                                    style:
+                                                        const TextStyle(fontSize: 11),
+                                                  ),
+                                                  padding: EdgeInsets.zero,
+                                                  materialTapTargetSize:
+                                                      MaterialTapTargetSize
+                                                          .shrinkWrap,
+                                                  visualDensity:
+                                                      VisualDensity.compact,
+                                                ),
+                                                Chip(
+                                                  avatar: nota.estado ==
+                                                          NotaEstado.validado
+                                                      ? const Icon(
+                                                          Icons.verified_outlined,
+                                                          size: 14)
+                                                      : nota.estado ==
+                                                              NotaEstado.descartado
+                                                          ? const Icon(
+                                                              Icons.block_outlined,
+                                                              size: 14)
+                                                          : const Icon(
+                                                              Icons
+                                                                  .pending_actions_outlined,
+                                                              size: 14),
+                                                  label: Text(
+                                                    _statusLabel(
+                                                        context, nota.estado),
+                                                    style: const TextStyle(
+                                                        fontSize: 11),
+                                                  ),
+                                                  padding: EdgeInsets.zero,
+                                                  materialTapTargetSize:
+                                                      MaterialTapTargetSize
+                                                          .shrinkWrap,
+                                                  visualDensity:
+                                                      VisualDensity.compact,
+                                                ),
+                                              ],
+                                            ),
+                                            if ((nota.bolera ?? '').isNotEmpty ||
+                                                (nota.patronAceite ?? '')
+                                                    .isNotEmpty ||
+                                                (nota.equipamientoUsado ?? '')
+                                                    .isNotEmpty ||
+                                                (nota.condicionPista ?? '')
+                                                    .isNotEmpty) ...[
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                [
+                                                  if ((nota.bolera ?? '')
+                                                      .isNotEmpty)
+                                                    '${l10n.noteBowlingAlley}: ${nota.bolera}',
+                                                  if ((nota.patronAceite ?? '')
+                                                      .isNotEmpty)
+                                                    '${l10n.noteOilPattern}: ${nota.patronAceite}',
+                                                  if ((nota.equipamientoUsado ??
+                                                          '')
+                                                      .isNotEmpty)
+                                                    '${l10n.noteBallOrEquipment}: ${nota.equipamientoUsado}',
+                                                  if ((nota.condicionPista ?? '')
+                                                      .isNotEmpty)
+                                                    '${l10n.noteLaneCondition}: ${nota.condicionPista}',
+                                                ].join(' • '),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.copyWith(
+                                                      color: cs.outline,
+                                                    ),
                                               ),
                                             ],
                                             if (nota.tags.isNotEmpty) ...[

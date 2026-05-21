@@ -4,12 +4,14 @@ import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import '../models/sesion.dart';
 import '../models/partida.dart';
+import '../models/nota.dart';
 import '../services/analytics_service.dart';
 import '../repositories/data_repository.dart';
 import '../widgets/score_sheet_pin_strip.dart';
 import 'editar_partida.dart';
 import 'registro_sesion.dart';
 import 'editar_nota_screen.dart';
+import 'ver_nota_screen.dart';
 import 'home.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/registro_tiros_utils.dart';
@@ -24,6 +26,7 @@ class VerSesion extends StatefulWidget {
 
 class _VerSesionState extends State<VerSesion> {
   late Sesion sesionActual;
+  late Future<List<Nota>> _relatedNotesFuture;
 
   @override
   void initState() {
@@ -37,6 +40,7 @@ class _VerSesionState extends State<VerSesion> {
       }
     });
     sesionActual = widget.sesion;
+    _relatedNotesFuture = _obtenerNotasRelacionadas();
   }
 
   Future<void> _editarPartida(int index) async {
@@ -296,6 +300,38 @@ class _VerSesionState extends State<VerSesion> {
     );
   }
 
+  String get _sessionId => sesionActual.fecha.millisecondsSinceEpoch.toString();
+
+  Future<List<Nota>> _obtenerNotasRelacionadas() async {
+    final repo = Provider.of<DataRepository>(context, listen: false);
+    final notas = await repo.obtenerNotas();
+    final relacionadas =
+        notas.where((n) => n.relatedSessionId == _sessionId).toList();
+    relacionadas.sort((a, b) => b.fechaModificacion.compareTo(a.fechaModificacion));
+    return relacionadas;
+  }
+
+  void _refreshRelatedNotes() {
+    setState(() {
+      _relatedNotesFuture = _obtenerNotasRelacionadas();
+    });
+  }
+
+  String _statusLabel(AppLocalizations l10n, String estado) {
+    switch (estado) {
+      case NotaEstado.pendiente:
+        return l10n.noteStatusPending;
+      case NotaEstado.probado:
+        return l10n.noteStatusTested;
+      case NotaEstado.validado:
+        return l10n.noteStatusValidated;
+      case NotaEstado.descartado:
+        return l10n.noteStatusDiscarded;
+      default:
+        return l10n.noteStatusPending;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -343,7 +379,7 @@ class _VerSesionState extends State<VerSesion> {
             tooltip: AppLocalizations.of(context)!.newNote,
             onPressed: () async {
               final relatedSessionId =
-                  sesionActual.fecha.millisecondsSinceEpoch.toString();
+                  _sessionId;
               final created = await Navigator.push<bool>(
                 context,
                 MaterialPageRoute(
@@ -353,6 +389,7 @@ class _VerSesionState extends State<VerSesion> {
                 ),
               );
               if (created == true && mounted) {
+                _refreshRelatedNotes();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(AppLocalizations.of(context)!.noteSaved),
@@ -461,6 +498,103 @@ class _VerSesionState extends State<VerSesion> {
                 ],
               ),
             ),
+          ),
+
+          FutureBuilder<List<Nota>>(
+            future: _relatedNotesFuture,
+            builder: (context, snapshot) {
+              final notas = snapshot.data ?? const <Nota>[];
+              return Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                margin: const EdgeInsets.only(bottom: 18),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.sticky_note_2_outlined),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              l10n.sessionRelatedNotes(notas.length),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                          TextButton.icon(
+                            onPressed: () async {
+                              final created = await Navigator.push<bool>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => EditarNotaScreen(
+                                    initialRelatedSessionId: _sessionId,
+                                  ),
+                                ),
+                              );
+                              if (created == true && mounted) {
+                                _refreshRelatedNotes();
+                              }
+                            },
+                            icon: const Icon(Icons.add, size: 16),
+                            label: Text(l10n.newNote),
+                          ),
+                        ],
+                      ),
+                      if (snapshot.connectionState == ConnectionState.waiting)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Semantics(
+                            label: l10n.loading,
+                            child: const LinearProgressIndicator(minHeight: 2),
+                          ),
+                        )
+                      else if (notas.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            l10n.sessionNoRelatedNotes,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        )
+                      else ...[
+                        const SizedBox(height: 8),
+                        ...notas.take(3).map(
+                          (nota) => ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
+                            title: Text(
+                              nota.titulo,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Text(_statusLabel(l10n, nota.estado)),
+                            trailing: const Icon(Icons.chevron_right_rounded),
+                            onTap: () async {
+                              final changed = await Navigator.push<bool>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => VerNotaScreen(nota: nota),
+                                ),
+                              );
+                              if (changed == true && mounted) {
+                                _refreshRelatedNotes();
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
 
           // PARTIDAS

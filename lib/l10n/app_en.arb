@@ -661,6 +661,54 @@
   "@noteCategoryAlley": {
     "description": "Category: Bowling Alley"
   },
+  "noteType": "Type",
+  "@noteType": {
+    "description": "Label for note type field"
+  },
+  "noteTypeTechnique": "Technique",
+  "@noteTypeTechnique": {
+    "description": "Technique note type"
+  },
+  "noteTypeLane": "Lane",
+  "@noteTypeLane": {
+    "description": "Lane note type"
+  },
+  "noteTypeOil": "Oil",
+  "@noteTypeOil": {
+    "description": "Oil note type"
+  },
+  "noteTypeEquipment": "Equipment",
+  "@noteTypeEquipment": {
+    "description": "Equipment note type"
+  },
+  "noteTypeMental": "Mental",
+  "@noteTypeMental": {
+    "description": "Mental note type"
+  },
+  "noteTypeReview": "Review",
+  "@noteTypeReview": {
+    "description": "Review note type"
+  },
+  "noteStatus": "Status",
+  "@noteStatus": {
+    "description": "Label for note status field"
+  },
+  "noteStatusPending": "Pending",
+  "@noteStatusPending": {
+    "description": "Pending status"
+  },
+  "noteStatusTested": "Tested",
+  "@noteStatusTested": {
+    "description": "Tested status"
+  },
+  "noteStatusValidated": "Validated",
+  "@noteStatusValidated": {
+    "description": "Validated status"
+  },
+  "noteStatusDiscarded": "Discarded",
+  "@noteStatusDiscarded": {
+    "description": "Discarded status"
+  },
   "noteFavorite": "Favourite",
   "@noteFavorite": {
     "description": "Tooltip to mark/unmark a note as favourite"
@@ -774,6 +822,26 @@
   "@noteTagsHint": {
     "description": "Hint for tags field in notes"
   },
+  "noteContext": "Context",
+  "@noteContext": {
+    "description": "Section title for note contextual metadata"
+  },
+  "noteBowlingAlley": "Bowling alley",
+  "@noteBowlingAlley": {
+    "description": "Label for bowling alley metadata field"
+  },
+  "noteOilPattern": "Oil pattern",
+  "@noteOilPattern": {
+    "description": "Label for oil pattern metadata field"
+  },
+  "noteBallOrEquipment": "Ball / equipment",
+  "@noteBallOrEquipment": {
+    "description": "Label for ball or equipment metadata field"
+  },
+  "noteLaneCondition": "Lane condition",
+  "@noteLaneCondition": {
+    "description": "Label for lane condition metadata field"
+  },
   "noteRelatedSession": "Related session",
   "@noteRelatedSession": {
     "description": "Label for selecting related session in note editor"
@@ -829,6 +897,40 @@
   "noteFilterAllTags": "All tags",
   "@noteFilterAllTags": {
     "description": "Filter label to remove tags filter in notes list"
+  },
+  "noteFilterAllTypes": "All types",
+  "@noteFilterAllTypes": {
+    "description": "Filter label to remove type filter in notes list"
+  },
+  "noteFilterAllStatuses": "All statuses",
+  "@noteFilterAllStatuses": {
+    "description": "Filter label to remove status filter in notes list"
+  },
+  "notesPendingValidation": "Pending or unvalidated notes to review before the next session",
+  "@notesPendingValidation": {
+    "description": "Helper message highlighting notes pending validation"
+  },
+  "notesPendingValidationCount": "{count} notes to validate",
+  "@notesPendingValidationCount": {
+    "description": "Count of notes pending validation",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionRelatedNotes": "Related notes ({count})",
+  "@sessionRelatedNotes": {
+    "description": "Section title for notes linked to a session",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionNoRelatedNotes": "No notes linked to this session yet",
+  "@sessionNoRelatedNotes": {
+    "description": "Message shown when a session has no related notes"
   },
   "noteCreateFromTemplate": "Create from template",
   "@noteCreateFromTemplate": {

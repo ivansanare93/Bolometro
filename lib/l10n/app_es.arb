@@ -796,6 +796,54 @@
   "@noteCategoryAlley": {
     "description": "Categoría: Bolera"
   },
+  "noteType": "Tipo",
+  "@noteType": {
+    "description": "Etiqueta del campo tipo de nota"
+  },
+  "noteTypeTechnique": "Técnica",
+  "@noteTypeTechnique": {
+    "description": "Tipo de nota técnica"
+  },
+  "noteTypeLane": "Pista",
+  "@noteTypeLane": {
+    "description": "Tipo de nota de pista"
+  },
+  "noteTypeOil": "Aceite",
+  "@noteTypeOil": {
+    "description": "Tipo de nota de aceite"
+  },
+  "noteTypeEquipment": "Equipamiento",
+  "@noteTypeEquipment": {
+    "description": "Tipo de nota de equipamiento"
+  },
+  "noteTypeMental": "Mental",
+  "@noteTypeMental": {
+    "description": "Tipo de nota mental"
+  },
+  "noteTypeReview": "Review",
+  "@noteTypeReview": {
+    "description": "Tipo de nota de review"
+  },
+  "noteStatus": "Estado",
+  "@noteStatus": {
+    "description": "Etiqueta del campo estado de la nota"
+  },
+  "noteStatusPending": "Pendiente",
+  "@noteStatusPending": {
+    "description": "Estado pendiente de validar"
+  },
+  "noteStatusTested": "Probado",
+  "@noteStatusTested": {
+    "description": "Estado probado"
+  },
+  "noteStatusValidated": "Validado",
+  "@noteStatusValidated": {
+    "description": "Estado validado"
+  },
+  "noteStatusDiscarded": "Descartado",
+  "@noteStatusDiscarded": {
+    "description": "Estado descartado"
+  },
   "noteFavorite": "Favorita",
   "@noteFavorite": {
     "description": "Tooltip para marcar/desmarcar una nota como favorita"
@@ -909,6 +957,26 @@
   "@noteTagsHint": {
     "description": "Texto de ayuda para el campo tags en notas"
   },
+  "noteContext": "Contexto",
+  "@noteContext": {
+    "description": "Título de sección para metadatos contextuales de la nota"
+  },
+  "noteBowlingAlley": "Bolera",
+  "@noteBowlingAlley": {
+    "description": "Etiqueta del campo bolera"
+  },
+  "noteOilPattern": "Patrón de aceite",
+  "@noteOilPattern": {
+    "description": "Etiqueta del campo patrón de aceite"
+  },
+  "noteBallOrEquipment": "Bola / equipamiento",
+  "@noteBallOrEquipment": {
+    "description": "Etiqueta del campo bola usada o equipamiento"
+  },
+  "noteLaneCondition": "Condición de pista",
+  "@noteLaneCondition": {
+    "description": "Etiqueta del campo condición de pista"
+  },
   "noteRelatedSession": "Sesión relacionada",
   "@noteRelatedSession": {
     "description": "Etiqueta para seleccionar sesión relacionada en nota"
@@ -964,6 +1032,40 @@
   "noteFilterAllTags": "Todos los tags",
   "@noteFilterAllTags": {
     "description": "Filtro para quitar filtro por tags en notas"
+  },
+  "noteFilterAllTypes": "Todos los tipos",
+  "@noteFilterAllTypes": {
+    "description": "Filtro para quitar filtro por tipo en notas"
+  },
+  "noteFilterAllStatuses": "Todos los estados",
+  "@noteFilterAllStatuses": {
+    "description": "Filtro para quitar filtro por estado en notas"
+  },
+  "notesPendingValidation": "Notas pendientes o por validar para revisar antes de la próxima sesión",
+  "@notesPendingValidation": {
+    "description": "Mensaje de apoyo para destacar notas pendientes de validación"
+  },
+  "notesPendingValidationCount": "{count} notas por validar",
+  "@notesPendingValidationCount": {
+    "description": "Contador de notas pendientes de validar",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionRelatedNotes": "Notas relacionadas ({count})",
+  "@sessionRelatedNotes": {
+    "description": "Título de sección de notas relacionadas con la sesión",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionNoRelatedNotes": "No hay notas vinculadas a esta sesión",
+  "@sessionNoRelatedNotes": {
+    "description": "Mensaje cuando la sesión no tiene notas relacionadas"
   },
   "noteCreateFromTemplate": "Crear desde plantilla",
   "@noteCreateFromTemplate": {

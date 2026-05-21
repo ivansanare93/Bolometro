@@ -1223,6 +1223,42 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noteCategoryAlley => 'Bolera';
 
   @override
+  String get noteType => 'Tipo';
+
+  @override
+  String get noteTypeTechnique => 'Técnica';
+
+  @override
+  String get noteTypeLane => 'Pista';
+
+  @override
+  String get noteTypeOil => 'Aceite';
+
+  @override
+  String get noteTypeEquipment => 'Equipamiento';
+
+  @override
+  String get noteTypeMental => 'Mental';
+
+  @override
+  String get noteTypeReview => 'Review';
+
+  @override
+  String get noteStatus => 'Estado';
+
+  @override
+  String get noteStatusPending => 'Pendiente';
+
+  @override
+  String get noteStatusTested => 'Probado';
+
+  @override
+  String get noteStatusValidated => 'Validado';
+
+  @override
+  String get noteStatusDiscarded => 'Descartado';
+
+  @override
   String get noteFavorite => 'Favorita';
 
   @override
@@ -1311,6 +1347,21 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noteTagsHint => 'Ejemplo: spare, timing, pista seca';
 
   @override
+  String get noteContext => 'Contexto';
+
+  @override
+  String get noteBowlingAlley => 'Bolera';
+
+  @override
+  String get noteOilPattern => 'Patrón de aceite';
+
+  @override
+  String get noteBallOrEquipment => 'Bola / equipamiento';
+
+  @override
+  String get noteLaneCondition => 'Condición de pista';
+
+  @override
   String get noteRelatedSession => 'Sesión relacionada';
 
   @override
@@ -1353,6 +1404,29 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noteFilterAllTags => 'Todos los tags';
+
+  @override
+  String get noteFilterAllTypes => 'Todos los tipos';
+
+  @override
+  String get noteFilterAllStatuses => 'Todos los estados';
+
+  @override
+  String get notesPendingValidation =>
+      'Notas pendientes o por validar para revisar antes de la próxima sesión';
+
+  @override
+  String notesPendingValidationCount(int count) {
+    return '$count notas por validar';
+  }
+
+  @override
+  String sessionRelatedNotes(int count) {
+    return 'Notas relacionadas ($count)';
+  }
+
+  @override
+  String get sessionNoRelatedNotes => 'No hay notas vinculadas a esta sesión';
 
   @override
   String get noteCreateFromTemplate => 'Crear desde plantilla';

@@ -115,9 +115,15 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
   late TextEditingController _tituloController;
   late TextEditingController _contenidoController;
   late TextEditingController _tagsController;
+  late TextEditingController _boleraController;
+  late TextEditingController _patronAceiteController;
+  late TextEditingController _equipamientoController;
+  late TextEditingController _condicionPistaController;
   bool _guardando = false;
 
   String? _categoria;
+  String _tipo = NotaTipo.review;
+  String _estado = NotaEstado.pendiente;
   bool _favorita = false;
   bool _pinned = false;
   bool _archivada = false;
@@ -135,7 +141,16 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
     _contenidoController = TextEditingController(text: widget.nota?.contenido ?? '');
     _tagsController =
         TextEditingController(text: (widget.nota?.tags ?? const []).join(', '));
+    _boleraController = TextEditingController(text: widget.nota?.bolera ?? '');
+    _patronAceiteController =
+        TextEditingController(text: widget.nota?.patronAceite ?? '');
+    _equipamientoController =
+        TextEditingController(text: widget.nota?.equipamientoUsado ?? '');
+    _condicionPistaController =
+        TextEditingController(text: widget.nota?.condicionPista ?? '');
     _categoria = widget.nota?.categoria;
+    _tipo = widget.nota?.tipo ?? NotaTipo.review;
+    _estado = widget.nota?.estado ?? NotaEstado.pendiente;
     _favorita = widget.nota?.favorita ?? false;
     _pinned = widget.nota?.pinned ?? false;
     _archivada = widget.nota?.archivada ?? false;
@@ -165,6 +180,10 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
     _tituloController.dispose();
     _contenidoController.dispose();
     _tagsController.dispose();
+    _boleraController.dispose();
+    _patronAceiteController.dispose();
+    _equipamientoController.dispose();
+    _condicionPistaController.dispose();
     super.dispose();
   }
 
@@ -201,12 +220,32 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
     return '$date • $place';
   }
 
+  String _defaultTipoForCategory(String category) {
+    switch (category) {
+      case NotaCategoria.tecnica:
+        return NotaTipo.tecnica;
+      case NotaCategoria.aceite:
+        return NotaTipo.aceite;
+      case NotaCategoria.equipamiento:
+        return NotaTipo.equipamiento;
+      case NotaCategoria.mental:
+        return NotaTipo.mental;
+      case NotaCategoria.bolera:
+        return NotaTipo.pista;
+      default:
+        return NotaTipo.review;
+    }
+  }
+
   void _aplicarPlantilla(_NoteTemplate template) {
     final l10n = AppLocalizations.of(context)!;
     setState(() {
       _tituloController.text = template.title(l10n);
       _contenidoController.text = template.content(l10n);
       _categoria = template.category;
+      _tipo = NotaTipo.values.contains(template.id)
+          ? template.id
+          : _defaultTipoForCategory(template.category);
       _tagsController.text = template.tags.join(', ');
     });
   }
@@ -234,6 +273,20 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
           pinned: _pinned,
           archivada: _archivada,
           relatedSessionId: _relatedSessionId,
+          tipo: _tipo,
+          estado: _estado,
+          bolera: _boleraController.text.trim().isEmpty
+              ? null
+              : _boleraController.text.trim(),
+          patronAceite: _patronAceiteController.text.trim().isEmpty
+              ? null
+              : _patronAceiteController.text.trim(),
+          equipamientoUsado: _equipamientoController.text.trim().isEmpty
+              ? null
+              : _equipamientoController.text.trim(),
+          condicionPista: _condicionPistaController.text.trim().isEmpty
+              ? null
+              : _condicionPistaController.text.trim(),
         );
         await repo.guardarNota(nuevaNota);
       } else {
@@ -247,6 +300,21 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
         widget.nota!.pinned = _pinned;
         widget.nota!.archivada = _archivada;
         widget.nota!.relatedSessionId = _relatedSessionId;
+        widget.nota!.tipo = _tipo;
+        widget.nota!.estado = _estado;
+        widget.nota!.bolera = _boleraController.text.trim().isEmpty
+            ? null
+            : _boleraController.text.trim();
+        widget.nota!.patronAceite = _patronAceiteController.text.trim().isEmpty
+            ? null
+            : _patronAceiteController.text.trim();
+        widget.nota!.equipamientoUsado =
+            _equipamientoController.text.trim().isEmpty
+            ? null
+            : _equipamientoController.text.trim();
+        widget.nota!.condicionPista = _condicionPistaController.text.trim().isEmpty
+            ? null
+            : _condicionPistaController.text.trim();
         await repo.actualizarNota(widget.nota!);
       }
 
@@ -291,6 +359,41 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
         return l10n.noteCategoryAlley;
       default:
         return l10n.noteCategoryNone;
+    }
+  }
+
+  String _typeLabel(BuildContext context, String key) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (key) {
+      case NotaTipo.tecnica:
+        return l10n.noteTypeTechnique;
+      case NotaTipo.pista:
+        return l10n.noteTypeLane;
+      case NotaTipo.aceite:
+        return l10n.noteTypeOil;
+      case NotaTipo.equipamiento:
+        return l10n.noteTypeEquipment;
+      case NotaTipo.mental:
+        return l10n.noteTypeMental;
+      case NotaTipo.review:
+      default:
+        return l10n.noteTypeReview;
+    }
+  }
+
+  String _statusLabel(BuildContext context, String key) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (key) {
+      case NotaEstado.pendiente:
+        return l10n.noteStatusPending;
+      case NotaEstado.probado:
+        return l10n.noteStatusTested;
+      case NotaEstado.validado:
+        return l10n.noteStatusValidated;
+      case NotaEstado.descartado:
+        return l10n.noteStatusDiscarded;
+      default:
+        return l10n.noteStatusPending;
     }
   }
 
@@ -436,6 +539,86 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 16),
+            InputDecorator(
+              decoration: InputDecoration(
+                labelText: l10n.noteType,
+                border: const OutlineInputBorder(),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: NotaTipo.values
+                    .map(
+                      (key) => ChoiceChip(
+                        label: Text(_typeLabel(context, key)),
+                        selected: _tipo == key,
+                        onSelected: (_) => setState(() => _tipo = key),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            InputDecorator(
+              decoration: InputDecoration(
+                labelText: l10n.noteStatus,
+                border: const OutlineInputBorder(),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: NotaEstado.values
+                    .map(
+                      (key) => ChoiceChip(
+                        label: Text(_statusLabel(context, key)),
+                        selected: _estado == key,
+                        onSelected: (_) => setState(() => _estado = key),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _boleraController,
+              decoration: InputDecoration(
+                labelText: l10n.noteBowlingAlley,
+                border: const OutlineInputBorder(),
+              ),
+              textCapitalization: TextCapitalization.words,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _patronAceiteController,
+              decoration: InputDecoration(
+                labelText: l10n.noteOilPattern,
+                border: const OutlineInputBorder(),
+              ),
+              textCapitalization: TextCapitalization.sentences,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _equipamientoController,
+              decoration: InputDecoration(
+                labelText: l10n.noteBallOrEquipment,
+                border: const OutlineInputBorder(),
+              ),
+              textCapitalization: TextCapitalization.sentences,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _condicionPistaController,
+              decoration: InputDecoration(
+                labelText: l10n.noteLaneCondition,
+                border: const OutlineInputBorder(),
+              ),
+              textCapitalization: TextCapitalization.sentences,
             ),
             const SizedBox(height: 16),
             TextFormField(
