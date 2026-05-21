@@ -11,6 +11,7 @@ import 'editar_partida.dart';
 import 'registro_sesion.dart';
 import 'home.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/registro_tiros_utils.dart';
 
 class VerSesion extends StatefulWidget {
   final Sesion sesion;
@@ -567,12 +568,12 @@ class _VerSesionState extends State<VerSesion> {
                                         color: isDark
                                             ? Colors.grey.shade800
                                             : Colors.white,
-                                      ),
-                                      child: Text(
-                                        t,
-                                        style: TextStyle(
-                                          fontFamily: 'monospace',
-                                          fontWeight: FontWeight.w500,
+                                       ),
+                                       child: Text(
+                                         formatearTiroParaMostrar(t),
+                                         style: TextStyle(
+                                           fontFamily: 'monospace',
+                                           fontWeight: FontWeight.w500,
                                           color: isDark
                                               ? Colors.white
                                               : Colors.black,

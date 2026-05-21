@@ -52,6 +52,12 @@ bool mostrarTercerTiro(List<List<String>> frames) {
   return t0 == AppConstants.simboloStrike || t1 == AppConstants.simboloSpare;
 }
 
+String formatearTiroParaMostrar(String valor) {
+  final limpio = valor.trim().toUpperCase();
+  if (limpio == '0') return AppConstants.simboloFallo;
+  return limpio;
+}
+
 List<List<String>> interpretarFrames(List<List<String>> entradas) {
   return entradas.map((frame) {
     return frame.map((tiro) {
@@ -602,5 +608,4 @@ class FrameError {
 
   FrameError(this.mensaje, {this.esCritico = true});
 }
-
 
