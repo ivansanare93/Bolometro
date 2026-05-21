@@ -1290,7 +1290,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noteTemplateTechniqueContent =>
-      'Situation:\nObservation:\nAdjustment:\nResult:\nNext step:';
+      'Situation:\\nObservation:\\nAdjustment:\\nResult:\\nNext step:';
 
   @override
   String get noteTemplateLaneRead => 'Lane read';
@@ -1300,7 +1300,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noteTemplateLaneReadContent =>
-      'Initial line:\nTransition observed:\nBall reaction:\nRecommended move:';
+      'Initial line:\\nTransition observed:\\nBall reaction:\\nRecommended move:';
 
   @override
   String get noteTemplateOilPattern => 'Oil pattern';
@@ -1310,7 +1310,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noteTemplateOilPatternContent =>
-      'Pattern name:\nLength/ratio:\nReference board:\nAdjustment plan:';
+      'Pattern name:\\nLength/ratio:\\nReference board:\\nAdjustment plan:';
 
   @override
   String get noteTemplateEquipmentAdjust => 'Equipment adjustment';
@@ -1320,7 +1320,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noteTemplateEquipmentAdjustContent =>
-      'Ball/layout used:\nSurface or hand position change:\nWhen to use it:\nObserved result:';
+      'Ball/layout used:\\nSurface or hand position change:\\nWhen to use it:\\nObserved result:';
 
   @override
   String get noteTemplatePostReview => 'Post-session review';
@@ -1330,7 +1330,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noteTemplatePostReviewContent =>
-      'What worked:\nWhat did not work:\nKey learning:\nFocus for next session:';
+      'What worked:\\nWhat did not work:\\nKey learning:\\nFocus for next session:';
 
   @override
   String get noteTags => 'Tags';
@@ -1360,7 +1360,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noteNoLinkedSession => 'No linked session';
 
   @override
-  String get noteLinkedSessionUnknown => 'Linked session (not available locally)';
+  String get noteLinkedSessionUnknown =>
+      'Linked session (not available locally)';
 
   @override
   String get noteArchived => 'Archived';

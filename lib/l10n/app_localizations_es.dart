@@ -1298,7 +1298,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noteTemplateTechniqueContent =>
-      'Situación:\nObservación:\nAjuste:\nResultado:\nSiguiente paso:';
+      'Situación:\\nObservación:\\nAjuste:\\nResultado:\\nSiguiente paso:';
 
   @override
   String get noteTemplateLaneRead => 'Lectura de pista';
@@ -1308,7 +1308,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noteTemplateLaneReadContent =>
-      'Línea inicial:\nTransición observada:\nReacción de la bola:\nMovimiento recomendado:';
+      'Línea inicial:\\nTransición observada:\\nReacción de la bola:\\nMovimiento recomendado:';
 
   @override
   String get noteTemplateOilPattern => 'Patrón de aceite';
@@ -1318,7 +1318,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noteTemplateOilPatternContent =>
-      'Nombre del patrón:\nLongitud/ratio:\nTablón de referencia:\nPlan de ajustes:';
+      'Nombre del patrón:\\nLongitud/ratio:\\nTablón de referencia:\\nPlan de ajustes:';
 
   @override
   String get noteTemplateEquipmentAdjust => 'Ajuste de equipamiento';
@@ -1328,7 +1328,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noteTemplateEquipmentAdjustContent =>
-      'Bola/layout usado:\nCambio de superficie o mano:\nCuándo usarlo:\nResultado observado:';
+      'Bola/layout usado:\\nCambio de superficie o mano:\\nCuándo usarlo:\\nResultado observado:';
 
   @override
   String get noteTemplatePostReview => 'Review post-sesión';
@@ -1338,7 +1338,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noteTemplatePostReviewContent =>
-      'Qué funcionó:\nQué no funcionó:\nAprendizaje clave:\nFoco para la próxima sesión:';
+      'Qué funcionó:\\nQué no funcionó:\\nAprendizaje clave:\\nFoco para la próxima sesión:';
 
   @override
   String get noteTags => 'Tags';

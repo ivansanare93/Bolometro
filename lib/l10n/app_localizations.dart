@@ -2567,7 +2567,7 @@ abstract class AppLocalizations {
   /// Contenido por defecto de plantilla de observación de técnica
   ///
   /// In es, this message translates to:
-  /// **'Situación:\nObservación:\nAjuste:\nResultado:\nSiguiente paso:'**
+  /// **'Situación:\\nObservación:\\nAjuste:\\nResultado:\\nSiguiente paso:'**
   String get noteTemplateTechniqueContent;
 
   /// Nombre de plantilla rápida para lectura de pista
@@ -2585,7 +2585,7 @@ abstract class AppLocalizations {
   /// Contenido por defecto de plantilla de lectura de pista
   ///
   /// In es, this message translates to:
-  /// **'Línea inicial:\nTransición observada:\nReacción de la bola:\nMovimiento recomendado:'**
+  /// **'Línea inicial:\\nTransición observada:\\nReacción de la bola:\\nMovimiento recomendado:'**
   String get noteTemplateLaneReadContent;
 
   /// Nombre de plantilla rápida para patrón de aceite
@@ -2603,7 +2603,7 @@ abstract class AppLocalizations {
   /// Contenido por defecto de plantilla de patrón de aceite
   ///
   /// In es, this message translates to:
-  /// **'Nombre del patrón:\nLongitud/ratio:\nTablón de referencia:\nPlan de ajustes:'**
+  /// **'Nombre del patrón:\\nLongitud/ratio:\\nTablón de referencia:\\nPlan de ajustes:'**
   String get noteTemplateOilPatternContent;
 
   /// Nombre de plantilla rápida para ajuste de equipamiento
@@ -2621,7 +2621,7 @@ abstract class AppLocalizations {
   /// Contenido por defecto de plantilla de ajuste de equipamiento
   ///
   /// In es, this message translates to:
-  /// **'Bola/layout usado:\nCambio de superficie o mano:\nCuándo usarlo:\nResultado observado:'**
+  /// **'Bola/layout usado:\\nCambio de superficie o mano:\\nCuándo usarlo:\\nResultado observado:'**
   String get noteTemplateEquipmentAdjustContent;
 
   /// Nombre de plantilla rápida para review post-sesión
@@ -2639,7 +2639,7 @@ abstract class AppLocalizations {
   /// Contenido por defecto de plantilla de review post-sesión
   ///
   /// In es, this message translates to:
-  /// **'Qué funcionó:\nQué no funcionó:\nAprendizaje clave:\nFoco para la próxima sesión:'**
+  /// **'Qué funcionó:\\nQué no funcionó:\\nAprendizaje clave:\\nFoco para la próxima sesión:'**
   String get noteTemplatePostReviewContent;
 
   /// Etiqueta del campo tags en notas
