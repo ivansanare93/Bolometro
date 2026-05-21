@@ -239,7 +239,7 @@ class _NotasScreenState extends State<NotasScreen> {
   }
 
   String _formatFecha(DateTime fecha) {
-    return DateFormat('dd/MM/yy').format(fecha);
+    return DateFormat('dd/MM/yyyy').format(fecha);
   }
 
   List<String> get _categoriasUsadas {
@@ -1176,7 +1176,7 @@ class _NotasScreenState extends State<NotasScreen> {
                                       'Revisar antes de próxima sesión',
                                       'Review before next session',
                                     )
-                                  : '${_label(context, 'Revisión', 'Review')}: ${DateFormat('dd/MM/yy').format(nota.fechaRevision!)}',
+                                  : '${_label(context, 'Revisión', 'Review')}: ${DateFormat('dd/MM/yyyy').format(nota.fechaRevision!)}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: Theme.of(context)
