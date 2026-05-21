@@ -567,9 +567,9 @@ class FirestoreService {
       }
 
       await _firestore.collection('feedback').add(feedbackData);
-      debugPrint('Feedback guardado en Firestore');
+      debugPrint('Feedback saved to Firestore');
     } catch (e) {
-      debugPrint('Error al guardar feedback en Firestore: $e');
+      debugPrint('Error saving feedback to Firestore: $e');
       rethrow;
     }
   }
