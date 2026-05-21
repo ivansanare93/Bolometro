@@ -223,6 +223,7 @@ class _VerSesionState extends State<VerSesion> {
 
   Future<void> _editarLugarSesion() async {
     final l10n = AppLocalizations.of(context)!;
+    final dataRepository = Provider.of<DataRepository>(context, listen: false);
     final controller = TextEditingController(text: sesionActual.lugar);
     String? nuevoLugar;
     try {
@@ -261,7 +262,6 @@ class _VerSesionState extends State<VerSesion> {
     }
 
     try {
-      final dataRepository = Provider.of<DataRepository>(context, listen: false);
       final sesionActualizada = sesionActual.copyWith(lugar: nuevoLugar);
       await dataRepository.actualizarSesion(sesionActualizada);
 
