@@ -5,9 +5,9 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
+import '../repositories/data_repository.dart';
 import '../services/analytics_service.dart';
 import '../services/auth_service.dart';
-import '../services/firestore_service.dart';
 
 class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({super.key});
@@ -20,7 +20,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   final _formKey = GlobalKey<FormState>();
   final _messageController = TextEditingController();
   final _emailController = TextEditingController();
-  final FirestoreService _firestoreService = FirestoreService();
 
   String _selectedType = 'suggestion';
   int? _rating;
@@ -46,6 +45,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     final l10n = AppLocalizations.of(context)!;
     final authService = Provider.of<AuthService>(context, listen: false);
     final analyticsService = Provider.of<AnalyticsService>(context, listen: false);
+    final dataRepository = Provider.of<DataRepository>(context, listen: false);
 
     if (!(_formKey.currentState?.validate() ?? false)) {
       return;
@@ -68,7 +68,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           ? normalizedEmail
           : authService.user?.email;
 
-      await _firestoreService.enviarFeedback(
+      await dataRepository.submitFeedback(
         userId: authService.userId!,
         type: _selectedType,
         message: _messageController.text.trim(),

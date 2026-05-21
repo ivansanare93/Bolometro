@@ -532,8 +532,8 @@ class FirestoreService {
     }
   }
 
-  /// Guarda feedback enviado desde la app en una colección global.
-  Future<void> enviarFeedback({
+  /// Saves feedback submitted from the app in a global collection.
+  Future<void> submitFeedback({
     required String userId,
     required String type,
     required String message,
