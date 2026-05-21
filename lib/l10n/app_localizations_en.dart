@@ -1403,6 +1403,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noteFilterAllStatuses => 'All statuses';
 
   @override
+  String get noteAdvancedFilters => 'Advanced filters';
+
+  @override
+  String get noteResetFilters => 'Reset';
+
+  @override
+  String get noteSummary => 'Summary';
+
+  @override
+  String get noteSortOrder => 'Sort order';
+
+  @override
   String get notesPendingValidation =>
       'Pending or unvalidated notes to review before the next session';
 

@@ -906,6 +906,22 @@
   "@noteFilterAllStatuses": {
     "description": "Filter label to remove status filter in notes list"
   },
+  "noteAdvancedFilters": "Advanced filters",
+  "@noteAdvancedFilters": {
+    "description": "Button label to open the advanced filters bottom sheet"
+  },
+  "noteResetFilters": "Reset",
+  "@noteResetFilters": {
+    "description": "Button label to reset all note filters"
+  },
+  "noteSummary": "Summary",
+  "@noteSummary": {
+    "description": "Section title for note insights/summary in the filter sheet"
+  },
+  "noteSortOrder": "Sort order",
+  "@noteSortOrder": {
+    "description": "Section title for sort order options in the filter sheet"
+  },
   "notesPendingValidation": "Pending or unvalidated notes to review before the next session",
   "@notesPendingValidation": {
     "description": "Helper message highlighting notes pending validation"

@@ -2780,6 +2780,30 @@ abstract class AppLocalizations {
   /// **'Todos los estados'**
   String get noteFilterAllStatuses;
 
+  /// Etiqueta del botón para abrir el panel de filtros avanzados
+  ///
+  /// In es, this message translates to:
+  /// **'Filtros avanzados'**
+  String get noteAdvancedFilters;
+
+  /// Etiqueta del botón para restablecer todos los filtros de notas
+  ///
+  /// In es, this message translates to:
+  /// **'Restablecer'**
+  String get noteResetFilters;
+
+  /// Título de la sección de resumen/insights en el panel de filtros
+  ///
+  /// In es, this message translates to:
+  /// **'Resumen'**
+  String get noteSummary;
+
+  /// Título de la sección de orden en el panel de filtros
+  ///
+  /// In es, this message translates to:
+  /// **'Ordenar por'**
+  String get noteSortOrder;
+
   /// Mensaje de apoyo para destacar notas pendientes de validación
   ///
   /// In es, this message translates to:
