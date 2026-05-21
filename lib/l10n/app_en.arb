@@ -702,6 +702,138 @@
   "@filterAll": {
     "description": "Filter chip to show all notes"
   },
+  "noteTemplates": "Quick templates",
+  "@noteTemplates": {
+    "description": "Label for note templates section in note editor"
+  },
+  "noteTemplateTechnique": "Technique observation",
+  "@noteTemplateTechnique": {
+    "description": "Quick template name for technique observation note"
+  },
+  "noteTemplateTechniqueTitle": "Technique observation",
+  "@noteTemplateTechniqueTitle": {
+    "description": "Default title for technique observation template"
+  },
+  "noteTemplateTechniqueContent": "Situation:\\nObservation:\\nAdjustment:\\nResult:\\nNext step:",
+  "@noteTemplateTechniqueContent": {
+    "description": "Default content for technique observation template"
+  },
+  "noteTemplateLaneRead": "Lane read",
+  "@noteTemplateLaneRead": {
+    "description": "Quick template name for lane read note"
+  },
+  "noteTemplateLaneReadTitle": "Lane read and transition",
+  "@noteTemplateLaneReadTitle": {
+    "description": "Default title for lane read template"
+  },
+  "noteTemplateLaneReadContent": "Initial line:\\nTransition observed:\\nBall reaction:\\nRecommended move:",
+  "@noteTemplateLaneReadContent": {
+    "description": "Default content for lane read template"
+  },
+  "noteTemplateOilPattern": "Oil pattern",
+  "@noteTemplateOilPattern": {
+    "description": "Quick template name for oil pattern note"
+  },
+  "noteTemplateOilPatternTitle": "Oil pattern notes",
+  "@noteTemplateOilPatternTitle": {
+    "description": "Default title for oil pattern template"
+  },
+  "noteTemplateOilPatternContent": "Pattern name:\\nLength/ratio:\\nReference board:\\nAdjustment plan:",
+  "@noteTemplateOilPatternContent": {
+    "description": "Default content for oil pattern template"
+  },
+  "noteTemplateEquipmentAdjust": "Equipment adjustment",
+  "@noteTemplateEquipmentAdjust": {
+    "description": "Quick template name for equipment adjustment note"
+  },
+  "noteTemplateEquipmentAdjustTitle": "Equipment adjustment",
+  "@noteTemplateEquipmentAdjustTitle": {
+    "description": "Default title for equipment adjustment template"
+  },
+  "noteTemplateEquipmentAdjustContent": "Ball/layout used:\\nSurface or hand position change:\\nWhen to use it:\\nObserved result:",
+  "@noteTemplateEquipmentAdjustContent": {
+    "description": "Default content for equipment adjustment template"
+  },
+  "noteTemplatePostReview": "Post-session review",
+  "@noteTemplatePostReview": {
+    "description": "Quick template name for post-session review note"
+  },
+  "noteTemplatePostReviewTitle": "Post-session review",
+  "@noteTemplatePostReviewTitle": {
+    "description": "Default title for post-session review template"
+  },
+  "noteTemplatePostReviewContent": "What worked:\\nWhat did not work:\\nKey learning:\\nFocus for next session:",
+  "@noteTemplatePostReviewContent": {
+    "description": "Default content for post-session review template"
+  },
+  "noteTags": "Tags",
+  "@noteTags": {
+    "description": "Label for tags field in notes"
+  },
+  "noteTagsHint": "Example: spare, timing, dry lane",
+  "@noteTagsHint": {
+    "description": "Hint for tags field in notes"
+  },
+  "noteRelatedSession": "Related session",
+  "@noteRelatedSession": {
+    "description": "Label for selecting related session in note editor"
+  },
+  "noteNoLinkedSession": "No linked session",
+  "@noteNoLinkedSession": {
+    "description": "Option to keep note without linked session"
+  },
+  "noteLinkedSessionUnknown": "Linked session (not available locally)",
+  "@noteLinkedSessionUnknown": {
+    "description": "Fallback label when linked session cannot be resolved"
+  },
+  "noteArchived": "Archived",
+  "@noteArchived": {
+    "description": "Label for archived note state"
+  },
+  "noteArchivedHint": "Archive to hide this note from active list",
+  "@noteArchivedHint": {
+    "description": "Helper text for archived toggle in note editor"
+  },
+  "notePin": "Pin",
+  "@notePin": {
+    "description": "Action label to pin a note"
+  },
+  "noteUnpin": "Unpin",
+  "@noteUnpin": {
+    "description": "Action label to unpin a note"
+  },
+  "notePinned": "Pinned",
+  "@notePinned": {
+    "description": "State label for pinned note"
+  },
+  "noteArchive": "Archive",
+  "@noteArchive": {
+    "description": "Action label to archive a note"
+  },
+  "noteUnarchive": "Unarchive",
+  "@noteUnarchive": {
+    "description": "Action label to unarchive a note"
+  },
+  "noteFilterActive": "Active",
+  "@noteFilterActive": {
+    "description": "Filter label for active notes"
+  },
+  "noteFilterArchived": "Archived",
+  "@noteFilterArchived": {
+    "description": "Filter label for archived notes"
+  },
+  "noteFilterAllCategories": "All categories",
+  "@noteFilterAllCategories": {
+    "description": "Filter label to remove category filter in notes list"
+  },
+  "noteFilterAllTags": "All tags",
+  "@noteFilterAllTags": {
+    "description": "Filter label to remove tags filter in notes list"
+  },
+  "noteCreateFromTemplate": "Create from template",
+  "@noteCreateFromTemplate": {
+    "description": "Button label to create a note from quick template"
+  },
   "discardChanges": "Discard changes",
   "@discardChanges": {
     "description": "Title for the discard changes confirmation dialog"

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../models/nota.dart';
 import '../repositories/data_repository.dart';
 import '../l10n/app_localizations.dart';
@@ -9,6 +9,7 @@ import 'ver_nota_screen.dart';
 import 'home.dart';
 
 enum _SortMode { newest, oldest, title, favFirst }
+enum _ArchiveFilter { active, archived, all }
 
 class NotasScreen extends StatefulWidget {
   const NotasScreen({super.key});
@@ -23,8 +24,11 @@ class _NotasScreenState extends State<NotasScreen> {
   bool _cargando = true;
   final TextEditingController _busquedaController = TextEditingController();
 
-  String? _categoriaFiltro; // null = all
+  String? _categoriaFiltro;
+  String? _tagFiltro;
   _SortMode _sortMode = _SortMode.newest;
+  _ArchiveFilter _archiveFilter = _ArchiveFilter.active;
+  bool _soloPinned = false;
 
   @override
   void initState() {
@@ -52,29 +56,72 @@ class _NotasScreenState extends State<NotasScreen> {
     }
   }
 
+  int _comparePinned(Nota a, Nota b) {
+    if (a.pinned == b.pinned) return 0;
+    return a.pinned ? -1 : 1;
+  }
+
   List<Nota> _aplicarFiltroYOrden(List<Nota> notas) {
     final query = _busquedaController.text.trim().toLowerCase();
+
     List<Nota> resultado = notas.where((n) {
+      final tagsText = n.tags.join(' ').toLowerCase();
+      final categoryText = (n.categoria ?? '').toLowerCase();
+      final relatedSessionText = (n.relatedSessionId ?? '').toLowerCase();
+
       final matchQuery = query.isEmpty ||
           n.titulo.toLowerCase().contains(query) ||
-          n.contenido.toLowerCase().contains(query);
+          n.contenido.toLowerCase().contains(query) ||
+          tagsText.contains(query) ||
+          categoryText.contains(query) ||
+          relatedSessionText.contains(query);
+
       final matchCategoria =
           _categoriaFiltro == null || n.categoria == _categoriaFiltro;
-      return matchQuery && matchCategoria;
+
+      final matchTag = _tagFiltro == null || n.tags.contains(_tagFiltro);
+
+      final matchArchivo = switch (_archiveFilter) {
+        _ArchiveFilter.active => !n.archivada,
+        _ArchiveFilter.archived => n.archivada,
+        _ArchiveFilter.all => true,
+      };
+
+      final matchPinned = !_soloPinned || n.pinned;
+
+      return matchQuery &&
+          matchCategoria &&
+          matchTag &&
+          matchArchivo &&
+          matchPinned;
     }).toList();
 
     switch (_sortMode) {
       case _SortMode.newest:
-        resultado.sort((a, b) => b.fechaModificacion.compareTo(a.fechaModificacion));
+        resultado.sort((a, b) {
+          final pinCompare = _comparePinned(a, b);
+          if (pinCompare != 0) return pinCompare;
+          return b.fechaModificacion.compareTo(a.fechaModificacion);
+        });
         break;
       case _SortMode.oldest:
-        resultado.sort((a, b) => a.fechaModificacion.compareTo(b.fechaModificacion));
+        resultado.sort((a, b) {
+          final pinCompare = _comparePinned(a, b);
+          if (pinCompare != 0) return pinCompare;
+          return a.fechaModificacion.compareTo(b.fechaModificacion);
+        });
         break;
       case _SortMode.title:
-        resultado.sort((a, b) => a.titulo.toLowerCase().compareTo(b.titulo.toLowerCase()));
+        resultado.sort((a, b) {
+          final pinCompare = _comparePinned(a, b);
+          if (pinCompare != 0) return pinCompare;
+          return a.titulo.toLowerCase().compareTo(b.titulo.toLowerCase());
+        });
         break;
       case _SortMode.favFirst:
         resultado.sort((a, b) {
+          final pinCompare = _comparePinned(a, b);
+          if (pinCompare != 0) return pinCompare;
           if (a.favorita == b.favorita) {
             return b.fechaModificacion.compareTo(a.fechaModificacion);
           }
@@ -91,11 +138,14 @@ class _NotasScreenState extends State<NotasScreen> {
     });
   }
 
-  Future<void> _abrirNueva() async {
+  Future<void> _abrirNueva({String? templateId, String? relatedSessionId}) async {
     final resultado = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (_) => const EditarNotaScreen(),
+        builder: (_) => EditarNotaScreen(
+          initialTemplateId: templateId,
+          initialRelatedSessionId: relatedSessionId,
+        ),
       ),
     );
     if (resultado == true) {
@@ -139,23 +189,13 @@ class _NotasScreenState extends State<NotasScreen> {
     );
 
     if (confirmar == true && mounted) {
-      final repo = Provider.of<DataRepository>(context, listen: false);
-      await repo.eliminarNota(nota);
-      await _cargarNotas();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.noteDeleted),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+      await _eliminarNota(nota);
     }
   }
 
-  Future<void> _completarEliminacion(Nota nota) async {
-    final l10n = AppLocalizations.of(context)!;
+  Future<void> _eliminarNota(Nota nota) async {
     final repo = Provider.of<DataRepository>(context, listen: false);
+    final l10n = AppLocalizations.of(context)!;
     await repo.eliminarNota(nota);
     await _cargarNotas();
     if (mounted) {
@@ -168,17 +208,33 @@ class _NotasScreenState extends State<NotasScreen> {
     }
   }
 
+  Future<void> _togglePinned(Nota nota) async {
+    final repo = Provider.of<DataRepository>(context, listen: false);
+    nota.pinned = !nota.pinned;
+    await repo.actualizarNota(nota);
+    await _cargarNotas();
+  }
+
+  Future<void> _toggleArchived(Nota nota) async {
+    final repo = Provider.of<DataRepository>(context, listen: false);
+    nota.archivada = !nota.archivada;
+    await repo.actualizarNota(nota);
+    await _cargarNotas();
+  }
+
   String _formatFecha(DateTime fecha) {
     return DateFormat('dd/MM/yyyy HH:mm').format(fecha);
   }
 
-  /// Returns all distinct categories used across all notes, in definition order.
   List<String> get _categoriasUsadas {
-    final usadas = _notas
-        .map((n) => n.categoria)
-        .whereType<String>()
-        .toSet();
+    final usadas = _notas.map((n) => n.categoria).whereType<String>().toSet();
     return NotaCategoria.values.where(usadas.contains).toList();
+  }
+
+  List<String> get _tagsUsados {
+    final tags = _notas.expand((n) => n.tags).map((t) => t.trim()).where((t) => t.isNotEmpty).toSet().toList();
+    tags.sort();
+    return tags;
   }
 
   String _categoryLabel(BuildContext context, String? key) {
@@ -273,6 +329,7 @@ class _NotasScreenState extends State<NotasScreen> {
     final l10n = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     final categoriasUsadas = _categoriasUsadas;
+    final tagsUsados = _tagsUsados;
 
     return Scaffold(
       appBar: AppBar(
@@ -299,7 +356,6 @@ class _NotasScreenState extends State<NotasScreen> {
       ),
       body: Column(
         children: [
-          // ── Search bar ──────────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
             child: TextField(
@@ -322,9 +378,7 @@ class _NotasScreenState extends State<NotasScreen> {
               ),
             ),
           ),
-
-          // ── Category filter chips ───────────────────────────────────────
-          if (!_cargando && categoriasUsadas.isNotEmpty)
+          if (!_cargando)
             SizedBox(
               height: 44,
               child: ListView(
@@ -335,6 +389,68 @@ class _NotasScreenState extends State<NotasScreen> {
                     padding: const EdgeInsets.only(right: 8),
                     child: FilterChip(
                       label: Text(l10n.filterAll),
+                      selected: _archiveFilter == _ArchiveFilter.all,
+                      onSelected: (_) {
+                        setState(() {
+                          _archiveFilter = _ArchiveFilter.all;
+                          _notasFiltradas = _aplicarFiltroYOrden(_notas);
+                        });
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(l10n.noteFilterActive),
+                      selected: _archiveFilter == _ArchiveFilter.active,
+                      onSelected: (_) {
+                        setState(() {
+                          _archiveFilter = _ArchiveFilter.active;
+                          _notasFiltradas = _aplicarFiltroYOrden(_notas);
+                        });
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(l10n.noteFilterArchived),
+                      selected: _archiveFilter == _ArchiveFilter.archived,
+                      onSelected: (_) {
+                        setState(() {
+                          _archiveFilter = _ArchiveFilter.archived;
+                          _notasFiltradas = _aplicarFiltroYOrden(_notas);
+                        });
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(l10n.notePin),
+                      selected: _soloPinned,
+                      onSelected: (_) {
+                        setState(() {
+                          _soloPinned = !_soloPinned;
+                          _notasFiltradas = _aplicarFiltroYOrden(_notas);
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (!_cargando && categoriasUsadas.isNotEmpty)
+            SizedBox(
+              height: 44,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(l10n.noteFilterAllCategories),
                       selected: _categoriaFiltro == null,
                       onSelected: (_) {
                         setState(() {
@@ -344,49 +460,95 @@ class _NotasScreenState extends State<NotasScreen> {
                       },
                     ),
                   ),
-                  ...categoriasUsadas.map((cat) => Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          label: Text(_categoryLabel(context, cat)),
-                          selected: _categoriaFiltro == cat,
-                          onSelected: (_) {
-                            setState(() {
-                              _categoriaFiltro =
-                                  _categoriaFiltro == cat ? null : cat;
-                              _notasFiltradas =
-                                  _aplicarFiltroYOrden(_notas);
-                            });
-                          },
-                        ),
-                      )),
+                  ...categoriasUsadas.map(
+                    (cat) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        label: Text(_categoryLabel(context, cat)),
+                        selected: _categoriaFiltro == cat,
+                        onSelected: (_) {
+                          setState(() {
+                            _categoriaFiltro = _categoriaFiltro == cat ? null : cat;
+                            _notasFiltradas = _aplicarFiltroYOrden(_notas);
+                          });
+                        },
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-
-          // ── Notes list ──────────────────────────────────────────────────
+          if (!_cargando && tagsUsados.isNotEmpty)
+            SizedBox(
+              height: 44,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(l10n.noteFilterAllTags),
+                      selected: _tagFiltro == null,
+                      onSelected: (_) {
+                        setState(() {
+                          _tagFiltro = null;
+                          _notasFiltradas = _aplicarFiltroYOrden(_notas);
+                        });
+                      },
+                    ),
+                  ),
+                  ...tagsUsados.map(
+                    (tag) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        label: Text('#$tag'),
+                        selected: _tagFiltro == tag,
+                        onSelected: (_) {
+                          setState(() {
+                            _tagFiltro = _tagFiltro == tag ? null : tag;
+                            _notasFiltradas = _aplicarFiltroYOrden(_notas);
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           Expanded(
             child: _cargando
                 ? const Center(child: CircularProgressIndicator())
                 : _notasFiltradas.isEmpty
                     ? Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('📓', style: TextStyle(fontSize: 48)),
-                            const SizedBox(height: 12),
-                            Text(
-                              l10n.noNotes,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            if (_busquedaController.text.isEmpty &&
-                                _categoriaFiltro == null) ...[
-                              const SizedBox(height: 6),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('📓', style: TextStyle(fontSize: 48)),
+                              const SizedBox(height: 12),
+                              Text(
+                                l10n.noNotes,
+                                style: Theme.of(context).textTheme.titleMedium,
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 8),
                               Text(
                                 l10n.noNotesHint,
                                 style: Theme.of(context).textTheme.bodySmall,
+                                textAlign: TextAlign.center,
                               ),
+                              if (_busquedaController.text.isEmpty) ...[
+                                const SizedBox(height: 16),
+                                ElevatedButton.icon(
+                                  onPressed: () => _abrirNueva(templateId: 'tecnica'),
+                                  icon: const Icon(Icons.auto_awesome),
+                                  label: Text(l10n.noteCreateFromTemplate),
+                                ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
                       )
                     : ListView.builder(
@@ -396,7 +558,7 @@ class _NotasScreenState extends State<NotasScreen> {
                           final nota = _notasFiltradas[index];
                           final accent = _accentColor(context, nota);
                           return Dismissible(
-                            key: ValueKey(nota.key ?? nota.titulo),
+                            key: ValueKey(nota.id),
                             direction: DismissDirection.endToStart,
                             background: Container(
                               margin: const EdgeInsets.symmetric(vertical: 4),
@@ -421,13 +583,11 @@ class _NotasScreenState extends State<NotasScreen> {
                                   content: Text(nota.titulo),
                                   actions: [
                                     TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(ctx, false),
+                                      onPressed: () => Navigator.pop(ctx, false),
                                       child: Text(l10n.cancel),
                                     ),
                                     TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(ctx, true),
+                                      onPressed: () => Navigator.pop(ctx, true),
                                       style: TextButton.styleFrom(
                                         foregroundColor:
                                             Theme.of(ctx).colorScheme.error,
@@ -438,7 +598,7 @@ class _NotasScreenState extends State<NotasScreen> {
                                 ),
                               );
                             },
-                            onDismissed: (_) => _completarEliminacion(nota),
+                            onDismissed: (_) => _eliminarNota(nota),
                             child: Card(
                               margin: const EdgeInsets.symmetric(vertical: 4),
                               elevation: 2,
@@ -449,14 +609,13 @@ class _NotasScreenState extends State<NotasScreen> {
                                 borderRadius: BorderRadius.circular(12),
                                 onTap: () => _abrirVer(nota),
                                 child: Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                      16, 14, 8, 14),
+                                  padding:
+                                      const EdgeInsets.fromLTRB(16, 14, 8, 14),
                                   child: Row(
                                     children: [
-                                      // Left accent bar with note colour
                                       Container(
                                         width: 4,
-                                        height: 48,
+                                        height: 52,
                                         decoration: BoxDecoration(
                                           color: accent,
                                           borderRadius:
@@ -464,15 +623,22 @@ class _NotasScreenState extends State<NotasScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 12),
-                                      // Note info
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            // Title row + favourite star
                                             Row(
                                               children: [
+                                                if (nota.pinned)
+                                                  const Padding(
+                                                    padding: EdgeInsets.only(
+                                                        right: 4),
+                                                    child: Icon(
+                                                      Icons.push_pin,
+                                                      size: 16,
+                                                    ),
+                                                  ),
                                                 Expanded(
                                                   child: Text(
                                                     nota.titulo,
@@ -488,17 +654,27 @@ class _NotasScreenState extends State<NotasScreen> {
                                                 ),
                                                 if (nota.favorita)
                                                   const Padding(
-                                                    padding: EdgeInsets.only(
-                                                        left: 4),
+                                                    padding:
+                                                        EdgeInsets.only(left: 4),
                                                     child: Icon(
                                                       Icons.star_rounded,
                                                       size: 16,
                                                       color: Colors.amber,
                                                     ),
                                                   ),
+                                                if (nota.archivada)
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 4),
+                                                    child: Icon(
+                                                      Icons.archive_outlined,
+                                                      size: 16,
+                                                      color: cs.outline,
+                                                    ),
+                                                  ),
                                               ],
                                             ),
-                                            // Category chip
                                             if (nota.categoria != null) ...[
                                               const SizedBox(height: 4),
                                               Chip(
@@ -516,14 +692,31 @@ class _NotasScreenState extends State<NotasScreen> {
                                                     VisualDensity.compact,
                                               ),
                                             ],
-                                            if (nota.contenido
-                                                .isNotEmpty) ...[
+                                            if (nota.tags.isNotEmpty) ...[
+                                              const SizedBox(height: 4),
+                                              Wrap(
+                                                spacing: 4,
+                                                runSpacing: 4,
+                                                children: nota.tags
+                                                    .take(3)
+                                                    .map(
+                                                      (tag) => Text(
+                                                        '#$tag',
+                                                        style: TextStyle(
+                                                          fontSize: 11,
+                                                          color: cs.primary,
+                                                        ),
+                                                      ),
+                                                    )
+                                                    .toList(),
+                                              ),
+                                            ],
+                                            if (nota.contenido.isNotEmpty) ...[
                                               const SizedBox(height: 4),
                                               Text(
                                                 nota.contenido,
                                                 maxLines: 2,
-                                                overflow:
-                                                    TextOverflow.ellipsis,
+                                                overflow: TextOverflow.ellipsis,
                                                 style: Theme.of(context)
                                                     .textTheme
                                                     .bodySmall
@@ -537,8 +730,7 @@ class _NotasScreenState extends State<NotasScreen> {
                                             Row(
                                               children: [
                                                 Icon(
-                                                  Icons
-                                                      .edit_calendar_outlined,
+                                                  Icons.edit_calendar_outlined,
                                                   size: 12,
                                                   color: cs.outline,
                                                 ),
@@ -557,21 +749,36 @@ class _NotasScreenState extends State<NotasScreen> {
                                           ],
                                         ),
                                       ),
-                                      // Actions column
-                                      Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: Icon(Icons.delete_outline,
-                                                color: cs.error),
-                                            tooltip: l10n.delete,
-                                            onPressed: () =>
-                                                _confirmarEliminar(nota),
+                                      PopupMenuButton<String>(
+                                        onSelected: (value) {
+                                          if (value == 'pin') {
+                                            _togglePinned(nota);
+                                          } else if (value == 'archive') {
+                                            _toggleArchived(nota);
+                                          } else if (value == 'delete') {
+                                            _confirmarEliminar(nota);
+                                          }
+                                        },
+                                        itemBuilder: (context) => [
+                                          PopupMenuItem(
+                                            value: 'pin',
+                                            child: Text(
+                                              nota.pinned
+                                                  ? l10n.noteUnpin
+                                                  : l10n.notePin,
+                                            ),
                                           ),
-                                          Icon(
-                                            Icons.chevron_right,
-                                            color: cs.outline,
-                                            size: 20,
+                                          PopupMenuItem(
+                                            value: 'archive',
+                                            child: Text(
+                                              nota.archivada
+                                                  ? l10n.noteUnarchive
+                                                  : l10n.noteArchive,
+                                            ),
+                                          ),
+                                          PopupMenuItem(
+                                            value: 'delete',
+                                            child: Text(l10n.delete),
                                           ),
                                         ],
                                       ),

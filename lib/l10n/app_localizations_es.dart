@@ -1252,6 +1252,112 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterAll => 'Todas';
 
   @override
+  String get noteTemplates => 'Plantillas rápidas';
+
+  @override
+  String get noteTemplateTechnique => 'Observación de técnica';
+
+  @override
+  String get noteTemplateTechniqueTitle => 'Observación de técnica';
+
+  @override
+  String get noteTemplateTechniqueContent =>
+      'Situación:\nObservación:\nAjuste:\nResultado:\nSiguiente paso:';
+
+  @override
+  String get noteTemplateLaneRead => 'Lectura de pista';
+
+  @override
+  String get noteTemplateLaneReadTitle => 'Lectura de pista y transición';
+
+  @override
+  String get noteTemplateLaneReadContent =>
+      'Línea inicial:\nTransición observada:\nReacción de la bola:\nMovimiento recomendado:';
+
+  @override
+  String get noteTemplateOilPattern => 'Patrón de aceite';
+
+  @override
+  String get noteTemplateOilPatternTitle => 'Notas de patrón de aceite';
+
+  @override
+  String get noteTemplateOilPatternContent =>
+      'Nombre del patrón:\nLongitud/ratio:\nTablón de referencia:\nPlan de ajustes:';
+
+  @override
+  String get noteTemplateEquipmentAdjust => 'Ajuste de equipamiento';
+
+  @override
+  String get noteTemplateEquipmentAdjustTitle => 'Ajuste de equipamiento';
+
+  @override
+  String get noteTemplateEquipmentAdjustContent =>
+      'Bola/layout usado:\nCambio de superficie o mano:\nCuándo usarlo:\nResultado observado:';
+
+  @override
+  String get noteTemplatePostReview => 'Review post-sesión';
+
+  @override
+  String get noteTemplatePostReviewTitle => 'Review post-sesión';
+
+  @override
+  String get noteTemplatePostReviewContent =>
+      'Qué funcionó:\nQué no funcionó:\nAprendizaje clave:\nFoco para la próxima sesión:';
+
+  @override
+  String get noteTags => 'Tags';
+
+  @override
+  String get noteTagsHint => 'Ejemplo: spare, timing, pista seca';
+
+  @override
+  String get noteRelatedSession => 'Sesión relacionada';
+
+  @override
+  String get noteNoLinkedSession => 'Sin sesión vinculada';
+
+  @override
+  String get noteLinkedSessionUnknown =>
+      'Sesión vinculada (no disponible localmente)';
+
+  @override
+  String get noteArchived => 'Archivada';
+
+  @override
+  String get noteArchivedHint =>
+      'Archiva esta nota para ocultarla del listado activo';
+
+  @override
+  String get notePin => 'Fijar';
+
+  @override
+  String get noteUnpin => 'Desfijar';
+
+  @override
+  String get notePinned => 'Fijada';
+
+  @override
+  String get noteArchive => 'Archivar';
+
+  @override
+  String get noteUnarchive => 'Desarchivar';
+
+  @override
+  String get noteFilterActive => 'Activas';
+
+  @override
+  String get noteFilterArchived => 'Archivadas';
+
+  @override
+  String get noteFilterAllCategories => 'Todas las categorías';
+
+  @override
+  String get noteFilterAllTags => 'Todos los tags';
+
+  @override
+  String get noteCreateFromTemplate => 'Crear desde plantilla';
+
+  @override
   String get discardChanges => 'Descartar cambios';
 
   @override

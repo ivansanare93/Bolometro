@@ -1244,6 +1244,110 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterAll => 'All';
 
   @override
+  String get noteTemplates => 'Quick templates';
+
+  @override
+  String get noteTemplateTechnique => 'Technique observation';
+
+  @override
+  String get noteTemplateTechniqueTitle => 'Technique observation';
+
+  @override
+  String get noteTemplateTechniqueContent =>
+      'Situation:\nObservation:\nAdjustment:\nResult:\nNext step:';
+
+  @override
+  String get noteTemplateLaneRead => 'Lane read';
+
+  @override
+  String get noteTemplateLaneReadTitle => 'Lane read and transition';
+
+  @override
+  String get noteTemplateLaneReadContent =>
+      'Initial line:\nTransition observed:\nBall reaction:\nRecommended move:';
+
+  @override
+  String get noteTemplateOilPattern => 'Oil pattern';
+
+  @override
+  String get noteTemplateOilPatternTitle => 'Oil pattern notes';
+
+  @override
+  String get noteTemplateOilPatternContent =>
+      'Pattern name:\nLength/ratio:\nReference board:\nAdjustment plan:';
+
+  @override
+  String get noteTemplateEquipmentAdjust => 'Equipment adjustment';
+
+  @override
+  String get noteTemplateEquipmentAdjustTitle => 'Equipment adjustment';
+
+  @override
+  String get noteTemplateEquipmentAdjustContent =>
+      'Ball/layout used:\nSurface or hand position change:\nWhen to use it:\nObserved result:';
+
+  @override
+  String get noteTemplatePostReview => 'Post-session review';
+
+  @override
+  String get noteTemplatePostReviewTitle => 'Post-session review';
+
+  @override
+  String get noteTemplatePostReviewContent =>
+      'What worked:\nWhat did not work:\nKey learning:\nFocus for next session:';
+
+  @override
+  String get noteTags => 'Tags';
+
+  @override
+  String get noteTagsHint => 'Example: spare, timing, dry lane';
+
+  @override
+  String get noteRelatedSession => 'Related session';
+
+  @override
+  String get noteNoLinkedSession => 'No linked session';
+
+  @override
+  String get noteLinkedSessionUnknown => 'Linked session (not available locally)';
+
+  @override
+  String get noteArchived => 'Archived';
+
+  @override
+  String get noteArchivedHint => 'Archive to hide this note from active list';
+
+  @override
+  String get notePin => 'Pin';
+
+  @override
+  String get noteUnpin => 'Unpin';
+
+  @override
+  String get notePinned => 'Pinned';
+
+  @override
+  String get noteArchive => 'Archive';
+
+  @override
+  String get noteUnarchive => 'Unarchive';
+
+  @override
+  String get noteFilterActive => 'Active';
+
+  @override
+  String get noteFilterArchived => 'Archived';
+
+  @override
+  String get noteFilterAllCategories => 'All categories';
+
+  @override
+  String get noteFilterAllTags => 'All tags';
+
+  @override
+  String get noteCreateFromTemplate => 'Create from template';
+
+  @override
   String get discardChanges => 'Discard changes';
 
   @override

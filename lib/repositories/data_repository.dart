@@ -27,6 +27,9 @@ class DataRepository extends ChangeNotifier {
   /// Obtener nombre del box de perfil actual
   String get perfilBoxName => _getPerfilBoxName();
 
+  /// Obtener nombre del box de notas actual
+  String get notasBoxName => _getNotasBoxName();
+
   /// Obtener nombre del box de sesiones específico del usuario
   String _getSesionesBoxName() {
     if (_userId != null) {
@@ -41,6 +44,14 @@ class DataRepository extends ChangeNotifier {
       return '${AppConstants.boxPerfilUsuario}_$_userId';
     }
     return AppConstants.boxPerfilUsuario;
+  }
+
+  /// Obtener nombre del box de notas específico del usuario
+  String _getNotasBoxName() {
+    if (_userId != null) {
+      return '${AppConstants.boxNotas}_$_userId';
+    }
+    return AppConstants.boxNotas;
   }
 
   /// Obtener box de sesiones, abriéndolo si es necesario
@@ -113,6 +124,7 @@ class DataRepository extends ChangeNotifier {
     if (_userId != null) {
       await _getSesionesBox();
       await _getPerfilBox();
+      await _getNotasBox();
       // Migrar datos guardados en modo offline al box del usuario autenticado.
       // Esto garantiza que los datos locales previos al primer inicio de sesión
       // estén disponibles cuando Firestore aún no los tenga (p.ej. primera vez
@@ -134,17 +146,14 @@ class DataRepository extends ChangeNotifier {
     try {
       final userPerfilBox = await _getPerfilBox();
       final userSesionesBox = await _getSesionesBox();
-
-      // Solo migrar si los boxes del usuario están completamente vacíos
-      // (primer inicio de sesión en este dispositivo).
-      if (userPerfilBox.isNotEmpty || userSesionesBox.isNotEmpty) return;
+      final userNotasBox = await _getNotasBox();
 
       // Migrar perfil desde el box por defecto.
       // Nota: se incluye el fallback a getAt(0) para manejar el formato
       // heredado donde el perfil se guardaba con clave entera 0 antes de
       // migrar a la clave fija 'perfil'. El mismo patrón existe en
       // [obtenerPerfil] del repositorio.
-      if (Hive.isBoxOpen(AppConstants.boxPerfilUsuario)) {
+      if (userPerfilBox.isEmpty && Hive.isBoxOpen(AppConstants.boxPerfilUsuario)) {
         final defaultPerfilBox = Hive.box<PerfilUsuario>(AppConstants.boxPerfilUsuario);
         final perfilOffline = defaultPerfilBox.get('perfil') ??
             (defaultPerfilBox.isNotEmpty ? defaultPerfilBox.getAt(0) : null);
@@ -155,12 +164,26 @@ class DataRepository extends ChangeNotifier {
       }
 
       // Migrar sesiones desde el box por defecto
-      if (Hive.isBoxOpen(AppConstants.boxSesiones)) {
+      if (userSesionesBox.isEmpty && Hive.isBoxOpen(AppConstants.boxSesiones)) {
         final defaultSesionesBox = Hive.box<Sesion>(AppConstants.boxSesiones);
         if (defaultSesionesBox.isNotEmpty) {
           await userSesionesBox.addAll(defaultSesionesBox.values);
           debugPrint(
             '${defaultSesionesBox.length} sesiones offline migradas al box del usuario autenticado',
+          );
+        }
+      }
+
+      // Migrar notas desde el box por defecto
+      if (userNotasBox.isEmpty && Hive.isBoxOpen(AppConstants.boxNotas)) {
+        final defaultNotasBox = Hive.box<Nota>(AppConstants.boxNotas);
+        if (defaultNotasBox.isNotEmpty) {
+          final notasMigradas = defaultNotasBox.values
+              .map((n) => n.copyWith())
+              .toList();
+          await userNotasBox.addAll(notasMigradas);
+          debugPrint(
+            '${defaultNotasBox.length} notas offline migradas al box del usuario autenticado',
           );
         }
       }
@@ -175,6 +198,7 @@ class DataRepository extends ChangeNotifier {
 
     final sesionesBoxName = _getSesionesBoxName();
     final perfilBoxName = _getPerfilBoxName();
+    final notasBoxName = _getNotasBoxName();
 
     try {
       // Cerrar boxes si están abiertas
@@ -184,10 +208,14 @@ class DataRepository extends ChangeNotifier {
       if (Hive.isBoxOpen(perfilBoxName)) {
         await Hive.box<PerfilUsuario>(perfilBoxName).close();
       }
+      if (Hive.isBoxOpen(notasBoxName)) {
+        await Hive.box<Nota>(notasBoxName).close();
+      }
 
       // Borrar del disco para evitar mezcla de datos entre usuarios
       await Hive.deleteBoxFromDisk(sesionesBoxName);
       await Hive.deleteBoxFromDisk(perfilBoxName);
+      await Hive.deleteBoxFromDisk(notasBoxName);
 
       debugPrint('Datos locales del usuario eliminados del disco');
     } catch (e) {
@@ -329,10 +357,25 @@ class DataRepository extends ChangeNotifier {
 
   /// Obtener box de notas, abriéndolo si es necesario
   Future<Box<Nota>> _getNotasBox() async {
-    if (!Hive.isBoxOpen(AppConstants.boxNotas)) {
-      return await Hive.openBox<Nota>(AppConstants.boxNotas);
+    final boxName = _getNotasBoxName();
+    final box = !Hive.isBoxOpen(boxName)
+        ? await Hive.openBox<Nota>(boxName)
+        : Hive.box<Nota>(boxName);
+    await _normalizarNotasBox(box);
+    return box;
+  }
+
+  /// Garantiza que todas las notas estén indexadas por su [Nota.id].
+  /// Esto evita duplicados al editar notas legacy guardadas con claves enteras.
+  Future<void> _normalizarNotasBox(Box<Nota> box) async {
+    final claves = box.keys.toList();
+    for (final key in claves) {
+      final nota = box.get(key);
+      if (nota == null) continue;
+      if (key == nota.id) continue;
+      await box.put(nota.id, nota.copyWith());
+      await box.delete(key);
     }
-    return Hive.box<Nota>(AppConstants.boxNotas);
   }
 
   /// Obtener todas las notas
@@ -350,7 +393,7 @@ class DataRepository extends ChangeNotifier {
   Future<void> guardarNota(Nota nota) async {
     try {
       final box = await _getNotasBox();
-      await box.add(nota);
+      await box.put(nota.id, nota);
       notifyListeners();
     } catch (e) {
       debugPrint('Error al guardar nota: $e');
@@ -361,7 +404,8 @@ class DataRepository extends ChangeNotifier {
   /// Actualizar una nota existente
   Future<void> actualizarNota(Nota nota) async {
     try {
-      await nota.save();
+      final box = await _getNotasBox();
+      await box.put(nota.id, nota);
       notifyListeners();
     } catch (e) {
       debugPrint('Error al actualizar nota: $e');
@@ -372,7 +416,12 @@ class DataRepository extends ChangeNotifier {
   /// Eliminar una nota
   Future<void> eliminarNota(Nota nota) async {
     try {
-      await nota.delete();
+      final box = await _getNotasBox();
+      if (box.containsKey(nota.id)) {
+        await box.delete(nota.id);
+      } else if (nota.key != null) {
+        await box.delete(nota.key);
+      }
       notifyListeners();
     } catch (e) {
       debugPrint('Error al eliminar nota: $e');
