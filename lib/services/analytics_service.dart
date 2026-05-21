@@ -105,6 +105,21 @@ class AnalyticsService {
     );
   }
 
+  Future<void> logFeedbackSubmitted({
+    required String type,
+    required bool hasEmail,
+    required bool hasRating,
+  }) async {
+    await _analytics.logEvent(
+      name: 'feedback_submitted',
+      parameters: {
+        'type': type,
+        'has_email': hasEmail ? 1 : 0,
+        'has_rating': hasRating ? 1 : 0,
+      },
+    );
+  }
+
   // Share events
   Future<void> logShare(String contentType) async {
     await _analytics.logShare(

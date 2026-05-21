@@ -1315,5 +1315,73 @@
   "stickyKpiGames": "Games",
   "@stickyKpiGames": {
     "description": "KPI label for total games in the sticky header"
+  },
+  "sendFeedback": "Send feedback",
+  "@sendFeedback": {
+    "description": "Action to open the in-app feedback form"
+  },
+  "feedbackTypeLabel": "Feedback type",
+  "@feedbackTypeLabel": {
+    "description": "Label for feedback type selector"
+  },
+  "feedbackTypeSuggestion": "Suggestion",
+  "@feedbackTypeSuggestion": {
+    "description": "Feedback type option for suggestions"
+  },
+  "feedbackTypeBug": "Bug",
+  "@feedbackTypeBug": {
+    "description": "Feedback type option for bug reports"
+  },
+  "feedbackTypeOther": "Other",
+  "@feedbackTypeOther": {
+    "description": "Feedback type option for uncategorized feedback"
+  },
+  "feedbackMessageLabel": "Message",
+  "@feedbackMessageLabel": {
+    "description": "Label for feedback message field"
+  },
+  "feedbackMessageHint": "Tell us what happened or what we can improve",
+  "@feedbackMessageHint": {
+    "description": "Hint for feedback message field"
+  },
+  "feedbackMessageRequired": "Message is required",
+  "@feedbackMessageRequired": {
+    "description": "Validation error when feedback message is empty"
+  },
+  "feedbackEmailLabel": "Contact email (optional)",
+  "@feedbackEmailLabel": {
+    "description": "Label for optional feedback contact email"
+  },
+  "feedbackEmailHint": "you@example.com",
+  "@feedbackEmailHint": {
+    "description": "Hint for optional feedback email field"
+  },
+  "feedbackInvalidEmail": "Enter a valid email",
+  "@feedbackInvalidEmail": {
+    "description": "Validation error for invalid feedback email format"
+  },
+  "feedbackRatingLabel": "Rating",
+  "@feedbackRatingLabel": {
+    "description": "Label for optional feedback rating field"
+  },
+  "feedbackRatingOptional": "No rating",
+  "@feedbackRatingOptional": {
+    "description": "Option text when user does not provide rating"
+  },
+  "feedbackSubmit": "Send",
+  "@feedbackSubmit": {
+    "description": "Button text to submit feedback form"
+  },
+  "feedbackSubmitting": "Sending...",
+  "@feedbackSubmitting": {
+    "description": "Button/loading text while feedback is being sent"
+  },
+  "feedbackSentSuccess": "Thanks! Your feedback was sent",
+  "@feedbackSentSuccess": {
+    "description": "Confirmation message after feedback is sent successfully"
+  },
+  "feedbackSubmitError": "Could not send feedback",
+  "@feedbackSubmitError": {
+    "description": "Error prefix shown when feedback submission fails"
   }
 }

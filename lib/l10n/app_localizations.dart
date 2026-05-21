@@ -3337,6 +3337,108 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Partidas'**
   String get stickyKpiGames;
+
+  /// Acción para abrir el formulario de feedback in-app
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar feedback'**
+  String get sendFeedback;
+
+  /// Etiqueta para el selector de tipo de feedback
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo de feedback'**
+  String get feedbackTypeLabel;
+
+  /// Opción de tipo de feedback para sugerencias
+  ///
+  /// In es, this message translates to:
+  /// **'Sugerencia'**
+  String get feedbackTypeSuggestion;
+
+  /// Opción de tipo de feedback para reportes de errores
+  ///
+  /// In es, this message translates to:
+  /// **'Error'**
+  String get feedbackTypeBug;
+
+  /// Opción de tipo para feedback sin categoría
+  ///
+  /// In es, this message translates to:
+  /// **'Otro'**
+  String get feedbackTypeOther;
+
+  /// Etiqueta del campo de mensaje de feedback
+  ///
+  /// In es, this message translates to:
+  /// **'Mensaje'**
+  String get feedbackMessageLabel;
+
+  /// Texto de ayuda para el campo de mensaje
+  ///
+  /// In es, this message translates to:
+  /// **'Cuéntanos qué ha pasado o qué podemos mejorar'**
+  String get feedbackMessageHint;
+
+  /// Error de validación cuando el mensaje está vacío
+  ///
+  /// In es, this message translates to:
+  /// **'El mensaje es obligatorio'**
+  String get feedbackMessageRequired;
+
+  /// Etiqueta del campo de correo opcional de feedback
+  ///
+  /// In es, this message translates to:
+  /// **'Correo de contacto (opcional)'**
+  String get feedbackEmailLabel;
+
+  /// Texto de ayuda para el correo opcional
+  ///
+  /// In es, this message translates to:
+  /// **'tu@email.com'**
+  String get feedbackEmailHint;
+
+  /// Error de validación de formato de correo
+  ///
+  /// In es, this message translates to:
+  /// **'Introduce un correo válido'**
+  String get feedbackInvalidEmail;
+
+  /// Etiqueta para la valoración opcional del feedback
+  ///
+  /// In es, this message translates to:
+  /// **'Valoración'**
+  String get feedbackRatingLabel;
+
+  /// Texto de opción cuando no hay valoración
+  ///
+  /// In es, this message translates to:
+  /// **'Sin valoración'**
+  String get feedbackRatingOptional;
+
+  /// Texto del botón para enviar feedback
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar'**
+  String get feedbackSubmit;
+
+  /// Texto de carga mientras se envía el feedback
+  ///
+  /// In es, this message translates to:
+  /// **'Enviando...'**
+  String get feedbackSubmitting;
+
+  /// Mensaje de confirmación tras enviar feedback
+  ///
+  /// In es, this message translates to:
+  /// **'¡Gracias! Tu feedback se ha enviado'**
+  String get feedbackSentSuccess;
+
+  /// Prefijo de error cuando falla el envío de feedback
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo enviar el feedback'**
+  String get feedbackSubmitError;
 }
 
 class _AppLocalizationsDelegate

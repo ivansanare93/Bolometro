@@ -1450,5 +1450,73 @@
   "stickyKpiGames": "Partidas",
   "@stickyKpiGames": {
     "description": "Etiqueta del KPI de total de partidas en el header fijo"
+  },
+  "sendFeedback": "Enviar feedback",
+  "@sendFeedback": {
+    "description": "Acción para abrir el formulario de feedback in-app"
+  },
+  "feedbackTypeLabel": "Tipo de feedback",
+  "@feedbackTypeLabel": {
+    "description": "Etiqueta para el selector de tipo de feedback"
+  },
+  "feedbackTypeSuggestion": "Sugerencia",
+  "@feedbackTypeSuggestion": {
+    "description": "Opción de tipo de feedback para sugerencias"
+  },
+  "feedbackTypeBug": "Error",
+  "@feedbackTypeBug": {
+    "description": "Opción de tipo de feedback para reportes de errores"
+  },
+  "feedbackTypeOther": "Otro",
+  "@feedbackTypeOther": {
+    "description": "Opción de tipo para feedback sin categoría"
+  },
+  "feedbackMessageLabel": "Mensaje",
+  "@feedbackMessageLabel": {
+    "description": "Etiqueta del campo de mensaje de feedback"
+  },
+  "feedbackMessageHint": "Cuéntanos qué ha pasado o qué podemos mejorar",
+  "@feedbackMessageHint": {
+    "description": "Texto de ayuda para el campo de mensaje"
+  },
+  "feedbackMessageRequired": "El mensaje es obligatorio",
+  "@feedbackMessageRequired": {
+    "description": "Error de validación cuando el mensaje está vacío"
+  },
+  "feedbackEmailLabel": "Correo de contacto (opcional)",
+  "@feedbackEmailLabel": {
+    "description": "Etiqueta del campo de correo opcional de feedback"
+  },
+  "feedbackEmailHint": "tu@email.com",
+  "@feedbackEmailHint": {
+    "description": "Texto de ayuda para el correo opcional"
+  },
+  "feedbackInvalidEmail": "Introduce un correo válido",
+  "@feedbackInvalidEmail": {
+    "description": "Error de validación de formato de correo"
+  },
+  "feedbackRatingLabel": "Valoración",
+  "@feedbackRatingLabel": {
+    "description": "Etiqueta para la valoración opcional del feedback"
+  },
+  "feedbackRatingOptional": "Sin valoración",
+  "@feedbackRatingOptional": {
+    "description": "Texto de opción cuando no hay valoración"
+  },
+  "feedbackSubmit": "Enviar",
+  "@feedbackSubmit": {
+    "description": "Texto del botón para enviar feedback"
+  },
+  "feedbackSubmitting": "Enviando...",
+  "@feedbackSubmitting": {
+    "description": "Texto de carga mientras se envía el feedback"
+  },
+  "feedbackSentSuccess": "¡Gracias! Tu feedback se ha enviado",
+  "@feedbackSentSuccess": {
+    "description": "Mensaje de confirmación tras enviar feedback"
+  },
+  "feedbackSubmitError": "No se pudo enviar el feedback",
+  "@feedbackSubmitError": {
+    "description": "Prefijo de error cuando falla el envío de feedback"
   }
 }

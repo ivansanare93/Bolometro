@@ -531,4 +531,46 @@ class FirestoreService {
       rethrow;
     }
   }
+
+  /// Guarda feedback enviado desde la app en una colección global.
+  Future<void> enviarFeedback({
+    required String userId,
+    required String type,
+    required String message,
+    required String appVersion,
+    required String platform,
+    required String languageCode,
+    String? email,
+    String? authEmail,
+    int? rating,
+  }) async {
+    try {
+      final feedbackData = <String, dynamic>{
+        'userId': userId,
+        'type': type,
+        'message': message,
+        'createdAt': FieldValue.serverTimestamp(),
+        'appVersion': appVersion,
+        'platform': platform,
+        'languageCode': languageCode,
+        'status': 'new',
+      };
+
+      if (email != null && email.trim().isNotEmpty) {
+        feedbackData['email'] = email.trim();
+      }
+      if (authEmail != null && authEmail.trim().isNotEmpty) {
+        feedbackData['authEmail'] = authEmail.trim();
+      }
+      if (rating != null) {
+        feedbackData['rating'] = rating;
+      }
+
+      await _firestore.collection('feedback').add(feedbackData);
+      debugPrint('Feedback guardado en Firestore');
+    } catch (e) {
+      debugPrint('Error al guardar feedback en Firestore: $e');
+      rethrow;
+    }
+  }
 }

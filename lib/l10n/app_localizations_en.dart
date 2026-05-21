@@ -1702,4 +1702,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stickyKpiGames => 'Games';
+
+  @override
+  String get sendFeedback => 'Send feedback';
+
+  @override
+  String get feedbackTypeLabel => 'Feedback type';
+
+  @override
+  String get feedbackTypeSuggestion => 'Suggestion';
+
+  @override
+  String get feedbackTypeBug => 'Bug';
+
+  @override
+  String get feedbackTypeOther => 'Other';
+
+  @override
+  String get feedbackMessageLabel => 'Message';
+
+  @override
+  String get feedbackMessageHint =>
+      'Tell us what happened or what we can improve';
+
+  @override
+  String get feedbackMessageRequired => 'Message is required';
+
+  @override
+  String get feedbackEmailLabel => 'Contact email (optional)';
+
+  @override
+  String get feedbackEmailHint => 'you@example.com';
+
+  @override
+  String get feedbackInvalidEmail => 'Enter a valid email';
+
+  @override
+  String get feedbackRatingLabel => 'Rating';
+
+  @override
+  String get feedbackRatingOptional => 'No rating';
+
+  @override
+  String get feedbackSubmit => 'Send';
+
+  @override
+  String get feedbackSubmitting => 'Sending...';
+
+  @override
+  String get feedbackSentSuccess => 'Thanks! Your feedback was sent';
+
+  @override
+  String get feedbackSubmitError => 'Could not send feedback';
 }
