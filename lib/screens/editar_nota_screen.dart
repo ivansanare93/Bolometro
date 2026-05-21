@@ -245,7 +245,7 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
         _adjuntos.add(
           NotaAdjunto(
             id:
-                'att_${DateTime.now().microsecondsSinceEpoch}_${file.path.hashCode}_$_attachmentCounter_${_attachmentIdRandom.nextInt(_kAttachmentIdRandomBound)}',
+                'att_${DateTime.now().microsecondsSinceEpoch}_${file.path.hashCode}_${_attachmentCounter}_${_attachmentIdRandom.nextInt(_kAttachmentIdRandomBound)}',
             tipo: NotaAdjuntoTipo.imagen,
             localPath: file.path,
             createdAt: DateTime.now(),
