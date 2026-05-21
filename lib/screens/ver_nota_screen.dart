@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/nota.dart';
+import '../models/sesion.dart';
 import '../repositories/data_repository.dart';
 import '../l10n/app_localizations.dart';
 import 'editar_nota_screen.dart';
+import 'ver_sesion.dart';
 
 class VerNotaScreen extends StatefulWidget {
   final Nota nota;
@@ -18,6 +20,7 @@ class VerNotaScreen extends StatefulWidget {
 class _VerNotaScreenState extends State<VerNotaScreen> {
   late Nota nota;
   String? _relatedSessionLabel;
+  Sesion? _relatedSession;
 
   @override
   void initState() {
@@ -42,6 +45,7 @@ class _VerNotaScreenState extends State<VerNotaScreen> {
         if (id == relatedSessionId) {
           if (!mounted) return;
           setState(() {
+            _relatedSession = sesion;
             final date = DateFormat('dd/MM/yyyy').format(sesion.fecha);
             final place = sesion.lugar.trim().isEmpty
                 ? AppLocalizations.of(context)!.noLocation
@@ -66,6 +70,18 @@ class _VerNotaScreenState extends State<VerNotaScreen> {
     final repo = Provider.of<DataRepository>(context, listen: false);
     setState(() => nota.archivada = !nota.archivada);
     await repo.actualizarNota(nota);
+  }
+
+  Future<void> _abrirSesionRelacionada() async {
+    if (_relatedSession == null) return;
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => VerSesion(sesion: _relatedSession!),
+      ),
+    );
+    if (!mounted) return;
+    await _cargarReferenciaSesion();
   }
 
   Future<void> _confirmarEliminar(BuildContext context) async {
@@ -131,6 +147,41 @@ class _VerNotaScreenState extends State<VerNotaScreen> {
       return Color(nota.colorValue! | 0xFF000000);
     }
     return Theme.of(context).colorScheme.primary;
+  }
+
+  String _typeLabel(BuildContext context, String key) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (key) {
+      case NotaTipo.tecnica:
+        return l10n.noteTypeTechnique;
+      case NotaTipo.pista:
+        return l10n.noteTypeLane;
+      case NotaTipo.aceite:
+        return l10n.noteTypeOil;
+      case NotaTipo.equipamiento:
+        return l10n.noteTypeEquipment;
+      case NotaTipo.mental:
+        return l10n.noteTypeMental;
+      case NotaTipo.review:
+      default:
+        return l10n.noteTypeReview;
+    }
+  }
+
+  String _statusLabel(BuildContext context, String key) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (key) {
+      case NotaEstado.pendiente:
+        return l10n.noteStatusPending;
+      case NotaEstado.probado:
+        return l10n.noteStatusTested;
+      case NotaEstado.validado:
+        return l10n.noteStatusValidated;
+      case NotaEstado.descartado:
+        return l10n.noteStatusDiscarded;
+      default:
+        return l10n.noteStatusPending;
+    }
   }
 
   @override
@@ -224,6 +275,22 @@ class _VerNotaScreenState extends State<VerNotaScreen> {
                     visualDensity: VisualDensity.compact,
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
+                Chip(
+                  avatar: const Icon(Icons.category_outlined, size: 16),
+                  label: Text(_typeLabel(context, nota.tipo)),
+                  visualDensity: VisualDensity.compact,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                Chip(
+                  avatar: nota.estado == NotaEstado.validado
+                      ? const Icon(Icons.verified_outlined, size: 16)
+                      : nota.estado == NotaEstado.descartado
+                          ? const Icon(Icons.block_outlined, size: 16)
+                          : const Icon(Icons.pending_actions_outlined, size: 16),
+                  label: Text(_statusLabel(context, nota.estado)),
+                  visualDensity: VisualDensity.compact,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
                 if (nota.pinned)
                   Chip(
                     avatar: const Icon(Icons.push_pin, size: 16),
@@ -240,6 +307,36 @@ class _VerNotaScreenState extends State<VerNotaScreen> {
                   ),
               ],
             ),
+            if ((nota.bolera ?? '').isNotEmpty ||
+                (nota.patronAceite ?? '').isNotEmpty ||
+                (nota.equipamientoUsado ?? '').isNotEmpty ||
+                (nota.condicionPista ?? '').isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Card(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.noteContext,
+                        style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 8),
+                      if ((nota.bolera ?? '').isNotEmpty)
+                        Text('${l10n.noteBowlingAlley}: ${nota.bolera}'),
+                      if ((nota.patronAceite ?? '').isNotEmpty)
+                        Text('${l10n.noteOilPattern}: ${nota.patronAceite}'),
+                      if ((nota.equipamientoUsado ?? '').isNotEmpty)
+                        Text('${l10n.noteBallOrEquipment}: ${nota.equipamientoUsado}'),
+                      if ((nota.condicionPista ?? '').isNotEmpty)
+                        Text('${l10n.noteLaneCondition}: ${nota.condicionPista}'),
+                    ],
+                  ),
+                ),
+              ),
+            ],
             if (nota.tags.isNotEmpty) ...[
               const SizedBox(height: 10),
               Wrap(
@@ -258,17 +355,26 @@ class _VerNotaScreenState extends State<VerNotaScreen> {
             ],
             if (nota.relatedSessionId != null && nota.relatedSessionId!.isNotEmpty) ...[
               const SizedBox(height: 10),
-              Row(
-                children: [
-                  Icon(Icons.link, size: 14, color: cs.outline),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      '${l10n.noteRelatedSession}: ${_relatedSessionLabel ?? nota.relatedSessionId}',
-                      style: textTheme.bodySmall?.copyWith(color: cs.outline),
-                    ),
+              InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: _relatedSession == null ? null : _abrirSesionRelacionada,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Icon(Icons.link, size: 14, color: cs.outline),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          '${l10n.noteRelatedSession}: ${_relatedSessionLabel ?? nota.relatedSessionId}',
+                          style: textTheme.bodySmall?.copyWith(color: cs.outline),
+                        ),
+                      ),
+                      if (_relatedSession != null)
+                        Icon(Icons.open_in_new_rounded, size: 16, color: cs.outline),
+                    ],
                   ),
-                ],
+                ),
               ),
             ],
             const SizedBox(height: 8),

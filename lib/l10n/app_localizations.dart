@@ -2420,6 +2420,78 @@ abstract class AppLocalizations {
   /// **'Bolera'**
   String get noteCategoryAlley;
 
+  /// Etiqueta del campo tipo de nota
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo'**
+  String get noteType;
+
+  /// Tipo de nota técnica
+  ///
+  /// In es, this message translates to:
+  /// **'Técnica'**
+  String get noteTypeTechnique;
+
+  /// Tipo de nota de pista
+  ///
+  /// In es, this message translates to:
+  /// **'Pista'**
+  String get noteTypeLane;
+
+  /// Tipo de nota de aceite
+  ///
+  /// In es, this message translates to:
+  /// **'Aceite'**
+  String get noteTypeOil;
+
+  /// Tipo de nota de equipamiento
+  ///
+  /// In es, this message translates to:
+  /// **'Equipamiento'**
+  String get noteTypeEquipment;
+
+  /// Tipo de nota mental
+  ///
+  /// In es, this message translates to:
+  /// **'Mental'**
+  String get noteTypeMental;
+
+  /// Tipo de nota de review
+  ///
+  /// In es, this message translates to:
+  /// **'Review'**
+  String get noteTypeReview;
+
+  /// Etiqueta del campo estado de la nota
+  ///
+  /// In es, this message translates to:
+  /// **'Estado'**
+  String get noteStatus;
+
+  /// Estado pendiente de validar
+  ///
+  /// In es, this message translates to:
+  /// **'Pendiente'**
+  String get noteStatusPending;
+
+  /// Estado probado
+  ///
+  /// In es, this message translates to:
+  /// **'Probado'**
+  String get noteStatusTested;
+
+  /// Estado validado
+  ///
+  /// In es, this message translates to:
+  /// **'Validado'**
+  String get noteStatusValidated;
+
+  /// Estado descartado
+  ///
+  /// In es, this message translates to:
+  /// **'Descartado'**
+  String get noteStatusDiscarded;
+
   /// Tooltip para marcar/desmarcar una nota como favorita
   ///
   /// In es, this message translates to:
@@ -2582,6 +2654,36 @@ abstract class AppLocalizations {
   /// **'Ejemplo: spare, timing, pista seca'**
   String get noteTagsHint;
 
+  /// Título de sección para metadatos contextuales de la nota
+  ///
+  /// In es, this message translates to:
+  /// **'Contexto'**
+  String get noteContext;
+
+  /// Etiqueta del campo bolera
+  ///
+  /// In es, this message translates to:
+  /// **'Bolera'**
+  String get noteBowlingAlley;
+
+  /// Etiqueta del campo patrón de aceite
+  ///
+  /// In es, this message translates to:
+  /// **'Patrón de aceite'**
+  String get noteOilPattern;
+
+  /// Etiqueta del campo bola usada o equipamiento
+  ///
+  /// In es, this message translates to:
+  /// **'Bola / equipamiento'**
+  String get noteBallOrEquipment;
+
+  /// Etiqueta del campo condición de pista
+  ///
+  /// In es, this message translates to:
+  /// **'Condición de pista'**
+  String get noteLaneCondition;
+
   /// Etiqueta para seleccionar sesión relacionada en nota
   ///
   /// In es, this message translates to:
@@ -2665,6 +2767,42 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Todos los tags'**
   String get noteFilterAllTags;
+
+  /// Filtro para quitar filtro por tipo en notas
+  ///
+  /// In es, this message translates to:
+  /// **'Todos los tipos'**
+  String get noteFilterAllTypes;
+
+  /// Filtro para quitar filtro por estado en notas
+  ///
+  /// In es, this message translates to:
+  /// **'Todos los estados'**
+  String get noteFilterAllStatuses;
+
+  /// Mensaje de apoyo para destacar notas pendientes de validación
+  ///
+  /// In es, this message translates to:
+  /// **'Notas pendientes o por validar para revisar antes de la próxima sesión'**
+  String get notesPendingValidation;
+
+  /// Contador de notas pendientes de validar
+  ///
+  /// In es, this message translates to:
+  /// **'{count} notas por validar'**
+  String notesPendingValidationCount(int count);
+
+  /// Título de sección de notas relacionadas con la sesión
+  ///
+  /// In es, this message translates to:
+  /// **'Notas relacionadas ({count})'**
+  String sessionRelatedNotes(int count);
+
+  /// Mensaje cuando la sesión no tiene notas relacionadas
+  ///
+  /// In es, this message translates to:
+  /// **'No hay notas vinculadas a esta sesión'**
+  String get sessionNoRelatedNotes;
 
   /// Etiqueta del botón para crear nota desde plantilla rápida
   ///
