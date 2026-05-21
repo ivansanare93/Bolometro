@@ -250,6 +250,7 @@ class _VerSesionState extends State<VerSesion> {
         ],
       ),
     );
+    controller.dispose();
 
     if (!mounted || nuevoLugar == null || nuevoLugar == sesionActual.lugar) {
       return;
@@ -260,6 +261,7 @@ class _VerSesionState extends State<VerSesion> {
       final sesionActualizada = sesionActual.copyWith(lugar: nuevoLugar);
       await dataRepository.actualizarSesion(sesionActualizada);
 
+      if (!mounted) return;
       setState(() {
         sesionActual = sesionActualizada;
       });
@@ -269,6 +271,7 @@ class _VerSesionState extends State<VerSesion> {
       );
     } catch (e) {
       debugPrint('Error al actualizar lugar de sesión: $e');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.sessionSaveErrorMessage),
