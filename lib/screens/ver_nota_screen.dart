@@ -1,18 +1,71 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../models/nota.dart';
 import '../repositories/data_repository.dart';
 import '../l10n/app_localizations.dart';
 import 'editar_nota_screen.dart';
 
-class VerNotaScreen extends StatelessWidget {
+class VerNotaScreen extends StatefulWidget {
   final Nota nota;
 
   const VerNotaScreen({super.key, required this.nota});
 
+  @override
+  State<VerNotaScreen> createState() => _VerNotaScreenState();
+}
+
+class _VerNotaScreenState extends State<VerNotaScreen> {
+  late Nota nota;
+  String? _relatedSessionLabel;
+
+  @override
+  void initState() {
+    super.initState();
+    nota = widget.nota;
+    _cargarReferenciaSesion();
+  }
+
   String _formatFecha(DateTime fecha) {
     return DateFormat('dd/MM/yyyy HH:mm').format(fecha);
+  }
+
+  Future<void> _cargarReferenciaSesion() async {
+    final relatedSessionId = nota.relatedSessionId;
+    if (relatedSessionId == null || relatedSessionId.isEmpty) return;
+
+    try {
+      final repo = Provider.of<DataRepository>(context, listen: false);
+      final sesiones = await repo.obtenerSesiones();
+      for (final sesion in sesiones) {
+        final id = sesion.fecha.millisecondsSinceEpoch.toString();
+        if (id == relatedSessionId) {
+          if (!mounted) return;
+          setState(() {
+            final date = DateFormat('dd/MM/yyyy').format(sesion.fecha);
+            final place = sesion.lugar.trim().isEmpty
+                ? AppLocalizations.of(context)!.noLocation
+                : sesion.lugar;
+            _relatedSessionLabel = '$date • $place';
+          });
+          return;
+        }
+      }
+    } catch (_) {
+      // Keep fallback text with session id.
+    }
+  }
+
+  Future<void> _togglePinned() async {
+    final repo = Provider.of<DataRepository>(context, listen: false);
+    setState(() => nota.pinned = !nota.pinned);
+    await repo.actualizarNota(nota);
+  }
+
+  Future<void> _toggleArchived() async {
+    final repo = Provider.of<DataRepository>(context, listen: false);
+    setState(() => nota.archivada = !nota.archivada);
+    await repo.actualizarNota(nota);
   }
 
   Future<void> _confirmarEliminar(BuildContext context) async {
@@ -92,7 +145,18 @@ class VerNotaScreen extends StatelessWidget {
         title: Text(l10n.viewNote),
         centerTitle: true,
         actions: [
-          // Favourite indicator (read-only; tap to go to edit)
+          IconButton(
+            icon: Icon(nota.pinned ? Icons.push_pin : Icons.push_pin_outlined),
+            tooltip: nota.pinned ? l10n.noteUnpin : l10n.notePin,
+            onPressed: _togglePinned,
+          ),
+          IconButton(
+            icon: Icon(
+              nota.archivada ? Icons.unarchive_outlined : Icons.archive_outlined,
+            ),
+            tooltip: nota.archivada ? l10n.noteUnarchive : l10n.noteArchive,
+            onPressed: _toggleArchived,
+          ),
           if (nota.favorita)
             const Padding(
               padding: EdgeInsets.only(right: 4),
@@ -125,7 +189,6 @@ class VerNotaScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title heading with accent bar
             IntrinsicHeight(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -149,21 +212,66 @@ class VerNotaScreen extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(height: 12),
-
-            // Category chip
-            if (nota.categoria != null) ...[
-              Chip(
-                avatar: const Icon(Icons.label_outline, size: 16),
-                label: Text(_categoryLabel(context, nota.categoria)),
-                visualDensity: VisualDensity.compact,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (nota.categoria != null)
+                  Chip(
+                    avatar: const Icon(Icons.label_outline, size: 16),
+                    label: Text(_categoryLabel(context, nota.categoria)),
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                if (nota.pinned)
+                  Chip(
+                    avatar: const Icon(Icons.push_pin, size: 16),
+                    label: Text(l10n.notePinned),
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                if (nota.archivada)
+                  Chip(
+                    avatar: const Icon(Icons.archive_outlined, size: 16),
+                    label: Text(l10n.noteArchived),
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+              ],
+            ),
+            if (nota.tags.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: nota.tags
+                    .map(
+                      (tag) => Chip(
+                        label: Text('#$tag'),
+                        visualDensity: VisualDensity.compact,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    )
+                    .toList(),
               ),
-              const SizedBox(height: 8),
             ],
-
-            // Dates row
+            if (nota.relatedSessionId != null && nota.relatedSessionId!.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Icon(Icons.link, size: 14, color: cs.outline),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      '${l10n.noteRelatedSession}: ${_relatedSessionLabel ?? nota.relatedSessionId}',
+                      style: textTheme.bodySmall?.copyWith(color: cs.outline),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 8),
             Row(
               children: [
                 Icon(Icons.calendar_today_outlined, size: 14, color: cs.outline),
@@ -185,12 +293,9 @@ class VerNotaScreen extends StatelessWidget {
                 ),
               ],
             ),
-
             const SizedBox(height: 20),
             const Divider(),
             const SizedBox(height: 12),
-
-            // Content
             if (nota.contenido.isNotEmpty)
               Text(
                 nota.contenido,

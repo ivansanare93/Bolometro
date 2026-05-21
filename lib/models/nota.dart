@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:hive/hive.dart';
 
 part 'nota.g.dart';
@@ -47,6 +48,26 @@ class Nota extends HiveObject {
   @HiveField(6)
   int? colorValue;
 
+  /// Stable identifier for the note.
+  @HiveField(7)
+  String id;
+
+  /// Free-form tags to improve note discovery.
+  @HiveField(8)
+  List<String> tags;
+
+  /// Whether this note is pinned.
+  @HiveField(9)
+  bool pinned;
+
+  /// Whether this note is archived.
+  @HiveField(10)
+  bool archivada;
+
+  /// Optional related session identifier.
+  @HiveField(11)
+  String? relatedSessionId;
+
   Nota({
     required this.titulo,
     required this.contenido,
@@ -55,7 +76,17 @@ class Nota extends HiveObject {
     this.categoria,
     this.favorita = false,
     this.colorValue,
-  });
+    String? id,
+    List<String>? tags,
+    this.pinned = false,
+    this.archivada = false,
+    this.relatedSessionId,
+  })  : id = (id == null || id.trim().isEmpty) ? _generateStableId() : id.trim(),
+        tags = _normalizeTags(tags);
+
+  static List<String> normalizeTagsFromText(String rawTags) {
+    return _normalizeTags(rawTags.split(RegExp(r'[,\n]')).toList());
+  }
 
   Nota copyWith({
     String? titulo,
@@ -65,6 +96,11 @@ class Nota extends HiveObject {
     Object? categoria = _sentinel,
     bool? favorita,
     Object? colorValue = _sentinel,
+    String? id,
+    List<String>? tags,
+    bool? pinned,
+    bool? archivada,
+    Object? relatedSessionId = _sentinel,
   }) {
     return Nota(
       titulo: titulo ?? this.titulo,
@@ -75,6 +111,13 @@ class Nota extends HiveObject {
       favorita: favorita ?? this.favorita,
       colorValue:
           colorValue == _sentinel ? this.colorValue : colorValue as int?,
+      id: id ?? this.id,
+      tags: tags ?? this.tags,
+      pinned: pinned ?? this.pinned,
+      archivada: archivada ?? this.archivada,
+      relatedSessionId: relatedSessionId == _sentinel
+          ? this.relatedSessionId
+          : relatedSessionId as String?,
     );
   }
 
@@ -86,6 +129,11 @@ class Nota extends HiveObject {
         'categoria': categoria,
         'favorita': favorita,
         'colorValue': colorValue,
+        'id': id,
+        'tags': tags,
+        'pinned': pinned,
+        'archivada': archivada,
+        'relatedSessionId': relatedSessionId,
       };
 
   factory Nota.fromJson(Map<String, dynamic> json) => Nota(
@@ -96,8 +144,36 @@ class Nota extends HiveObject {
         categoria: json['categoria'] as String?,
         favorita: json['favorita'] as bool? ?? false,
         colorValue: json['colorValue'] as int?,
+        id: (json['id'] as String?)?.trim(),
+        tags: (json['tags'] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            .toList(),
+        pinned: json['pinned'] as bool? ?? false,
+        archivada: json['archivada'] as bool? ?? false,
+        relatedSessionId: json['relatedSessionId'] as String?,
       );
 }
 
 /// Sentinel object used in [Nota.copyWith] to distinguish null from "not provided".
 const Object _sentinel = Object();
+
+List<String> _normalizeTags(List<String>? tags) {
+  if (tags == null) return <String>[];
+  final normalized = tags
+      .map((t) => t.toString().trim().toLowerCase())
+      .where((t) => t.isNotEmpty)
+      .toSet()
+      .toList();
+  normalized.sort();
+  return normalized;
+}
+
+final Random _idRandom = Random();
+int _idCounter = 0;
+
+String _generateStableId() {
+  final now = DateTime.now().microsecondsSinceEpoch;
+  _idCounter = (_idCounter + 1) & 0xFFFFF;
+  final random = _idRandom.nextInt(1 << 32);
+  return '${now}_${_idCounter}_$random';
+}

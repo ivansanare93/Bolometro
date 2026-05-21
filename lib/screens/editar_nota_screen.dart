@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/nota.dart';
+import '../models/sesion.dart';
 import '../repositories/data_repository.dart';
 import '../l10n/app_localizations.dart';
 
@@ -15,10 +17,94 @@ const List<int> _kNoteColors = [
   0xFFB0BEC5, // grey-blue
 ];
 
+class _NoteTemplate {
+  final String id;
+  final String Function(AppLocalizations l10n) name;
+  final String Function(AppLocalizations l10n) title;
+  final String Function(AppLocalizations l10n) content;
+  final String category;
+  final List<String> tags;
+
+  const _NoteTemplate({
+    required this.id,
+    required this.name,
+    required this.title,
+    required this.content,
+    required this.category,
+    required this.tags,
+  });
+}
+
+const List<_NoteTemplate> _kNoteTemplates = [
+  _NoteTemplate(
+    id: 'tecnica',
+    name: _templateTechniqueName,
+    title: _templateTechniqueTitle,
+    content: _templateTechniqueContent,
+    category: NotaCategoria.tecnica,
+    tags: ['tecnica', 'timing', 'ejecucion'],
+  ),
+  _NoteTemplate(
+    id: 'pista',
+    name: _templateLaneName,
+    title: _templateLaneTitle,
+    content: _templateLaneContent,
+    category: NotaCategoria.aceite,
+    tags: ['pista', 'lectura', 'transicion'],
+  ),
+  _NoteTemplate(
+    id: 'aceite',
+    name: _templateOilName,
+    title: _templateOilTitle,
+    content: _templateOilContent,
+    category: NotaCategoria.aceite,
+    tags: ['aceite', 'patron', 'linea'],
+  ),
+  _NoteTemplate(
+    id: 'equipamiento',
+    name: _templateEquipmentName,
+    title: _templateEquipmentTitle,
+    content: _templateEquipmentContent,
+    category: NotaCategoria.equipamiento,
+    tags: ['equipamiento', 'bola', 'ajuste'],
+  ),
+  _NoteTemplate(
+    id: 'review',
+    name: _templateReviewName,
+    title: _templateReviewTitle,
+    content: _templateReviewContent,
+    category: NotaCategoria.general,
+    tags: ['review', 'sesion', 'aprendizaje'],
+  ),
+];
+
+String _templateTechniqueName(AppLocalizations l10n) => l10n.noteTemplateTechnique;
+String _templateTechniqueTitle(AppLocalizations l10n) => l10n.noteTemplateTechniqueTitle;
+String _templateTechniqueContent(AppLocalizations l10n) => l10n.noteTemplateTechniqueContent;
+String _templateLaneName(AppLocalizations l10n) => l10n.noteTemplateLaneRead;
+String _templateLaneTitle(AppLocalizations l10n) => l10n.noteTemplateLaneReadTitle;
+String _templateLaneContent(AppLocalizations l10n) => l10n.noteTemplateLaneReadContent;
+String _templateOilName(AppLocalizations l10n) => l10n.noteTemplateOilPattern;
+String _templateOilTitle(AppLocalizations l10n) => l10n.noteTemplateOilPatternTitle;
+String _templateOilContent(AppLocalizations l10n) => l10n.noteTemplateOilPatternContent;
+String _templateEquipmentName(AppLocalizations l10n) => l10n.noteTemplateEquipmentAdjust;
+String _templateEquipmentTitle(AppLocalizations l10n) => l10n.noteTemplateEquipmentAdjustTitle;
+String _templateEquipmentContent(AppLocalizations l10n) => l10n.noteTemplateEquipmentAdjustContent;
+String _templateReviewName(AppLocalizations l10n) => l10n.noteTemplatePostReview;
+String _templateReviewTitle(AppLocalizations l10n) => l10n.noteTemplatePostReviewTitle;
+String _templateReviewContent(AppLocalizations l10n) => l10n.noteTemplatePostReviewContent;
+
 class EditarNotaScreen extends StatefulWidget {
   final Nota? nota;
+  final String? initialRelatedSessionId;
+  final String? initialTemplateId;
 
-  const EditarNotaScreen({super.key, this.nota});
+  const EditarNotaScreen({
+    super.key,
+    this.nota,
+    this.initialRelatedSessionId,
+    this.initialTemplateId,
+  });
 
   @override
   State<EditarNotaScreen> createState() => _EditarNotaScreenState();
@@ -28,11 +114,17 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _tituloController;
   late TextEditingController _contenidoController;
+  late TextEditingController _tagsController;
   bool _guardando = false;
 
   String? _categoria;
   bool _favorita = false;
+  bool _pinned = false;
+  bool _archivada = false;
   int? _colorValue;
+  String? _relatedSessionId;
+  bool _cargandoSesiones = true;
+  List<Sesion> _sesiones = [];
 
   bool get _esNueva => widget.nota == null;
 
@@ -40,19 +132,83 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
   void initState() {
     super.initState();
     _tituloController = TextEditingController(text: widget.nota?.titulo ?? '');
-    _contenidoController =
-        TextEditingController(text: widget.nota?.contenido ?? '');
+    _contenidoController = TextEditingController(text: widget.nota?.contenido ?? '');
+    _tagsController =
+        TextEditingController(text: (widget.nota?.tags ?? const []).join(', '));
     _categoria = widget.nota?.categoria;
     _favorita = widget.nota?.favorita ?? false;
+    _pinned = widget.nota?.pinned ?? false;
+    _archivada = widget.nota?.archivada ?? false;
     _colorValue = widget.nota?.colorValue;
+    _relatedSessionId = widget.nota?.relatedSessionId ?? widget.initialRelatedSessionId;
     _contenidoController.addListener(() => setState(() {}));
+    _cargarSesiones();
+
+    if (_esNueva && widget.initialTemplateId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _NoteTemplate? template;
+        for (final t in _kNoteTemplates) {
+          if (t.id == widget.initialTemplateId) {
+            template = t;
+            break;
+          }
+        }
+        if (template != null && mounted) {
+          _aplicarPlantilla(template);
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
     _tituloController.dispose();
     _contenidoController.dispose();
+    _tagsController.dispose();
     super.dispose();
+  }
+
+  Future<void> _cargarSesiones() async {
+    try {
+      final repo = Provider.of<DataRepository>(context, listen: false);
+      final sesiones = await repo.obtenerSesiones();
+      sesiones.sort((a, b) => b.fecha.compareTo(a.fecha));
+      if (!mounted) return;
+      setState(() {
+        _sesiones = sesiones;
+        _cargandoSesiones = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _sesiones = [];
+        _cargandoSesiones = false;
+      });
+    }
+  }
+
+  List<String> _parseTags() {
+    return Nota.normalizeTagsFromText(_tagsController.text);
+  }
+
+  String _sessionIdFromSesion(Sesion sesion) =>
+      sesion.fecha.millisecondsSinceEpoch.toString();
+
+  String _sessionLabel(BuildContext context, Sesion sesion) {
+    final l10n = AppLocalizations.of(context)!;
+    final date = DateFormat('dd/MM/yyyy').format(sesion.fecha);
+    final place = sesion.lugar.trim().isEmpty ? l10n.noLocation : sesion.lugar;
+    return '$date • $place';
+  }
+
+  void _aplicarPlantilla(_NoteTemplate template) {
+    final l10n = AppLocalizations.of(context)!;
+    setState(() {
+      _tituloController.text = template.title(l10n);
+      _contenidoController.text = template.content(l10n);
+      _categoria = template.category;
+      _tagsController.text = template.tags.join(', ');
+    });
   }
 
   Future<void> _guardar() async {
@@ -63,6 +219,7 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
     try {
       final repo = Provider.of<DataRepository>(context, listen: false);
       final ahora = DateTime.now();
+      final tags = _parseTags();
 
       if (_esNueva) {
         final nuevaNota = Nota(
@@ -73,6 +230,10 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
           categoria: _categoria,
           favorita: _favorita,
           colorValue: _colorValue,
+          tags: tags,
+          pinned: _pinned,
+          archivada: _archivada,
+          relatedSessionId: _relatedSessionId,
         );
         await repo.guardarNota(nuevaNota);
       } else {
@@ -82,6 +243,10 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
         widget.nota!.categoria = _categoria;
         widget.nota!.favorita = _favorita;
         widget.nota!.colorValue = _colorValue;
+        widget.nota!.tags = tags;
+        widget.nota!.pinned = _pinned;
+        widget.nota!.archivada = _archivada;
+        widget.nota!.relatedSessionId = _relatedSessionId;
         await repo.actualizarNota(widget.nota!);
       }
 
@@ -141,12 +306,41 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
     final cs = Theme.of(context).colorScheme;
     final wordCount = _wordCount(_contenidoController.text);
 
+    final sessionItems = <DropdownMenuItem<String?>>[
+      DropdownMenuItem<String?>(
+        value: null,
+        child: Text(l10n.noteNoLinkedSession),
+      ),
+      ..._sesiones.map(
+        (s) => DropdownMenuItem<String?>(
+          value: _sessionIdFromSesion(s),
+          child: Text(_sessionLabel(context, s)),
+        ),
+      ),
+    ];
+
+    if (_relatedSessionId != null &&
+        !_sesiones.any((s) => _sessionIdFromSesion(s) == _relatedSessionId)) {
+      sessionItems.add(
+        DropdownMenuItem<String?>(
+          value: _relatedSessionId,
+          child: Text(l10n.noteLinkedSessionUnknown),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_esNueva ? l10n.newNote : l10n.editNote),
         centerTitle: true,
         actions: [
-          // Favourite toggle
+          IconButton(
+            icon: Icon(
+              _pinned ? Icons.push_pin : Icons.push_pin_outlined,
+            ),
+            tooltip: _pinned ? l10n.noteUnpin : l10n.notePin,
+            onPressed: () => setState(() => _pinned = !_pinned),
+          ),
           IconButton(
             icon: Icon(
               _favorita ? Icons.star_rounded : Icons.star_outline_rounded,
@@ -179,7 +373,27 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // ── Title ──────────────────────────────────────────────────────
+            if (_esNueva) ...[
+              Text(
+                l10n.noteTemplates,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _kNoteTemplates
+                    .map(
+                      (template) => ActionChip(
+                        avatar: const Icon(Icons.auto_awesome, size: 18),
+                        label: Text(template.name(l10n)),
+                        onPressed: () => _aplicarPlantilla(template),
+                      ),
+                    )
+                    .toList(),
+              ),
+              const SizedBox(height: 16),
+            ],
             TextFormField(
               controller: _tituloController,
               decoration: InputDecoration(
@@ -197,8 +411,6 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
               },
             ),
             const SizedBox(height: 16),
-
-            // ── Category ───────────────────────────────────────────────────
             InputDecorator(
               decoration: InputDecoration(
                 labelText: l10n.noteCategory,
@@ -210,23 +422,61 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
                 spacing: 8,
                 runSpacing: 4,
                 children: [
-                  // "None" chip
                   ChoiceChip(
                     label: Text(l10n.noteCategoryNone),
                     selected: _categoria == null,
                     onSelected: (_) => setState(() => _categoria = null),
                   ),
-                  ...NotaCategoria.values.map((key) => ChoiceChip(
-                        label: Text(_categoryLabel(context, key)),
-                        selected: _categoria == key,
-                        onSelected: (_) => setState(() => _categoria = key),
-                      )),
+                  ...NotaCategoria.values.map(
+                    (key) => ChoiceChip(
+                      label: Text(_categoryLabel(context, key)),
+                      selected: _categoria == key,
+                      onSelected: (_) => setState(() => _categoria = key),
+                    ),
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-
-            // ── Color ──────────────────────────────────────────────────────
+            TextFormField(
+              controller: _tagsController,
+              decoration: InputDecoration(
+                labelText: l10n.noteTags,
+                hintText: l10n.noteTagsHint,
+                border: const OutlineInputBorder(),
+              ),
+              textCapitalization: TextCapitalization.none,
+            ),
+            const SizedBox(height: 16),
+            InputDecorator(
+              decoration: InputDecoration(
+                labelText: l10n.noteRelatedSession,
+                border: const OutlineInputBorder(),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+              child: _cargandoSesiones
+                  ? const LinearProgressIndicator(minHeight: 2)
+                  : DropdownButtonHideUnderline(
+                      child: DropdownButton<String?>(
+                        isExpanded: true,
+                        value: _relatedSessionId,
+                        items: sessionItems,
+                        onChanged: (value) {
+                          setState(() => _relatedSessionId = value);
+                        },
+                      ),
+                    ),
+            ),
+            const SizedBox(height: 16),
+            SwitchListTile.adaptive(
+              contentPadding: EdgeInsets.zero,
+              value: _archivada,
+              onChanged: (v) => setState(() => _archivada = v),
+              title: Text(l10n.noteArchived),
+              subtitle: Text(l10n.noteArchivedHint),
+            ),
+            const SizedBox(height: 8),
             InputDecorator(
               decoration: InputDecoration(
                 labelText: l10n.noteColorLabel,
@@ -238,7 +488,6 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
                 spacing: 10,
                 runSpacing: 6,
                 children: [
-                  // "No colour" option
                   GestureDetector(
                     onTap: () => setState(() => _colorValue = null),
                     child: Container(
@@ -247,9 +496,8 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: _colorValue == null
-                              ? cs.primary
-                              : cs.outlineVariant,
+                          color:
+                              _colorValue == null ? cs.primary : cs.outlineVariant,
                           width: _colorValue == null ? 3 : 1.5,
                         ),
                         color: cs.surface,
@@ -284,8 +532,6 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // ── Content ────────────────────────────────────────────────────
             TextFormField(
               controller: _contenidoController,
               decoration: InputDecoration(
@@ -294,8 +540,7 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
                 border: const OutlineInputBorder(),
                 alignLabelWithHint: true,
                 helperText: wordCount > 0 ? l10n.noteWordCount(wordCount) : null,
-                helperStyle:
-                    TextStyle(color: cs.outline, fontSize: 12),
+                helperStyle: TextStyle(color: cs.outline, fontSize: 12),
               ),
               textCapitalization: TextCapitalization.sentences,
               maxLines: null,

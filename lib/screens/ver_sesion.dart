@@ -9,6 +9,7 @@ import '../repositories/data_repository.dart';
 import '../widgets/score_sheet_pin_strip.dart';
 import 'editar_partida.dart';
 import 'registro_sesion.dart';
+import 'editar_nota_screen.dart';
 import 'home.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/registro_tiros_utils.dart';
@@ -336,6 +337,30 @@ class _VerSesionState extends State<VerSesion> {
             icon: const Icon(Icons.edit_location_alt),
             tooltip: AppLocalizations.of(context)!.edit,
             onPressed: _editarLugarSesion,
+          ),
+          IconButton(
+            icon: const Icon(Icons.note_add_outlined),
+            tooltip: AppLocalizations.of(context)!.newNote,
+            onPressed: () async {
+              final relatedSessionId =
+                  sesionActual.fecha.millisecondsSinceEpoch.toString();
+              final created = await Navigator.push<bool>(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => EditarNotaScreen(
+                    initialRelatedSessionId: relatedSessionId,
+                  ),
+                ),
+              );
+              if (created == true && mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context)!.noteSaved),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
           ),
           IconButton(
             icon: const Icon(Icons.home),

@@ -2474,6 +2474,204 @@ abstract class AppLocalizations {
   /// **'Todas'**
   String get filterAll;
 
+  /// Etiqueta para sección de plantillas rápidas en edición de notas
+  ///
+  /// In es, this message translates to:
+  /// **'Plantillas rápidas'**
+  String get noteTemplates;
+
+  /// Nombre de plantilla rápida para observación de técnica
+  ///
+  /// In es, this message translates to:
+  /// **'Observación de técnica'**
+  String get noteTemplateTechnique;
+
+  /// Título por defecto de plantilla de observación de técnica
+  ///
+  /// In es, this message translates to:
+  /// **'Observación de técnica'**
+  String get noteTemplateTechniqueTitle;
+
+  /// Contenido por defecto de plantilla de observación de técnica
+  ///
+  /// In es, this message translates to:
+  /// **'Situación:\nObservación:\nAjuste:\nResultado:\nSiguiente paso:'**
+  String get noteTemplateTechniqueContent;
+
+  /// Nombre de plantilla rápida para lectura de pista
+  ///
+  /// In es, this message translates to:
+  /// **'Lectura de pista'**
+  String get noteTemplateLaneRead;
+
+  /// Título por defecto de plantilla de lectura de pista
+  ///
+  /// In es, this message translates to:
+  /// **'Lectura de pista y transición'**
+  String get noteTemplateLaneReadTitle;
+
+  /// Contenido por defecto de plantilla de lectura de pista
+  ///
+  /// In es, this message translates to:
+  /// **'Línea inicial:\nTransición observada:\nReacción de la bola:\nMovimiento recomendado:'**
+  String get noteTemplateLaneReadContent;
+
+  /// Nombre de plantilla rápida para patrón de aceite
+  ///
+  /// In es, this message translates to:
+  /// **'Patrón de aceite'**
+  String get noteTemplateOilPattern;
+
+  /// Título por defecto de plantilla de patrón de aceite
+  ///
+  /// In es, this message translates to:
+  /// **'Notas de patrón de aceite'**
+  String get noteTemplateOilPatternTitle;
+
+  /// Contenido por defecto de plantilla de patrón de aceite
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre del patrón:\nLongitud/ratio:\nTablón de referencia:\nPlan de ajustes:'**
+  String get noteTemplateOilPatternContent;
+
+  /// Nombre de plantilla rápida para ajuste de equipamiento
+  ///
+  /// In es, this message translates to:
+  /// **'Ajuste de equipamiento'**
+  String get noteTemplateEquipmentAdjust;
+
+  /// Título por defecto de plantilla de ajuste de equipamiento
+  ///
+  /// In es, this message translates to:
+  /// **'Ajuste de equipamiento'**
+  String get noteTemplateEquipmentAdjustTitle;
+
+  /// Contenido por defecto de plantilla de ajuste de equipamiento
+  ///
+  /// In es, this message translates to:
+  /// **'Bola/layout usado:\nCambio de superficie o mano:\nCuándo usarlo:\nResultado observado:'**
+  String get noteTemplateEquipmentAdjustContent;
+
+  /// Nombre de plantilla rápida para review post-sesión
+  ///
+  /// In es, this message translates to:
+  /// **'Review post-sesión'**
+  String get noteTemplatePostReview;
+
+  /// Título por defecto de plantilla de review post-sesión
+  ///
+  /// In es, this message translates to:
+  /// **'Review post-sesión'**
+  String get noteTemplatePostReviewTitle;
+
+  /// Contenido por defecto de plantilla de review post-sesión
+  ///
+  /// In es, this message translates to:
+  /// **'Qué funcionó:\nQué no funcionó:\nAprendizaje clave:\nFoco para la próxima sesión:'**
+  String get noteTemplatePostReviewContent;
+
+  /// Etiqueta del campo tags en notas
+  ///
+  /// In es, this message translates to:
+  /// **'Tags'**
+  String get noteTags;
+
+  /// Texto de ayuda para el campo tags en notas
+  ///
+  /// In es, this message translates to:
+  /// **'Ejemplo: spare, timing, pista seca'**
+  String get noteTagsHint;
+
+  /// Etiqueta para seleccionar sesión relacionada en nota
+  ///
+  /// In es, this message translates to:
+  /// **'Sesión relacionada'**
+  String get noteRelatedSession;
+
+  /// Opción para no vincular una sesión en la nota
+  ///
+  /// In es, this message translates to:
+  /// **'Sin sesión vinculada'**
+  String get noteNoLinkedSession;
+
+  /// Texto fallback cuando no se encuentra la sesión vinculada
+  ///
+  /// In es, this message translates to:
+  /// **'Sesión vinculada (no disponible localmente)'**
+  String get noteLinkedSessionUnknown;
+
+  /// Etiqueta de estado archivado de una nota
+  ///
+  /// In es, this message translates to:
+  /// **'Archivada'**
+  String get noteArchived;
+
+  /// Texto de ayuda para toggle de archivado en nota
+  ///
+  /// In es, this message translates to:
+  /// **'Archiva esta nota para ocultarla del listado activo'**
+  String get noteArchivedHint;
+
+  /// Acción para fijar una nota
+  ///
+  /// In es, this message translates to:
+  /// **'Fijar'**
+  String get notePin;
+
+  /// Acción para desfijar una nota
+  ///
+  /// In es, this message translates to:
+  /// **'Desfijar'**
+  String get noteUnpin;
+
+  /// Etiqueta de estado fijada de una nota
+  ///
+  /// In es, this message translates to:
+  /// **'Fijada'**
+  String get notePinned;
+
+  /// Acción para archivar una nota
+  ///
+  /// In es, this message translates to:
+  /// **'Archivar'**
+  String get noteArchive;
+
+  /// Acción para desarchivar una nota
+  ///
+  /// In es, this message translates to:
+  /// **'Desarchivar'**
+  String get noteUnarchive;
+
+  /// Filtro para mostrar notas activas
+  ///
+  /// In es, this message translates to:
+  /// **'Activas'**
+  String get noteFilterActive;
+
+  /// Filtro para mostrar notas archivadas
+  ///
+  /// In es, this message translates to:
+  /// **'Archivadas'**
+  String get noteFilterArchived;
+
+  /// Filtro para quitar filtro por categoría en notas
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las categorías'**
+  String get noteFilterAllCategories;
+
+  /// Filtro para quitar filtro por tags en notas
+  ///
+  /// In es, this message translates to:
+  /// **'Todos los tags'**
+  String get noteFilterAllTags;
+
+  /// Etiqueta del botón para crear nota desde plantilla rápida
+  ///
+  /// In es, this message translates to:
+  /// **'Crear desde plantilla'**
+  String get noteCreateFromTemplate;
+
   /// Título del diálogo de confirmación para descartar cambios
   ///
   /// In es, this message translates to:

@@ -837,6 +837,138 @@
   "@filterAll": {
     "description": "Filtro para mostrar todas las notas"
   },
+  "noteTemplates": "Plantillas rápidas",
+  "@noteTemplates": {
+    "description": "Etiqueta para sección de plantillas rápidas en edición de notas"
+  },
+  "noteTemplateTechnique": "Observación de técnica",
+  "@noteTemplateTechnique": {
+    "description": "Nombre de plantilla rápida para observación de técnica"
+  },
+  "noteTemplateTechniqueTitle": "Observación de técnica",
+  "@noteTemplateTechniqueTitle": {
+    "description": "Título por defecto de plantilla de observación de técnica"
+  },
+  "noteTemplateTechniqueContent": "Situación:\\nObservación:\\nAjuste:\\nResultado:\\nSiguiente paso:",
+  "@noteTemplateTechniqueContent": {
+    "description": "Contenido por defecto de plantilla de observación de técnica"
+  },
+  "noteTemplateLaneRead": "Lectura de pista",
+  "@noteTemplateLaneRead": {
+    "description": "Nombre de plantilla rápida para lectura de pista"
+  },
+  "noteTemplateLaneReadTitle": "Lectura de pista y transición",
+  "@noteTemplateLaneReadTitle": {
+    "description": "Título por defecto de plantilla de lectura de pista"
+  },
+  "noteTemplateLaneReadContent": "Línea inicial:\\nTransición observada:\\nReacción de la bola:\\nMovimiento recomendado:",
+  "@noteTemplateLaneReadContent": {
+    "description": "Contenido por defecto de plantilla de lectura de pista"
+  },
+  "noteTemplateOilPattern": "Patrón de aceite",
+  "@noteTemplateOilPattern": {
+    "description": "Nombre de plantilla rápida para patrón de aceite"
+  },
+  "noteTemplateOilPatternTitle": "Notas de patrón de aceite",
+  "@noteTemplateOilPatternTitle": {
+    "description": "Título por defecto de plantilla de patrón de aceite"
+  },
+  "noteTemplateOilPatternContent": "Nombre del patrón:\\nLongitud/ratio:\\nTablón de referencia:\\nPlan de ajustes:",
+  "@noteTemplateOilPatternContent": {
+    "description": "Contenido por defecto de plantilla de patrón de aceite"
+  },
+  "noteTemplateEquipmentAdjust": "Ajuste de equipamiento",
+  "@noteTemplateEquipmentAdjust": {
+    "description": "Nombre de plantilla rápida para ajuste de equipamiento"
+  },
+  "noteTemplateEquipmentAdjustTitle": "Ajuste de equipamiento",
+  "@noteTemplateEquipmentAdjustTitle": {
+    "description": "Título por defecto de plantilla de ajuste de equipamiento"
+  },
+  "noteTemplateEquipmentAdjustContent": "Bola/layout usado:\\nCambio de superficie o mano:\\nCuándo usarlo:\\nResultado observado:",
+  "@noteTemplateEquipmentAdjustContent": {
+    "description": "Contenido por defecto de plantilla de ajuste de equipamiento"
+  },
+  "noteTemplatePostReview": "Review post-sesión",
+  "@noteTemplatePostReview": {
+    "description": "Nombre de plantilla rápida para review post-sesión"
+  },
+  "noteTemplatePostReviewTitle": "Review post-sesión",
+  "@noteTemplatePostReviewTitle": {
+    "description": "Título por defecto de plantilla de review post-sesión"
+  },
+  "noteTemplatePostReviewContent": "Qué funcionó:\\nQué no funcionó:\\nAprendizaje clave:\\nFoco para la próxima sesión:",
+  "@noteTemplatePostReviewContent": {
+    "description": "Contenido por defecto de plantilla de review post-sesión"
+  },
+  "noteTags": "Tags",
+  "@noteTags": {
+    "description": "Etiqueta del campo tags en notas"
+  },
+  "noteTagsHint": "Ejemplo: spare, timing, pista seca",
+  "@noteTagsHint": {
+    "description": "Texto de ayuda para el campo tags en notas"
+  },
+  "noteRelatedSession": "Sesión relacionada",
+  "@noteRelatedSession": {
+    "description": "Etiqueta para seleccionar sesión relacionada en nota"
+  },
+  "noteNoLinkedSession": "Sin sesión vinculada",
+  "@noteNoLinkedSession": {
+    "description": "Opción para no vincular una sesión en la nota"
+  },
+  "noteLinkedSessionUnknown": "Sesión vinculada (no disponible localmente)",
+  "@noteLinkedSessionUnknown": {
+    "description": "Texto fallback cuando no se encuentra la sesión vinculada"
+  },
+  "noteArchived": "Archivada",
+  "@noteArchived": {
+    "description": "Etiqueta de estado archivado de una nota"
+  },
+  "noteArchivedHint": "Archiva esta nota para ocultarla del listado activo",
+  "@noteArchivedHint": {
+    "description": "Texto de ayuda para toggle de archivado en nota"
+  },
+  "notePin": "Fijar",
+  "@notePin": {
+    "description": "Acción para fijar una nota"
+  },
+  "noteUnpin": "Desfijar",
+  "@noteUnpin": {
+    "description": "Acción para desfijar una nota"
+  },
+  "notePinned": "Fijada",
+  "@notePinned": {
+    "description": "Etiqueta de estado fijada de una nota"
+  },
+  "noteArchive": "Archivar",
+  "@noteArchive": {
+    "description": "Acción para archivar una nota"
+  },
+  "noteUnarchive": "Desarchivar",
+  "@noteUnarchive": {
+    "description": "Acción para desarchivar una nota"
+  },
+  "noteFilterActive": "Activas",
+  "@noteFilterActive": {
+    "description": "Filtro para mostrar notas activas"
+  },
+  "noteFilterArchived": "Archivadas",
+  "@noteFilterArchived": {
+    "description": "Filtro para mostrar notas archivadas"
+  },
+  "noteFilterAllCategories": "Todas las categorías",
+  "@noteFilterAllCategories": {
+    "description": "Filtro para quitar filtro por categoría en notas"
+  },
+  "noteFilterAllTags": "Todos los tags",
+  "@noteFilterAllTags": {
+    "description": "Filtro para quitar filtro por tags en notas"
+  },
+  "noteCreateFromTemplate": "Crear desde plantilla",
+  "@noteCreateFromTemplate": {
+    "description": "Etiqueta del botón para crear nota desde plantilla rápida"
+  },
   "discardChanges": "Descartar cambios",
   "@discardChanges": {
     "description": "Título del diálogo de confirmación para descartar cambios"

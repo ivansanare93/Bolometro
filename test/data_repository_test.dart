@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:bolometro/repositories/data_repository.dart';
 import 'package:bolometro/models/sesion.dart';
 import 'package:bolometro/models/partida.dart';
+import 'package:bolometro/models/nota.dart';
 import 'package:bolometro/models/perfil_usuario.dart';
 import 'package:bolometro/utils/app_constants.dart';
 import 'package:bolometro/exceptions/sync_exceptions.dart';
@@ -198,6 +201,98 @@ void main() {
       expect(perfilGuardado, isNotNull);
       expect(perfilGuardado!.nombre, 'Test User');
       expect(perfilGuardado.email, 'test@example.com');
+    });
+  });
+
+  group('DataRepository - Notas', () {
+    late DataRepository repository;
+    late Directory tempDir;
+
+    setUp(() async {
+      tempDir = Directory.systemTemp.createTempSync('test_hive_notas_');
+      Hive.init(tempDir.path);
+
+      if (!Hive.isAdapterRegistered(1)) {
+        Hive.registerAdapter(SesionAdapter());
+      }
+      if (!Hive.isAdapterRegistered(2)) {
+        Hive.registerAdapter(NotaAdapter());
+      }
+      if (!Hive.isAdapterRegistered(10)) {
+        Hive.registerAdapter(PerfilUsuarioAdapter());
+      }
+
+      await Hive.openBox<Nota>(AppConstants.boxNotas);
+      await Hive.openBox<Sesion>(AppConstants.boxSesiones);
+      await Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
+
+      repository = DataRepository();
+    });
+
+    tearDown(() async {
+      await Hive.deleteFromDisk();
+      await Hive.close();
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
+
+    test('guardarNota debe persistir id y metadatos de fase 1', () async {
+      final nota = Nota(
+        titulo: 'Lectura pista',
+        contenido: 'Comienza a secarse en tablero 8',
+        fechaCreacion: DateTime.now(),
+        fechaModificacion: DateTime.now(),
+        tags: const ['pista', 'transicion'],
+        pinned: true,
+        archivada: false,
+        relatedSessionId: '12345',
+      );
+
+      await repository.guardarNota(nota);
+      final notas = await repository.obtenerNotas();
+
+      expect(notas, hasLength(1));
+      expect(notas.first.id, isNotEmpty);
+      expect(notas.first.tags, containsAll(['pista', 'transicion']));
+      expect(notas.first.pinned, isTrue);
+      expect(notas.first.archivada, isFalse);
+      expect(notas.first.relatedSessionId, '12345');
+    });
+
+    test('notas deben estar separadas por usuario', () async {
+      await repository.setUser('user-1');
+      await repository.guardarNota(
+        Nota(
+          titulo: 'Nota user1',
+          contenido: 'contenido 1',
+          fechaCreacion: DateTime.now(),
+          fechaModificacion: DateTime.now(),
+        ),
+      );
+
+      await repository.setUser('user-2');
+      var notasUser2 = await repository.obtenerNotas();
+      expect(notasUser2, isEmpty);
+
+      await repository.guardarNota(
+        Nota(
+          titulo: 'Nota user2',
+          contenido: 'contenido 2',
+          fechaCreacion: DateTime.now(),
+          fechaModificacion: DateTime.now(),
+        ),
+      );
+
+      await repository.setUser('user-1');
+      final notasUser1 = await repository.obtenerNotas();
+      expect(notasUser1, hasLength(1));
+      expect(notasUser1.first.titulo, 'Nota user1');
+
+      await repository.setUser('user-2');
+      notasUser2 = await repository.obtenerNotas();
+      expect(notasUser2, hasLength(1));
+      expect(notasUser2.first.titulo, 'Nota user2');
     });
   });
 }
