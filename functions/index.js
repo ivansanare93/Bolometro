@@ -1,5 +1,6 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const nodemailer = require("nodemailer");
 
 admin.initializeApp();
 
@@ -163,3 +164,98 @@ exports.sendFriendRequestAcceptedNotification = functions.firestore
       return sendPushNotification(userId, data, title, body);
     });
 
+/**
+ * Envía un correo electrónico al recibir un nuevo documento en la colección feedback.
+ *
+ * Requiere las siguientes variables de entorno de Firebase Functions:
+ *   firebase functions:config:set mail.user="tu_cuenta@gmail.com" mail.pass="tu_app_password"
+ *
+ * Para Gmail, usa una "App Password" (contraseña de aplicación) en lugar de la contraseña
+ * principal. Actívala en: https://myaccount.google.com/apppasswords
+ */
+
+// El transporter se crea una sola vez y se reutiliza entre invocaciones (warm start).
+let _mailTransporter = null;
+
+/**
+ * Devuelve un transporter de Nodemailer configurado con las credenciales de Firebase config.
+ * @return {Object|null} Transporter o null si faltan credenciales.
+ */
+function getMailTransporter() {
+  if (_mailTransporter) return _mailTransporter;
+
+  const mailConfig = functions.config().mail || {};
+  const gmailUser = mailConfig.user;
+  const gmailPass = mailConfig.pass;
+
+  if (!gmailUser || !gmailPass) return null;
+
+  _mailTransporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {user: gmailUser, pass: gmailPass},
+  });
+
+  return _mailTransporter;
+}
+
+exports.sendFeedbackEmail = functions.firestore
+    .document("feedback/{feedbackId}")
+    .onCreate(async (snap, context) => {
+      const feedback = snap.data();
+      const feedbackId = context.params.feedbackId;
+
+      const transporter = getMailTransporter();
+      if (!transporter) {
+        console.error(
+            "Credenciales de correo no configuradas. " +
+            "Ejecuta: firebase functions:config:set mail.user=\"...\" mail.pass=\"...\"",
+        );
+        return null;
+      }
+
+      const mailConfig = functions.config().mail || {};
+      const gmailUser = mailConfig.user;
+      const destinationEmail = feedback.destinationEmail || gmailUser;
+
+      // Construir el asunto y cuerpo del correo
+      const typeLabels = {suggestion: "Sugerencia", bug: "Error", other: "Otro"};
+      const typeLabel = typeLabels[feedback.type] || feedback.type || "Desconocido";
+      const subject = `[Bolometro Feedback] ${typeLabel} - ${feedback.platform || ""}`;
+
+      const lines = [
+        `Tipo: ${typeLabel}`,
+        `Mensaje: ${feedback.message || ""}`,
+        "",
+        `Usuario ID: ${feedback.userId || ""}`,
+        `Correo del usuario: ${feedback.authEmail || "(no proporcionado)"}`,
+        `Valoración: ${feedback.rating != null ? `${feedback.rating}/5` : "(sin valoración)"}`,
+        `Versión de la app: ${feedback.appVersion || ""}`,
+        `Plataforma: ${feedback.platform || ""}`,
+        `Idioma: ${feedback.languageCode || ""}`,
+        `ID del documento: ${feedbackId}`,
+      ];
+
+      const mailOptions = {
+        from: `Bolometro App <${gmailUser}>`,
+        to: destinationEmail,
+        subject: subject,
+        text: lines.join("\n"),
+      };
+
+      try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log("Correo de feedback enviado:", info.messageId);
+
+        // Marcar el documento como procesado
+        await snap.ref.update({status: "email_sent"});
+
+        return info;
+      } catch (error) {
+        console.error("Error al enviar correo de feedback:", error);
+
+        // Marcar el documento con el error para poder revisarlo
+        await snap.ref.update({status: "email_error", emailError: String(error)});
+
+        return null;
+      }
+    });
