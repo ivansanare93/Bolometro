@@ -540,7 +540,6 @@ class FirestoreService {
     required String appVersion,
     required String platform,
     required String languageCode,
-    String? email,
     String? authEmail,
     int? rating,
   }) async {
@@ -553,12 +552,10 @@ class FirestoreService {
         'appVersion': appVersion,
         'platform': platform,
         'languageCode': languageCode,
+        'destinationEmail': 'appbolometro@gmail.com',
         'status': 'new',
       };
 
-      if (email != null && email.trim().isNotEmpty) {
-        feedbackData['email'] = email.trim();
-      }
       if (authEmail != null && authEmail.trim().isNotEmpty) {
         feedbackData['authEmail'] = authEmail.trim();
       }

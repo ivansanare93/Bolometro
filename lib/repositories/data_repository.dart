@@ -1046,7 +1046,6 @@ class DataRepository extends ChangeNotifier {
     required String appVersion,
     required String platform,
     required String languageCode,
-    String? email,
     String? authEmail,
     int? rating,
   }) async {
@@ -1057,7 +1056,6 @@ class DataRepository extends ChangeNotifier {
       appVersion: appVersion,
       platform: platform,
       languageCode: languageCode,
-      email: email,
       authEmail: authEmail,
       rating: rating,
     );
