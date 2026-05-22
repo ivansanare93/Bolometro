@@ -19,25 +19,14 @@ class FeedbackScreen extends StatefulWidget {
 class _FeedbackScreenState extends State<FeedbackScreen> {
   final _formKey = GlobalKey<FormState>();
   final _messageController = TextEditingController();
-  final _emailController = TextEditingController();
 
   String _selectedType = 'suggestion';
   int? _rating;
   bool _isSubmitting = false;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final authService = Provider.of<AuthService>(context, listen: false);
-    if (_emailController.text.isEmpty && authService.user?.email != null) {
-      _emailController.text = authService.user!.email!;
-    }
-  }
-
-  @override
   void dispose() {
     _messageController.dispose();
-    _emailController.dispose();
     super.dispose();
   }
 
@@ -63,15 +52,12 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
     try {
       final packageInfo = await PackageInfo.fromPlatform();
-      final normalizedEmail = _emailController.text.trim();
-      final contactEmail = normalizedEmail.isNotEmpty ? normalizedEmail : null;
       final authEmail = authService.user?.email;
 
       await dataRepository.submitFeedback(
         userId: authService.userId!,
         type: _selectedType,
         message: _messageController.text.trim(),
-        email: contactEmail,
         authEmail: authEmail,
         rating: _rating,
         appVersion: packageInfo.version,
@@ -81,8 +67,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
       await analyticsService.logFeedbackSubmitted(
         type: _selectedType,
-        hasEmail: (contactEmail != null && contactEmail.isNotEmpty) ||
-            (authEmail != null && authEmail.isNotEmpty),
+        hasEmail: authEmail != null && authEmail.isNotEmpty,
         hasRating: _rating != null,
       );
 
@@ -166,25 +151,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return l10n.feedbackMessageRequired;
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  enabled: !_isSubmitting,
-                  decoration: InputDecoration(
-                    labelText: l10n.feedbackEmailLabel,
-                    hintText: l10n.feedbackEmailHint,
-                  ),
-                  validator: (value) {
-                    final email = value?.trim() ?? '';
-                    if (email.isEmpty) return null;
-                    final regex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
-                    if (!regex.hasMatch(email)) {
-                      return l10n.feedbackInvalidEmail;
                     }
                     return null;
                   },

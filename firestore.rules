@@ -116,26 +116,23 @@ service cloud.firestore {
     match /feedback/{feedbackId} {
       allow create: if request.auth != null
                     && request.resource.data.keys().hasOnly([
-                      'userId',
-                      'type',
-                      'message',
-                      'email',
-                      'authEmail',
-                      'rating',
-                      'createdAt',
                       'appVersion',
-                      'platform',
+                      'authEmail',
+                      'createdAt',
+                      'destinationEmail',
                       'languageCode',
-                      'status'
+                      'message',
+                      'platform',
+                      'rating',
+                      'status',
+                      'type',
+                      'userId',
                     ])
                     && request.resource.data.userId == request.auth.uid
                     && request.resource.data.type in ['suggestion', 'bug', 'other']
                     && request.resource.data.message is string
                     && request.resource.data.message.size() > 0
                     && request.resource.data.message.size() <= 2000
-                    && (!('email' in request.resource.data)
-                        || (request.resource.data.email is string
-                            && request.resource.data.email.size() <= 254))
                     && (!('authEmail' in request.resource.data)
                         || (request.resource.data.authEmail is string
                             && request.resource.data.authEmail.size() <= 254))
@@ -153,6 +150,8 @@ service cloud.firestore {
                     && request.resource.data.languageCode is string
                     && request.resource.data.languageCode.size() > 0
                     && request.resource.data.languageCode.size() <= 10
+                    && request.resource.data.destinationEmail is string
+                    && request.resource.data.destinationEmail == 'appbolometro@gmail.com'
                     && request.resource.data.status == 'new';
       allow read, update, delete: if false;
     }

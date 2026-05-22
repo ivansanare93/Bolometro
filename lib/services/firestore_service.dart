@@ -14,6 +14,7 @@ import '../exceptions/sync_exceptions.dart';
 /// Maneja la sincronización de datos del usuario en la nube
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static const String _feedbackDestinationEmail = 'appbolometro@gmail.com';
 
   /// Genera un código de amigo único de 8 caracteres
   String _generarCodigoAmigo() {
@@ -540,7 +541,6 @@ class FirestoreService {
     required String appVersion,
     required String platform,
     required String languageCode,
-    String? email,
     String? authEmail,
     int? rating,
   }) async {
@@ -553,12 +553,10 @@ class FirestoreService {
         'appVersion': appVersion,
         'platform': platform,
         'languageCode': languageCode,
+        'destinationEmail': _feedbackDestinationEmail,
         'status': 'new',
       };
 
-      if (email != null && email.trim().isNotEmpty) {
-        feedbackData['email'] = email.trim();
-      }
       if (authEmail != null && authEmail.trim().isNotEmpty) {
         feedbackData['authEmail'] = authEmail.trim();
       }
