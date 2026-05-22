@@ -1,8 +1,12 @@
 const functions = require("firebase-functions");
+const {defineString, defineSecret} = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
 
 admin.initializeApp();
+
+const MAIL_USER = defineString("MAIL_USER");
+const MAIL_PASS = defineSecret("MAIL_PASS");
 
 /**
  * Returns localized notification strings for the given language code.
@@ -167,8 +171,9 @@ exports.sendFriendRequestAcceptedNotification = functions.firestore
 /**
  * Envía un correo electrónico al recibir un nuevo documento en la colección feedback.
  *
- * Requiere las siguientes variables de entorno de Firebase Functions:
- *   firebase functions:config:set mail.user="tu_cuenta@gmail.com" mail.pass="tu_app_password"
+ * Requiere los siguientes parámetros/secrets de Firebase Functions:
+ *   firebase functions:params:set MAIL_USER="tu_cuenta@gmail.com"
+ *   firebase functions:secrets:set MAIL_PASS
  *
  * Para Gmail, usa una "App Password" (contraseña de aplicación) en lugar de la contraseña
  * principal. Actívala en: https://myaccount.google.com/apppasswords
@@ -178,15 +183,14 @@ exports.sendFriendRequestAcceptedNotification = functions.firestore
 let _mailTransporter = null;
 
 /**
- * Devuelve un transporter de Nodemailer configurado con las credenciales de Firebase config.
+ * Devuelve un transporter de Nodemailer configurado con Firebase params/secrets.
  * @return {Object|null} Transporter o null si faltan credenciales.
  */
 function getMailTransporter() {
   if (_mailTransporter) return _mailTransporter;
 
-  const mailConfig = functions.config().mail || {};
-  const gmailUser = mailConfig.user;
-  const gmailPass = mailConfig.pass;
+  const gmailUser = MAIL_USER.value();
+  const gmailPass = MAIL_PASS.value();
 
   if (!gmailUser || !gmailPass) return null;
 
@@ -198,7 +202,9 @@ function getMailTransporter() {
   return _mailTransporter;
 }
 
-exports.sendFeedbackEmail = functions.firestore
+exports.sendFeedbackEmail = functions
+    .runWith({secrets: ["MAIL_PASS"]})
+    .firestore
     .document("feedback/{feedbackId}")
     .onCreate(async (snap, context) => {
       const feedback = snap.data();
@@ -208,13 +214,13 @@ exports.sendFeedbackEmail = functions.firestore
       if (!transporter) {
         console.error(
             "Credenciales de correo no configuradas. " +
-            "Ejecuta: firebase functions:config:set mail.user=\"...\" mail.pass=\"...\"",
+            "Ejecuta: firebase functions:params:set MAIL_USER=\"...\" " +
+            "y firebase functions:secrets:set MAIL_PASS",
         );
         return null;
       }
 
-      const mailConfig = functions.config().mail || {};
-      const gmailUser = mailConfig.user;
+      const gmailUser = MAIL_USER.value();
       const destinationEmail = feedback.destinationEmail || gmailUser;
 
       // Construir el asunto y cuerpo del correo
