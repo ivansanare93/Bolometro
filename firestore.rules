@@ -116,17 +116,17 @@ service cloud.firestore {
     match /feedback/{feedbackId} {
       allow create: if request.auth != null
                     && request.resource.data.keys().hasOnly([
-                      'userId',
-                      'type',
-                      'message',
-                      'authEmail',
-                      'rating',
-                      'createdAt',
                       'appVersion',
-                      'platform',
-                      'languageCode',
+                      'authEmail',
+                      'createdAt',
                       'destinationEmail',
-                      'status'
+                      'languageCode',
+                      'message',
+                      'platform',
+                      'rating',
+                      'status',
+                      'type',
+                      'userId',
                     ])
                     && request.resource.data.userId == request.auth.uid
                     && request.resource.data.type in ['suggestion', 'bug', 'other']
