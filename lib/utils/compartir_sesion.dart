@@ -100,6 +100,9 @@ GameShareSummary buildGameShareSummary(Partida partida) {
 /// in the share-card scoreboard, including formatted throw symbols and
 /// cumulative score per frame when available.
 List<GameShareFrame> buildGameShareFramesForShareCard(Partida partida) {
+  // `calcularPuntuacionPorFrame` returns cumulative scores (or null for
+  // incomplete frames). `permitirNulos: true` keeps unresolved frames blank
+  // in the share scoreboard instead of forcing misleading partial totals.
   final cumulativeScores = calcularPuntuacionPorFrame(partida.frames, permitirNulos: true);
   return List.generate(AppConstants.totalFrames, (index) {
     final frame = index < partida.frames.length ? partida.frames[index] : const <String>[];
@@ -827,7 +830,7 @@ double _drawFramesScoreboard({
     }
 
     for (var throwIndex = 0; throwIndex < throwCellCount; throwIndex++) {
-      final shot = frame.throwsValues[throwIndex];
+      final shot = throwIndex < frame.throwsValues.length ? frame.throwsValues[throwIndex] : '';
       _paintCenteredText(
         canvas: canvas,
         text: shot,
