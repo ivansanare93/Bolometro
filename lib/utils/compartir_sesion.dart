@@ -713,7 +713,7 @@ Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
         height: 1.3,
         fontStyle: FontStyle.italic,
       ),
-      maxLines: content.frames == null ? 5 : 3,
+      maxLines: _notesMaxLines(content.frames != null),
     );
   }
 
@@ -884,6 +884,10 @@ void _paintCenteredText({
   final x = rect.left + ((rect.width - textPainter.width) / 2);
   final y = rect.top + ((rect.height - textPainter.height) / 2);
   textPainter.paint(canvas, Offset(x, y));
+}
+
+int _notesMaxLines(bool hasFrames) {
+  return hasFrames ? 3 : 5;
 }
 
 double _drawChips({
