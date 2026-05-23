@@ -108,10 +108,7 @@ List<GameShareFrame> buildGameShareFramesForShareCard(Partida partida) {
     final frame = index < partida.frames.length ? partida.frames[index] : const <String>[];
     final throwCount = index == AppConstants.totalFrames - 1 ? 3 : 2;
     final throwsValues = List.generate(throwCount, (throwIndex) {
-      if (throwIndex >= frame.length) {
-        return '';
-      }
-      final shot = frame[throwIndex].trim();
+      final shot = throwIndex < frame.length ? frame[throwIndex].trim() : '';
       if (shot.isEmpty) {
         return '';
       }
@@ -824,6 +821,7 @@ double _drawFramesScoreboard({
 
     final throwCellCount = index == AppConstants.totalFrames - 1 ? 3 : 2;
     final throwCellWidth = frameWidth / throwCellCount;
+    // Start at 1 to avoid drawing a divider before the first throw cell.
     for (var throwIndex = 1; throwIndex < throwCellCount; throwIndex++) {
       final dividerX = frameLeft + (throwCellWidth * throwIndex);
       canvas.drawLine(Offset(dividerX, throwsTop), Offset(dividerX, scoresTop), gridPaint);
