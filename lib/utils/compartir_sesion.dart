@@ -568,7 +568,7 @@ double _drawChips({
           color: accentColor,
         ),
       ),
-      textDirection: TextDirection.ltr,
+      textDirection: ui.TextDirection.ltr,
     )..layout();
 
     final chipWidth = textPainter.width + 40;
@@ -606,7 +606,7 @@ double _drawText({
 }) {
   final textPainter = TextPainter(
     text: TextSpan(text: text, style: style),
-    textDirection: TextDirection.ltr,
+    textDirection: ui.TextDirection.ltr,
     textAlign: textAlign,
     maxLines: maxLines,
     ellipsis: maxLines == null ? null : '…',
