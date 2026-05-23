@@ -14,6 +14,7 @@ import 'editar_nota_screen.dart';
 import 'ver_nota_screen.dart';
 import 'home.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/compartir_sesion.dart';
 import '../utils/registro_tiros_utils.dart';
 
 class VerSesion extends StatefulWidget {
@@ -317,6 +318,84 @@ class _VerSesionState extends State<VerSesion> {
     });
   }
 
+  Future<void> _mostrarOpcionesCompartir({
+    required String title,
+    required Future<void> Function() onShareText,
+    required Future<void> Function() onShareImage,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    return showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Text(l10n.chooseShareFormat),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.text_snippet_outlined),
+                  title: Text(l10n.shareAsText),
+                  onTap: () async {
+                    Navigator.pop(sheetContext);
+                    await onShareText();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.image_outlined),
+                  title: Text(l10n.shareAsImage),
+                  onTap: () async {
+                    Navigator.pop(sheetContext);
+                    await onShareImage();
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _compartirSesion() {
+    final l10n = AppLocalizations.of(context)!;
+    return _mostrarOpcionesCompartir(
+      title: l10n.shareSession,
+      onShareText: () => compartirSesionComoTexto(context, sesionActual),
+      onShareImage: () => compartirSesionComoImagen(context, sesionActual),
+    );
+  }
+
+  Future<void> _compartirPartida(int index) {
+    final l10n = AppLocalizations.of(context)!;
+    final partida = sesionActual.partidas[index];
+    return _mostrarOpcionesCompartir(
+      title: l10n.shareGame,
+      onShareText: () => compartirPartidaComoTexto(
+        context,
+        sesionActual,
+        partida,
+        index + 1,
+      ),
+      onShareImage: () => compartirPartidaComoImagen(
+        context,
+        sesionActual,
+        partida,
+        index + 1,
+      ),
+    );
+  }
+
   String _statusLabel(AppLocalizations l10n, String estado) {
     switch (estado) {
       case NotaEstado.pendiente:
@@ -369,6 +448,11 @@ class _VerSesionState extends State<VerSesion> {
           '$tipoLabel • ${sesionActual.lugar.isNotEmpty ? sesionActual.lugar : l10n.noLocation}',
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.share_outlined),
+            tooltip: AppLocalizations.of(context)!.shareSession,
+            onPressed: _compartirSesion,
+          ),
           IconButton(
             icon: const Icon(Icons.edit_location_alt),
             tooltip: AppLocalizations.of(context)!.edit,
@@ -643,6 +727,11 @@ class _VerSesionState extends State<VerSesion> {
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         const Spacer(),
+                        IconButton(
+                          icon: const Icon(Icons.share_outlined),
+                          tooltip: AppLocalizations.of(context)!.shareGame,
+                          onPressed: () => _compartirPartida(idx),
+                        ),
                         IconButton(
                           icon: const Icon(Icons.edit, color: Colors.blue),
                           tooltip: AppLocalizations.of(context)!.editTooltip,

@@ -1496,6 +1496,60 @@ abstract class AppLocalizations {
   /// **'Puntos: {points}'**
   String points(int points);
 
+  /// No description provided for @shareSession.
+  ///
+  /// In es, this message translates to:
+  /// **'Compartir sesión'**
+  String get shareSession;
+
+  /// No description provided for @shareGame.
+  ///
+  /// In es, this message translates to:
+  /// **'Compartir partida'**
+  String get shareGame;
+
+  /// No description provided for @chooseShareFormat.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige cómo quieres compartirlo'**
+  String get chooseShareFormat;
+
+  /// No description provided for @shareAsText.
+  ///
+  /// In es, this message translates to:
+  /// **'Como texto'**
+  String get shareAsText;
+
+  /// No description provided for @shareAsImage.
+  ///
+  /// In es, this message translates to:
+  /// **'Como imagen'**
+  String get shareAsImage;
+
+  /// No description provided for @sessionSummaryTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sesión de bolos'**
+  String get sessionSummaryTitle;
+
+  /// No description provided for @gameSummaryTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Partida de bolos'**
+  String get gameSummaryTitle;
+
+  /// No description provided for @generatedWithApp.
+  ///
+  /// In es, this message translates to:
+  /// **'Generado con Bolómetro'**
+  String get generatedWithApp;
+
+  /// No description provided for @shareError.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo compartir el resumen. Inténtalo de nuevo.'**
+  String get shareError;
+
   /// Descripción de sesión con promedio
   ///
   /// In es, this message translates to:

@@ -737,6 +737,33 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get shareSession => 'Share session';
+
+  @override
+  String get shareGame => 'Share game';
+
+  @override
+  String get chooseShareFormat => 'Choose how to share it';
+
+  @override
+  String get shareAsText => 'As text';
+
+  @override
+  String get shareAsImage => 'As image';
+
+  @override
+  String get sessionSummaryTitle => 'Bowling session';
+
+  @override
+  String get gameSummaryTitle => 'Bowling game';
+
+  @override
+  String get generatedWithApp => 'Generated with Bolometer';
+
+  @override
+  String get shareError => 'Could not share the summary. Please try again.';
+
+  @override
   String gamesWithAverage(int count, String date, String average) {
     return '$count games on $date. Avg: $average';
   }
