@@ -583,7 +583,7 @@ Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
 
   top += 36;
   final detailPanelTop = top - 10;
-  final detailPanelBottom = content.notes == null ? height - 190 : height - 250;
+  final detailPanelBottom = (content.notes == null ? height - 190 : height - 250).toDouble();
   final detailPanel = RRect.fromRectAndRadius(
     Rect.fromLTRB(
       horizontalPadding - 6,
