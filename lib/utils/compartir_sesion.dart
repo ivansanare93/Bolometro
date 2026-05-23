@@ -613,7 +613,7 @@ Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
     overrideLeft: 0,
   );
 
-  top += 32;
+  top = math.max(top + 32, heroRect.bottom + 26);
   top = _drawChips(
     canvas: canvas,
     chips: content.chips,
@@ -718,7 +718,7 @@ Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
     canvas: canvas,
     text: content.footer,
     left: horizontalPadding,
-    top: height - 140,
+    top: height - 96,
     maxWidth: width - (horizontalPadding * 2),
     style: const TextStyle(
       fontSize: 24,
