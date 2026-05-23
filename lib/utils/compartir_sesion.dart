@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -14,6 +15,7 @@ import '../models/sesion.dart';
 import 'app_constants.dart';
 
 const _shareCardShadowBlur = 28.0;
+const _appLogoAssetPath = 'assets/logo_bolometro.png';
 
 class SessionShareSummary {
   final List<int> scores;
@@ -363,6 +365,7 @@ Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
   const height = 1350;
   const horizontalPadding = 88.0;
   const cardInset = 54.0;
+  const headerHeight = 204.0;
 
   final pictureRecorder = ui.PictureRecorder();
   final canvas = Canvas(pictureRecorder);
@@ -370,10 +373,25 @@ Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
   final gradient = ui.Gradient.linear(
     Offset.zero,
     Offset(width.toDouble(), height.toDouble()),
-    [content.accentColor, _darken(content.accentColor, 0.18)],
+    [
+      _darken(content.accentColor, 0.05),
+      _darken(content.accentColor, 0.2),
+      _darken(content.accentColor, 0.35),
+    ],
+    const [0.0, 0.58, 1.0],
   );
 
   canvas.drawRect(canvasRect, Paint()..shader = gradient);
+  canvas.drawCircle(
+    const Offset(124, 160),
+    180,
+    Paint()..color = Colors.white.withOpacity(0.09),
+  );
+  canvas.drawCircle(
+    const Offset(930, 1080),
+    240,
+    Paint()..color = Colors.white.withOpacity(0.08),
+  );
 
   final cardRect = RRect.fromRectAndRadius(
     Rect.fromLTWH(
@@ -393,8 +411,81 @@ Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
     true,
   );
   canvas.drawRRect(cardRect, Paint()..color = Colors.white.withOpacity(0.97));
+  canvas.drawRRect(
+    cardRect,
+    Paint()
+      ..color = content.accentColor.withOpacity(0.2)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.6,
+  );
 
-  var top = 110.0;
+  final headerRect = RRect.fromRectAndRadius(
+    Rect.fromLTWH(
+      cardInset + 18,
+      cardInset + 16,
+      width - ((cardInset + 18) * 2),
+      headerHeight,
+    ),
+    const Radius.circular(34),
+  );
+  final headerGradient = ui.Gradient.linear(
+    Offset(headerRect.left, headerRect.top),
+    Offset(headerRect.right, headerRect.bottom),
+    [
+      content.accentColor.withOpacity(0.16),
+      content.accentColor.withOpacity(0.05),
+    ],
+  );
+  canvas.drawRRect(headerRect, Paint()..shader = headerGradient);
+
+  final logoImage = await _loadAppLogo();
+  final logoTop = headerRect.top + 30;
+  final logoLeft = headerRect.left + 30;
+  if (logoImage != null) {
+    const logoSize = 104.0;
+    final logoRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(logoLeft, logoTop, logoSize, logoSize),
+      const Radius.circular(24),
+    );
+    canvas.drawRRect(logoRect, Paint()..color = Colors.white);
+    canvas.save();
+    canvas.clipRRect(logoRect);
+    paintImage(
+      canvas: canvas,
+      rect: logoRect.outerRect,
+      image: logoImage,
+      fit: BoxFit.cover,
+      filterQuality: FilterQuality.high,
+    );
+    canvas.restore();
+  }
+
+  _drawText(
+    canvas: canvas,
+    text: 'Bolómetro',
+    left: logoLeft + 126,
+    top: logoTop + 6,
+    maxWidth: width - ((horizontalPadding + 126) * 2),
+    style: const TextStyle(
+      fontSize: 48,
+      fontWeight: FontWeight.w900,
+      color: Color(0xFF162033),
+    ),
+  );
+  _drawText(
+    canvas: canvas,
+    text: content.subtitle ?? content.heroLabel,
+    left: logoLeft + 126,
+    top: logoTop + 66,
+    maxWidth: width - ((horizontalPadding + 126) * 2),
+    style: TextStyle(
+      fontSize: 26,
+      fontWeight: FontWeight.w700,
+      color: content.accentColor,
+    ),
+  );
+
+  var top = headerRect.bottom + 30;
 
   top = _drawText(
     canvas: canvas,
@@ -434,7 +525,21 @@ Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
       ..strokeWidth = 3,
   );
 
-  top += 48;
+  top += 32;
+  final heroRect = RRect.fromRectAndRadius(
+    Rect.fromLTWH(horizontalPadding, top, width - (horizontalPadding * 2), 242),
+    const Radius.circular(34),
+  );
+  canvas.drawRRect(heroRect, Paint()..color = content.accentColor.withOpacity(0.08));
+  canvas.drawRRect(
+    heroRect,
+    Paint()
+      ..color = content.accentColor.withOpacity(0.24)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2,
+  );
+
+  top += 26;
   top = _drawText(
     canvas: canvas,
     text: content.heroValue,
@@ -465,7 +570,7 @@ Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
     overrideLeft: 0,
   );
 
-  top += 28;
+  top += 32;
   top = _drawChips(
     canvas: canvas,
     chips: content.chips,
@@ -476,6 +581,19 @@ Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
   );
 
   top += 36;
+  final detailPanelTop = top - 10;
+  final detailPanelBottom = content.notes == null ? height - 190 : height - 250;
+  final detailPanel = RRect.fromRectAndRadius(
+    Rect.fromLTRB(
+      horizontalPadding - 6,
+      detailPanelTop,
+      width - horizontalPadding + 6,
+      detailPanelBottom,
+    ),
+    const Radius.circular(28),
+  );
+  canvas.drawRRect(detailPanel, Paint()..color = const Color(0xFFF7FAFC));
+
   for (final detailLine in content.detailLines) {
     top = _drawText(
       canvas: canvas,
@@ -545,6 +663,22 @@ Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
   final image = await picture.toImage(width, height);
   final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
   return byteData!.buffer.asUint8List();
+}
+
+Future<ui.Image?> _loadAppLogo() async {
+  try {
+    final byteData = await rootBundle.load(_appLogoAssetPath);
+    final codec = await ui.instantiateImageCodec(
+      byteData.buffer.asUint8List(),
+      targetWidth: 220,
+    );
+    final frame = await codec.getNextFrame();
+    return frame.image;
+  } catch (error, stackTrace) {
+    debugPrint('Error loading logo for share card: $error');
+    debugPrintStack(stackTrace: stackTrace);
+    return null;
+  }
 }
 
 double _drawChips({
