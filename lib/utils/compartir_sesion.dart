@@ -16,6 +16,8 @@ import 'app_constants.dart';
 
 const _shareCardShadowBlur = 28.0;
 const _appLogoAssetPath = 'assets/logo_bolometro.png';
+ui.Image? _cachedShareLogoImage;
+bool _shareLogoLoadAttempted = false;
 
 class SessionShareSummary {
   final List<int> scores;
@@ -666,6 +668,10 @@ Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
 }
 
 Future<ui.Image?> _loadAppLogo() async {
+  if (_shareLogoLoadAttempted) {
+    return _cachedShareLogoImage;
+  }
+  _shareLogoLoadAttempted = true;
   try {
     final byteData = await rootBundle.load(_appLogoAssetPath);
     final codec = await ui.instantiateImageCodec(
@@ -673,7 +679,8 @@ Future<ui.Image?> _loadAppLogo() async {
       targetWidth: 220,
     );
     final frame = await codec.getNextFrame();
-    return frame.image;
+    _cachedShareLogoImage = frame.image;
+    return _cachedShareLogoImage;
   } catch (error, stackTrace) {
     debugPrint('Error loading logo for share card: $error');
     debugPrintStack(stackTrace: stackTrace);
