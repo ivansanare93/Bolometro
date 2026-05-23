@@ -252,7 +252,9 @@ Future<void> _shareText({
   final l10n = AppLocalizations.of(context)!;
   try {
     await Share.share(text, subject: subject);
-  } catch (_) {
+  } catch (error, stackTrace) {
+    debugPrint('Error sharing text summary: $error');
+    debugPrintStack(stackTrace: stackTrace);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -277,7 +279,9 @@ Future<void> _shareImage({
     final file = File('${directory.path}/$fileName');
     await file.writeAsBytes(pngBytes, flush: true);
     await Share.shareXFiles([XFile(file.path)], text: description, subject: subject);
-  } catch (_) {
+  } catch (error, stackTrace) {
+    debugPrint('Error sharing image summary: $error');
+    debugPrintStack(stackTrace: stackTrace);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
