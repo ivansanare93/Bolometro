@@ -13,6 +13,8 @@ import '../models/partida.dart';
 import '../models/sesion.dart';
 import 'app_constants.dart';
 
+const _shareCardShadowBlur = 28.0;
+
 class SessionShareSummary {
   final List<int> scores;
   final double? average;
@@ -61,6 +63,7 @@ GameShareSummary buildGameShareSummary(Partida partida) {
   var spares = 0;
   var misses = 0;
 
+  // Defensive clamp: imported or legacy data may contain extra frames.
   for (final frame in partida.frames.take(AppConstants.totalFrames)) {
     final firstThrow = frame.isNotEmpty ? frame.first.trim() : '';
     final hasSpare = frame.skip(1).any((throwValue) => throwValue.trim() == AppConstants.simboloSpare);
@@ -383,7 +386,12 @@ Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
   );
 
   final cardPath = Path()..addRRect(cardRect);
-  canvas.drawShadow(cardPath, Colors.black.withOpacity(0.22), 28, true);
+  canvas.drawShadow(
+    cardPath,
+    Colors.black.withOpacity(0.22),
+    _shareCardShadowBlur,
+    true,
+  );
   canvas.drawRRect(cardRect, Paint()..color = Colors.white.withOpacity(0.97));
 
   var top = 110.0;
@@ -659,6 +667,7 @@ Color _darken(Color color, double amount) {
 }
 
 String _framesPreview(Partida partida) {
+  // Defensive clamp: share previews should never render more than 10 frames.
   final frames = partida.frames.take(AppConstants.totalFrames).map((frame) {
     final shots = frame.where((shot) => shot.trim().isNotEmpty).toList();
     return shots.isEmpty ? AppConstants.simboloFallo : shots.join(' ');
