@@ -744,6 +744,33 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get shareSession => 'Compartir sesión';
+
+  @override
+  String get shareGame => 'Compartir partida';
+
+  @override
+  String get chooseShareFormat => 'Elige cómo quieres compartirlo';
+
+  @override
+  String get shareAsText => 'Como texto';
+
+  @override
+  String get shareAsImage => 'Como imagen';
+
+  @override
+  String get sessionSummaryTitle => 'Sesión de bolos';
+
+  @override
+  String get gameSummaryTitle => 'Partida de bolos';
+
+  @override
+  String get generatedWithApp => 'Generado con Bolómetro';
+
+  @override
+  String get shareError => 'No se pudo compartir el resumen. Inténtalo de nuevo.';
+
+  @override
   String gamesWithAverage(int count, String date, String average) {
     return '$count partidas el $date. Prom: $average';
   }
