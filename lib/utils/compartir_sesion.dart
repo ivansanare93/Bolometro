@@ -13,6 +13,7 @@ import '../l10n/app_localizations.dart';
 import '../models/partida.dart';
 import '../models/sesion.dart';
 import 'app_constants.dart';
+import 'registro_tiros_utils.dart';
 
 const _shareCardShadowBlur = 28.0;
 const _appLogoAssetPath = 'assets/logo_bolometro.png';
@@ -43,6 +44,18 @@ class GameShareSummary {
     required this.strikes,
     required this.spares,
     required this.misses,
+  });
+}
+
+class GameShareFrame {
+  final int frameNumber;
+  final List<String> throwsValues;
+  final int? cumulativeScore;
+
+  const GameShareFrame({
+    required this.frameNumber,
+    required this.throwsValues,
+    required this.cumulativeScore,
   });
 }
 
@@ -81,6 +94,31 @@ GameShareSummary buildGameShareSummary(Partida partida) {
   }
 
   return GameShareSummary(strikes: strikes, spares: spares, misses: misses);
+}
+
+List<GameShareFrame> buildGameShareFramesForShareCard(Partida partida) {
+  final cumulativeScores = calcularPuntuacionPorFrame(partida.frames, permitirNulos: true);
+  return List.generate(AppConstants.totalFrames, (index) {
+    final frame = index < partida.frames.length ? partida.frames[index] : const <String>[];
+    final throwCount = index == AppConstants.totalFrames - 1 ? 3 : 2;
+    final throwsValues = List.generate(throwCount, (throwIndex) {
+      if (throwIndex >= frame.length) {
+        return '';
+      }
+      final shot = frame[throwIndex].trim();
+      if (shot.isEmpty) {
+        return '';
+      }
+      return formatearTiroParaMostrar(shot);
+    });
+
+    final cumulativeScore = index < cumulativeScores.length ? cumulativeScores[index] : null;
+    return GameShareFrame(
+      frameNumber: index + 1,
+      throwsValues: throwsValues,
+      cumulativeScore: cumulativeScore,
+    );
+  });
 }
 
 String buildSessionShareText({
@@ -353,8 +391,9 @@ Future<Uint8List> _buildGameShareImage({
         _ShareDetailLine(l10n.date, _formatDate(date, localeName)),
         _ShareDetailLine(l10n.location, _locationLabel(l10n, partida.lugar ?? sesion.lugar)),
         _ShareDetailLine(l10n.sessionType, _sessionTypeLabel(l10n, sesion.tipo)),
-        _ShareDetailLine(l10n.frames, _framesPreview(partida)),
       ],
+      framesLabel: l10n.frames,
+      frames: buildGameShareFramesForShareCard(partida),
       notes: _cleanNotes(partida.notas ?? sesion.notas),
       footer: l10n.generatedWithApp,
     ),
@@ -364,8 +403,8 @@ Future<Uint8List> _buildGameShareImage({
 Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
   const width = 1080;
   const height = 1350;
-  const horizontalPadding = 88.0;
-  const cardInset = 54.0;
+  const horizontalPadding = 64.0;
+  const cardInset = 40.0;
   const headerHeight = 204.0;
 
   final pictureRecorder = ui.PictureRecorder();
@@ -583,7 +622,7 @@ Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
 
   top += 36;
   final detailPanelTop = top - 10;
-  final detailPanelBottom = (content.notes == null ? height - 190 : height - 250).toDouble();
+  final detailPanelBottom = (content.notes == null ? height - 178 : height - 235).toDouble();
   final detailPanel = RRect.fromRectAndRadius(
     Rect.fromLTRB(
       horizontalPadding - 6,
@@ -626,6 +665,33 @@ Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
     top += 18;
   }
 
+  if (content.frames != null && content.framesLabel != null) {
+    top += 2;
+    top = _drawText(
+      canvas: canvas,
+      text: content.framesLabel!.toUpperCase(),
+      left: horizontalPadding,
+      top: top,
+      maxWidth: width - (horizontalPadding * 2),
+      style: TextStyle(
+        fontSize: 22,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 1.4,
+        color: content.accentColor,
+      ),
+    );
+    top += 10;
+    top = _drawFramesScoreboard(
+      canvas: canvas,
+      frames: content.frames!,
+      startTop: top,
+      left: horizontalPadding - 4,
+      maxWidth: width - ((horizontalPadding - 4) * 2),
+      accentColor: content.accentColor,
+    );
+    top += 16;
+  }
+
   if (content.notes != null) {
     top += 10;
     top = _drawText(
@@ -641,7 +707,7 @@ Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
         height: 1.3,
         fontStyle: FontStyle.italic,
       ),
-      maxLines: 5,
+      maxLines: content.frames == null ? 5 : 3,
     );
   }
 
@@ -684,6 +750,131 @@ Future<ui.Image?> _decodeAppLogo() async {
     debugPrintStack(stackTrace: stackTrace);
     return null;
   }
+}
+
+double _drawFramesScoreboard({
+  required Canvas canvas,
+  required List<GameShareFrame> frames,
+  required double startTop,
+  required double left,
+  required double maxWidth,
+  required Color accentColor,
+}) {
+  const headerHeight = 30.0;
+  const throwsHeight = 58.0;
+  const scoresHeight = 56.0;
+  const panelInnerPadding = 10.0;
+  const panelHeight = panelInnerPadding + headerHeight + throwsHeight + scoresHeight + panelInnerPadding;
+  final boardRect = RRect.fromRectAndRadius(
+    Rect.fromLTWH(left, startTop, maxWidth, panelHeight),
+    const Radius.circular(18),
+  );
+  canvas.drawRRect(boardRect, Paint()..color = const Color(0xFFFFFFFF));
+  canvas.drawRRect(
+    boardRect,
+    Paint()
+      ..color = accentColor.withOpacity(0.34)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.7,
+  );
+
+  final gridLeft = left + panelInnerPadding;
+  final gridTop = startTop + panelInnerPadding;
+  final gridWidth = maxWidth - (panelInnerPadding * 2);
+  final frameWidth = gridWidth / AppConstants.totalFrames;
+  final throwsTop = gridTop + headerHeight;
+  final scoresTop = throwsTop + throwsHeight;
+  final gridPaint = Paint()
+    ..color = const Color(0xFFD4DCE7)
+    ..strokeWidth = 1.35;
+
+  canvas.drawLine(Offset(gridLeft, throwsTop), Offset(gridLeft + gridWidth, throwsTop), gridPaint);
+  canvas.drawLine(Offset(gridLeft, scoresTop), Offset(gridLeft + gridWidth, scoresTop), gridPaint);
+
+  for (var index = 0; index < AppConstants.totalFrames; index++) {
+    final frame = frames[index];
+    final frameLeft = gridLeft + (frameWidth * index);
+    final frameRight = frameLeft + frameWidth;
+    if (index > 0) {
+      canvas.drawLine(
+        Offset(frameLeft, gridTop),
+        Offset(frameLeft, gridTop + headerHeight + throwsHeight + scoresHeight),
+        gridPaint,
+      );
+    }
+
+    _paintCenteredText(
+      canvas: canvas,
+      text: 'F${frame.frameNumber}',
+      rect: Rect.fromLTWH(frameLeft + 2, gridTop, frameWidth - 4, headerHeight),
+      style: TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w700,
+        color: accentColor.withOpacity(0.85),
+      ),
+    );
+
+    final throwCellCount = index == AppConstants.totalFrames - 1 ? 3 : 2;
+    final throwCellWidth = frameWidth / throwCellCount;
+    for (var throwIndex = 1; throwIndex < throwCellCount; throwIndex++) {
+      final dividerX = frameLeft + (throwCellWidth * throwIndex);
+      canvas.drawLine(Offset(dividerX, throwsTop), Offset(dividerX, scoresTop), gridPaint);
+    }
+
+    for (var throwIndex = 0; throwIndex < throwCellCount; throwIndex++) {
+      final shot = frame.throwsValues[throwIndex];
+      _paintCenteredText(
+        canvas: canvas,
+        text: shot,
+        rect: Rect.fromLTWH(frameLeft + (throwCellWidth * throwIndex), throwsTop, throwCellWidth, throwsHeight),
+        style: const TextStyle(
+          fontSize: 25,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFF162033),
+          height: 1.0,
+        ),
+      );
+    }
+
+    _paintCenteredText(
+      canvas: canvas,
+      text: frame.cumulativeScore?.toString() ?? '',
+      rect: Rect.fromLTWH(frameLeft + 2, scoresTop, frameWidth - 4, scoresHeight),
+      style: const TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
+        color: Color(0xFF1F2B3E),
+      ),
+    );
+
+    if (index == AppConstants.totalFrames - 1) {
+      canvas.drawLine(
+        Offset(frameRight, gridTop),
+        Offset(frameRight, gridTop + headerHeight + throwsHeight + scoresHeight),
+        gridPaint,
+      );
+    }
+  }
+
+  return startTop + panelHeight;
+}
+
+void _paintCenteredText({
+  required Canvas canvas,
+  required String text,
+  required Rect rect,
+  required TextStyle style,
+}) {
+  final textPainter = TextPainter(
+    text: TextSpan(text: text, style: style),
+    textDirection: ui.TextDirection.ltr,
+    textAlign: TextAlign.center,
+    maxLines: 1,
+    ellipsis: '…',
+  )..layout(maxWidth: rect.width);
+  final x = rect.left + ((rect.width - textPainter.width) / 2);
+  final y = rect.top + ((rect.height - textPainter.height) / 2);
+  textPainter.paint(canvas, Offset(x, y));
 }
 
 double _drawChips({
@@ -805,15 +996,6 @@ Color _darken(Color color, double amount) {
   return hslColor.withLightness(lightness).toColor();
 }
 
-String _framesPreview(Partida partida) {
-  // Defensive clamp: share previews should never render more than 10 frames.
-  final frames = partida.frames.take(AppConstants.totalFrames).map((frame) {
-    final shots = frame.where((shot) => shot.trim().isNotEmpty).toList();
-    return shots.isEmpty ? AppConstants.simboloFallo : shots.join(' ');
-  }).toList();
-  return frames.join('   |   ');
-}
-
 String? _cleanNotes(String? notes) {
   if (notes == null) {
     return null;
@@ -836,6 +1018,8 @@ class _ShareCardContent {
   final Color accentColor;
   final List<String> chips;
   final List<_ShareDetailLine> detailLines;
+  final String? framesLabel;
+  final List<GameShareFrame>? frames;
   final String? notes;
   final String footer;
 
@@ -847,6 +1031,8 @@ class _ShareCardContent {
     required this.accentColor,
     required this.chips,
     required this.detailLines,
+    this.framesLabel,
+    this.frames,
     required this.notes,
     required this.footer,
   });

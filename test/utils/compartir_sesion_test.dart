@@ -83,6 +83,34 @@ void main() {
       expect(summary.misses, 3);
     });
 
+    test('buildGameShareFramesForShareCard builds scoreboard-ready throws and cumulative score', () {
+      final partida = Partida(
+        total: 90,
+        frames: [
+          ['9', '0'],
+          ['9', '0'],
+          ['9', '0'],
+          ['9', '0'],
+          ['9', '0'],
+          ['9', '0'],
+          ['9', '0'],
+          ['9', '0'],
+          ['9', '0'],
+          ['9', '0', ''],
+        ],
+      );
+
+      final frames = buildGameShareFramesForShareCard(partida);
+
+      expect(frames, hasLength(10));
+      expect(frames.first.frameNumber, 1);
+      expect(frames.first.throwsValues, ['9', AppConstants.simboloFallo]);
+      expect(frames.first.cumulativeScore, 9);
+      expect(frames[8].cumulativeScore, 81);
+      expect(frames[9].throwsValues, ['9', AppConstants.simboloFallo, '']);
+      expect(frames[9].cumulativeScore, 90);
+    });
+
     testWidgets('buildSessionShareText creates a readable localized summary', (
       WidgetTester tester,
     ) async {
