@@ -613,7 +613,9 @@ Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
     overrideLeft: 0,
   );
 
-  top += 32;
+  const chipsTopPadding = 32.0;
+  const minChipsGapFromHero = 26.0;
+  top = math.max(top + chipsTopPadding, heroRect.bottom + minChipsGapFromHero);
   top = _drawChips(
     canvas: canvas,
     chips: content.chips,
@@ -714,11 +716,12 @@ Future<Uint8List> _renderShareCard(_ShareCardContent content) async {
     );
   }
 
+  const footerBottomOffset = 96.0;
   _drawText(
     canvas: canvas,
     text: content.footer,
     left: horizontalPadding,
-    top: height - 140,
+    top: height - footerBottomOffset,
     maxWidth: width - (horizontalPadding * 2),
     style: const TextStyle(
       fontSize: 24,
