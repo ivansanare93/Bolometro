@@ -96,6 +96,9 @@ GameShareSummary buildGameShareSummary(Partida partida) {
   return GameShareSummary(strikes: strikes, spares: spares, misses: misses);
 }
 
+/// Transforms raw game frames into a normalized structure ready to render
+/// in the share-card scoreboard, including formatted throw symbols and
+/// cumulative score per frame when available.
 List<GameShareFrame> buildGameShareFramesForShareCard(Partida partida) {
   final cumulativeScores = calcularPuntuacionPorFrame(partida.frames, permitirNulos: true);
   return List.generate(AppConstants.totalFrames, (index) {
@@ -752,6 +755,8 @@ Future<ui.Image?> _decodeAppLogo() async {
   }
 }
 
+/// Draws a bowling-style scoreboard grid with frame headers, throw cells and
+/// cumulative scores. Returns the bottom Y coordinate after rendering.
 double _drawFramesScoreboard({
   required Canvas canvas,
   required List<GameShareFrame> frames,
@@ -859,6 +864,7 @@ double _drawFramesScoreboard({
   return startTop + panelHeight;
 }
 
+/// Paints a single-line text centered inside the provided rectangle.
 void _paintCenteredText({
   required Canvas canvas,
   required String text,
