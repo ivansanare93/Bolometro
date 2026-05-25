@@ -35,6 +35,8 @@ class MarcadorBolosState extends State<MarcadorBolos> {
   late List<List<TextEditingController>> _controllers;
   late List<List<FocusNode>> _focusNodes;
   late ScrollController _scrollController;
+  late List<GlobalKey> _frameKeys;
+  final GlobalKey _scrollViewportKey = GlobalKey();
   final ValueNotifier<bool> hayCampoActivoNotifier = ValueNotifier(false);
 
   void setTiroActivo(int frame, int tiro) {
@@ -80,16 +82,51 @@ class MarcadorBolosState extends State<MarcadorBolos> {
       (i) => List.generate(AppConstants.maxTirosFrame10, (j) => FocusNode()),
     );
     _scrollController = ScrollController();
+    _frameKeys = List.generate(AppConstants.totalFrames, (_) => GlobalKey());
   }
 
   void _scrollAlFrameActivo() {
     if (frameActivo >= 0 && frameActivo < AppConstants.totalFrames) {
-      final offset = frameActivo * 100.0;
-      _scrollController.animateTo(
-        offset,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_scrollController.hasClients) return;
+
+        final frameContext = _frameKeys[frameActivo].currentContext;
+        final viewportContext = _scrollViewportKey.currentContext;
+        if (frameContext == null || viewportContext == null) return;
+
+        final frameBox = frameContext.findRenderObject() as RenderBox?;
+        final viewportBox = viewportContext.findRenderObject() as RenderBox?;
+        if (frameBox == null || viewportBox == null) return;
+
+        final frameOffset =
+            frameBox.localToGlobal(Offset.zero, ancestor: viewportBox);
+        final frameWidth = frameBox.size.width;
+        final viewportWidth = viewportBox.size.width;
+        const edgePadding = 12.0;
+
+        final currentOffset = _scrollController.offset;
+        double targetOffset = currentOffset;
+
+        if (frameOffset.dx < edgePadding) {
+          targetOffset += frameOffset.dx - edgePadding;
+        } else if (frameOffset.dx + frameWidth >
+            viewportWidth - edgePadding) {
+          targetOffset +=
+              frameOffset.dx + frameWidth - (viewportWidth - edgePadding);
+        }
+
+        targetOffset = targetOffset
+            .clamp(0.0, _scrollController.position.maxScrollExtent)
+            .toDouble();
+
+        if ((targetOffset - currentOffset).abs() < 1) return;
+
+        _scrollController.animateTo(
+          targetOffset,
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeOutCubic,
+        );
+      });
     }
   }
 
@@ -165,19 +202,19 @@ class MarcadorBolosState extends State<MarcadorBolos> {
       _scrollAlFrameActivo();
     });
   }
-  
+
   @override
-void didUpdateWidget(covariant MarcadorBolos oldWidget) {
-  super.didUpdateWidget(oldWidget);
-  // Si los frames han cambiado, actualiza los controllers
-  for (int i = 0; i < 10; i++) {
-    for (int j = 0; j < 3; j++) {
-      if (_controllers[i][j].text != widget.frames[i][j]) {
-        _controllers[i][j].text = widget.frames[i][j];
+  void didUpdateWidget(covariant MarcadorBolos oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Si los frames han cambiado, actualiza los controllers
+    for (int i = 0; i < 10; i++) {
+      for (int j = 0; j < 3; j++) {
+        if (_controllers[i][j].text != widget.frames[i][j]) {
+          _controllers[i][j].text = widget.frames[i][j];
+        }
       }
     }
   }
-}
 
   @override
   void dispose() {
@@ -207,6 +244,7 @@ void didUpdateWidget(covariant MarcadorBolos oldWidget) {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       clipBehavior: Clip.antiAlias,
       child: SingleChildScrollView(
+        key: _scrollViewportKey,
         scrollDirection: Axis.horizontal,
         controller: _scrollController,
         child: IntrinsicHeight(
@@ -226,6 +264,7 @@ void didUpdateWidget(covariant MarcadorBolos oldWidget) {
 
               return IntrinsicWidth(
                 child: Container(
+                  key: _frameKeys[index],
                   decoration: BoxDecoration(
                     color: estaActivo
                         ? (isDark
@@ -268,9 +307,9 @@ void didUpdateWidget(covariant MarcadorBolos oldWidget) {
                             letterSpacing: 0.5,
                           ),
                         ),
-                    ),
-                    // Input cells
-                    Padding(
+                      ),
+                      // Input cells
+                      Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 8),
                       child: Row(
