@@ -224,49 +224,50 @@ void didUpdateWidget(covariant MarcadorBolos oldWidget) {
                   ? (mostrarTercerTiro(widget.frames) ? 3 : 2)
                   : 2;
 
-              return Container(
-                decoration: BoxDecoration(
-                  color: estaActivo
-                      ? (isDark
-                          ? theme.colorScheme.primary.withOpacity(0.18)
-                          : theme.colorScheme.primary.withOpacity(0.07))
-                      : null,
-                  border: index > 0
-                      ? Border(
-                          left: BorderSide(
-                            color: theme.dividerColor,
-                            width: 0.8,
+              return IntrinsicWidth(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: estaActivo
+                        ? (isDark
+                            ? theme.colorScheme.primary.withOpacity(0.18)
+                            : theme.colorScheme.primary.withOpacity(0.07))
+                        : null,
+                    border: index > 0
+                        ? Border(
+                            left: BorderSide(
+                              color: theme.dividerColor,
+                              width: 0.8,
+                            ),
+                          )
+                        : null,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Frame number header
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        color: estaActivo
+                            ? theme.colorScheme.primary
+                            : (isDark
+                                ? const Color(0xFF1E2533)
+                                : theme.colorScheme.surfaceVariant),
+                        child: Text(
+                          '${index + 1}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: estaActivo
+                                ? Colors.white
+                                : (isDark
+                                    ? Colors.white60
+                                    : theme.colorScheme.onSurfaceVariant),
+                            letterSpacing: 0.5,
                           ),
-                        )
-                      : null,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Frame number header
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      color: estaActivo
-                          ? theme.colorScheme.primary
-                          : (isDark
-                              ? const Color(0xFF1E2533)
-                              : theme.colorScheme.surfaceVariant),
-                      child: Text(
-                        '${index + 1}',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: estaActivo
-                              ? Colors.white
-                              : (isDark
-                                  ? Colors.white60
-                                  : theme.colorScheme.onSurfaceVariant),
-                          letterSpacing: 0.5,
                         ),
-                      ),
                     ),
                     // Input cells
                     Padding(
@@ -384,6 +385,7 @@ void didUpdateWidget(covariant MarcadorBolos oldWidget) {
                       padding: const EdgeInsets.symmetric(vertical: 6),
                       child: Text(
                         puntaje?.toString() ?? '',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -398,6 +400,7 @@ void didUpdateWidget(covariant MarcadorBolos oldWidget) {
                     ),
                   ],
                 ),
+              ),
               );
             }),
           ),
