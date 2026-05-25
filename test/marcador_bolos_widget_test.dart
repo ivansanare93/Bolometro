@@ -3,6 +3,8 @@ import 'package:bolometro/widgets/marcador_bolos.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+const double _maxExpectedScrollForAdjacentFrame = 60;
+
 Widget _buildMarcadorUnderTest() {
   return MaterialApp(
     home: Scaffold(
@@ -37,7 +39,10 @@ void main() {
       );
 
       expect(scrollableState.position.pixels, greaterThan(0));
-      expect(scrollableState.position.pixels, lessThan(60));
+      expect(
+        scrollableState.position.pixels,
+        lessThan(_maxExpectedScrollForAdjacentFrame),
+      );
     },
   );
 }

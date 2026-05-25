@@ -123,7 +123,7 @@ class MarcadorBolosState extends State<MarcadorBolos> {
 
         _scrollController.animateTo(
           targetOffset,
-          duration: const Duration(milliseconds: 260),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
         );
       });
