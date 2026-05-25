@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/animation.dart';
+import 'package:flutter/foundation.dart';
 import '../utils/registro_tiros_utils.dart';
 import '../utils/app_constants.dart';
 
@@ -94,10 +95,9 @@ class MarcadorBolosState extends State<MarcadorBolos> {
         final frameContext = _frameKeys[frameActivo].currentContext;
         final viewportContext = _scrollViewportKey.currentContext;
         if (frameContext == null || viewportContext == null) {
-          assert(() {
+          if (kDebugMode) {
             debugPrint('MarcadorBolos: scroll contexts are not ready yet.');
-            return true;
-          }());
+          }
           return;
         }
 
