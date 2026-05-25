@@ -215,12 +215,12 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.sessionListTitle),
+        title: Text(l10n.sessionListTitle),
         centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.home),
-            tooltip: AppLocalizations.of(context)!.home,
+            tooltip: l10n.home,
             onPressed: () {
               Navigator.pushAndRemoveUntil(
                 context,
@@ -232,111 +232,50 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
         ],
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Filtro visual optimizado
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Container(
-              decoration: BoxDecoration(
-                color: isDark ? cs.surface : Colors.grey[100],
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: cs.primary.withOpacity(0.38),
-                  width: 1.3,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: cs.primary.withOpacity(isDark ? 0.13 : 0.06),
-                    blurRadius: 7,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-              child: Row(
-                children: [
-                  Icon(Icons.filter_list_rounded, color: cs.primary, size: 22),
-                  const SizedBox(width: 10),
-                  Text(
-                    AppLocalizations.of(context)!.filter,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: cs.onSurface.withOpacity(0.84),
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: _filtroTipo,
-                        borderRadius: BorderRadius.circular(12),
-                        isExpanded: true,
-                        icon: Icon(Icons.arrow_drop_down, color: cs.primary),
-                        dropdownColor: isDark ? cs.surface : Colors.white,
-                        style: TextStyle(
-                          color: cs.onSurface,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        items: AppConstants.tiposSesionConTodos
-                            .map(
-                              (tipo) => DropdownMenuItem(
-                                value: tipo,
-                                child: Text(
-                                  _translateTipo(tipo, l10n),
-                                  style: TextStyle(
-                                    color: cs.onSurface.withOpacity(
-                                      tipo == _filtroTipo ? 1.0 : 0.72,
-                                    ),
-                                    fontWeight: tipo == _filtroTipo
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                                  ),
-                                ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (v) {
-                          setState(() {
-                            _filtroTipo = v ?? AppConstants.tipoTodos;
-                            _aplicarFiltro();
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          // ── Filter chips ──
+          _FilterBar(
+            filtroTipo: _filtroTipo,
+            onChanged: (v) {
+              setState(() {
+                _filtroTipo = v;
+                _aplicarFiltro();
+              });
+            },
+            translateTipo: (t) => _translateTipo(t, l10n),
+            isDark: isDark,
+            cs: cs,
           ),
 
+          // ── Session count summary ──
+          if (!_isLoading && _sesionesFiltradas.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 6),
+              child: Text(
+                _filtroTipo == AppConstants.tipoTodos
+                    ? '${_sesiones.length} ${l10n.sessions.toLowerCase()}'
+                    : '${_sesionesFiltradas.length} ${l10n.sessions.toLowerCase()}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: cs.onSurface.withOpacity(0.45),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+
+          // ── List ──
           Expanded(
             child: _sesionesFiltradas.isEmpty && !_isLoading
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.event_busy,
-                          color: cs.primary.withOpacity(0.48),
-                          size: 54,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          AppLocalizations.of(context)!.noSessionsSaved,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ],
-                    ),
-                  )
+                ? _EmptyState(cs: cs, l10n: l10n)
                 : RefreshIndicator(
                     onRefresh: _cargarSesiones,
                     child: ListView.builder(
                       controller: _scrollController,
-                      itemCount: _sesionesFiltradas.length + (_hasMore && _isLoading ? 1 : 0),
+                      padding: const EdgeInsets.only(top: 4, bottom: 16),
+                      itemCount:
+                          _sesionesFiltradas.length + (_hasMore && _isLoading ? 1 : 0),
                       itemBuilder: (context, idx) {
-                        // Mostrar indicador de carga al final
                         if (idx >= _sesionesFiltradas.length) {
                           return const Padding(
                             padding: EdgeInsets.all(8.0),
@@ -349,36 +288,160 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
                         return Dismissible(
                           key: ValueKey(sesion.key ?? sesion.fecha.toString()),
                           direction: DismissDirection.endToStart,
-                          background: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 30),
-                            alignment: Alignment.centerRight,
-                            color: Colors.red[400],
-                            child: const Icon(
-                              Icons.delete,
-                              color: Colors.white,
-                              size: 34,
-                            ),
-                          ),
+                          background: _DismissBackground(),
                           confirmDismiss: (_) => _mostrarDialogoConfirmacion(),
                           onDismissed: (_) => _borrarSesion(sesion),
                           child: SesionCard(
                             sesion: sesion,
                             onDelete: () => _confirmarYEliminarSesion(sesion),
-                            // VER SESIÓN
                             onTap: () {
                               Navigator.push(
                                 context,
-                              MaterialPageRoute(
-                                builder: (_) => VerSesion(sesion: sesion),
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    },
+                                MaterialPageRoute(
+                                  builder: (_) => VerSesion(sesion: sesion),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
                   ),
           ),
-          )
+        ],
+      ),
+    );
+  }
+}
+
+// ── Sub-widgets ────────────────────────────────────────────────
+
+class _FilterBar extends StatelessWidget {
+  final String filtroTipo;
+  final ValueChanged<String> onChanged;
+  final String Function(String) translateTipo;
+  final bool isDark;
+  final ColorScheme cs;
+
+  const _FilterBar({
+    required this.filtroTipo,
+    required this.onChanged,
+    required this.translateTipo,
+    required this.isDark,
+    required this.cs,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      child: Row(
+        children: AppConstants.tiposSesionConTodos.map((tipo) {
+          final selected = filtroTipo == tipo;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              label: Text(translateTipo(tipo)),
+              selected: selected,
+              onSelected: (_) => onChanged(tipo),
+              selectedColor: cs.primary,
+              backgroundColor:
+                  isDark ? const Color(0xFF1A1F2E) : Colors.grey[100],
+              labelStyle: TextStyle(
+                color: selected ? Colors.white : cs.onSurface.withOpacity(0.75),
+                fontWeight:
+                    selected ? FontWeight.w700 : FontWeight.w500,
+                fontSize: 13,
+              ),
+              side: BorderSide(
+                color: selected
+                    ? cs.primary
+                    : cs.onSurface.withOpacity(0.18),
+                width: 1.2,
+              ),
+              elevation: selected ? 2 : 0,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  final ColorScheme cs;
+  final AppLocalizations l10n;
+
+  const _EmptyState({required this.cs, required this.l10n});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 88,
+            height: 88,
+            decoration: BoxDecoration(
+              color: cs.primary.withOpacity(0.08),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.sports_score_rounded,
+              color: cs.primary.withOpacity(0.45),
+              size: 46,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            l10n.noSessionsSaved,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: cs.onSurface.withOpacity(0.65),
+                ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n.createFirstSession,
+            style: TextStyle(
+              fontSize: 13,
+              color: cs.onSurface.withOpacity(0.40),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DismissBackground extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      alignment: Alignment.centerRight,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFEF5350), Color(0xFFB71C1C)],
+        ),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.delete_rounded, color: Colors.white, size: 28),
+          const SizedBox(height: 4),
+          Text(
+            l10n.delete,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
