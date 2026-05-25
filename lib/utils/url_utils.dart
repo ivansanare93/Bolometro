@@ -75,4 +75,21 @@ class UrlUtils {
         sanitizePhotoUrl(googlePhotoUrl) ??
         sanitizePhotoUrl(fallbackPhotoUrl);
   }
+
+  /// Resolves the preferred photo source for remote users.
+  /// Local file paths are ignored, but remote HTTP(S) URLs are accepted.
+  static String? resolveRemotePhoto({
+    String? avatarPath,
+    String? googlePhotoUrl,
+    String? fallbackPhotoUrl,
+  }) {
+    final normalizedAvatarPath = _normalizeValue(avatarPath);
+    final avatarRemoteUrl = isLocalFilePath(normalizedAvatarPath)
+        ? null
+        : sanitizePhotoUrl(normalizedAvatarPath);
+
+    return avatarRemoteUrl ??
+        sanitizePhotoUrl(googlePhotoUrl) ??
+        sanitizePhotoUrl(fallbackPhotoUrl);
+  }
 }
