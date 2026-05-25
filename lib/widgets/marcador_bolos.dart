@@ -129,6 +129,7 @@ class MarcadorBolosState extends State<MarcadorBolos> {
 
         // Avoid animating imperceptible sub-pixel adjustments.
         if ((targetOffset - currentOffset).abs() < 1) return;
+        if (!mounted || !_scrollController.hasClients) return;
 
         _scrollController.animateTo(
           targetOffset,
