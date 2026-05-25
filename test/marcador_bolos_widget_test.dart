@@ -3,6 +3,9 @@ import 'package:bolometro/widgets/marcador_bolos.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+// In the 140px-wide test viewport, moving from frame 1 to frame 2 should only
+// require a small adjustment to keep the next frame fully visible. A value
+// below 60px confirms we no longer make the old 100px jump.
 const double _maxExpectedScrollForAdjacentFrame = 60;
 
 Widget _buildMarcadorUnderTest() {
