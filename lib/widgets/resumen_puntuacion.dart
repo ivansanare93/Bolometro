@@ -15,55 +15,109 @@ class ResumenPuntuacion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: isDark
+              ? [const Color(0xFF1A2740), const Color(0xFF0E1828)]
+              : [const Color(0xFF0077B6), const Color(0xFF00B4D8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDark
+                    ? const Color(0xFF0096C7)
+                    : const Color(0xFF0077B6))
+                .withOpacity(0.35),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      child: Row(
+        children: [
+          // Current score
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('🎯', style: TextStyle(fontSize: 22)),
-                const SizedBox(width: 8),
                 Text(
-                  'Puntuación actual: $puntuacionActual',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                  'Puntuación',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.75),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                const Text('🚀', style: TextStyle(fontSize: 22)),
-                const SizedBox(width: 8),
+                const SizedBox(height: 2),
                 Text(
-                  'Máximo posible: $puntuacionMaxima',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontStyle: FontStyle.italic,
-                    color: Theme.of(context).colorScheme.primary,
+                  '$puntuacionActual',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 42,
+                    fontWeight: FontWeight.w900,
+                    height: 1.0,
                   ),
                 ),
               ],
             ),
-            if (buenaRacha)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Row(
-                  children: [
-                    Icon(Icons.whatshot, color: Theme.of(context).colorScheme.tertiary),
-                    const SizedBox(width: 6),
-                    Text(AppLocalizations.of(context)!.onStreak,
-                        style: TextStyle(color: Theme.of(context).colorScheme.tertiary)),
-                  ],
+          ),
+          Container(
+            width: 1,
+            height: 52,
+            color: Colors.white.withOpacity(0.25),
+          ),
+          const SizedBox(width: 16),
+          // Max possible
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Máximo posible',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.75),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
+                const SizedBox(height: 2),
+                Text(
+                  '$puntuacionMaxima',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.90),
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    height: 1.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (buenaRacha) ...[
+            const SizedBox(width: 8),
+            Column(
+              children: [
+                Icon(Icons.whatshot_rounded,
+                    color: Colors.orange.shade300, size: 30),
+                const SizedBox(height: 2),
+                Text(
+                  AppLocalizations.of(context)!.onStreak,
+                  style: TextStyle(
+                    color: Colors.orange.shade300,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
