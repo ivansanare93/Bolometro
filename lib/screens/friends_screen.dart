@@ -350,7 +350,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                 fromUserName:
                     perfilActual?.nombre ?? currentUser.displayName ?? 'Usuario',
                 fromUserEmail: currentUser.email,
-                fromUserPhotoUrl: UrlUtils.resolvePreferredPhoto(
+                fromUserPhotoUrl: UrlUtils.resolveRemotePhoto(
                   avatarPath: perfilActual?.avatarPath,
                   googlePhotoUrl: perfilActual?.googlePhotoUrl,
                   fallbackPhotoUrl: currentUser.photoURL,

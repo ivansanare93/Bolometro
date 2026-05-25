@@ -7,6 +7,7 @@ import '../services/auth_service.dart';
 import '../services/friends_service.dart';
 import '../repositories/data_repository.dart';
 import '../utils/estadisticas_utils.dart';
+import '../utils/url_utils.dart';
 import '../widgets/comparison_chart.dart';
 import '../widgets/safe_network_image.dart';
 import '../l10n/app_localizations.dart';
@@ -32,6 +33,7 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
   Map<String, dynamic>? _friendStats;
   List<double> _myScores = [];
   List<double> _friendScores = [];
+  String? _myPhotoUrl;
 
   @override
   void initState() {
@@ -48,7 +50,13 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
     try {
       // Obtener mis sesiones y calcular estadísticas
       final misSesiones = await dataRepository.obtenerSesiones();
+      final miPerfil = await dataRepository.obtenerPerfil();
       _myStats = EstadisticasUtils.calcularEstadisticasExtendidas(misSesiones);
+      _myPhotoUrl = UrlUtils.resolvePreferredPhoto(
+        avatarPath: miPerfil?.avatarPath,
+        googlePhotoUrl: miPerfil?.googlePhotoUrl,
+        fallbackPhotoUrl: authService.user?.photoURL,
+      );
       
       // Obtener mis últimas 20 puntuaciones para el gráfico de tendencia
       final misPartidas = <Partida>[];
@@ -159,7 +167,7 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
           children: [
             _buildUserColumn(
               myName,
-              null,
+              _myPhotoUrl,
               localizations.you,
             ),
             Text(

@@ -17,7 +17,7 @@ class FriendsService {
       return null;
     }
 
-    return UrlUtils.resolvePreferredPhoto(
+    return UrlUtils.resolveRemotePhoto(
       avatarPath: perfil['avatarPath'] as String?,
       googlePhotoUrl: perfil['googlePhotoUrl'] as String?,
     );
