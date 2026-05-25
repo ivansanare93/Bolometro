@@ -814,7 +814,9 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
                         _buildInfoChip(
                           context,
                           icon: Icons.category_rounded,
-                          label: _categoryLabel(context, _categoria),
+                          label: _categoria == null
+                              ? l10n.noteCategoryNone
+                              : _categoryLabel(context, _categoria),
                           backgroundColor: Colors.white.withOpacity(0.14),
                           foregroundColor: onAccentColor,
                         ),
