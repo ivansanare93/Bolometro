@@ -15,7 +15,10 @@ Widget _buildMarcadorUnderTest() {
         child: SizedBox(
           width: 140,
           child: MarcadorBolos(
-            frames: List.generate(10, (_) => List.filled(3, '')),
+            frames: List.generate(
+              AppConstants.totalFrames,
+              (_) => List.filled(3, ''),
+            ),
             puntuaciones: List<int?>.filled(AppConstants.totalFrames, null),
             frameActivo: 0,
           ),

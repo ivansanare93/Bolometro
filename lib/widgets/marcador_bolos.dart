@@ -32,6 +32,7 @@ class MarcadorBolos extends StatefulWidget {
 
 class MarcadorBolosState extends State<MarcadorBolos> {
   static const double _frameScrollEdgePadding = 12.0;
+  static const double _minScrollAnimationDelta = 1.0;
   late int frameActivo;
   late int tiroActivo;
   late List<List<TextEditingController>> _controllers;
@@ -128,7 +129,9 @@ class MarcadorBolosState extends State<MarcadorBolos> {
             .toDouble();
 
         // Avoid animating imperceptible sub-pixel adjustments.
-        if ((targetOffset - currentOffset).abs() < 1) return;
+        if ((targetOffset - currentOffset).abs() < _minScrollAnimationDelta) {
+          return;
+        }
         if (!mounted) return;
 
         _scrollController.animateTo(
