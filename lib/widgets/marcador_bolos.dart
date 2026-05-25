@@ -199,156 +199,209 @@ void didUpdateWidget(covariant MarcadorBolos oldWidget) {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      controller: _scrollController,
-      child: Row(
-        children: List.generate(10, (index) {
-          final frame = widget.frames[index];
-          final puntaje = index < widget.puntuaciones.length
-              ? widget.puntuaciones[index]
-              : null;
-          final esUltimo = index == 9;
+    final isDark = theme.brightness == Brightness.dark;
 
-          final tirosEnFrame = esUltimo
-              ? (mostrarTercerTiro(widget.frames) ? 3 : 2)
-              : 2;
+    return Card(
+      elevation: 3,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      clipBehavior: Clip.antiAlias,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        controller: _scrollController,
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: List.generate(10, (index) {
+              final frame = widget.frames[index];
+              final puntaje = index < widget.puntuaciones.length
+                  ? widget.puntuaciones[index]
+                  : null;
+              final esUltimo = index == 9;
+              final estaActivo = index == frameActivo;
 
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: index == frameActivo
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.outline,
-                width: 2,
-              ),
-              boxShadow: index == frameActivo
-                  ? [
-                      BoxShadow(
-                        color: theme.colorScheme.primary.withOpacity(0.2),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]
-                  : [],
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'Frame ${index + 1}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+              final tirosEnFrame = esUltimo
+                  ? (mostrarTercerTiro(widget.frames) ? 3 : 2)
+                  : 2;
+
+              return Container(
+                decoration: BoxDecoration(
+                  color: estaActivo
+                      ? (isDark
+                          ? theme.colorScheme.primary.withOpacity(0.18)
+                          : theme.colorScheme.primary.withOpacity(0.07))
+                      : null,
+                  border: index > 0
+                      ? Border(
+                          left: BorderSide(
+                            color: theme.dividerColor,
+                            width: 0.8,
+                          ),
+                        )
+                      : null,
                 ),
-                const SizedBox(height: 6),
-                Row(
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: List.generate(tirosEnFrame, (tiro) {
-                    final esCampoActivo =
-                        index == frameActivo && tiro == tiroActivo;
-
-                    bool frameCompletoParaValidar() {
-                      if (esUltimo) {
-                        if (tiro == 2) {
-                          final t1 = frame[0];
-                          final t2 = frame[1];
-                          return (t1 == AppConstants.simboloStrike || t2 == AppConstants.simboloSpare) &&
-                              frame[2].isNotEmpty;
-                        }
-                        return frame[0].isNotEmpty && frame[1].isNotEmpty;
-                      } else {
-                        return frame[0].isNotEmpty && frame[1].isNotEmpty;
-                      }
-                    }
-
-                    final mostrarError =
-                        (widget.erroresPorTiro?[index]?.contains(tiro) ??
-                            false) &&
-                        frameCompletoParaValidar();
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      child: AnimatedScale(
-                        scale: esCampoActivo ? 1.05 : 1.0,
-                        duration: const Duration(milliseconds: 150),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.surface,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: mostrarError
-                                  ? theme.colorScheme.error
-                                  : esCampoActivo
-                                  ? Colors.green
-                                  : theme.colorScheme.primary,
-                              width: esCampoActivo ? 2.5 : 1.5,
-                            ),
-                          ),
-                          child: Center(
-                            child: TextField(
-                              controller: _controllers[index][tiro],
-                              focusNode: _focusNodes[index][tiro],
-                              readOnly: true,
-                              textAlign: TextAlign.center,
-                              maxLength: 1,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: esCampoActivo
-                                    ? Colors.green
-                                    : theme.colorScheme.onSurface,
-                              ),
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                counterText: '',
-                                isCollapsed: true,
-                                contentPadding: EdgeInsets.zero,
-                              ),
-                              onTap: () {
-                                setState(() {
-                                  frameActivo = index;
-                                  tiroActivo = tiro;
-                                  hayCampoActivoNotifier.value = true;
-                                });
-                                widget.onChanged?.call(
-                                  index,
-                                  tiro,
-                                  _controllers[index][tiro].text,
-                                );
-                                widget.onCampoActivoCambio?.call(
-                                  frameActivo,
-                                  tiroActivo,
-                                );
-                                _scrollAlFrameActivo();
-                              },
-                            ),
-                          ),
+                  children: [
+                    // Frame number header
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      color: estaActivo
+                          ? theme.colorScheme.primary
+                          : (isDark
+                              ? const Color(0xFF1E2533)
+                              : theme.colorScheme.surfaceVariant),
+                      child: Text(
+                        '${index + 1}',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: estaActivo
+                              ? Colors.white
+                              : (isDark
+                                  ? Colors.white60
+                                  : theme.colorScheme.onSurfaceVariant),
+                          letterSpacing: 0.5,
                         ),
                       ),
-                    );
-                  }),
+                    ),
+                    // Input cells
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: List.generate(tirosEnFrame, (tiro) {
+                          final esCampoActivo =
+                              index == frameActivo && tiro == tiroActivo;
+
+                          bool frameCompletoParaValidar() {
+                            if (esUltimo) {
+                              if (tiro == 2) {
+                                final t1 = frame[0];
+                                final t2 = frame[1];
+                                return (t1 == AppConstants.simboloStrike ||
+                                        t2 == AppConstants.simboloSpare) &&
+                                    frame[2].isNotEmpty;
+                              }
+                              return frame[0].isNotEmpty &&
+                                  frame[1].isNotEmpty;
+                            } else {
+                              return frame[0].isNotEmpty &&
+                                  frame[1].isNotEmpty;
+                            }
+                          }
+
+                          final mostrarError =
+                              (widget.erroresPorTiro?[index]?.contains(tiro) ??
+                                  false) &&
+                              frameCompletoParaValidar();
+
+                          return Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 2),
+                            child: AnimatedScale(
+                              scale: esCampoActivo ? 1.08 : 1.0,
+                              duration: const Duration(milliseconds: 150),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                width: 30,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                  color: esCampoActivo
+                                      ? (isDark
+                                          ? Colors.green.shade900
+                                          : Colors.green.shade50)
+                                      : theme.colorScheme.surface,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: mostrarError
+                                        ? theme.colorScheme.error
+                                        : esCampoActivo
+                                            ? Colors.green.shade600
+                                            : (isDark
+                                                ? Colors.white24
+                                                : theme.colorScheme.outline
+                                                    .withOpacity(0.6)),
+                                    width: esCampoActivo ? 2.0 : 1.0,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: TextField(
+                                    controller: _controllers[index][tiro],
+                                    focusNode: _focusNodes[index][tiro],
+                                    readOnly: true,
+                                    textAlign: TextAlign.center,
+                                    maxLength: 1,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: esCampoActivo
+                                          ? Colors.green.shade700
+                                          : theme.colorScheme.onSurface,
+                                    ),
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      counterText: '',
+                                      isCollapsed: true,
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                    onTap: () {
+                                      setState(() {
+                                        frameActivo = index;
+                                        tiroActivo = tiro;
+                                        hayCampoActivoNotifier.value = true;
+                                      });
+                                      widget.onChanged?.call(
+                                        index,
+                                        tiro,
+                                        _controllers[index][tiro].text,
+                                      );
+                                      widget.onCampoActivoCambio?.call(
+                                        frameActivo,
+                                        tiroActivo,
+                                      );
+                                      _scrollAlFrameActivo();
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+                    // Divider
+                    Divider(
+                        height: 1,
+                        thickness: 0.5,
+                        color: theme.dividerColor),
+                    // Score
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Text(
+                        puntaje?.toString() ?? '',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: puntaje == null
+                              ? theme.hintColor
+                              : (estaActivo
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.primary
+                                      .withOpacity(0.75)),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  puntaje?.toString() ?? '',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: puntaje == null
-                        ? theme.hintColor
-                        : theme.colorScheme.primary,
-                    fontWeight: puntaje == null
-                        ? FontWeight.normal
-                        : FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }),
+              );
+            }),
+          ),
+        ),
       ),
     );
   }

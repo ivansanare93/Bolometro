@@ -455,49 +455,29 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
         ),
         body: SingleChildScrollView(
           controller: _scrollController,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      final newModoVisual = !_modoVisual;
-                      setState(() {
-                        _modoVisual = newModoVisual;
-                        mostrarSelectorpines = newModoVisual;
-                        _actualizarTeclasDeshabilitadas(
-                          frame: _frameActivo,
-                          tiro: _tiroActivo,
-                        );
-                      });
-                      Provider.of<KeyboardProvider>(context, listen: false)
-                          .setModoVisual(newModoVisual);
-                      if (newModoVisual) _scrollToBottom();
-                    },
-                    icon: Icon(
-                      _modoVisual ? Icons.keyboard : Icons.push_pin_rounded,
-                    ),
-                    label: Text(
-                      _modoVisual
-                          ? AppLocalizations.of(context)!.switchToClassicKeyboard
-                          : AppLocalizations.of(context)!.registerPinsVisually,
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _modoVisual
-                          ? Colors.orange
-                          : const Color(0xFF0077B6),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ],
+              // Mode toggle
+              _ModoToggle(
+                modoVisual: _modoVisual,
+                onToggle: (newModoVisual) {
+                  setState(() {
+                    _modoVisual = newModoVisual;
+                    mostrarSelectorpines = newModoVisual;
+                    _actualizarTeclasDeshabilitadas(
+                      frame: _frameActivo,
+                      tiro: _tiroActivo,
+                    );
+                  });
+                  Provider.of<KeyboardProvider>(context, listen: false)
+                      .setModoVisual(newModoVisual);
+                  if (newModoVisual) _scrollToBottom();
+                },
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
+              // Scoresheet
               MarcadorBolos(
                 key: marcadorKey,
                 frames: framesText,
@@ -527,7 +507,8 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
                     : (frame, tiro) {
                         _frameActivo = frame;
                         _tiroActivo = tiro;
-                        _actualizarTeclasDeshabilitadas(frame: frame, tiro: tiro);
+                        _actualizarTeclasDeshabilitadas(
+                            frame: frame, tiro: tiro);
                       },
                 autoFocusEnabled: !_modoVisual,
                 autoAdvanceFocus: true,
@@ -543,7 +524,6 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
                 ),
               ],
 
-              const SizedBox(height: 8),
               ResumenPuntuacion(
                 puntuacionActual: puntuacionActual,
                 puntuacionMaxima: puntuacionMaxima,
@@ -640,7 +620,8 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
               ),
             ],
           ),
-          padding: EdgeInsets.fromLTRB(16, 12, 16, 16 + MediaQuery.of(context).padding.bottom),
+          padding: EdgeInsets.fromLTRB(
+              16, 12, 16, 16 + MediaQuery.of(context).padding.bottom),
           child: ElevatedButton.icon(
             onPressed: _guardar,
             icon: const Icon(Icons.save),
@@ -650,6 +631,123 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// A compact, pill-shaped toggle that switches between classic keyboard mode
+/// and visual pin-selection mode.
+class _ModoToggle extends StatelessWidget {
+  final bool modoVisual;
+  final ValueChanged<bool> onToggle;
+
+  const _ModoToggle({required this.modoVisual, required this.onToggle});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final inactiveColor =
+        isDark ? Colors.white12 : theme.colorScheme.outline.withOpacity(0.2);
+    final activeColor = theme.colorScheme.primary;
+    final inactiveFg = theme.colorScheme.onSurface.withOpacity(0.55);
+    const activeFg = Colors.white;
+
+    return Container(
+      height: 44,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1A1F2E) : Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: theme.colorScheme.outline.withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Keyboard segment
+          Expanded(
+            child: GestureDetector(
+              onTap: modoVisual ? () => onToggle(false) : null,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                decoration: BoxDecoration(
+                  color: !modoVisual ? activeColor : Colors.transparent,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.keyboard_rounded,
+                      size: 18,
+                      color: !modoVisual ? activeFg : inactiveFg,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      l10n.switchToClassicKeyboard,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: !modoVisual ? activeFg : inactiveFg,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Separator
+          Container(
+              width: 1,
+              height: 24,
+              color: inactiveColor),
+          // Visual segment
+          Expanded(
+            child: GestureDetector(
+              onTap: !modoVisual ? () => onToggle(true) : null,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                decoration: BoxDecoration(
+                  color: modoVisual ? activeColor : Colors.transparent,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.push_pin_rounded,
+                      size: 18,
+                      color: modoVisual ? activeFg : inactiveFg,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      l10n.registerPinsVisually,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: modoVisual ? activeFg : inactiveFg,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
