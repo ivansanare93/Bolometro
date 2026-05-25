@@ -93,7 +93,13 @@ class MarcadorBolosState extends State<MarcadorBolos> {
 
         final frameContext = _frameKeys[frameActivo].currentContext;
         final viewportContext = _scrollViewportKey.currentContext;
-        if (frameContext == null || viewportContext == null) return;
+        if (frameContext == null || viewportContext == null) {
+          assert(() {
+            debugPrint('MarcadorBolos: scroll contexts are not ready yet.');
+            return true;
+          }());
+          return;
+        }
 
         final frameBox = frameContext.findRenderObject() as RenderBox?;
         final viewportBox = viewportContext.findRenderObject() as RenderBox?;
@@ -121,6 +127,7 @@ class MarcadorBolosState extends State<MarcadorBolos> {
             .clamp(0.0, _scrollController.position.maxScrollExtent)
             .toDouble();
 
+        // Avoid animating imperceptible sub-pixel adjustments.
         if ((targetOffset - currentOffset).abs() < 1) return;
 
         _scrollController.animateTo(
