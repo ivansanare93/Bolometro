@@ -48,4 +48,30 @@ void main() {
       );
     },
   );
+
+  testWidgets(
+    'can scroll back when a previous frame becomes active again',
+    (tester) async {
+      await tester.pumpWidget(_buildMarcadorUnderTest());
+
+      final state =
+          tester.state<MarcadorBolosState>(find.byType(MarcadorBolos));
+      final scrollableFinder = find.byType(Scrollable).first;
+
+      state.setTiroActivo(6, 0);
+      await tester.pumpAndSettle();
+
+      final advancedOffset =
+          tester.state<ScrollableState>(scrollableFinder).position.pixels;
+
+      state.setTiroActivo(2, 0);
+      await tester.pumpAndSettle();
+
+      final returnedOffset =
+          tester.state<ScrollableState>(scrollableFinder).position.pixels;
+
+      expect(returnedOffset, lessThan(advancedOffset));
+      expect(returnedOffset, greaterThanOrEqualTo(0));
+    },
+  );
 }

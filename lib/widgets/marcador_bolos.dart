@@ -107,13 +107,14 @@ class MarcadorBolosState extends State<MarcadorBolos> {
         double targetOffset = currentOffset;
 
         if (frameOffset.dx < _frameScrollEdgePadding) {
-          targetOffset += frameOffset.dx - _frameScrollEdgePadding;
+          targetOffset =
+              currentOffset + (frameOffset.dx - _frameScrollEdgePadding);
         } else if (frameOffset.dx + frameWidth >
             viewportWidth - _frameScrollEdgePadding) {
-          targetOffset +=
-              frameOffset.dx +
-              frameWidth -
-              (viewportWidth - _frameScrollEdgePadding);
+          targetOffset = currentOffset +
+              (frameOffset.dx +
+                  frameWidth -
+                  (viewportWidth - _frameScrollEdgePadding));
         }
 
         targetOffset = targetOffset
