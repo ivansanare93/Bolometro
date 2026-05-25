@@ -677,8 +677,6 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_esNueva ? l10n.newNote : l10n.editNote),
-        centerTitle: true,
         actions: [
           IconButton(
             icon: Icon(
