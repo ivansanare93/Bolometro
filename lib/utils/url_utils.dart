@@ -77,7 +77,7 @@ class UrlUtils {
   }
 
   /// Resolves the preferred photo source for remote users.
-  /// Local file paths are ignored because they are not portable across devices.
+  /// Local file paths are ignored, but remote HTTP(S) URLs are accepted.
   static String? resolveRemotePhoto({
     String? avatarPath,
     String? googlePhotoUrl,
