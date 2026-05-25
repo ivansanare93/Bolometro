@@ -199,7 +199,6 @@ class _ScoreSheetPinStripState extends State<ScoreSheetPinStrip> {
       if ((targetOffset - currentOffset).abs() < _minScrollAnimationDelta) {
         return;
       }
-      if (!mounted) return;
 
       _scrollController.animateTo(
         targetOffset,
