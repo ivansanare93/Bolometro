@@ -30,6 +30,7 @@ class MarcadorBolos extends StatefulWidget {
 }
 
 class MarcadorBolosState extends State<MarcadorBolos> {
+  static const double _frameScrollEdgePadding = 12.0;
   late int frameActivo;
   late int tiroActivo;
   late List<List<TextEditingController>> _controllers;
@@ -102,17 +103,17 @@ class MarcadorBolosState extends State<MarcadorBolos> {
             frameBox.localToGlobal(Offset.zero, ancestor: viewportBox);
         final frameWidth = frameBox.size.width;
         final viewportWidth = viewportBox.size.width;
-        const edgePadding = 12.0;
-
         final currentOffset = _scrollController.offset;
         double targetOffset = currentOffset;
 
-        if (frameOffset.dx < edgePadding) {
-          targetOffset += frameOffset.dx - edgePadding;
+        if (frameOffset.dx < _frameScrollEdgePadding) {
+          targetOffset += frameOffset.dx - _frameScrollEdgePadding;
         } else if (frameOffset.dx + frameWidth >
-            viewportWidth - edgePadding) {
+            viewportWidth - _frameScrollEdgePadding) {
           targetOffset +=
-              frameOffset.dx + frameWidth - (viewportWidth - edgePadding);
+              frameOffset.dx +
+              frameWidth -
+              (viewportWidth - _frameScrollEdgePadding);
         }
 
         targetOffset = targetOffset
