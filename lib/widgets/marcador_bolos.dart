@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/animation.dart';
+import 'package:flutter/foundation.dart';
 import '../utils/registro_tiros_utils.dart';
 import '../utils/app_constants.dart';
 
@@ -30,11 +31,15 @@ class MarcadorBolos extends StatefulWidget {
 }
 
 class MarcadorBolosState extends State<MarcadorBolos> {
+  static const double _frameScrollEdgePadding = 12.0;
+  static const double _minScrollAnimationDelta = 1.0;
   late int frameActivo;
   late int tiroActivo;
   late List<List<TextEditingController>> _controllers;
   late List<List<FocusNode>> _focusNodes;
   late ScrollController _scrollController;
+  late List<GlobalKey> _frameKeys;
+  final GlobalKey _scrollViewportKey = GlobalKey();
   final ValueNotifier<bool> hayCampoActivoNotifier = ValueNotifier(false);
 
   void setTiroActivo(int frame, int tiro) {
@@ -80,16 +85,61 @@ class MarcadorBolosState extends State<MarcadorBolos> {
       (i) => List.generate(AppConstants.maxTirosFrame10, (j) => FocusNode()),
     );
     _scrollController = ScrollController();
+    _frameKeys = List.generate(AppConstants.totalFrames, (_) => GlobalKey());
   }
 
   void _scrollAlFrameActivo() {
     if (frameActivo >= 0 && frameActivo < AppConstants.totalFrames) {
-      final offset = frameActivo * 100.0;
-      _scrollController.animateTo(
-        offset,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_scrollController.hasClients) return;
+
+        final frameContext = _frameKeys[frameActivo].currentContext;
+        final viewportContext = _scrollViewportKey.currentContext;
+        if (frameContext == null || viewportContext == null) {
+          if (kDebugMode) {
+            debugPrint('MarcadorBolos: scroll contexts are not ready yet.');
+          }
+          return;
+        }
+
+        final frameBox = frameContext.findRenderObject() as RenderBox?;
+        final viewportBox = viewportContext.findRenderObject() as RenderBox?;
+        if (frameBox == null || viewportBox == null) return;
+
+        final frameOffset =
+            frameBox.localToGlobal(Offset.zero, ancestor: viewportBox);
+        final frameWidth = frameBox.size.width;
+        final viewportWidth = viewportBox.size.width;
+        final currentOffset = _scrollController.offset;
+        double targetOffset = currentOffset;
+
+        if (frameOffset.dx < _frameScrollEdgePadding) {
+          targetOffset =
+              currentOffset + (frameOffset.dx - _frameScrollEdgePadding);
+        } else if (frameOffset.dx + frameWidth >
+            viewportWidth - _frameScrollEdgePadding) {
+          targetOffset = currentOffset +
+              (frameOffset.dx +
+                  frameWidth -
+                  (viewportWidth - _frameScrollEdgePadding));
+        }
+
+        targetOffset = targetOffset
+            .clamp(0.0, _scrollController.position.maxScrollExtent)
+            .toDouble();
+
+        // Avoid animating imperceptible sub-pixel adjustments.
+        if ((targetOffset - currentOffset).abs() < _minScrollAnimationDelta) {
+          return;
+        }
+        if (!mounted) return;
+
+        _scrollController.animateTo(
+          targetOffset,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      });
     }
   }
 
@@ -165,19 +215,19 @@ class MarcadorBolosState extends State<MarcadorBolos> {
       _scrollAlFrameActivo();
     });
   }
-  
+
   @override
-void didUpdateWidget(covariant MarcadorBolos oldWidget) {
-  super.didUpdateWidget(oldWidget);
-  // Si los frames han cambiado, actualiza los controllers
-  for (int i = 0; i < 10; i++) {
-    for (int j = 0; j < 3; j++) {
-      if (_controllers[i][j].text != widget.frames[i][j]) {
-        _controllers[i][j].text = widget.frames[i][j];
+  void didUpdateWidget(covariant MarcadorBolos oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Si los frames han cambiado, actualiza los controllers
+    for (int i = 0; i < 10; i++) {
+      for (int j = 0; j < 3; j++) {
+        if (_controllers[i][j].text != widget.frames[i][j]) {
+          _controllers[i][j].text = widget.frames[i][j];
+        }
       }
     }
   }
-}
 
   @override
   void dispose() {
@@ -207,6 +257,7 @@ void didUpdateWidget(covariant MarcadorBolos oldWidget) {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       clipBehavior: Clip.antiAlias,
       child: SingleChildScrollView(
+        key: _scrollViewportKey,
         scrollDirection: Axis.horizontal,
         controller: _scrollController,
         child: IntrinsicHeight(
@@ -226,6 +277,7 @@ void didUpdateWidget(covariant MarcadorBolos oldWidget) {
 
               return IntrinsicWidth(
                 child: Container(
+                  key: _frameKeys[index],
                   decoration: BoxDecoration(
                     color: estaActivo
                         ? (isDark
@@ -268,9 +320,9 @@ void didUpdateWidget(covariant MarcadorBolos oldWidget) {
                             letterSpacing: 0.5,
                           ),
                         ),
-                    ),
-                    // Input cells
-                    Padding(
+                      ),
+                      // Input cells
+                      Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 8),
                       child: Row(
