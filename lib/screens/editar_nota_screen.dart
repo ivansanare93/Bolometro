@@ -1298,7 +1298,7 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
                     ),
                     textCapitalization: TextCapitalization.sentences,
                     maxLines: null,
-                    minLines: 10,
+                    minLines: 8,
                     keyboardType: TextInputType.multiline,
                   ),
                 ],
