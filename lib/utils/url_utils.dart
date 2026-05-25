@@ -83,7 +83,12 @@ class UrlUtils {
     String? googlePhotoUrl,
     String? fallbackPhotoUrl,
   }) {
-    return sanitizePhotoUrl(avatarPath) ??
+    final normalizedAvatarPath = _normalizeValue(avatarPath);
+    final avatarRemoteUrl = isLocalFilePath(normalizedAvatarPath)
+        ? null
+        : sanitizePhotoUrl(normalizedAvatarPath);
+
+    return avatarRemoteUrl ??
         sanitizePhotoUrl(googlePhotoUrl) ??
         sanitizePhotoUrl(fallbackPhotoUrl);
   }
