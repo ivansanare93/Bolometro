@@ -482,11 +482,175 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
     return trimmed.split(RegExp(r'\s+')).length;
   }
 
+  Color _accentColor(BuildContext context) {
+    if (_colorValue != null) {
+      return Color(_colorValue! | 0xFF000000);
+    }
+    return Theme.of(context).colorScheme.primary;
+  }
+
+  Color _onAccentColor(Color color) {
+    return ThemeData.estimateBrightnessForColor(color) == Brightness.dark
+        ? Colors.white
+        : Colors.black87;
+  }
+
+  InputDecoration _fieldDecoration(
+    BuildContext context, {
+    required String label,
+    String? hint,
+    String? helperText,
+    TextStyle? helperStyle,
+    bool alignLabelWithHint = false,
+  }) {
+    final cs = Theme.of(context).colorScheme;
+
+    OutlineInputBorder border(Color color, [double width = 1]) {
+      return OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: BorderSide(color: color, width: width),
+      );
+    }
+
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      helperText: helperText,
+      helperStyle: helperStyle,
+      alignLabelWithHint: alignLabelWithHint,
+      filled: true,
+      fillColor: Theme.of(context).brightness == Brightness.dark
+          ? cs.surface.withOpacity(0.6)
+          : Colors.white.withOpacity(0.92),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      border: border(cs.outlineVariant),
+      enabledBorder: border(cs.outlineVariant),
+      focusedBorder: border(_accentColor(context), 1.8),
+    );
+  }
+
+  Widget _buildSectionCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required List<Widget> children,
+  }) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? cs.surface.withOpacity(0.92)
+            : Colors.white.withOpacity(0.94),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: cs.outlineVariant.withOpacity(0.45)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: _accentColor(context).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: _accentColor(context)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoChip(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    Color? backgroundColor,
+    Color? foregroundColor,
+  }) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: backgroundColor ?? Colors.white.withOpacity(0.16),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: foregroundColor?.withOpacity(0.22) ?? cs.outline.withOpacity(0.2),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: foregroundColor),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: foregroundColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     final wordCount = _wordCount(_contenidoController.text);
+    final accentColor = _accentColor(context);
+    final onAccentColor = _onAccentColor(accentColor);
+    final headerSubtitle = _esNueva
+        ? _label(
+            context,
+            'Captura ideas, ajustes y aprendizajes de cada sesión.',
+            'Capture ideas, adjustments, and learnings from each session.',
+          )
+        : _label(
+            context,
+            'Actualiza tu nota y mantén tus referencias siempre claras.',
+            'Update your note and keep your references clear.',
+          );
 
     final sessionItems = <DropdownMenuItem<String?>>[
       DropdownMenuItem<String?>(
@@ -542,368 +706,607 @@ class _EditarNotaScreenState extends State<EditarNotaScreen> {
                 ),
               ),
             )
-          else
-            IconButton(
-              icon: const Icon(Icons.check),
-              tooltip: l10n.save,
-              onPressed: _guardar,
-            ),
         ],
+      ),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        child: ElevatedButton.icon(
+          onPressed: _guardando ? null : _guardar,
+          icon: _guardando
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.check_circle_outline_rounded),
+          label: Text(_guardando ? _label(context, 'Guardando...', 'Saving...') : l10n.save),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+          ),
+        ),
       ),
       body: Form(
         key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            if (_esNueva) ...[
-              Text(
-                l10n.noteTemplates,
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _kNoteTemplates
-                    .map(
-                      (template) => ActionChip(
-                        avatar: const Icon(Icons.auto_awesome, size: 18),
-                        label: Text(template.name(l10n)),
-                        onPressed: () => _aplicarPlantilla(template),
-                      ),
-                    )
-                    .toList(),
-              ),
-              const SizedBox(height: 16),
-            ],
-            TextFormField(
-              controller: _tituloController,
-              decoration: InputDecoration(
-                labelText: l10n.noteTitle,
-                hintText: l10n.noteTitleHint,
-                border: const OutlineInputBorder(),
-              ),
-              textCapitalization: TextCapitalization.sentences,
-              maxLength: 120,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return l10n.noteTitleRequired;
-                }
-                return null;
-              },
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                accentColor.withOpacity(0.14),
+                cs.surface,
+                cs.surface,
+              ],
             ),
-            const SizedBox(height: 16),
-            InputDecorator(
-              decoration: InputDecoration(
-                labelText: l10n.noteCategory,
-                border: const OutlineInputBorder(),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: [
-                  ChoiceChip(
-                    label: Text(l10n.noteCategoryNone),
-                    selected: _categoria == null,
-                    onSelected: (_) => setState(() => _categoria = null),
+          ),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            children: [
+              Container(
+                padding: const EdgeInsets.all(22),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      accentColor,
+                      Color.alphaBlend(Colors.white.withOpacity(0.08), accentColor),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  ...NotaCategoria.values.map(
-                    (key) => ChoiceChip(
-                      label: Text(_categoryLabel(context, key)),
-                      selected: _categoria == key,
-                      onSelected: (_) => setState(() => _categoria = key),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: accentColor.withOpacity(0.28),
+                      blurRadius: 26,
+                      offset: const Offset(0, 14),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            InputDecorator(
-              decoration: InputDecoration(
-                labelText: l10n.noteType,
-                border: const OutlineInputBorder(),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: NotaTipo.values
-                    .map(
-                      (key) => ChoiceChip(
-                        label: Text(_typeLabel(context, key)),
-                        selected: _tipo == key,
-                        onSelected: (_) => setState(() => _tipo = key),
-                      ),
-                    )
-                    .toList(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            InputDecorator(
-              decoration: InputDecoration(
-                labelText: l10n.noteStatus,
-                border: const OutlineInputBorder(),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: NotaEstado.values
-                    .map(
-                      (key) => ChoiceChip(
-                        label: Text(_statusLabel(context, key)),
-                        selected: _estado == key,
-                        onSelected: (_) => setState(() => _estado = key),
-                      ),
-                    )
-                    .toList(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _boleraController,
-              decoration: InputDecoration(
-                labelText: l10n.noteBowlingAlley,
-                border: const OutlineInputBorder(),
-              ),
-              textCapitalization: TextCapitalization.words,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _patronAceiteController,
-              decoration: InputDecoration(
-                labelText: l10n.noteOilPattern,
-                border: const OutlineInputBorder(),
-              ),
-              textCapitalization: TextCapitalization.sentences,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _equipamientoController,
-              decoration: InputDecoration(
-                labelText: l10n.noteBallOrEquipment,
-                border: const OutlineInputBorder(),
-              ),
-              textCapitalization: TextCapitalization.sentences,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _condicionPistaController,
-              decoration: InputDecoration(
-                labelText: l10n.noteLaneCondition,
-                border: const OutlineInputBorder(),
-              ),
-              textCapitalization: TextCapitalization.sentences,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _tagsController,
-              decoration: InputDecoration(
-                labelText: l10n.noteTags,
-                hintText: l10n.noteTagsHint,
-                border: const OutlineInputBorder(),
-              ),
-              textCapitalization: TextCapitalization.none,
-            ),
-            const SizedBox(height: 16),
-            InputDecorator(
-              decoration: InputDecoration(
-                labelText: _label(context, 'Adjuntos', 'Attachments'),
-                border: const OutlineInputBorder(),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _adjuntos
-                        .map(
-                          (adjunto) => Stack(
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.18),
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Icon(
+                            _esNueva ? Icons.note_add_rounded : Icons.edit_note_rounded,
+                            color: onAccentColor,
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: SizedBox(
-                                  width: 72,
-                                  height: 72,
-                                  child: File(adjunto.localPath).existsSync()
-                                      ? Image.file(
-                                          File(adjunto.localPath),
-                                          fit: BoxFit.cover,
-                                        )
-                                      : Container(
-                                          color: cs.surfaceVariant,
-                                          child: Icon(
-                                            Icons.image_not_supported_outlined,
-                                            color: cs.outline,
-                                          ),
-                                        ),
-                                ),
+                              Text(
+                                _esNueva ? l10n.newNote : l10n.editNote,
+                                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                      color: onAccentColor,
+                                      fontWeight: FontWeight.w800,
+                                    ),
                               ),
-                              Positioned(
-                                right: -6,
-                                top: -6,
-                                child: IconButton(
-                                  iconSize: 18,
-                                  visualDensity: VisualDensity.compact,
-                                  onPressed: () => _eliminarAdjunto(adjunto),
-                                  icon: const Icon(Icons.cancel_rounded),
-                                ),
+                              const SizedBox(height: 4),
+                              Text(
+                                headerSubtitle,
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: onAccentColor.withOpacity(0.9),
+                                    ),
                               ),
                             ],
                           ),
-                        )
-                        .toList(),
-                  ),
-                  const SizedBox(height: 8),
-                  OutlinedButton.icon(
-                    onPressed: _agregarAdjuntosImagen,
-                    icon: const Icon(Icons.add_photo_alternate_outlined),
-                    label: Text(_label(context, 'Añadir imágenes', 'Add images')),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            SwitchListTile.adaptive(
-              contentPadding: EdgeInsets.zero,
-              value: _revisarAntesProximaSesion,
-              onChanged: (v) => setState(() {
-                _revisarAntesProximaSesion = v;
-                if (!v) _fechaRevision = null;
-              }),
-              title: Text(
-                _label(
-                  context,
-                  'Revisar antes de próxima sesión',
-                  'Review before next session',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        _buildInfoChip(
+                          context,
+                          icon: Icons.category_rounded,
+                          label: _categoria == null
+                              ? l10n.noteCategoryNone
+                              : _categoryLabel(context, _categoria),
+                          backgroundColor: Colors.white.withOpacity(0.14),
+                          foregroundColor: onAccentColor,
+                        ),
+                        _buildInfoChip(
+                          context,
+                          icon: Icons.style_rounded,
+                          label: _typeLabel(context, _tipo),
+                          backgroundColor: Colors.white.withOpacity(0.14),
+                          foregroundColor: onAccentColor,
+                        ),
+                        _buildInfoChip(
+                          context,
+                          icon: Icons.flag_rounded,
+                          label: _statusLabel(context, _estado),
+                          backgroundColor: Colors.white.withOpacity(0.14),
+                          foregroundColor: onAccentColor,
+                        ),
+                        _buildInfoChip(
+                          context,
+                          icon: Icons.text_fields_rounded,
+                          label: wordCount > 0
+                              ? l10n.noteWordCount(wordCount)
+                              : _label(context, 'Sin contenido aún', 'No content yet'),
+                          backgroundColor: Colors.white.withOpacity(0.14),
+                          foregroundColor: onAccentColor,
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ),
-            if (_revisarAntesProximaSesion) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      _fechaRevision == null
-                          ? _label(context, 'Sin fecha de revisión', 'No review date')
-                          : '${_label(context, 'Fecha de revisión', 'Review date')}: ${DateFormat('dd/MM/yyyy').format(_fechaRevision!)}',
-                    ),
+              const SizedBox(height: 18),
+              if (_esNueva) ...[
+                _buildSectionCard(
+                  context,
+                  icon: Icons.auto_awesome_rounded,
+                  title: l10n.noteTemplates,
+                  subtitle: _label(
+                    context,
+                    'Empieza más rápido con una base para cada tipo de nota.',
+                    'Start faster with a base for each note type.',
                   ),
-                  TextButton.icon(
-                    onPressed: _seleccionarFechaRevision,
-                    icon: const Icon(Icons.event_outlined),
-                    label: Text(_label(context, 'Elegir fecha', 'Pick date')),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-            ],
-            InputDecorator(
-              decoration: InputDecoration(
-                labelText: l10n.noteRelatedSession,
-                border: const OutlineInputBorder(),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-              child: _cargandoSesiones
-                  ? const LinearProgressIndicator(minHeight: 2)
-                  : DropdownButtonHideUnderline(
-                      child: DropdownButton<String?>(
-                        isExpanded: true,
-                        value: _relatedSessionId,
-                        items: sessionItems,
-                        onChanged: (value) {
-                          setState(() => _relatedSessionId = value);
-                        },
-                      ),
+                  children: [
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: _kNoteTemplates
+                          .map(
+                            (template) => ActionChip(
+                              avatar: Icon(
+                                Icons.bolt_rounded,
+                                size: 18,
+                                color: accentColor,
+                              ),
+                              label: Text(template.name(l10n)),
+                              backgroundColor: accentColor.withOpacity(0.08),
+                              side: BorderSide(
+                                color: accentColor.withOpacity(0.18),
+                              ),
+                              onPressed: () => _aplicarPlantilla(template),
+                            ),
+                          )
+                          .toList(),
                     ),
-            ),
-            const SizedBox(height: 16),
-            SwitchListTile.adaptive(
-              contentPadding: EdgeInsets.zero,
-              value: _archivada,
-              onChanged: (v) => setState(() => _archivada = v),
-              title: Text(l10n.noteArchived),
-              subtitle: Text(l10n.noteArchivedHint),
-            ),
-            const SizedBox(height: 8),
-            InputDecorator(
-              decoration: InputDecoration(
-                labelText: l10n.noteColorLabel,
-                border: const OutlineInputBorder(),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              ),
-              child: Wrap(
-                spacing: 10,
-                runSpacing: 6,
+                  ],
+                ),
+                const SizedBox(height: 18),
+              ],
+              _buildSectionCard(
+                context,
+                icon: Icons.tune_rounded,
+                title: _label(context, 'Resumen de la nota', 'Note overview'),
+                subtitle: _label(
+                  context,
+                  'Define el enfoque principal para organizarla mejor.',
+                  'Define the main focus to organize it better.',
+                ),
                 children: [
-                  GestureDetector(
-                    onTap: () => setState(() => _colorValue = null),
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color:
-                              _colorValue == null ? cs.primary : cs.outlineVariant,
-                          width: _colorValue == null ? 3 : 1.5,
+                  TextFormField(
+                    controller: _tituloController,
+                    decoration: _fieldDecoration(
+                      context,
+                      label: l10n.noteTitle,
+                      hint: l10n.noteTitleHint,
+                    ),
+                    textCapitalization: TextCapitalization.sentences,
+                    maxLength: 120,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return l10n.noteTitleRequired;
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  InputDecorator(
+                    decoration: _fieldDecoration(
+                      context,
+                      label: l10n.noteCategory,
+                    ).copyWith(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    ),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        ChoiceChip(
+                          label: Text(l10n.noteCategoryNone),
+                          selected: _categoria == null,
+                          onSelected: (_) => setState(() => _categoria = null),
                         ),
-                        color: cs.surface,
-                      ),
-                      child: Icon(Icons.format_color_reset_outlined,
-                          size: 16, color: cs.outline),
-                    ),
-                  ),
-                  ..._kNoteColors.map((c) {
-                    final selected = _colorValue == c;
-                    return GestureDetector(
-                      onTap: () => setState(() => _colorValue = c),
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Color(c | 0xFF000000),
-                          border: Border.all(
-                            color: selected ? cs.primary : cs.outlineVariant,
-                            width: selected ? 3 : 1.5,
+                        ...NotaCategoria.values.map(
+                          (key) => ChoiceChip(
+                            label: Text(_categoryLabel(context, key)),
+                            selected: _categoria == key,
+                            onSelected: (_) => setState(() => _categoria = key),
                           ),
                         ),
-                        child: selected
-                            ? const Icon(Icons.check,
-                                size: 16, color: Colors.black54)
-                            : null,
-                      ),
-                    );
-                  }),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  InputDecorator(
+                    decoration: _fieldDecoration(
+                      context,
+                      label: l10n.noteType,
+                    ).copyWith(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    ),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: NotaTipo.values
+                          .map(
+                            (key) => ChoiceChip(
+                              label: Text(_typeLabel(context, key)),
+                              selected: _tipo == key,
+                              onSelected: (_) => setState(() => _tipo = key),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  InputDecorator(
+                    decoration: _fieldDecoration(
+                      context,
+                      label: l10n.noteStatus,
+                    ).copyWith(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    ),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: NotaEstado.values
+                          .map(
+                            (key) => ChoiceChip(
+                              label: Text(_statusLabel(context, key)),
+                              selected: _estado == key,
+                              onSelected: (_) => setState(() => _estado = key),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
                 ],
               ),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _contenidoController,
-              decoration: InputDecoration(
-                labelText: l10n.noteContent,
-                hintText: l10n.noteContentHint,
-                border: const OutlineInputBorder(),
-                alignLabelWithHint: true,
-                helperText: wordCount > 0 ? l10n.noteWordCount(wordCount) : null,
-                helperStyle: TextStyle(color: cs.outline, fontSize: 12),
+              const SizedBox(height: 18),
+              _buildSectionCard(
+                context,
+                icon: Icons.location_on_outlined,
+                title: _label(context, 'Contexto y detalles', 'Context and details'),
+                subtitle: _label(
+                  context,
+                  'Añade referencias útiles para recordar mejor cada ajuste.',
+                  'Add useful references to better remember each adjustment.',
+                ),
+                children: [
+                  TextFormField(
+                    controller: _boleraController,
+                    decoration: _fieldDecoration(
+                      context,
+                      label: l10n.noteBowlingAlley,
+                    ),
+                    textCapitalization: TextCapitalization.words,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _patronAceiteController,
+                    decoration: _fieldDecoration(
+                      context,
+                      label: l10n.noteOilPattern,
+                    ),
+                    textCapitalization: TextCapitalization.sentences,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _equipamientoController,
+                    decoration: _fieldDecoration(
+                      context,
+                      label: l10n.noteBallOrEquipment,
+                    ),
+                    textCapitalization: TextCapitalization.sentences,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _condicionPistaController,
+                    decoration: _fieldDecoration(
+                      context,
+                      label: l10n.noteLaneCondition,
+                    ),
+                    textCapitalization: TextCapitalization.sentences,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _tagsController,
+                    decoration: _fieldDecoration(
+                      context,
+                      label: l10n.noteTags,
+                      hint: l10n.noteTagsHint,
+                    ),
+                    textCapitalization: TextCapitalization.none,
+                  ),
+                  const SizedBox(height: 16),
+                  InputDecorator(
+                    decoration: _fieldDecoration(
+                      context,
+                      label: l10n.noteRelatedSession,
+                    ).copyWith(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    ),
+                    child: _cargandoSesiones
+                        ? const LinearProgressIndicator(minHeight: 2)
+                        : DropdownButtonHideUnderline(
+                            child: DropdownButton<String?>(
+                              isExpanded: true,
+                              value: _relatedSessionId,
+                              items: sessionItems,
+                              onChanged: (value) {
+                                setState(() => _relatedSessionId = value);
+                              },
+                            ),
+                          ),
+                  ),
+                ],
               ),
-              textCapitalization: TextCapitalization.sentences,
-              maxLines: null,
-              minLines: 8,
-              keyboardType: TextInputType.multiline,
-            ),
-          ],
+              const SizedBox(height: 18),
+              _buildSectionCard(
+                context,
+                icon: Icons.palette_outlined,
+                title: _label(context, 'Recordatorios y estilo', 'Reminders and style'),
+                subtitle: _label(
+                  context,
+                  'Personaliza la nota y destaca lo que necesitas revisar.',
+                  'Customize the note and highlight what you need to review.',
+                ),
+                children: [
+                  InputDecorator(
+                    decoration: _fieldDecoration(
+                      context,
+                      label: _label(context, 'Adjuntos', 'Attachments'),
+                    ).copyWith(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (_adjuntos.isEmpty)
+                          Text(
+                            _label(
+                              context,
+                              'Añade capturas o fotos para complementar la nota.',
+                              'Add screenshots or photos to complement the note.',
+                            ),
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: cs.onSurfaceVariant,
+                                ),
+                          )
+                        else
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: _adjuntos
+                                .map(
+                                  (adjunto) => Stack(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(14),
+                                        child: SizedBox(
+                                          width: 84,
+                                          height: 84,
+                                          child: File(adjunto.localPath).existsSync()
+                                              ? Image.file(
+                                                  File(adjunto.localPath),
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : Container(
+                                                  color: cs.surfaceContainerHighest,
+                                                  child: Icon(
+                                                    Icons.image_not_supported_outlined,
+                                                    color: cs.outline,
+                                                  ),
+                                                ),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        right: -6,
+                                        top: -6,
+                                        child: IconButton(
+                                          iconSize: 18,
+                                          visualDensity: VisualDensity.compact,
+                                          onPressed: () => _eliminarAdjunto(adjunto),
+                                          icon: const Icon(Icons.cancel_rounded),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          onPressed: _agregarAdjuntosImagen,
+                          icon: const Icon(Icons.add_photo_alternate_outlined),
+                          label: Text(_label(context, 'Añadir imágenes', 'Add images')),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: accentColor.withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: SwitchListTile.adaptive(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                      value: _revisarAntesProximaSesion,
+                      onChanged: (v) => setState(() {
+                        _revisarAntesProximaSesion = v;
+                        if (!v) _fechaRevision = null;
+                      }),
+                      title: Text(
+                        _label(
+                          context,
+                          'Revisar antes de próxima sesión',
+                          'Review before next session',
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (_revisarAntesProximaSesion) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: cs.surfaceContainerHighest.withOpacity(0.55),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _fechaRevision == null
+                                  ? _label(context, 'Sin fecha de revisión', 'No review date')
+                                  : '${_label(context, 'Fecha de revisión', 'Review date')}: ${DateFormat('dd/MM/yyyy').format(_fechaRevision!)}',
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          TextButton.icon(
+                            onPressed: _seleccionarFechaRevision,
+                            icon: const Icon(Icons.event_outlined),
+                            label: Text(_label(context, 'Elegir fecha', 'Pick date')),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerHighest.withOpacity(0.42),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: SwitchListTile.adaptive(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                      value: _archivada,
+                      onChanged: (v) => setState(() => _archivada = v),
+                      title: Text(l10n.noteArchived),
+                      subtitle: Text(l10n.noteArchivedHint),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  InputDecorator(
+                    decoration: _fieldDecoration(
+                      context,
+                      label: l10n.noteColorLabel,
+                    ).copyWith(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    ),
+                    child: Wrap(
+                      spacing: 12,
+                      runSpacing: 10,
+                      children: [
+                        GestureDetector(
+                          onTap: () => setState(() => _colorValue = null),
+                          child: Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: _colorValue == null ? accentColor : cs.outlineVariant,
+                                width: _colorValue == null ? 3 : 1.5,
+                              ),
+                              color: cs.surface,
+                            ),
+                            child: Icon(
+                              Icons.format_color_reset_outlined,
+                              size: 18,
+                              color: cs.outline,
+                            ),
+                          ),
+                        ),
+                        ..._kNoteColors.map((c) {
+                          final selected = _colorValue == c;
+                          return GestureDetector(
+                            onTap: () => setState(() => _colorValue = c),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color(c | 0xFF000000),
+                                border: Border.all(
+                                  color: selected ? accentColor : cs.outlineVariant,
+                                  width: selected ? 3 : 1.5,
+                                ),
+                                boxShadow: selected
+                                    ? [
+                                        BoxShadow(
+                                          color: Color(c | 0xFF000000).withOpacity(0.35),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 6),
+                                        ),
+                                      ]
+                                    : null,
+                              ),
+                              child: selected
+                                  ? const Icon(Icons.check, size: 18, color: Colors.black54)
+                                  : null,
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              _buildSectionCard(
+                context,
+                icon: Icons.subject_rounded,
+                title: l10n.noteContent,
+                subtitle: _label(
+                  context,
+                  'Escribe observaciones, ideas clave y próximos pasos.',
+                  'Write observations, key ideas, and next steps.',
+                ),
+                children: [
+                  TextFormField(
+                    controller: _contenidoController,
+                    decoration: _fieldDecoration(
+                      context,
+                      label: l10n.noteContent,
+                      hint: l10n.noteContentHint,
+                      helperText: wordCount > 0 ? l10n.noteWordCount(wordCount) : null,
+                      helperStyle: TextStyle(color: cs.outline, fontSize: 12),
+                      alignLabelWithHint: true,
+                    ),
+                    textCapitalization: TextCapitalization.sentences,
+                    maxLines: null,
+                    minLines: 8,
+                    keyboardType: TextInputType.multiline,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
