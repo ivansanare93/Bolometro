@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// A small, non-interactive bowling-pin deck visualisation.
@@ -104,8 +105,8 @@ class PinDeckMini extends StatelessWidget {
 /// - An additional T3 row for frame 10 when present
 ///
 /// [frameActivo] optionally highlights the currently active frame with the
-/// theme's primary colour border.
-class ScoreSheetPinStrip extends StatelessWidget {
+/// theme's primary colour border and auto-scrolls it into view.
+class ScoreSheetPinStrip extends StatefulWidget {
   /// Pin data: `pinesPorTiro[frame][throw]` → list of knocked pin numbers,
   /// or `null` if the throw has not yet been recorded.
   final List<List<List<int>?>> pinesPorTiro;
@@ -120,6 +121,94 @@ class ScoreSheetPinStrip extends StatelessWidget {
   });
 
   @override
+  State<ScoreSheetPinStrip> createState() => _ScoreSheetPinStripState();
+}
+
+class _ScoreSheetPinStripState extends State<ScoreSheetPinStrip> {
+  static const double _frameScrollEdgePadding = 12.0;
+  static const double _minScrollAnimationDelta = 1.0;
+
+  late final ScrollController _scrollController;
+  late final List<GlobalKey> _frameKeys;
+  final GlobalKey _scrollViewportKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _frameKeys = List.generate(10, (_) => GlobalKey());
+  }
+
+  @override
+  void didUpdateWidget(covariant ScoreSheetPinStrip oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.frameActivo != oldWidget.frameActivo &&
+        widget.frameActivo != null) {
+      _scrollAlFrameActivo();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollAlFrameActivo() {
+    final frameActivo = widget.frameActivo;
+    if (frameActivo == null || frameActivo < 0 || frameActivo >= 10) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) return;
+
+      final frameContext = _frameKeys[frameActivo].currentContext;
+      final viewportContext = _scrollViewportKey.currentContext;
+      if (frameContext == null || viewportContext == null) {
+        if (kDebugMode) {
+          debugPrint('ScoreSheetPinStrip: scroll contexts are not ready yet.');
+        }
+        return;
+      }
+
+      final frameBox = frameContext.findRenderObject() as RenderBox?;
+      final viewportBox = viewportContext.findRenderObject() as RenderBox?;
+      if (frameBox == null || viewportBox == null) return;
+
+      final frameOffset =
+          frameBox.localToGlobal(Offset.zero, ancestor: viewportBox);
+      final frameWidth = frameBox.size.width;
+      final viewportWidth = viewportBox.size.width;
+      final currentOffset = _scrollController.offset;
+      double targetOffset = currentOffset;
+
+      if (frameOffset.dx < _frameScrollEdgePadding) {
+        targetOffset =
+            currentOffset + (frameOffset.dx - _frameScrollEdgePadding);
+      } else if (frameOffset.dx + frameWidth >
+          viewportWidth - _frameScrollEdgePadding) {
+        targetOffset = currentOffset +
+            (frameOffset.dx +
+                frameWidth -
+                (viewportWidth - _frameScrollEdgePadding));
+      }
+
+      targetOffset = targetOffset
+          .clamp(0.0, _scrollController.position.maxScrollExtent)
+          .toDouble();
+
+      if ((targetOffset - currentOffset).abs() < _minScrollAnimationDelta) {
+        return;
+      }
+
+      _scrollController.animateTo(
+        targetOffset,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -129,13 +218,15 @@ class ScoreSheetPinStrip extends StatelessWidget {
         isDark ? Colors.grey.shade700 : Colors.grey.shade300;
 
     return SingleChildScrollView(
+      key: _scrollViewportKey,
       scrollDirection: Axis.horizontal,
+      controller: _scrollController,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: List.generate(10, (frameIdx) {
           final isLast = frameIdx == 9;
-          final framePines = pinesPorTiro[frameIdx];
-          final isActive = frameIdx == frameActivo;
+          final framePines = widget.pinesPorTiro[frameIdx];
+          final isActive = frameIdx == widget.frameActivo;
 
           // Determine the maximum number of throws to show for this frame.
           // For frame 10, show T3 only if it has been recorded (non-null).
@@ -145,6 +236,7 @@ class ScoreSheetPinStrip extends StatelessWidget {
           }
 
           return Container(
+            key: _frameKeys[frameIdx],
             margin: const EdgeInsets.symmetric(horizontal: 3),
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
