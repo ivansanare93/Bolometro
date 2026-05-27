@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -193,7 +194,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
       _lastSetUserId = null; // Reset so the next login re-triggers setUser
       _notificationsInitialized = false;
       if (_engagementTrackingInitialized) {
-        Future.microtask(() => EngagementTrackingService().stopTracking());
+        unawaited(EngagementTrackingService().stopTracking());
       }
       _engagementTrackingInitialized = false;
       // User logged out, reset flags to allow new login
@@ -235,8 +236,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
       );
       if (!_engagementTrackingInitialized) {
         _engagementTrackingInitialized = true;
-        Future.microtask(
-          () => EngagementTrackingService().startTracking(authService.userId!),
+        unawaited(
+          EngagementTrackingService().startTracking(authService.userId!),
         );
       }
     }
@@ -264,7 +265,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   @override
   void dispose() {
     if (_engagementTrackingInitialized) {
-      Future.microtask(() => EngagementTrackingService().stopTracking());
+      unawaited(EngagementTrackingService().stopTracking());
     }
     super.dispose();
   }

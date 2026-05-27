@@ -17,6 +17,7 @@ class EngagementTrackingService with WidgetsBindingObserver {
   Timer? _flushTimer;
   DateTime? _activeSince;
   bool _observerRegistered = false;
+  bool _isFlushing = false;
 
   Future<void> startTracking(String userId) async {
     if (_userId == userId && _flushTimer != null) return;
@@ -31,7 +32,7 @@ class EngagementTrackingService with WidgetsBindingObserver {
 
     _activeSince = DateTime.now();
     _flushTimer = Timer.periodic(const Duration(minutes: 1), (_) {
-      _flushAccumulatedMinutes();
+      unawaited(_flushAccumulatedMinutes());
     });
   }
 
@@ -49,20 +50,27 @@ class EngagementTrackingService with WidgetsBindingObserver {
   }
 
   Future<void> _flushAccumulatedMinutes() async {
+    if (_isFlushing) return;
+
     final userId = _userId;
     final activeSince = _activeSince;
     if (userId == null || activeSince == null) return;
 
-    final now = DateTime.now();
-    final elapsed = now.difference(activeSince);
-    final elapsedMinutes = elapsed.inMinutes;
-    if (elapsedMinutes <= 0) return;
+    _isFlushing = true;
+    try {
+      final now = DateTime.now();
+      final elapsed = now.difference(activeSince);
+      final elapsedMinutes = elapsed.inMinutes;
+      if (elapsedMinutes <= 0) return;
 
-    _activeSince = activeSince.add(Duration(minutes: elapsedMinutes));
-    await _firestoreService.registrarActividadDiaria(
-      userId,
-      minutesToAdd: elapsedMinutes,
-    );
+      _activeSince = activeSince.add(Duration(minutes: elapsedMinutes));
+      await _firestoreService.registrarActividadDiaria(
+        userId,
+        minutesToAdd: elapsedMinutes,
+      );
+    } finally {
+      _isFlushing = false;
+    }
   }
 
   @override
@@ -75,7 +83,7 @@ class EngagementTrackingService with WidgetsBindingObserver {
       case AppLifecycleState.hidden:
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:
-        _flushAccumulatedMinutes();
+        unawaited(_flushAccumulatedMinutes());
         _activeSince = null;
         break;
     }
