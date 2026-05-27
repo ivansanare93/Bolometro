@@ -19,6 +19,7 @@ Push notifications are sent in the following scenarios:
 
 1. **Friend Request Sent**: When a user sends a friend request, a notification is created for the recipient
 2. **Friend Request Accepted**: When a user accepts a friend request, a notification is created for the sender
+3. **Daily Engagement Reminder**: A scheduled Cloud Function creates a reminder when the user has not reached 5 minutes of app usage in the day
 
 ### 3. Notification Flow
 
@@ -66,6 +67,10 @@ The `NotificationService` is implemented as a singleton and provides:
    - Line ~146: After creating friend request
    - Line ~243: After accepting friend request
 
+4. **Daily Engagement Tracking**:
+   - `EngagementTrackingService` records active minutes in Firestore (`daily_engagement`)
+   - A scheduled Cloud Function (`sendDailyEngagementReminders`) reviews daily usage and creates `daily_engagement` notifications when needed
+
 3. **Firestore Rules** (`firestore.rules`):
    - Added rules for `notifications` subcollection
    - Users can read/update/delete their own notifications
@@ -85,6 +90,15 @@ users/{userId}/
       ├── requestId: string (for friend_request)
       ├── createdAt: timestamp
       └── read: boolean
+  ├── daily_engagement/{dateKey}
+  │   ├── dateKey: string (YYYY-MM-DD)
+  │   ├── minutesUsed: number
+  │   ├── targetMinutes: number (5)
+  │   └── lastActiveAt: timestamp
+  └── daily_engagement_metrics/{dateKey}
+      ├── remindersSentCount: number
+      ├── openedCount: number
+      └── goalReached: boolean
 ```
 
 ### Android Configuration

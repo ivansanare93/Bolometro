@@ -638,6 +638,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tapToChangeImage => 'Pulsa para cambiar tu imagen';
 
   @override
+  String get dailyReminderPreferenceTitle => 'Recordatorio diario de 5 minutos';
+
+  @override
+  String get dailyReminderPreferenceDescription =>
+      'Recibe una notificación diaria si aún no has usado la app al menos 5 minutos hoy';
+
+  @override
   String get enterYourName => 'Introduce tu nombre';
 
   @override

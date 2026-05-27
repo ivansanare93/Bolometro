@@ -245,6 +245,8 @@
   "imageNotFound": "Image not found, select another.",
   "usingGooglePhoto": "Using Google photo. Tap to change",
   "tapToChangeImage": "Tap to change your image",
+  "dailyReminderPreferenceTitle": "Daily 5-minute reminder",
+  "dailyReminderPreferenceDescription": "Get a daily notification if you have not used the app for at least 5 minutes today",
   "enterYourName": "Enter your name",
   "enterValidEmail": "Enter a valid email",
   "selectDate": "Select date",

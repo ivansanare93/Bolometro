@@ -183,6 +183,20 @@ class NotificationService {
           .get();
 
       for (final doc in notifications.docs) {
+        final data = doc.data();
+        if (data['type'] == 'daily_engagement' && data['dateKey'] is String) {
+          final dateKey = data['dateKey'] as String;
+          final metricRef = _firestore
+              .collection('users')
+              .doc(userId)
+              .collection('daily_engagement_metrics')
+              .doc(dateKey);
+          batch.set(metricRef, {
+            'dateKey': dateKey,
+            'openedCount': FieldValue.increment(1),
+            'lastOpenedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+        }
         batch.update(doc.reference, {'read': true});
       }
 

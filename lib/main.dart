@@ -29,6 +29,7 @@ import 'services/auth_service.dart';
 import 'services/analytics_service.dart';
 import 'services/achievement_service.dart';
 import 'services/notification_service.dart';
+import 'services/engagement_tracking_service.dart';
 import 'repositories/data_repository.dart';
 import 'utils/estadisticas_cache.dart';
 
@@ -157,6 +158,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   String? _lastSetUserId;
   bool _notificationsInitialized = false;
   bool _initializingNotifications = false;
+  bool _engagementTrackingInitialized = false;
 
   void _onContinueWithoutLogin() {
     setState(() {
@@ -190,6 +192,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
       _previousUserId = authService.userId;
       _lastSetUserId = null; // Reset so the next login re-triggers setUser
       _notificationsInitialized = false;
+      if (_engagementTrackingInitialized) {
+        Future.microtask(() => EngagementTrackingService().stopTracking());
+      }
+      _engagementTrackingInitialized = false;
       // User logged out, reset flags to allow new login
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
@@ -227,6 +233,12 @@ class _AuthWrapperState extends State<AuthWrapper> {
         authService.userId!,
         languageCode: Provider.of<LanguageProvider>(context, listen: false).locale.languageCode,
       );
+      if (!_engagementTrackingInitialized) {
+        _engagementTrackingInitialized = true;
+        Future.microtask(
+          () => EngagementTrackingService().startTracking(authService.userId!),
+        );
+      }
     }
 
     // Mostrar pantalla de login solo la primera vez si no está autenticado y no se ha saltado
@@ -247,5 +259,13 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
     // Usuario autenticado o continuó sin autenticarse: mostrar pantalla principal
     return const HomeScreen();
+  }
+
+  @override
+  void dispose() {
+    if (_engagementTrackingInitialized) {
+      Future.microtask(() => EngagementTrackingService().stopTracking());
+    }
+    super.dispose();
   }
 }
