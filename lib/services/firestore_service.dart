@@ -378,11 +378,11 @@ class FirestoreService {
       }
 
       /// Registra actividad diaria en minutos para un usuario autenticado.
-      Future<void> registrarActividadDiaria(
+      Future<bool> registrarActividadDiaria(
         String userId, {
         required int minutesToAdd,
       }) async {
-        if (minutesToAdd <= 0) return;
+        if (minutesToAdd <= 0) return true;
 
         try {
           final now = DateTime.now();
@@ -427,8 +427,10 @@ class FirestoreService {
               }, SetOptions(merge: true));
             }
           });
+          return true;
         } catch (e) {
           debugPrint('Error al registrar actividad diaria: $e');
+          return false;
         }
       }
 

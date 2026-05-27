@@ -19,6 +19,7 @@ class EngagementTrackingService with WidgetsBindingObserver {
   DateTime? _activeSince;
   bool _observerRegistered = false;
   bool _isFlushing = false;
+  int _pendingMinutes = 0;
 
   Future<void> startTracking(String userId) async {
     if (_userId == userId && _flushTimer != null) return;
@@ -47,6 +48,7 @@ class EngagementTrackingService with WidgetsBindingObserver {
     _flushTimer = null;
     _activeSince = null;
     _userId = null;
+    _pendingMinutes = 0;
 
     if (_observerRegistered) {
       WidgetsBinding.instance.removeObserver(this);
@@ -66,13 +68,15 @@ class EngagementTrackingService with WidgetsBindingObserver {
       final now = DateTime.now();
       final elapsed = now.difference(activeSince);
       final elapsedMinutes = elapsed.inMinutes;
-      if (elapsedMinutes <= 0) return;
+      final totalMinutes = _pendingMinutes + elapsedMinutes;
+      if (totalMinutes <= 0) return;
 
-      _activeSince = activeSince.add(Duration(minutes: elapsedMinutes));
-      await _firestoreService.registrarActividadDiaria(
+      _activeSince = now;
+      final persisted = await _firestoreService.registrarActividadDiaria(
         userId,
-        minutesToAdd: elapsedMinutes,
+        minutesToAdd: totalMinutes,
       );
+      _pendingMinutes = persisted ? 0 : totalMinutes;
     } finally {
       _isFlushing = false;
     }
