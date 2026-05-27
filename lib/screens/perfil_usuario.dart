@@ -37,6 +37,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
   DateTime? _fechaNacimiento;
   String? _avatarPath;
   bool _clearGooglePhoto = false; // Flag para limpiar foto de Google
+  bool _dailyReminderEnabled = true;
 
   // Listener para reaccionar a cambios en la box (p.ej. sync de Firestore)
   ValueListenable<Box<PerfilUsuario>>? _perfilBoxListenable;
@@ -107,12 +108,31 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       }
 
       _ensureFriendCode();
+      _loadDailyReminderPreference();
     } catch (e) {
       debugPrint('Error al cargar perfil: $e');
       if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
+    }
+
+    Future<void> _loadDailyReminderPreference() async {
+      try {
+        final authService = Provider.of<AuthService>(context, listen: false);
+        final userId = authService.userId;
+        if (userId == null) return;
+
+        final firestoreService = FirestoreService();
+        final enabled =
+            await firestoreService.obtenerPreferenciaRecordatorioDiario(userId);
+        if (!mounted) return;
+        setState(() {
+          _dailyReminderEnabled = enabled;
+        });
+      } catch (e) {
+        debugPrint('Error al cargar preferencia de recordatorio diario: $e');
+      }
     }
   }
 
@@ -207,6 +227,15 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
 
       final dataRepository = Provider.of<DataRepository>(context, listen: false);
       await dataRepository.guardarPerfil(nuevoPerfil);
+
+      final authService = Provider.of<AuthService>(context, listen: false);
+      if (authService.userId != null) {
+        final firestoreService = FirestoreService();
+        await firestoreService.actualizarPreferenciaRecordatorioDiario(
+          authService.userId!,
+          _dailyReminderEnabled,
+        );
+      }
       
       setState(() {
         perfil = nuevoPerfil;
@@ -699,6 +728,23 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                   border: const OutlineInputBorder(),
                 ),
                 maxLines: 2,
+              ),
+              const SizedBox(height: 16),
+              SwitchListTile(
+                value: _dailyReminderEnabled,
+                onChanged: (value) {
+                  setState(() {
+                    _dailyReminderEnabled = value;
+                  });
+                },
+                title: Text(
+                  AppLocalizations.of(context)!.dailyReminderPreferenceTitle,
+                ),
+                subtitle: Text(
+                  AppLocalizations.of(context)!.dailyReminderPreferenceDescription,
+                ),
+                secondary: const Icon(Icons.notifications_active_outlined),
+                contentPadding: EdgeInsets.zero,
               ),
               const SizedBox(height: 26),
               ElevatedButton.icon(

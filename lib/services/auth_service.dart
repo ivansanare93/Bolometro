@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart'; // For PlatformException (platform-specific errors including Google Sign-In)
+import 'engagement_tracking_service.dart';
 
 /// Servicio de autenticación que maneja el login con Google
 /// y la gestión de sesiones de usuario
@@ -271,6 +272,12 @@ Consulta AUTENTICACION.md para más detalles.''';
     try {
       _isLoading = true;
       notifyListeners();
+
+      try {
+        await EngagementTrackingService().stopTracking();
+      } catch (e) {
+        debugPrint('Error flushing engagement tracking during sign out: $e');
+      }
 
       try {
         await _googleSignIn.disconnect();

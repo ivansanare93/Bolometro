@@ -1316,6 +1316,18 @@ abstract class AppLocalizations {
   /// **'Pulsa para cambiar tu imagen'**
   String get tapToChangeImage;
 
+  /// No description provided for @dailyReminderPreferenceTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordatorio diario de 5 minutos'**
+  String get dailyReminderPreferenceTitle;
+
+  /// No description provided for @dailyReminderPreferenceDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Recibe una notificación diaria si aún no has usado la app al menos 5 minutos hoy'**
+  String get dailyReminderPreferenceDescription;
+
   /// No description provided for @enterYourName.
   ///
   /// In es, this message translates to:
