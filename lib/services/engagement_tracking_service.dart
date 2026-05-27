@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
+import 'package:flutter/foundation.dart';
 
 import 'firestore_service.dart';
 
@@ -32,7 +33,11 @@ class EngagementTrackingService with WidgetsBindingObserver {
 
     _activeSince = DateTime.now();
     _flushTimer = Timer.periodic(const Duration(minutes: 1), (_) {
-      unawaited(_flushAccumulatedMinutes());
+      unawaited(
+        _flushAccumulatedMinutes().catchError((error) {
+          debugPrint('Error flushing engagement minutes: $error');
+        }),
+      );
     });
   }
 
@@ -83,7 +88,11 @@ class EngagementTrackingService with WidgetsBindingObserver {
       case AppLifecycleState.hidden:
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:
-        unawaited(_flushAccumulatedMinutes());
+        unawaited(
+          _flushAccumulatedMinutes().catchError((error) {
+            debugPrint('Error flushing engagement minutes on lifecycle: $error');
+          }),
+        );
         _activeSince = null;
         break;
     }
