@@ -116,23 +116,23 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
         _isLoading = false;
       });
     }
+  }
 
-    Future<void> _loadDailyReminderPreference() async {
-      try {
-        final authService = Provider.of<AuthService>(context, listen: false);
-        final userId = authService.userId;
-        if (userId == null) return;
+  Future<void> _loadDailyReminderPreference() async {
+    try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final userId = authService.userId;
+      if (userId == null) return;
 
-        final firestoreService = FirestoreService();
-        final enabled =
-            await firestoreService.obtenerPreferenciaRecordatorioDiario(userId);
-        if (!mounted) return;
-        setState(() {
-          _dailyReminderEnabled = enabled;
-        });
-      } catch (e) {
-        debugPrint('Error al cargar preferencia de recordatorio diario: $e');
-      }
+      final firestoreService = FirestoreService();
+      final enabled =
+          await firestoreService.obtenerPreferenciaRecordatorioDiario(userId);
+      if (!mounted) return;
+      setState(() {
+        _dailyReminderEnabled = enabled;
+      });
+    } catch (e) {
+      debugPrint('Error al cargar preferencia de recordatorio diario: $e');
     }
   }
 

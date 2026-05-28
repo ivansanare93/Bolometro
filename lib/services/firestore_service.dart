@@ -343,97 +343,6 @@ class FirestoreService {
         return null;
       }
 
-      /// Obtiene la preferencia del usuario para recordatorios diarios.
-      /// Si no existe aún, por defecto retorna true.
-      Future<bool> obtenerPreferenciaRecordatorioDiario(String userId) async {
-        try {
-          final docSnapshot = await _getPerfilDocument(userId).get();
-          if (!docSnapshot.exists) return true;
-          final data = docSnapshot.data() as Map<String, dynamic>?;
-          if (data == null) return true;
-          final value = data['dailyReminderEnabled'];
-          if (value is bool) return value;
-          return true;
-        } catch (e) {
-          debugPrint('Error al obtener preferencia de recordatorio diario: $e');
-          return true;
-        }
-      }
-
-      /// Actualiza la preferencia del usuario para recordatorios diarios.
-      Future<void> actualizarPreferenciaRecordatorioDiario(
-        String userId,
-        bool enabled,
-      ) async {
-        try {
-          final now = DateTime.now();
-          await _getPerfilDocument(userId).set({
-            'dailyReminderEnabled': enabled,
-            'timezoneOffsetMinutes': now.timeZoneOffset.inMinutes,
-          }, SetOptions(merge: true));
-        } catch (e) {
-          debugPrint('Error al actualizar preferencia de recordatorio diario: $e');
-          rethrow;
-        }
-      }
-
-      /// Registra actividad diaria en minutos para un usuario autenticado.
-      Future<bool> registrarActividadDiaria(
-        String userId, {
-        required int minutesToAdd,
-      }) async {
-        if (minutesToAdd <= 0) return true;
-
-        try {
-          final now = DateTime.now();
-          final dayKey = _getLocalDayKey(now);
-          final dayDocRef = _firestore
-              .collection('users')
-              .doc(userId)
-              .collection('daily_engagement')
-              .doc(dayKey);
-          final metricDocRef = _firestore
-              .collection('users')
-              .doc(userId)
-              .collection('daily_engagement_metrics')
-              .doc(dayKey);
-          final userDocRef = _getPerfilDocument(userId);
-
-          await _firestore.runTransaction((transaction) async {
-            final daySnapshot = await transaction.get(dayDocRef);
-            final dayData = daySnapshot.data() as Map<String, dynamic>?;
-            final currentMinutes = (dayData?['minutesUsed'] as num?)?.toInt() ?? 0;
-            final updatedMinutes = currentMinutes + minutesToAdd;
-
-            transaction.set(dayDocRef, {
-              'dateKey': dayKey,
-              'minutesUsed': FieldValue.increment(minutesToAdd),
-              'targetMinutes': _dailyEngagementTargetMinutes,
-              'lastActiveAt': FieldValue.serverTimestamp(),
-              'timezoneOffsetMinutes': now.timeZoneOffset.inMinutes,
-            }, SetOptions(merge: true));
-
-            transaction.set(userDocRef, {
-              'timezoneOffsetMinutes': now.timeZoneOffset.inMinutes,
-              'lastEngagementActivityAt': FieldValue.serverTimestamp(),
-            }, SetOptions(merge: true));
-
-            if (currentMinutes < _dailyEngagementTargetMinutes &&
-                updatedMinutes >= _dailyEngagementTargetMinutes) {
-              transaction.set(metricDocRef, {
-                'dateKey': dayKey,
-                'goalReached': true,
-                'goalReachedAt': FieldValue.serverTimestamp(),
-              }, SetOptions(merge: true));
-            }
-          });
-          return true;
-        } catch (e) {
-          debugPrint('Error al registrar actividad diaria: $e');
-          return false;
-        }
-      }
-
       final data = docSnapshot.data() as Map<String, dynamic>?;
       if (data == null || !data.containsKey('perfil')) {
         return null;
@@ -458,6 +367,97 @@ class FirestoreService {
     } catch (e) {
       debugPrint('Error al obtener perfil desde Firestore: $e');
       return null;
+    }
+  }
+
+  /// Obtiene la preferencia del usuario para recordatorios diarios.
+  /// Si no existe aún, por defecto retorna true.
+  Future<bool> obtenerPreferenciaRecordatorioDiario(String userId) async {
+    try {
+      final docSnapshot = await _getPerfilDocument(userId).get();
+      if (!docSnapshot.exists) return true;
+      final data = docSnapshot.data() as Map<String, dynamic>?;
+      if (data == null) return true;
+      final value = data['dailyReminderEnabled'];
+      if (value is bool) return value;
+      return true;
+    } catch (e) {
+      debugPrint('Error al obtener preferencia de recordatorio diario: $e');
+      return true;
+    }
+  }
+
+  /// Actualiza la preferencia del usuario para recordatorios diarios.
+  Future<void> actualizarPreferenciaRecordatorioDiario(
+    String userId,
+    bool enabled,
+  ) async {
+    try {
+      final now = DateTime.now();
+      await _getPerfilDocument(userId).set({
+        'dailyReminderEnabled': enabled,
+        'timezoneOffsetMinutes': now.timeZoneOffset.inMinutes,
+      }, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint('Error al actualizar preferencia de recordatorio diario: $e');
+      rethrow;
+    }
+  }
+
+  /// Registra actividad diaria en minutos para un usuario autenticado.
+  Future<bool> registrarActividadDiaria(
+    String userId, {
+    required int minutesToAdd,
+  }) async {
+    if (minutesToAdd <= 0) return true;
+
+    try {
+      final now = DateTime.now();
+      final dayKey = _getLocalDayKey(now);
+      final dayDocRef = _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('daily_engagement')
+          .doc(dayKey);
+      final metricDocRef = _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('daily_engagement_metrics')
+          .doc(dayKey);
+      final userDocRef = _getPerfilDocument(userId);
+
+      await _firestore.runTransaction((transaction) async {
+        final daySnapshot = await transaction.get(dayDocRef);
+        final dayData = daySnapshot.data() as Map<String, dynamic>?;
+        final currentMinutes = (dayData?['minutesUsed'] as num?)?.toInt() ?? 0;
+        final updatedMinutes = currentMinutes + minutesToAdd;
+
+        transaction.set(dayDocRef, {
+          'dateKey': dayKey,
+          'minutesUsed': FieldValue.increment(minutesToAdd),
+          'targetMinutes': _dailyEngagementTargetMinutes,
+          'lastActiveAt': FieldValue.serverTimestamp(),
+          'timezoneOffsetMinutes': now.timeZoneOffset.inMinutes,
+        }, SetOptions(merge: true));
+
+        transaction.set(userDocRef, {
+          'timezoneOffsetMinutes': now.timeZoneOffset.inMinutes,
+          'lastEngagementActivityAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+
+        if (currentMinutes < _dailyEngagementTargetMinutes &&
+            updatedMinutes >= _dailyEngagementTargetMinutes) {
+          transaction.set(metricDocRef, {
+            'dateKey': dayKey,
+            'goalReached': true,
+            'goalReachedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+        }
+      });
+      return true;
+    } catch (e) {
+      debugPrint('Error al registrar actividad diaria: $e');
+      return false;
     }
   }
 
