@@ -184,9 +184,7 @@ class LocalNotificationService {
       time.minute,
     );
 
-    if (skipToday ||
-        scheduledDate.isBefore(now) ||
-        scheduledDate.isAtSameMomentAs(now)) {
+    if (skipToday || !scheduledDate.isAfter(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 

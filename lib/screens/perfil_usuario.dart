@@ -139,6 +139,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
 
   Future<void> _updateDailyReminderPreference(bool enabled) async {
     final previousValue = _dailyReminderEnabled;
+    final languageCode = Localizations.localeOf(context).languageCode;
 
     setState(() {
       _dailyReminderEnabled = enabled;
@@ -146,7 +147,6 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
 
     try {
       final authService = Provider.of<AuthService>(context, listen: false);
-      final languageCode = Localizations.localeOf(context).languageCode;
       final localNotificationService = LocalNotificationService();
 
       await localNotificationService.initialize(languageCode: languageCode);
@@ -166,9 +166,6 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       }
     } catch (e) {
       debugPrint('Error al actualizar recordatorio diario: $e');
-      final languageCode = mounted
-          ? Localizations.localeOf(context).languageCode
-          : null;
       final localNotificationService = LocalNotificationService();
       if (previousValue) {
         await localNotificationService.scheduleDailyReminder(
