@@ -125,7 +125,7 @@ class LocalNotificationService {
 
     try {
       final timezoneInfo = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(timezoneInfo.identifier));
+      tz.setLocalLocation(tz.getLocation(timezoneInfo));
     } catch (e) {
       debugPrint('Error al inicializar la zona horaria local: $e');
       tz.setLocalLocation(tz.getLocation('UTC'));
@@ -184,7 +184,9 @@ class LocalNotificationService {
       time.minute,
     );
 
-    if (skipToday || !scheduledDate.isAfter(now)) {
+    if (skipToday ||
+        scheduledDate.isBefore(now) ||
+        scheduledDate.isAtSameMomentAs(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 
