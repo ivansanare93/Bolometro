@@ -47,7 +47,7 @@ class LocalNotificationService {
     );
 
     await _plugin.initialize(
-      const InitializationSettings(
+      settings: const InitializationSettings(
         android: androidSettings,
         iOS: darwinSettings,
       ),
@@ -80,11 +80,11 @@ class LocalNotificationService {
 
     final content = _buildDailyReminderContent();
     await _plugin.zonedSchedule(
-      _dailyReminderNotificationId,
-      content.title,
-      content.body,
-      _nextInstance(time, skipToday: skipToday),
-      _notificationDetails(),
+      id: _dailyReminderNotificationId,
+      title: content.title,
+      body: content.body,
+      scheduledDate: _nextInstance(time, skipToday: skipToday),
+      notificationDetails: _notificationDetails(),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
       payload: 'daily_reminder',
@@ -92,7 +92,7 @@ class LocalNotificationService {
   }
 
   Future<void> cancelDailyReminder() async {
-    await _plugin.cancel(_dailyReminderNotificationId);
+    await _plugin.cancel(id: _dailyReminderNotificationId);
   }
 
   Future<void> showImmediateNotification({
@@ -110,10 +110,10 @@ class LocalNotificationService {
         : _buildDailyReminderContent();
 
     await _plugin.show(
-      DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      content.title,
-      content.body,
-      _notificationDetails(),
+      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title: content.title,
+      body: content.body,
+      notificationDetails: _notificationDetails(),
       payload: 'foreground_notification',
     );
   }
