@@ -12,6 +12,7 @@ import '../services/analytics_service.dart';
 import '../services/achievement_service.dart';
 import '../services/auth_service.dart';
 import '../services/firestore_service.dart';
+import '../services/local_notification_service.dart';
 import '../repositories/data_repository.dart';
 
 class PerfilUsuarioScreen extends StatefulWidget {
@@ -133,6 +134,54 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       });
     } catch (e) {
       debugPrint('Error al cargar preferencia de recordatorio diario: $e');
+    }
+  }
+
+  Future<void> _updateDailyReminderPreference(bool enabled) async {
+    final previousValue = _dailyReminderEnabled;
+
+    setState(() {
+      _dailyReminderEnabled = enabled;
+    });
+
+    try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final languageCode = Localizations.localeOf(context).languageCode;
+      final localNotificationService = LocalNotificationService();
+
+      await localNotificationService.initialize(languageCode: languageCode);
+      if (enabled) {
+        await localNotificationService.scheduleDailyReminder(
+          languageCode: languageCode,
+        );
+      } else {
+        await localNotificationService.cancelDailyReminder();
+      }
+
+      if (authService.userId != null) {
+        await FirestoreService().actualizarPreferenciaRecordatorioDiario(
+          authService.userId!,
+          enabled,
+        );
+      }
+    } catch (e) {
+      debugPrint('Error al actualizar recordatorio diario: $e');
+      final languageCode = mounted
+          ? Localizations.localeOf(context).languageCode
+          : null;
+      final localNotificationService = LocalNotificationService();
+      if (previousValue) {
+        await localNotificationService.scheduleDailyReminder(
+          languageCode: languageCode,
+        );
+      } else {
+        await localNotificationService.cancelDailyReminder();
+      }
+      if (!mounted) return;
+
+      setState(() {
+        _dailyReminderEnabled = previousValue;
+      });
     }
   }
 
@@ -732,11 +781,7 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
               const SizedBox(height: 16),
               SwitchListTile(
                 value: _dailyReminderEnabled,
-                onChanged: (value) {
-                  setState(() {
-                    _dailyReminderEnabled = value;
-                  });
-                },
+                onChanged: _updateDailyReminderPreference,
                 title: Text(
                   AppLocalizations.of(context)!.dailyReminderPreferenceTitle,
                 ),

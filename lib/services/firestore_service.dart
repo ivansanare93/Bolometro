@@ -9,6 +9,7 @@ import '../models/achievement.dart';
 import '../utils/app_constants.dart';
 import '../utils/url_utils.dart';
 import '../exceptions/sync_exceptions.dart';
+import 'local_notification_service.dart';
 
 /// Servicio para interactuar con Firestore
 /// Maneja la sincronización de datos del usuario en la nube
@@ -404,6 +405,23 @@ class FirestoreService {
     }
   }
 
+  Future<bool> haCumplidoObjetivoDiario(String userId) async {
+    try {
+      final daySnapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('daily_engagement')
+          .doc(_getLocalDayKey(DateTime.now()))
+          .get();
+      final dayData = daySnapshot.data();
+      final minutesUsed = (dayData?['minutesUsed'] as num?)?.toInt() ?? 0;
+      return minutesUsed >= _dailyEngagementTargetMinutes;
+    } catch (e) {
+      debugPrint('Error al comprobar objetivo diario: $e');
+      return false;
+    }
+  }
+
   /// Registra actividad diaria en minutos para un usuario autenticado.
   Future<bool> registrarActividadDiaria(
     String userId, {
@@ -414,6 +432,7 @@ class FirestoreService {
     try {
       final now = DateTime.now();
       final dayKey = _getLocalDayKey(now);
+      var goalReached = false;
       final dayDocRef = _firestore
           .collection('users')
           .doc(userId)
@@ -447,6 +466,7 @@ class FirestoreService {
 
         if (currentMinutes < _dailyEngagementTargetMinutes &&
             updatedMinutes >= _dailyEngagementTargetMinutes) {
+          goalReached = true;
           transaction.set(metricDocRef, {
             'dateKey': dayKey,
             'goalReached': true,
@@ -454,6 +474,13 @@ class FirestoreService {
           }, SetOptions(merge: true));
         }
       });
+
+      if (goalReached && await obtenerPreferenciaRecordatorioDiario(userId)) {
+        final localNotificationService = LocalNotificationService();
+        await localNotificationService.cancelDailyReminder();
+        await localNotificationService.scheduleDailyReminder(skipToday: true);
+      }
+
       return true;
     } catch (e) {
       debugPrint('Error al registrar actividad diaria: $e');

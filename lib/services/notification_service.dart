@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'local_notification_service.dart';
 
 /// Servicio para gestionar notificaciones push con Firebase Cloud Messaging
 class NotificationService {
@@ -59,24 +63,34 @@ class NotificationService {
     // Mensajes en primer plano
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       debugPrint('Mensaje recibido en primer plano: ${message.notification?.title}');
-      _handleMessage(message);
+      unawaited(_handleMessage(message, showLocalNotification: true));
     });
 
     // Mensajes cuando la app está en segundo plano pero abierta
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       debugPrint('Notificación abierta desde segundo plano: ${message.notification?.title}');
-      _handleMessage(message);
+      unawaited(_handleMessage(message));
     });
   }
 
   /// Manejar un mensaje recibido
-  void _handleMessage(RemoteMessage message) {
+  Future<void> _handleMessage(
+    RemoteMessage message, {
+    bool showLocalNotification = false,
+  }) async {
     // Aquí puedes agregar lógica personalizada según el tipo de notificación
     final data = message.data;
     final type = data['type'];
 
     debugPrint('Tipo de notificación: $type');
     debugPrint('Datos: $data');
+
+    if (showLocalNotification) {
+      await LocalNotificationService().showImmediateNotification(
+        title: message.notification?.title,
+        body: message.notification?.body,
+      );
+    }
 
     // Los mensajes se manejarán en la UI a través de streams o callbacks
   }
