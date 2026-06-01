@@ -18,7 +18,7 @@ class LocalNotificationService {
   static const String _dailyReminderChannelName = 'Daily reminders';
   static const String _dailyReminderChannelDescription =
       'Daily reminder notifications for app engagement';
-  static const TimeOfDay defaultReminderTime = TimeOfDay(hour: 20, minute: 0);
+  static const TimeOfDay defaultReminderTime = TimeOfDay(hour: 17, minute: 0);
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
@@ -125,7 +125,7 @@ class LocalNotificationService {
 
     try {
       final timezoneInfo = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(timezoneInfo));
+      tz.setLocalLocation(tz.getLocation(timezoneInfo as String));
     } catch (e) {
       debugPrint('Error al inicializar la zona horaria local: $e');
       tz.setLocalLocation(tz.getLocation('UTC'));
