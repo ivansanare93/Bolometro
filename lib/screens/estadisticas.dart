@@ -31,6 +31,8 @@ class EstadisticasPantallaCompleta extends StatefulWidget {
 
 class _EstadisticasPantallaCompletaState
     extends State<EstadisticasPantallaCompleta> {
+  static const String _allSessionsFilterValue = '__all_sessions__';
+
   // Thresholds for pin-based stat directional indicators
   static const double _kGoodFirstBallAverage = 6.0;
   static const double _kGoodSpareConversionRate = 50.0;
@@ -73,8 +75,9 @@ class _EstadisticasPantallaCompletaState
   ///
   /// Steps:
   /// 1. Filter by session type.
-  /// 2. Filter by date range preset (or custom range).
-  /// 3. Expand to individual games, sort by session date asc, then apply the
+  /// 2. Filter by specific session (optional).
+  /// 3. Filter by date range preset (or custom range).
+  /// 4. Expand to individual games, sort by session date asc, then apply the
   ///    "last N games" limit to produce the final list of [Sesion]s (wrapped
   ///    so that stats calculations see only the limited games).
   List<Sesion> _getFilteredSesiones(List<Sesion> sesiones) {
@@ -96,7 +99,14 @@ class _EstadisticasPantallaCompletaState
       filtered = filtered.where((s) => s.tipo == _filter.tipo).toList();
     }
 
-    // 2. Filter by date range
+    // 2. Filter by session
+    if (_filter.sessionKey != null) {
+      filtered = filtered
+          .where((s) => _sessionFilterKey(s) == _filter.sessionKey)
+          .toList();
+    }
+
+    // 3. Filter by date range
     final dateRange = _effectiveDateRange();
     if (dateRange != null) {
       final start = DateTime(
@@ -110,7 +120,7 @@ class _EstadisticasPantallaCompletaState
           .toList();
     }
 
-    // 3. Apply "last N games" limit.
+    // 4. Apply "last N games" limit.
     //    Collect all games in chronological order, keep the last N, then
     //    reconstruct the session list so that only those games are included.
     final limit = _filter.lastN.limit;
@@ -218,6 +228,21 @@ class _EstadisticasPantallaCompletaState
     }
   }
 
+  String _sessionFilterKey(Sesion sesion) {
+    final hiveKey = sesion.key;
+    if (hiveKey != null) {
+      return 'hive_$hiveKey';
+    }
+    return '${sesion.fecha.millisecondsSinceEpoch}|'
+        '${Uri.encodeComponent(sesion.lugar)}|'
+        '${Uri.encodeComponent(sesion.tipo)}';
+  }
+
+  String _sessionFilterLabel(Sesion sesion, AppLocalizations l10n) {
+    final tipo = _translateTipo(sesion.tipo, l10n);
+    return '${_formatearFechaCorta(sesion.fecha)} - ${sesion.lugar} ($tipo)';
+  }
+
   // ---------------------------------------------------------------------------
   // Build
   // ---------------------------------------------------------------------------
@@ -287,7 +312,7 @@ class _EstadisticasPantallaCompletaState
           if (partidas.isEmpty) {
             return Column(
               children: [
-                _buildFilterBar(l10n, isDark),
+                _buildFilterBar(l10n, isDark, snapshot.data!),
                 // Centered "no data" message
                 Expanded(
                   child: Center(
@@ -373,7 +398,7 @@ class _EstadisticasPantallaCompletaState
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 14, vertical: 12),
-                  child: _buildFilterBar(l10n, isDark),
+                  child: _buildFilterBar(l10n, isDark, snapshot.data!),
                 ),
               ),
 
@@ -798,9 +823,29 @@ class _EstadisticasPantallaCompletaState
   // ---------------------------------------------------------------------------
 
   /// Full filter bar: session type + date range presets + last-N-games chips.
-  Widget _buildFilterBar(AppLocalizations l10n, bool isDark) {
+  Widget _buildFilterBar(
+    AppLocalizations l10n,
+    bool isDark,
+    List<Sesion> sesiones,
+  ) {
     final primary = Theme.of(context).colorScheme.primary;
     final onSurface = Theme.of(context).colorScheme.onSurface;
+    final sessionOptions = sesiones.asMap().entries
+        .map(
+          (entry) => (
+            key: _sessionFilterKey(entry.value),
+            sesion: entry.value,
+          ),
+        )
+        .toList()
+      ..sort((a, b) => b.sesion.fecha.compareTo(a.sesion.fecha));
+    final selectedSessionValue = sessionOptions.any(
+      (option) => option.key == _filter.sessionKey,
+    )
+        ? _filter.sessionKey
+        // If a previously selected session no longer exists, the selector
+        // gracefully falls back to the "all sessions" option.
+        : null;
 
     return Container(
       decoration: BoxDecoration(
@@ -887,6 +932,67 @@ class _EstadisticasPantallaCompletaState
           Row(
             children: [
               Text(
+                '${l10n.sessions}:',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: onSurface.withOpacity(0.65),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: selectedSessionValue ?? _allSessionsFilterValue,
+                    isExpanded: true,
+                    borderRadius: BorderRadius.circular(12),
+                    icon: Icon(Icons.arrow_drop_down, color: primary),
+                    dropdownColor: isDark
+                        ? Theme.of(context).colorScheme.surface
+                        : Colors.white,
+                    style: TextStyle(
+                      color: onSurface,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    items: [
+                      DropdownMenuItem<String>(
+                        value: _allSessionsFilterValue,
+                        child: Text(
+                          l10n.all,
+                          style: TextStyle(color: onSurface.withOpacity(0.8)),
+                        ),
+                      ),
+                      ...sessionOptions.map(
+                        (option) => DropdownMenuItem<String>(
+                          value: option.key,
+                          child: Text(
+                            _sessionFilterLabel(option.sesion, l10n),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ),
+                    ],
+                    onChanged: (v) {
+                      if (v == null) return;
+                      setState(() {
+                        _filter = v == _allSessionsFilterValue
+                            ? _filter.copyWith(clearSessionKey: true)
+                            : _filter.copyWith(sessionKey: v);
+                      });
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // ── Row 3: date range presets ──────────────────────────────────
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Text(
                 '${l10n.filterDateRange}:',
                 style: TextStyle(
                   fontSize: 12,
@@ -942,7 +1048,7 @@ class _EstadisticasPantallaCompletaState
             ],
           ),
 
-          // ── Row 3: last-N-games ────────────────────────────────────────
+          // ── Row 4: last-N-games ────────────────────────────────────────
           const SizedBox(height: 6),
           Row(
             children: [

@@ -43,12 +43,14 @@ extension LastNGamesValue on LastNGames {
 class StatsFilter {
   const StatsFilter({
     this.tipo = 'Todos',
+    this.sessionKey,
     this.datePreset = DateRangePreset.allTime,
     this.customRange,
     this.lastN = LastNGames.all,
   });
 
   final String tipo;
+  final String? sessionKey;
   final DateRangePreset datePreset;
   final DateTimeRange? customRange;
   final LastNGames lastN;
@@ -61,18 +63,22 @@ class StatsFilter {
             '${customRange!.end.millisecondsSinceEpoch}'
         : datePreset.name;
     final lastNPart = lastN.limit?.toString() ?? 'all';
-    return '${tipo}_${rangePart}_$lastNPart';
+    final sessionPart = sessionKey ?? 'all_sessions';
+    return '${tipo}_${sessionPart}_${rangePart}_$lastNPart';
   }
 
   StatsFilter copyWith({
     String? tipo,
+    String? sessionKey,
     DateRangePreset? datePreset,
     DateTimeRange? customRange,
     LastNGames? lastN,
+    bool clearSessionKey = false,
     bool clearCustomRange = false,
   }) {
     return StatsFilter(
       tipo: tipo ?? this.tipo,
+      sessionKey: clearSessionKey ? null : (sessionKey ?? this.sessionKey),
       datePreset: datePreset ?? this.datePreset,
       customRange: clearCustomRange ? null : (customRange ?? this.customRange),
       lastN: lastN ?? this.lastN,
@@ -84,6 +90,7 @@ class StatsFilter {
     if (identical(this, other)) return true;
     return other is StatsFilter &&
         other.tipo == tipo &&
+        other.sessionKey == sessionKey &&
         other.datePreset == datePreset &&
         other.customRange == customRange &&
         other.lastN == lastN;
@@ -91,5 +98,5 @@ class StatsFilter {
 
   @override
   int get hashCode =>
-      Object.hash(tipo, datePreset, customRange, lastN);
+      Object.hash(tipo, sessionKey, datePreset, customRange, lastN);
 }
