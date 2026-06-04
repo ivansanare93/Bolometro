@@ -678,33 +678,24 @@ class _ModoToggle extends StatelessWidget {
         children: [
           // Keyboard segment
           Expanded(
-            child: GestureDetector(
-              onTap: modoVisual ? () => onToggle(false) : null,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                decoration: BoxDecoration(
-                  color: !modoVisual ? activeColor : Colors.transparent,
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.keyboard_rounded,
-                      size: 18,
-                      color: !modoVisual ? activeFg : inactiveFg,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      l10n.switchToClassicKeyboard,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: !modoVisual ? activeFg : inactiveFg,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+            child: Semantics(
+              button: true,
+              selected: !modoVisual,
+              label: l10n.switchToClassicKeyboard,
+              child: GestureDetector(
+                onTap: modoVisual ? () => onToggle(false) : null,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: !modoVisual ? activeColor : Colors.transparent,
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  child: Icon(
+                    Icons.keyboard_rounded,
+                    size: 20,
+                    color: !modoVisual ? activeFg : inactiveFg,
+                  ),
                 ),
               ),
             ),
@@ -716,33 +707,24 @@ class _ModoToggle extends StatelessWidget {
               color: inactiveColor),
           // Visual segment
           Expanded(
-            child: GestureDetector(
-              onTap: !modoVisual ? () => onToggle(true) : null,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                decoration: BoxDecoration(
-                  color: modoVisual ? activeColor : Colors.transparent,
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.push_pin_rounded,
-                      size: 18,
-                      color: modoVisual ? activeFg : inactiveFg,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      l10n.registerPinsVisually,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: modoVisual ? activeFg : inactiveFg,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+            child: Semantics(
+              button: true,
+              selected: modoVisual,
+              label: l10n.registerPinsVisually,
+              child: GestureDetector(
+                onTap: !modoVisual ? () => onToggle(true) : null,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: modoVisual ? activeColor : Colors.transparent,
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  child: Icon(
+                    Icons.push_pin_rounded,
+                    size: 20,
+                    color: modoVisual ? activeFg : inactiveFg,
+                  ),
                 ),
               ),
             ),
