@@ -920,7 +920,8 @@ class _NotasScreenState extends State<NotasScreen> {
                         ),
                       )
                     : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(12, 4, 12, 88),
+                        padding: EdgeInsets.fromLTRB(
+                            12, 4, 12, 88 + MediaQuery.of(context).padding.bottom),
                         itemCount: _notasFiltradas.length,
                         itemBuilder: (context, index) {
                           final nota = _notasFiltradas[index];

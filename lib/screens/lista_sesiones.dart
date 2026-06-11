@@ -272,7 +272,9 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
                     onRefresh: _cargarSesiones,
                     child: ListView.builder(
                       controller: _scrollController,
-                      padding: const EdgeInsets.only(top: 4, bottom: 16),
+                      padding: EdgeInsets.only(
+                          top: 4,
+                          bottom: 16 + MediaQuery.of(context).padding.bottom),
                       itemCount:
                           _sesionesFiltradas.length + (_hasMore && _isLoading ? 1 : 0),
                       itemBuilder: (context, idx) {

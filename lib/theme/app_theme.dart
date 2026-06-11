@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AppTheme {
   static const Color fondo = Color(0xFFF0F8FF); // Fondo general
@@ -33,6 +34,12 @@ class AppTheme {
         fontSize: 20,
         fontWeight: FontWeight.bold,
         color: Colors.white,
+      ),
+      systemOverlayStyle: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.dark,
       ),
     ),
     
@@ -91,6 +98,12 @@ class AppTheme {
       foregroundColor: Colors.white,
       elevation: 2,
       titleTextStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      systemOverlayStyle: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
     ),
     
     tabBarTheme: const TabBarThemeData(
