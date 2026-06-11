@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -37,6 +38,10 @@ import 'utils/estadisticas_cache.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Enable edge-to-edge rendering so the Flutter UI extends behind system bars
+  // (status bar and navigation bar). Insets are handled via Scaffold/SafeArea.
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   
   // Inicializar Firebase
   await Firebase.initializeApp();
