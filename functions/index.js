@@ -39,20 +39,6 @@ function getNotificationStrings(lang) {
 }
 
 /**
- * Devuelve clave de fecha local (YYYY-MM-DD) usando offset en minutos.
- * @param {Date} date - Fecha base en UTC.
- * @param {number} timezoneOffsetMinutes - Offset del usuario en minutos.
- * @return {string} Fecha local en formato YYYY-MM-DD.
- */
-function getLocalDateKey(date, timezoneOffsetMinutes) {
-  const shifted = new Date(date.getTime() + timezoneOffsetMinutes * 60 * 1000);
-  const year = shifted.getUTCFullYear();
-  const month = String(shifted.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(shifted.getUTCDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-/**
  * Helper function para enviar notificaciones push
  * @param {string} userId - ID del usuario destinatario
  * @param {Object} notificationData - Datos de la notificación
@@ -190,144 +176,22 @@ exports.sendFriendRequestAcceptedNotification = functions.firestore
 
 /**
  * Enviar notificación push para recordatorio diario de uso.
+ * DISABLED: daily reminder feature is disabled.
  */
 exports.sendDailyEngagementNotification = functions.firestore
     .document("users/{userId}/notifications/{notificationId}")
     .onCreate(async (snap, context) => {
-      const notification = snap.data();
-      const userId = context.params.userId;
-
-      if (notification.type !== "daily_engagement") {
-        return null;
-      }
-
-      const userDoc = await admin.firestore().collection("users").doc(userId).get();
-      const lang = (userDoc.exists && userDoc.data().languageCode) || "es";
-      const i18n = getNotificationStrings(lang);
-
-      const targetMinutes = Number(notification.targetMinutes || 5);
-      const currentMinutes = Number(notification.currentMinutes || 0);
-      const missingMinutes = Math.max(1, targetMinutes - currentMinutes);
-
-      const title = i18n.dailyEngagementTitle;
-      const body = i18n.dailyEngagementBody(missingMinutes);
-      const data = {
-        type: "daily_engagement",
-        targetMinutes: String(targetMinutes),
-        currentMinutes: String(currentMinutes),
-        dateKey: notification.dateKey || "",
-      };
-
-      return sendPushNotification(userId, data, title, body);
+      return null;
     });
 
 /**
  * Crea recordatorios diarios para usuarios que no alcanzaron 5 minutos de uso.
+ * DISABLED: daily reminder feature is disabled.
  */
 exports.sendDailyEngagementReminders = functions.pubsub
     .schedule("0 20 * * *")
     .timeZone("Etc/UTC")
     .onRun(async () => {
-      const usersSnapshot = await admin.firestore().collection("users").get();
-      let remindersCreated = 0;
-      let skippedByGoal = 0;
-      let eligibleUsers = 0;
-      const runDateUtc = getLocalDateKey(new Date(), 0);
-
-      let batch = admin.firestore().batch();
-      let pendingWrites = 0;
-
-      for (const userDoc of usersSnapshot.docs) {
-        const userData = userDoc.data();
-        const dailyReminderEnabled = userData.dailyReminderEnabled !== false;
-        const fcmToken = userData.fcmToken;
-
-        if (!dailyReminderEnabled || !fcmToken) {
-          continue;
-        }
-
-        eligibleUsers++;
-
-        const timezoneOffsetMinutes = Number.isInteger(userData.timezoneOffsetMinutes) ?
-          userData.timezoneOffsetMinutes : 0;
-        const dateKey = getLocalDateKey(new Date(), timezoneOffsetMinutes);
-
-        const dailyEngagementRef = userDoc.ref
-            .collection("daily_engagement")
-            .doc(dateKey);
-        const dailyEngagementSnapshot = await dailyEngagementRef.get();
-        const minutesUsed = Number(
-            (dailyEngagementSnapshot.exists &&
-            dailyEngagementSnapshot.data().minutesUsed) || 0,
-        );
-
-        if (minutesUsed >= 5) {
-          skippedByGoal++;
-          continue;
-        }
-
-        const existingReminderSnapshot = await userDoc.ref
-            .collection("notifications")
-            .where("type", "==", "daily_engagement")
-            .where("dateKey", "==", dateKey)
-            .limit(1)
-            .get();
-
-        if (!existingReminderSnapshot.empty) {
-          continue;
-        }
-
-        const notificationRef = userDoc.ref.collection("notifications").doc();
-        batch.set(notificationRef, {
-          type: "daily_engagement",
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          read: false,
-          dateKey: dateKey,
-          targetMinutes: 5,
-          currentMinutes: minutesUsed,
-        });
-        pendingWrites++;
-
-        const metricRef = userDoc.ref
-            .collection("daily_engagement_metrics")
-            .doc(dateKey);
-        batch.set(metricRef, {
-          dateKey: dateKey,
-          remindersSentCount: admin.firestore.FieldValue.increment(1),
-          lastReminderSentAt: admin.firestore.FieldValue.serverTimestamp(),
-        }, {merge: true});
-        pendingWrites++;
-
-        remindersCreated++;
-
-        if (pendingWrites >= 400) {
-          await batch.commit();
-          batch = admin.firestore().batch();
-          pendingWrites = 0;
-        }
-      }
-
-      if (pendingWrites > 0) {
-        await batch.commit();
-      }
-
-      await admin.firestore()
-          .collection("engagement_daily_metrics")
-          .doc(runDateUtc)
-          .set({
-            runDateUtc,
-            remindersCreated,
-            skippedByGoal,
-            eligibleUsers,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          }, {merge: true});
-
-      console.log("Daily engagement reminders completed", {
-        remindersCreated,
-        skippedByGoal,
-        eligibleUsers,
-      });
-
       return null;
     });
 

@@ -12,7 +12,6 @@ import '../services/analytics_service.dart';
 import '../services/achievement_service.dart';
 import '../services/auth_service.dart';
 import '../services/firestore_service.dart';
-import '../services/local_notification_service.dart';
 import '../repositories/data_repository.dart';
 
 class PerfilUsuarioScreen extends StatefulWidget {
@@ -38,7 +37,6 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
   DateTime? _fechaNacimiento;
   String? _avatarPath;
   bool _clearGooglePhoto = false; // Flag para limpiar foto de Google
-  bool _dailyReminderEnabled = true;
 
   // Listener para reaccionar a cambios en la box (p.ej. sync de Firestore)
   ValueListenable<Box<PerfilUsuario>>? _perfilBoxListenable;
@@ -109,75 +107,11 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       }
 
       _ensureFriendCode();
-      _loadDailyReminderPreference();
     } catch (e) {
       debugPrint('Error al cargar perfil: $e');
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _loadDailyReminderPreference() async {
-    try {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final userId = authService.userId;
-      if (userId == null) return;
-
-      final firestoreService = FirestoreService();
-      final enabled =
-          await firestoreService.obtenerPreferenciaRecordatorioDiario(userId);
-      if (!mounted) return;
-      setState(() {
-        _dailyReminderEnabled = enabled;
-      });
-    } catch (e) {
-      debugPrint('Error al cargar preferencia de recordatorio diario: $e');
-    }
-  }
-
-  Future<void> _updateDailyReminderPreference(bool enabled) async {
-    final previousValue = _dailyReminderEnabled;
-    final languageCode = Localizations.localeOf(context).languageCode;
-
-    setState(() {
-      _dailyReminderEnabled = enabled;
-    });
-
-    try {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final localNotificationService = LocalNotificationService();
-
-      await localNotificationService.initialize(languageCode: languageCode);
-      if (enabled) {
-        await localNotificationService.scheduleDailyReminder(
-          languageCode: languageCode,
-        );
-      } else {
-        await localNotificationService.cancelDailyReminder();
-      }
-
-      if (authService.userId != null) {
-        await FirestoreService().actualizarPreferenciaRecordatorioDiario(
-          authService.userId!,
-          enabled,
-        );
-      }
-    } catch (e) {
-      debugPrint('Error al actualizar recordatorio diario: $e');
-      final localNotificationService = LocalNotificationService();
-      if (previousValue) {
-        await localNotificationService.scheduleDailyReminder(
-          languageCode: languageCode,
-        );
-      } else {
-        await localNotificationService.cancelDailyReminder();
-      }
-      if (!mounted) return;
-
-      setState(() {
-        _dailyReminderEnabled = previousValue;
       });
     }
   }
@@ -274,15 +208,6 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
       final dataRepository = Provider.of<DataRepository>(context, listen: false);
       await dataRepository.guardarPerfil(nuevoPerfil);
 
-      final authService = Provider.of<AuthService>(context, listen: false);
-      if (authService.userId != null) {
-        final firestoreService = FirestoreService();
-        await firestoreService.actualizarPreferenciaRecordatorioDiario(
-          authService.userId!,
-          _dailyReminderEnabled,
-        );
-      }
-      
       setState(() {
         perfil = nuevoPerfil;
       });
@@ -774,19 +699,6 @@ class _PerfilUsuarioScreenState extends State<PerfilUsuarioScreen> {
                   border: const OutlineInputBorder(),
                 ),
                 maxLines: 2,
-              ),
-              const SizedBox(height: 16),
-              SwitchListTile(
-                value: _dailyReminderEnabled,
-                onChanged: _updateDailyReminderPreference,
-                title: Text(
-                  AppLocalizations.of(context)!.dailyReminderPreferenceTitle,
-                ),
-                subtitle: Text(
-                  AppLocalizations.of(context)!.dailyReminderPreferenceDescription,
-                ),
-                secondary: const Icon(Icons.notifications_active_outlined),
-                contentPadding: EdgeInsets.zero,
               ),
               const SizedBox(height: 26),
               ElevatedButton.icon(

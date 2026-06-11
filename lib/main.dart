@@ -31,7 +31,6 @@ import 'services/analytics_service.dart';
 import 'services/achievement_service.dart';
 import 'services/notification_service.dart';
 import 'services/engagement_tracking_service.dart';
-import 'services/firestore_service.dart';
 import 'services/local_notification_service.dart';
 import 'repositories/data_repository.dart';
 import 'utils/estadisticas_cache.dart';
@@ -179,18 +178,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
         await notificationService.initialize();
         await localNotificationService.initialize(languageCode: languageCode);
         await notificationService.saveUserToken(userId, languageCode: languageCode);
-        final dailyReminderEnabled =
-            await FirestoreService().obtenerPreferenciaRecordatorioDiario(userId);
-        if (dailyReminderEnabled) {
-          final goalReachedToday =
-              await FirestoreService().haCumplidoObjetivoDiario(userId);
-          await localNotificationService.scheduleDailyReminder(
-            languageCode: languageCode,
-            skipToday: goalReachedToday,
-          );
-        } else {
-          await localNotificationService.cancelDailyReminder();
-        }
+        // Daily reminder feature is disabled; ensure any existing reminder is cancelled.
+        await localNotificationService.cancelDailyReminder();
         _notificationsInitialized = true;
       } finally {
         _initializingNotifications = false;
