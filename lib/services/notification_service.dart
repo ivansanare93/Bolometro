@@ -86,10 +86,14 @@ class NotificationService {
     debugPrint('Datos: $data');
 
     if (showLocalNotification) {
-      await LocalNotificationService().showImmediateNotification(
-        title: message.notification?.title,
-        body: message.notification?.body,
-      );
+      final title = message.notification?.title;
+      final body = message.notification?.body;
+      if (title != null && body != null) {
+        await LocalNotificationService().showImmediateNotification(
+          title: title,
+          body: body,
+        );
+      }
     }
 
     // Los mensajes se manejarán en la UI a través de streams o callbacks

@@ -19,7 +19,7 @@ class LocalNotificationService {
 
   bool _initialized = false;
 
-  Future<void> initialize({String? languageCode}) async {
+  Future<void> initialize() async {
     if (_initialized) {
       await _requestPermissions();
       return;
@@ -57,11 +57,10 @@ class LocalNotificationService {
   }
 
   Future<void> showImmediateNotification({
-    String? title,
-    String? body,
-    String? languageCode,
+    required String title,
+    required String body,
   }) async {
-    await initialize(languageCode: languageCode);
+    await initialize();
 
     await _plugin.show(
       id: DateTime.now().millisecondsSinceEpoch ~/ 1000,

@@ -176,7 +176,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
         final notificationService = NotificationService();
         final localNotificationService = LocalNotificationService();
         await notificationService.initialize();
-        await localNotificationService.initialize(languageCode: languageCode);
+        await localNotificationService.initialize();
         await notificationService.saveUserToken(userId, languageCode: languageCode);
         _notificationsInitialized = true;
       } finally {
