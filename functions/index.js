@@ -21,18 +21,12 @@ function getNotificationStrings(lang) {
       friendRequestBody: (name) => `${name} has sent you a friend request`,
       friendRequestAcceptedTitle: "Request accepted",
       friendRequestAcceptedBody: (name) => `${name} accepted your friend request`,
-      dailyEngagementTitle: "Daily reminder",
-      dailyEngagementBody: (missingMinutes) =>
-        `Use Bolometro ${missingMinutes} more min today to reach your 5-minute goal`,
     },
     es: {
       friendRequestTitle: "Nueva solicitud de amistad",
       friendRequestBody: (name) => `${name} te ha enviado una solicitud de amistad`,
       friendRequestAcceptedTitle: "Solicitud aceptada",
       friendRequestAcceptedBody: (name) => `${name} ha aceptado tu solicitud de amistad`,
-      dailyEngagementTitle: "Recordatorio diario",
-      dailyEngagementBody: (missingMinutes) =>
-        `Usa Bolómetro ${missingMinutes} min más hoy para llegar a tu objetivo de 5 minutos`,
     },
   };
   return strings[lang] || strings["es"];
@@ -172,27 +166,6 @@ exports.sendFriendRequestAcceptedNotification = functions.firestore
       };
 
       return sendPushNotification(userId, data, title, body);
-    });
-
-/**
- * Enviar notificación push para recordatorio diario de uso.
- * DISABLED: daily reminder feature is disabled.
- */
-exports.sendDailyEngagementNotification = functions.firestore
-    .document("users/{userId}/notifications/{notificationId}")
-    .onCreate(async (snap, context) => {
-      return null;
-    });
-
-/**
- * Crea recordatorios diarios para usuarios que no alcanzaron 5 minutos de uso.
- * DISABLED: daily reminder feature is disabled.
- */
-exports.sendDailyEngagementReminders = functions.pubsub
-    .schedule("0 20 * * *")
-    .timeZone("Etc/UTC")
-    .onRun(async () => {
-      return null;
     });
 
 /**
