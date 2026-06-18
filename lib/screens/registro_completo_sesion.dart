@@ -325,10 +325,13 @@ class _RegistroCompletoSesionScreenState
                 ),
               ),
               const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: _guardarSesion,
-                icon: const Icon(Icons.save),
-                label: Text(AppLocalizations.of(context)!.save),
+              SafeArea(
+                top: false,
+                child: ElevatedButton.icon(
+                  onPressed: _guardarSesion,
+                  icon: const Icon(Icons.save),
+                  label: Text(AppLocalizations.of(context)!.save),
+                ),
               ),
             ],
           ),
