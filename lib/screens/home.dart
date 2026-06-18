@@ -141,6 +141,7 @@ Future<void> _bootstrap(
                     final scaffoldContext = context;
                     showModalBottomSheet(
                       context: context,
+                      useSafeArea: true,
                       shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.vertical(
                           top: Radius.circular(16),
@@ -740,7 +741,12 @@ Future<void> _bootstrap(
           }
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.fromLTRB(
+              16,
+              16,
+              16,
+              16 + MediaQuery.of(context).viewPadding.bottom,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
