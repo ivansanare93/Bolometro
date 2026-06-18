@@ -245,8 +245,6 @@
   "imageNotFound": "Imagen no encontrada, selecciona otra.",
   "usingGooglePhoto": "Usando foto de Google. Pulsa para cambiar",
   "tapToChangeImage": "Pulsa para cambiar tu imagen",
-  "dailyReminderPreferenceTitle": "Recordatorio diario de 5 minutos",
-  "dailyReminderPreferenceDescription": "Recibe una notificación diaria si aún no has usado la app al menos 5 minutos hoy",
   "enterYourName": "Introduce tu nombre",
   "enterValidEmail": "Introduce un email válido",
   "selectDate": "Seleccionar fecha",

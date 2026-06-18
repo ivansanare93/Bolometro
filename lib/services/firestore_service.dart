@@ -9,7 +9,6 @@ import '../models/achievement.dart';
 import '../utils/app_constants.dart';
 import '../utils/url_utils.dart';
 import '../exceptions/sync_exceptions.dart';
-import 'local_notification_service.dart';
 
 /// Servicio para interactuar con Firestore
 /// Maneja la sincronización de datos del usuario en la nube
@@ -371,40 +370,6 @@ class FirestoreService {
     }
   }
 
-  /// Obtiene la preferencia del usuario para recordatorios diarios.
-  /// Si no existe aún, por defecto retorna true.
-  Future<bool> obtenerPreferenciaRecordatorioDiario(String userId) async {
-    try {
-      final docSnapshot = await _getPerfilDocument(userId).get();
-      if (!docSnapshot.exists) return true;
-      final data = docSnapshot.data() as Map<String, dynamic>?;
-      if (data == null) return true;
-      final value = data['dailyReminderEnabled'];
-      if (value is bool) return value;
-      return true;
-    } catch (e) {
-      debugPrint('Error al obtener preferencia de recordatorio diario: $e');
-      return true;
-    }
-  }
-
-  /// Actualiza la preferencia del usuario para recordatorios diarios.
-  Future<void> actualizarPreferenciaRecordatorioDiario(
-    String userId,
-    bool enabled,
-  ) async {
-    try {
-      final now = DateTime.now();
-      await _getPerfilDocument(userId).set({
-        'dailyReminderEnabled': enabled,
-        'timezoneOffsetMinutes': now.timeZoneOffset.inMinutes,
-      }, SetOptions(merge: true));
-    } catch (e) {
-      debugPrint('Error al actualizar preferencia de recordatorio diario: $e');
-      rethrow;
-    }
-  }
-
   Future<bool> haCumplidoObjetivoDiario(String userId) async {
     try {
       final daySnapshot = await _firestore
@@ -432,7 +397,6 @@ class FirestoreService {
     try {
       final now = DateTime.now();
       final dayKey = _getLocalDayKey(now);
-      var goalReached = false;
       final dayDocRef = _firestore
           .collection('users')
           .doc(userId)
@@ -466,7 +430,6 @@ class FirestoreService {
 
         if (currentMinutes < _dailyEngagementTargetMinutes &&
             updatedMinutes >= _dailyEngagementTargetMinutes) {
-          goalReached = true;
           transaction.set(metricDocRef, {
             'dateKey': dayKey,
             'goalReached': true,
@@ -474,12 +437,6 @@ class FirestoreService {
           }, SetOptions(merge: true));
         }
       });
-
-      if (goalReached && await obtenerPreferenciaRecordatorioDiario(userId)) {
-        final localNotificationService = LocalNotificationService();
-        await localNotificationService.cancelDailyReminder();
-        await localNotificationService.scheduleDailyReminder(skipToday: true);
-      }
 
       return true;
     } catch (e) {

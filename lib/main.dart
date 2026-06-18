@@ -178,8 +178,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
         await notificationService.initialize();
         await localNotificationService.initialize(languageCode: languageCode);
         await notificationService.saveUserToken(userId, languageCode: languageCode);
-        // Daily reminder feature is disabled; ensure any existing reminder is cancelled.
-        await localNotificationService.cancelDailyReminder();
         _notificationsInitialized = true;
       } finally {
         _initializingNotifications = false;
@@ -198,7 +196,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
       _previousUserId = authService.userId;
       _lastSetUserId = null; // Reset so the next login re-triggers setUser
       _notificationsInitialized = false;
-      unawaited(LocalNotificationService().cancelDailyReminder());
       if (_engagementTrackingInitialized) {
         unawaited(EngagementTrackingService().stopTracking());
       }
