@@ -166,7 +166,12 @@ Future<void> _bootstrap(
 
                         return SingleChildScrollView(
                           child: Padding(
-                            padding: const EdgeInsets.all(16),
+                            padding: EdgeInsets.fromLTRB(
+                              16,
+                              16,
+                              16,
+                              16 + MediaQuery.of(context).viewPadding.bottom,
+                            ),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.start,
