@@ -157,7 +157,13 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
 
   void _recalcularTemporadas() {
     _temporadas = _sesiones.map((s) => s.temporadaNormalizada).toSet().toList()
-      ..sort((a, b) => b.compareTo(a));
+      ..sort((a, b) {
+        final aSinTemporada = a == AppConstants.temporadaSinTemporada;
+        final bSinTemporada = b == AppConstants.temporadaSinTemporada;
+        if (aSinTemporada && !bSinTemporada) return 1;
+        if (!aSinTemporada && bSinTemporada) return -1;
+        return b.compareTo(a);
+      });
   }
 
   Future<void> _borrarSesion(Sesion sesion) async {

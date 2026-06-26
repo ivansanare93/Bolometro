@@ -861,7 +861,13 @@ class _EstadisticasPantallaCompletaState
         .map(_seasonLabel)
         .toSet()
         .toList()
-      ..sort((a, b) => b.compareTo(a));
+      ..sort((a, b) {
+        final aSinTemporada = a == AppConstants.temporadaSinTemporada;
+        final bSinTemporada = b == AppConstants.temporadaSinTemporada;
+        if (aSinTemporada && !bSinTemporada) return 1;
+        if (!aSinTemporada && bSinTemporada) return -1;
+        return b.compareTo(a);
+      });
     final selectedSeasonValue = seasonOptions.contains(_filter.temporada)
         ? _filter.temporada
         : null;
