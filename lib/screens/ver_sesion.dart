@@ -267,6 +267,7 @@ class _VerSesionState extends State<VerSesion> {
         lugarNormalizado == sesionActual.lugar) {
       return;
     }
+
     final l10n = AppLocalizations.of(context)!;
 
     try {
@@ -283,6 +284,73 @@ class _VerSesionState extends State<VerSesion> {
       );
     } catch (e) {
       debugPrint('Error al actualizar lugar de sesión: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.sessionSaveErrorMessage),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _editarTemporadaSesion() async {
+    final dataRepository = Provider.of<DataRepository>(context, listen: false);
+    var valorTemporada = sesionActual.temporada ?? '';
+    final nuevaTemporada = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        final dialogL10n = AppLocalizations.of(dialogContext)!;
+        return AlertDialog(
+          title: const Text('Editar temporada'),
+          content: TextFormField(
+            initialValue: valorTemporada,
+            decoration: const InputDecoration(
+              labelText: 'Temporada',
+              border: OutlineInputBorder(),
+            ),
+            textInputAction: TextInputAction.done,
+            autofocus: true,
+            onChanged: (value) => valorTemporada = value,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(dialogL10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, valorTemporada),
+              child: Text(dialogL10n.save),
+            ),
+          ],
+        );
+      },
+    );
+
+    final temporadaNormalizada = nuevaTemporada?.trim();
+    final temporadaActual = sesionActual.temporada?.trim();
+    if (!mounted || temporadaNormalizada == temporadaActual) {
+      return;
+    }
+    final l10n = AppLocalizations.of(context)!;
+
+    try {
+      final sesionActualizada =
+          (temporadaNormalizada == null || temporadaNormalizada.isEmpty)
+              ? sesionActual.copyWith(clearTemporada: true)
+              : sesionActual.copyWith(temporada: temporadaNormalizada);
+      await dataRepository.actualizarSesion(sesionActualizada);
+
+      if (!mounted) return;
+      setState(() {
+        sesionActual = sesionActualizada;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.saveSuccess)),
+      );
+    } catch (e) {
+      debugPrint('Error al actualizar temporada de sesión: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -459,6 +527,11 @@ class _VerSesionState extends State<VerSesion> {
             onPressed: _editarLugarSesion,
           ),
           IconButton(
+            icon: const Icon(Icons.calendar_view_month),
+            tooltip: 'Temporada',
+            onPressed: _editarTemporadaSesion,
+          ),
+          IconButton(
             icon: const Icon(Icons.note_add_outlined),
             tooltip: AppLocalizations.of(context)!.newNote,
             onPressed: () async {
@@ -543,6 +616,23 @@ class _VerSesionState extends State<VerSesion> {
                     ],
                   ),
                   const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_view_month_rounded,
+                        color: colorTipo,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 7),
+                      Flexible(
+                        child: Text(
+                          sesionActual.temporadaNormalizada,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
                   if (sesionActual.notas != null &&
                       sesionActual.notas!.trim().isNotEmpty) ...[
                     Row(

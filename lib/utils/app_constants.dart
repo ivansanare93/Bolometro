@@ -25,6 +25,9 @@ class AppConstants {
     tipoCompeticion,
   ];
 
+  // ===== Temporadas =====
+  static const String temporadaSinTemporada = 'Sin temporada';
+
   // ===== Nombres de Boxes de Hive =====
   static const String boxSesiones = 'sesiones';
   static const String boxPerfilUsuario = 'perfilUsuario';

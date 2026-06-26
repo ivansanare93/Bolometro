@@ -34,6 +34,8 @@ void main() {
       expect(sesion.tipo, equals(AppConstants.tipoEntrenamiento));
       expect(sesion.partidas.length, equals(2));
       expect(sesion.notas, equals('Good practice session'));
+      expect(sesion.temporada, isNull);
+      expect(sesion.temporadaNormalizada, equals(AppConstants.temporadaSinTemporada));
     });
 
     test('Sesion with single partida should work', () {
@@ -86,6 +88,36 @@ void main() {
       );
 
       expect(sesion.partidas.isEmpty, isTrue);
+    });
+
+    test('Sesion should keep season in copyWith and JSON', () {
+      final sesion = Sesion(
+        fecha: DateTime(2025, 2, 10),
+        lugar: 'Test',
+        tipo: AppConstants.tipoEntrenamiento,
+        partidas: [],
+        temporada: '2025',
+      );
+
+      final updated = sesion.copyWith(temporada: '2025-2026');
+      expect(updated.temporada, equals('2025-2026'));
+      expect(updated.temporadaNormalizada, equals('2025-2026'));
+
+      final fromJson = Sesion.fromJson(updated.toJson());
+      expect(fromJson.temporada, equals('2025-2026'));
+    });
+
+    test('Sesion from old JSON should fallback to Sin temporada', () {
+      final sesion = Sesion.fromJson({
+        'fecha': DateTime(2024, 1, 1).toIso8601String(),
+        'lugar': 'Centro',
+        'tipo': AppConstants.tipoEntrenamiento,
+        'notas': null,
+        'partidas': [],
+      });
+
+      expect(sesion.temporada, isNull);
+      expect(sesion.temporadaNormalizada, equals(AppConstants.temporadaSinTemporada));
     });
   });
 }

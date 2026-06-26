@@ -18,7 +18,9 @@ class ListaSesionesScreen extends StatefulWidget {
 }
 
 class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
+  static const String _filtroTodasTemporadas = '__all_seasons__';
   String _filtroTipo = AppConstants.tipoTodos;
+  String _filtroTemporada = _filtroTodasTemporadas;
   final List<Sesion> _sesiones = [];
   final List<Sesion> _sesionesFiltradas = [];
   bool _isLoading = false;
@@ -127,14 +129,29 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
   }
 
   void _aplicarFiltro() {
-    _sesionesFiltradas.clear();
-    if (_filtroTipo == AppConstants.tipoTodos) {
-      _sesionesFiltradas.addAll(_sesiones);
-    } else {
-      _sesionesFiltradas.addAll(
-        _sesiones.where((s) => s.tipo == _filtroTipo),
-      );
+    final temporadas = _sesiones.map((s) => s.temporadaNormalizada).toSet();
+    if (_filtroTemporada != _filtroTodasTemporadas &&
+        !temporadas.contains(_filtroTemporada)) {
+      _filtroTemporada = _filtroTodasTemporadas;
     }
+
+    _sesionesFiltradas.clear();
+    _sesionesFiltradas.addAll(
+      _sesiones.where((s) {
+        final coincideTipo =
+            _filtroTipo == AppConstants.tipoTodos || s.tipo == _filtroTipo;
+        final coincideTemporada =
+            _filtroTemporada == _filtroTodasTemporadas ||
+                s.temporadaNormalizada == _filtroTemporada;
+        return coincideTipo && coincideTemporada;
+      }),
+    );
+  }
+
+  List<String> _temporadasDisponibles() {
+    final temporadas = _sesiones.map((s) => s.temporadaNormalizada).toSet().toList()
+      ..sort((a, b) => b.compareTo(a));
+    return temporadas;
   }
 
   Future<void> _borrarSesion(Sesion sesion) async {
@@ -237,9 +254,17 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
           // ── Filter chips ──
           _FilterBar(
             filtroTipo: _filtroTipo,
+            filtroTemporada: _filtroTemporada,
+            temporadasDisponibles: _temporadasDisponibles(),
             onChanged: (v) {
               setState(() {
                 _filtroTipo = v;
+                _aplicarFiltro();
+              });
+            },
+            onTemporadaChanged: (v) {
+              setState(() {
+                _filtroTemporada = v;
                 _aplicarFiltro();
               });
             },
@@ -253,9 +278,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 6),
               child: Text(
-                _filtroTipo == AppConstants.tipoTodos
-                    ? '${_sesiones.length} ${l10n.sessions.toLowerCase()}'
-                    : '${_sesionesFiltradas.length} ${l10n.sessions.toLowerCase()}',
+                '${_sesionesFiltradas.length} ${l10n.sessions.toLowerCase()}',
                 style: TextStyle(
                   fontSize: 12,
                   color: cs.onSurface.withOpacity(0.45),
@@ -320,15 +343,22 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
 // ── Sub-widgets ────────────────────────────────────────────────
 
 class _FilterBar extends StatelessWidget {
+  static const String _filtroTodasTemporadas = '__all_seasons__';
   final String filtroTipo;
+  final String filtroTemporada;
+  final List<String> temporadasDisponibles;
   final ValueChanged<String> onChanged;
+  final ValueChanged<String> onTemporadaChanged;
   final String Function(String) translateTipo;
   final bool isDark;
   final ColorScheme cs;
 
   const _FilterBar({
     required this.filtroTipo,
+    required this.filtroTemporada,
+    required this.temporadasDisponibles,
     required this.onChanged,
+    required this.onTemporadaChanged,
     required this.translateTipo,
     required this.isDark,
     required this.cs,
@@ -336,37 +366,80 @@ class _FilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final seasonValues = {
+      _filtroTodasTemporadas,
+      ...temporadasDisponibles,
+    };
+    final selectedSeason = seasonValues.contains(filtroTemporada)
+        ? filtroTemporada
+        : _filtroTodasTemporadas;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-      child: Row(
-        children: AppConstants.tiposSesionConTodos.map((tipo) {
-          final selected = filtroTipo == tipo;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Text(translateTipo(tipo)),
-              selected: selected,
-              onSelected: (_) => onChanged(tipo),
-              selectedColor: cs.primary,
-              backgroundColor:
-                  isDark ? const Color(0xFF1A1F2E) : Colors.grey[100],
-              labelStyle: TextStyle(
-                color: selected ? Colors.white : cs.onSurface.withOpacity(0.75),
-                fontWeight:
-                    selected ? FontWeight.w700 : FontWeight.w500,
-                fontSize: 13,
-              ),
-              side: BorderSide(
-                color: selected
-                    ? cs.primary
-                    : cs.onSurface.withOpacity(0.18),
-                width: 1.2,
-              ),
-              elevation: selected ? 2 : 0,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: AppConstants.tiposSesionConTodos.map((tipo) {
+              final selected = filtroTipo == tipo;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: Text(translateTipo(tipo)),
+                  selected: selected,
+                  onSelected: (_) => onChanged(tipo),
+                  selectedColor: cs.primary,
+                  backgroundColor:
+                      isDark ? const Color(0xFF1A1F2E) : Colors.grey[100],
+                  labelStyle: TextStyle(
+                    color: selected ? Colors.white : cs.onSurface.withOpacity(0.75),
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    fontSize: 13,
+                  ),
+                  side: BorderSide(
+                    color: selected ? cs.primary : cs.onSurface.withOpacity(0.18),
+                    width: 1.2,
+                  ),
+                  elevation: selected ? 2 : 0,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1A1F2E) : Colors.grey[100],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: cs.onSurface.withOpacity(0.18)),
             ),
-          );
-        }).toList(),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                isExpanded: true,
+                value: selectedSeason,
+                items: [
+                  DropdownMenuItem(
+                    value: _filtroTodasTemporadas,
+                    child: Text('Temporada: ${l10n.all}'),
+                  ),
+                  ...temporadasDisponibles.map(
+                    (temporada) => DropdownMenuItem(
+                      value: temporada,
+                      child: Text('Temporada: $temporada'),
+                    ),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    onTemporadaChanged(value);
+                  }
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

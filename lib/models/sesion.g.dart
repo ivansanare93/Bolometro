@@ -22,13 +22,14 @@ class SesionAdapter extends TypeAdapter<Sesion> {
       tipo: fields[2] as String,
       partidas: (fields[3] as List).cast<Partida>(),
       notas: fields[4] as String?,
+      temporada: fields[5] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Sesion obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.fecha)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class SesionAdapter extends TypeAdapter<Sesion> {
       ..writeByte(3)
       ..write(obj.partidas)
       ..writeByte(4)
-      ..write(obj.notas);
+      ..write(obj.notas)
+      ..writeByte(5)
+      ..write(obj.temporada);
   }
 
   @override
