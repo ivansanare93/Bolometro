@@ -43,6 +43,7 @@ extension LastNGamesValue on LastNGames {
 class StatsFilter {
   const StatsFilter({
     this.tipo = 'Todos',
+    this.temporada,
     this.sessionKey,
     this.datePreset = DateRangePreset.allTime,
     this.customRange,
@@ -50,6 +51,7 @@ class StatsFilter {
   });
 
   final String tipo;
+  final String? temporada;
   final String? sessionKey;
   final DateRangePreset datePreset;
   final DateTimeRange? customRange;
@@ -63,21 +65,25 @@ class StatsFilter {
             '${customRange!.end.millisecondsSinceEpoch}'
         : datePreset.name;
     final lastNPart = lastN.limit?.toString() ?? 'all';
+    final seasonPart = temporada ?? 'all_seasons';
     final sessionPart = sessionKey ?? 'all_sessions';
-    return '${tipo}_${sessionPart}_${rangePart}_$lastNPart';
+    return '${tipo}_${seasonPart}_${sessionPart}_${rangePart}_$lastNPart';
   }
 
   StatsFilter copyWith({
     String? tipo,
+    String? temporada,
     String? sessionKey,
     DateRangePreset? datePreset,
     DateTimeRange? customRange,
     LastNGames? lastN,
+    bool clearTemporada = false,
     bool clearSessionKey = false,
     bool clearCustomRange = false,
   }) {
     return StatsFilter(
       tipo: tipo ?? this.tipo,
+      temporada: clearTemporada ? null : (temporada ?? this.temporada),
       sessionKey: clearSessionKey ? null : (sessionKey ?? this.sessionKey),
       datePreset: datePreset ?? this.datePreset,
       customRange: clearCustomRange ? null : (customRange ?? this.customRange),
@@ -90,6 +96,7 @@ class StatsFilter {
     if (identical(this, other)) return true;
     return other is StatsFilter &&
         other.tipo == tipo &&
+        other.temporada == temporada &&
         other.sessionKey == sessionKey &&
         other.datePreset == datePreset &&
         other.customRange == customRange &&
@@ -98,5 +105,5 @@ class StatsFilter {
 
   @override
   int get hashCode =>
-      Object.hash(tipo, sessionKey, datePreset, customRange, lastN);
+      Object.hash(tipo, temporada, sessionKey, datePreset, customRange, lastN);
 }

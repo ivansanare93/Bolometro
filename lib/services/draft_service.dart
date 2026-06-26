@@ -14,6 +14,7 @@ class DraftService {
   static Future<void> saveSesionDraft({
     required String lugar,
     required String tipo,
+    required String temporada,
     required List<Partida> partidas,
   }) async {
     try {
@@ -21,6 +22,7 @@ class DraftService {
       final draft = {
         'lugar': lugar,
         'tipo': tipo,
+        'temporada': temporada,
         'partidas': partidas.map((p) => p.toJson()).toList(),
         'timestamp': DateTime.now().toIso8601String(),
       };

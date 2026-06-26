@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import '../utils/app_constants.dart';
 import 'partida.dart';
 
 part 'sesion.g.dart';
@@ -20,12 +21,16 @@ class Sesion extends HiveObject {
   @HiveField(4)
   String? notas;
 
+  @HiveField(5)
+  String? temporada;
+
   Sesion({
     required this.fecha,
     required this.lugar,
     required this.tipo,
     required this.partidas,
     this.notas,
+    this.temporada,
   });
 
   Sesion copyWith({
@@ -34,6 +39,8 @@ class Sesion extends HiveObject {
     String? tipo,
     List<Partida>? partidas,
     String? notas,
+    String? temporada,
+    bool clearTemporada = false,
   }) {
     return Sesion(
       fecha: fecha ?? this.fecha,
@@ -41,7 +48,16 @@ class Sesion extends HiveObject {
       tipo: tipo ?? this.tipo,
       partidas: partidas ?? this.partidas,
       notas: notas ?? this.notas,
+      temporada: clearTemporada ? null : (temporada ?? this.temporada),
     );
+  }
+
+  String get temporadaNormalizada {
+    final valor = temporada?.trim();
+    if (valor == null || valor.isEmpty) {
+      return AppConstants.temporadaSinTemporada;
+    }
+    return valor;
   }
 
   Map<String, dynamic> toJson() => {
@@ -49,6 +65,7 @@ class Sesion extends HiveObject {
         'lugar': lugar,
         'tipo': tipo,
         'notas': notas,
+        'temporada': temporada,
         'partidas': partidas.map((p) => p.toJson()).toList(),
       };
 
@@ -57,6 +74,7 @@ class Sesion extends HiveObject {
         lugar: json['lugar'],
         tipo: json['tipo'],
         notas: json['notas'],
+        temporada: json['temporada'] as String?,
         partidas: (json['partidas'] as List<dynamic>)
             .map((p) => Partida.fromJson(p))
             .toList(),

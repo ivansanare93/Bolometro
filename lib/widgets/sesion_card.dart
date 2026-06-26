@@ -173,6 +173,26 @@ class SesionCard extends StatelessWidget {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(Icons.calendar_view_month_rounded,
+                              size: 15,
+                              color: cs.onSurface.withOpacity(0.45)),
+                          const SizedBox(width: 5),
+                          Expanded(
+                            child: Text(
+                              sesion.temporadaNormalizada,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: cs.onSurface.withOpacity(0.7),
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 12),
                       // Stats row
                       Row(

@@ -27,6 +27,7 @@ class _RegistroCompletoSesionScreenState
     with WidgetsBindingObserver {
   String _lugar = '';
   String _tipo = AppConstants.tipoEntrenamiento;
+  String _temporada = DateTime.now().year.toString();
   final List<Partida> _partidas = [];
 
   // TextEditingController to keep the location field in sync with restored draft
@@ -65,6 +66,7 @@ class _RegistroCompletoSesionScreenState
     DraftService.saveSesionDraft(
       lugar: _lugar,
       tipo: _tipo,
+      temporada: _temporada,
       partidas: _partidas,
     );
   }
@@ -79,9 +81,12 @@ class _RegistroCompletoSesionScreenState
 
     final savedLugar = (draft['lugar'] as String?) ?? '';
     final savedTipo = (draft['tipo'] as String?) ?? AppConstants.tipoEntrenamiento;
+    final savedTemporada =
+        (draft['temporada'] as String?) ?? DateTime.now().year.toString();
 
     final hasData = (savedPartidas != null && savedPartidas.isNotEmpty) ||
-        savedLugar.isNotEmpty;
+        savedLugar.isNotEmpty ||
+        savedTemporada.trim() != DateTime.now().year.toString();
 
     if (!hasData) return;
 
@@ -89,6 +94,7 @@ class _RegistroCompletoSesionScreenState
       setState(() {
         _lugar = savedLugar;
         _tipo = savedTipo;
+        _temporada = savedTemporada;
         if (savedPartidas != null) {
           _partidas.clear();
           _partidas.addAll(savedPartidas);
@@ -157,6 +163,8 @@ class _RegistroCompletoSesionScreenState
       lugar: _lugar.trim(),
       tipo: _tipo.trim(),
       partidas: _partidas,
+      temporada:
+          _temporada.trim().isEmpty ? null : _temporada.trim(),
     );
 
     try {
@@ -298,6 +306,18 @@ class _RegistroCompletoSesionScreenState
                   setState(
                     () => _tipo = value ?? AppConstants.tipoEntrenamiento,
                   );
+                  _saveDraft();
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                initialValue: _temporada,
+                decoration: const InputDecoration(
+                  labelText: 'Temporada',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (v) {
+                  _temporada = v;
                   _saveDraft();
                 },
               ),

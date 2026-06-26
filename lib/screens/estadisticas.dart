@@ -32,6 +32,7 @@ class EstadisticasPantallaCompleta extends StatefulWidget {
 class _EstadisticasPantallaCompletaState
     extends State<EstadisticasPantallaCompleta> {
   static const String _allSessionsFilterValue = '__all_sessions__';
+  static const String _allSeasonsFilterValue = '__all_seasons__';
 
   // Thresholds for pin-based stat directional indicators
   static const double _kGoodFirstBallAverage = 6.0;
@@ -99,14 +100,21 @@ class _EstadisticasPantallaCompletaState
       filtered = filtered.where((s) => s.tipo == _filter.tipo).toList();
     }
 
-    // 2. Filter by session
+    // 2. Filter by season
+    if (_filter.temporada != null) {
+      filtered = filtered
+          .where((s) => s.temporadaNormalizada == _filter.temporada)
+          .toList();
+    }
+
+    // 3. Filter by session
     if (_filter.sessionKey != null) {
       filtered = filtered
           .where((s) => _sessionFilterKey(s) == _filter.sessionKey)
           .toList();
     }
 
-    // 3. Filter by date range
+    // 4. Filter by date range
     final dateRange = _effectiveDateRange();
     if (dateRange != null) {
       final start = DateTime(
@@ -120,7 +128,7 @@ class _EstadisticasPantallaCompletaState
           .toList();
     }
 
-    // 4. Apply "last N games" limit.
+    // 5. Apply "last N games" limit.
     //    Collect all games in chronological order, keep the last N, then
     //    reconstruct the session list so that only those games are included.
     final limit = _filter.lastN.limit;
@@ -235,13 +243,16 @@ class _EstadisticasPantallaCompletaState
     }
     return '${sesion.fecha.millisecondsSinceEpoch}|'
         '${Uri.encodeComponent(sesion.lugar)}|'
-        '${Uri.encodeComponent(sesion.tipo)}';
+        '${Uri.encodeComponent(sesion.tipo)}|'
+        '${Uri.encodeComponent(sesion.temporadaNormalizada)}';
   }
 
   String _sessionFilterLabel(Sesion sesion, AppLocalizations l10n) {
     final tipo = _translateTipo(sesion.tipo, l10n);
     return '${_formatearFechaCorta(sesion.fecha)} - ${sesion.lugar} ($tipo)';
   }
+
+  String _seasonLabel(Sesion sesion) => sesion.temporadaNormalizada;
 
   // ---------------------------------------------------------------------------
   // Build
@@ -846,6 +857,20 @@ class _EstadisticasPantallaCompletaState
         // If a previously selected session no longer exists, the selector
         // gracefully falls back to the "all sessions" option.
         : null;
+    final seasonOptions = sesiones
+        .map(_seasonLabel)
+        .toSet()
+        .toList()
+      ..sort((a, b) {
+        final aSinTemporada = a == AppConstants.temporadaSinTemporada;
+        final bSinTemporada = b == AppConstants.temporadaSinTemporada;
+        if (aSinTemporada && !bSinTemporada) return 1;
+        if (!aSinTemporada && bSinTemporada) return -1;
+        return b.compareTo(a);
+      });
+    final selectedSeasonValue = seasonOptions.contains(_filter.temporada)
+        ? _filter.temporada
+        : null;
 
     return Container(
       decoration: BoxDecoration(
@@ -927,7 +952,67 @@ class _EstadisticasPantallaCompletaState
             ],
           ),
 
-          // ── Row 2: date range presets ──────────────────────────────────
+          // ── Row 2: season filter ───────────────────────────────────────
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              const Text(
+                'Temporada:',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: selectedSeasonValue ?? _allSeasonsFilterValue,
+                    isExpanded: true,
+                    borderRadius: BorderRadius.circular(12),
+                    icon: Icon(Icons.arrow_drop_down, color: primary),
+                    dropdownColor: isDark
+                        ? Theme.of(context).colorScheme.surface
+                        : Colors.white,
+                    style: TextStyle(
+                      color: onSurface,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    items: [
+                      DropdownMenuItem<String>(
+                        value: _allSeasonsFilterValue,
+                        child: Text(
+                          l10n.all,
+                          style: TextStyle(color: onSurface.withOpacity(0.8)),
+                        ),
+                      ),
+                      ...seasonOptions.map(
+                        (season) => DropdownMenuItem<String>(
+                          value: season,
+                          child: Text(
+                            season,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ),
+                    ],
+                    onChanged: (v) {
+                      if (v == null) return;
+                      setState(() {
+                        _filter = v == _allSeasonsFilterValue
+                            ? _filter.copyWith(clearTemporada: true)
+                            : _filter.copyWith(temporada: v);
+                      });
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // ── Row 3: specific session ────────────────────────────────────
           const SizedBox(height: 6),
           Row(
             children: [
@@ -988,7 +1073,7 @@ class _EstadisticasPantallaCompletaState
             ],
           ),
 
-          // ── Row 3: date range presets ──────────────────────────────────
+          // ── Row 4: date range presets ──────────────────────────────────
           const SizedBox(height: 6),
           Row(
             children: [
@@ -1048,7 +1133,7 @@ class _EstadisticasPantallaCompletaState
             ],
           ),
 
-          // ── Row 4: last-N-games ────────────────────────────────────────
+          // ── Row 5: last-N-games ────────────────────────────────────────
           const SizedBox(height: 6),
           Row(
             children: [
