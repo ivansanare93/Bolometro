@@ -60,7 +60,7 @@ class _RegistroCompletoSesionScreenState
     if (mounted) {
       setState(() {
         _temporadasDisponibles = temporadas;
-        if (activa != null && activa.isNotEmpty) {
+        if (activa != null) {
           _temporada = activa;
         }
       });

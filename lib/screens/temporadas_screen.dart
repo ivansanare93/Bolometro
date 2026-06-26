@@ -217,7 +217,7 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(
               l10n.deleteSeason,
-              style: const TextStyle(color: Colors.red),
+              style: TextStyle(color: Theme.of(ctx).colorScheme.error),
             ),
           ),
         ],
@@ -464,11 +464,11 @@ class _SeasonTile extends StatelessWidget {
                 value: 'delete',
                 child: Row(
                   children: [
-                    const Icon(Icons.delete_outline, size: 18,
-                        color: Colors.red),
+                    Icon(Icons.delete_outline, size: 18,
+                        color: cs.error),
                     const SizedBox(width: 8),
                     Text(l10n.deleteSeason,
-                        style: const TextStyle(color: Colors.red)),
+                        style: TextStyle(color: cs.error)),
                   ],
                 ),
               ),
