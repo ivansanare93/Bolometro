@@ -15,6 +15,7 @@ import 'achievements_screen.dart';
 import 'registro_completo_sesion.dart';
 import 'notas_screen.dart';
 import 'feedback_screen.dart';
+import 'temporadas_screen.dart';
 import '../providers/theme_provider.dart';
 import '../providers/language_provider.dart';
 import '../models/perfil_usuario.dart';
@@ -944,6 +945,21 @@ Future<void> _bootstrap(
                         );
                       },
                     ),
+                  ),
+                  Card(
+                   child: ListTile(
+                     leading: const Text('📅', style: TextStyle(fontSize: 32)),
+                     title: Text(AppLocalizations.of(context)!.seasons),
+                     subtitle: Text(AppLocalizations.of(context)!.manageSeasonsSubtitle),
+                     onTap: () {
+                       Navigator.push(
+                         context,
+                         MaterialPageRoute(
+                           builder: (_) => const TemporadasScreen(),
+                         ),
+                       );
+                     },
+                   ),
                   ),
                   // Solo mostrar Friends y Rankings si el usuario está autenticado
                   if (authService.isAuthenticated) ...[

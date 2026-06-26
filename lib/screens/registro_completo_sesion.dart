@@ -11,6 +11,7 @@ import '../repositories/data_repository.dart';
 import '../services/analytics_service.dart';
 import '../services/achievement_service.dart';
 import '../services/draft_service.dart';
+import '../services/temporada_service.dart';
 import '../l10n/app_localizations.dart';
 import 'home.dart';
 
@@ -28,6 +29,7 @@ class _RegistroCompletoSesionScreenState
   String _lugar = '';
   String _tipo = AppConstants.tipoEntrenamiento;
   String _temporada = DateTime.now().year.toString();
+  List<String> _temporadasDisponibles = [];
   final List<Partida> _partidas = [];
 
   // TextEditingController to keep the location field in sync with restored draft
@@ -37,7 +39,7 @@ class _RegistroCompletoSesionScreenState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _restoreDraftIfAvailable();
+    _initializeDefaults();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
         final analytics = Provider.of<AnalyticsService>(context, listen: false);
@@ -46,6 +48,25 @@ class _RegistroCompletoSesionScreenState
         debugPrint('Error logging screen view: $e');
       }
     });
+  }
+
+  /// Loads the available seasons and the active season, then checks for a
+  /// draft.  Draft values always take precedence over the active-season
+  /// default so that an in-progress session is never silently overwritten.
+  Future<void> _initializeDefaults() async {
+    final temporadas = await TemporadaService.getTemporadas();
+    final activa = await TemporadaService.getTemporadaActiva();
+
+    if (mounted) {
+      setState(() {
+        _temporadasDisponibles = temporadas;
+        if (activa != null && activa.isNotEmpty) {
+          _temporada = activa;
+        }
+      });
+    }
+
+    await _restoreDraftIfAvailable();
   }
 
   @override
@@ -310,14 +331,11 @@ class _RegistroCompletoSesionScreenState
                 },
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                initialValue: _temporada,
-                decoration: const InputDecoration(
-                  labelText: 'Temporada',
-                  border: OutlineInputBorder(),
-                ),
+              _TemporadaSelector(
+                value: _temporada,
+                temporadas: _temporadasDisponibles,
                 onChanged: (v) {
-                  _temporada = v;
+                  setState(() => _temporada = v);
                   _saveDraft();
                 },
               ),
@@ -355,6 +373,139 @@ class _RegistroCompletoSesionScreenState
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Season selector ────────────────────────────────────────────────────────
+
+/// Shows a dropdown of known seasons (from [TemporadaService]) plus a
+/// "Sin temporada" option, with a trailing icon that opens a text dialog to
+/// type a fully custom name.
+class _TemporadaSelector extends StatelessWidget {
+  final String value;
+  final List<String> temporadas;
+  final ValueChanged<String> onChanged;
+
+  const _TemporadaSelector({
+    required this.value,
+    required this.temporadas,
+    required this.onChanged,
+  });
+
+  Future<void> _showCustomDialog(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    // Empty string and "Sin temporada" are the same; don't pre-fill them as
+    // text – let the user type a new value from scratch.
+    final prefill = (value.isEmpty || value == AppConstants.temporadaSinTemporada)
+        ? ''
+        : value;
+    final controller = TextEditingController(text: prefill);
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.selectSeason),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: l10n.newSeasonHint,
+            border: const OutlineInputBorder(),
+          ),
+          onSubmitted: (_) => Navigator.pop(ctx, controller.text.trim()),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+            child: Text(l10n.accept),
+          ),
+        ],
+      ),
+    );
+    if (result != null) onChanged(result);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Build the dropdown items: known seasons + Sin temporada
+    final knownOptions = [
+      ...temporadas,
+      AppConstants.temporadaSinTemporada,
+    ];
+
+    // If the current value isn't in the list (custom text), still show it.
+    // Empty string is normalised to "Sin temporada" for display purposes.
+    final effectiveValue = value.isEmpty ? AppConstants.temporadaSinTemporada : value;
+    final isCustom = effectiveValue != AppConstants.temporadaSinTemporada &&
+        !temporadas.contains(effectiveValue);
+    final dropdownValue = isCustom ? null : effectiveValue;
+
+    return InputDecorator(
+      decoration: InputDecoration(
+        labelText: l10n.selectSeason,
+        border: const OutlineInputBorder(),
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.edit_outlined, size: 20),
+          tooltip: l10n.selectSeason,
+          onPressed: () => _showCustomDialog(context),
+        ),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          isExpanded: true,
+          isDense: true,
+          value: dropdownValue,
+          hint: isCustom
+              ? Text(
+                  effectiveValue,
+                  style: TextStyle(color: cs.onSurface),
+                )
+              : null,
+          onChanged: (v) {
+            if (v != null) onChanged(v);
+          },
+          items: knownOptions.map((option) {
+            final isSinTemporada = option == AppConstants.temporadaSinTemporada;
+            return DropdownMenuItem(
+              value: option,
+              child: Row(
+                children: [
+                  Icon(
+                    isSinTemporada
+                        ? Icons.remove_circle_outline
+                        : Icons.event_note_rounded,
+                    size: 16,
+                    color: isSinTemporada
+                        ? cs.onSurface.withOpacity(0.45)
+                        : isDark
+                            ? cs.primary
+                            : cs.primary.withOpacity(0.8),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(option,
+                      style: TextStyle(
+                        fontStyle: isSinTemporada
+                            ? FontStyle.italic
+                            : FontStyle.normal,
+                        color: isSinTemporada
+                            ? cs.onSurface.withOpacity(0.6)
+                            : null,
+                      )),
+                ],
+              ),
+            );
+          }).toList(),
         ),
       ),
     );
