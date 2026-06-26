@@ -116,6 +116,12 @@ class TemporadaService {
       temporadas.remove(name);
       await _saveTemporadas(temporadas);
 
+      // Also remove from archived list if present
+      final archivadas = await getArchivedTemporadas();
+      if (archivadas.remove(name)) {
+        await _saveArchivedTemporadas(archivadas);
+      }
+
       final activa = await getTemporadaActiva();
       if (activa == name) {
         await setTemporadaActiva(null);
@@ -123,5 +129,76 @@ class TemporadaService {
     } catch (e) {
       debugPrint('TemporadaService: error deleting season: $e');
     }
+  }
+
+  // ── Archive ───────────────────────────────────────────────────────────────
+
+  /// Returns the list of archived season names.
+  static Future<List<String>> getArchivedTemporadas() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(AppConstants.prefKeyTemporadasArchivadas);
+      if (raw == null) return [];
+      final decoded = json.decode(raw) as List<dynamic>;
+      return decoded.cast<String>();
+    } catch (e) {
+      debugPrint('TemporadaService: error loading archived seasons: $e');
+      return [];
+    }
+  }
+
+  static Future<void> _saveArchivedTemporadas(
+      List<String> archivadas) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+        AppConstants.prefKeyTemporadasArchivadas, json.encode(archivadas));
+  }
+
+  /// Archives [name]: it stays in the main list (for historical filtering)
+  /// but is additionally added to the archived list and cleared as active.
+  /// Returns `true` on success.
+  static Future<bool> archiveTemporada(String name) async {
+    try {
+      final temporadas = await getTemporadas();
+      if (!temporadas.contains(name)) return false;
+
+      final archivadas = await getArchivedTemporadas();
+      if (!archivadas.contains(name)) {
+        archivadas.add(name);
+        await _saveArchivedTemporadas(archivadas);
+      }
+
+      // Clear active season if it was this one
+      final activa = await getTemporadaActiva();
+      if (activa == name) {
+        await setTemporadaActiva(null);
+      }
+      return true;
+    } catch (e) {
+      debugPrint('TemporadaService: error archiving season: $e');
+      return false;
+    }
+  }
+
+  /// Restores an archived season back to active status (removes from archive
+  /// list). Returns `true` on success.
+  static Future<bool> unarchiveTemporada(String name) async {
+    try {
+      final archivadas = await getArchivedTemporadas();
+      if (archivadas.remove(name)) {
+        await _saveArchivedTemporadas(archivadas);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('TemporadaService: error unarchiving season: $e');
+      return false;
+    }
+  }
+
+  /// Returns `true` if [name] is in the archived list.
+  static Future<bool> isArchived(String name) async {
+    final archivadas = await getArchivedTemporadas();
+    return archivadas.contains(name);
   }
 }
