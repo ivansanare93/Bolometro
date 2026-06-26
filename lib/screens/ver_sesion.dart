@@ -327,7 +327,10 @@ class _VerSesionState extends State<VerSesion> {
       },
     );
 
-    final temporadaNormalizada = nuevaTemporada?.trim();
+    if (nuevaTemporada == null) {
+      return;
+    }
+    final temporadaNormalizada = nuevaTemporada.trim();
     final temporadaActual = sesionActual.temporada?.trim();
     if (!mounted || temporadaNormalizada == temporadaActual) {
       return;
@@ -336,7 +339,7 @@ class _VerSesionState extends State<VerSesion> {
 
     try {
       final sesionActualizada =
-          (temporadaNormalizada == null || temporadaNormalizada.isEmpty)
+          temporadaNormalizada.isEmpty
               ? sesionActual.copyWith(clearTemporada: true)
               : sesionActual.copyWith(temporada: temporadaNormalizada);
       await dataRepository.actualizarSesion(sesionActualizada);

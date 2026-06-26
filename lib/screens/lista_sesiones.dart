@@ -66,6 +66,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
       _isLoading = true;
       _currentPage = 0;
       _sesiones.clear();
+      _temporadas.clear();
       _sesionesFiltradas.clear();
     });
 
@@ -78,6 +79,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
 
       setState(() {
         _sesiones.addAll(nuevasSesiones);
+        _recalcularTemporadas();
         _aplicarFiltro();
         _hasMore = nuevasSesiones.length >= AppConstants.pageSize;
         _isLoading = false;
@@ -115,6 +117,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
       setState(() {
         _currentPage++;
         _sesiones.addAll(nuevasSesiones);
+        _recalcularTemporadas();
         _aplicarFiltro();
         _hasMore = nuevasSesiones.length >= AppConstants.pageSize;
         _isLoading = false;
@@ -130,9 +133,6 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
   }
 
   void _aplicarFiltro() {
-    final temporadas = _sesiones.map((s) => s.temporadaNormalizada).toSet().toList()
-      ..sort((a, b) => b.compareTo(a));
-    _temporadas = temporadas;
     if (_filtroTemporada != _filtroTodasTemporadas &&
         !_temporadas.contains(_filtroTemporada)) {
       _filtroTemporada = _filtroTodasTemporadas;
@@ -155,6 +155,11 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
     return _temporadas;
   }
 
+  void _recalcularTemporadas() {
+    _temporadas = _sesiones.map((s) => s.temporadaNormalizada).toSet().toList()
+      ..sort((a, b) => b.compareTo(a));
+  }
+
   Future<void> _borrarSesion(Sesion sesion) async {
     try {
       final dataRepository = Provider.of<DataRepository>(context, listen: false);
@@ -165,6 +170,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
       
       setState(() {
         _sesiones.remove(sesion);
+        _recalcularTemporadas();
         _aplicarFiltro();
       });
 

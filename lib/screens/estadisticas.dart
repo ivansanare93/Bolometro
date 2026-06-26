@@ -995,11 +995,9 @@ class _EstadisticasPantallaCompletaState
                     onChanged: (v) {
                       if (v == null) return;
                       setState(() {
-                        final baseFilter =
-                            _filter.copyWith(clearSessionKey: true);
                         _filter = v == _allSeasonsFilterValue
-                            ? baseFilter.copyWith(clearTemporada: true)
-                            : baseFilter.copyWith(temporada: v);
+                            ? _filter.copyWith(clearTemporada: true)
+                            : _filter.copyWith(temporada: v);
                       });
                     },
                   ),
