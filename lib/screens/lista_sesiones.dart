@@ -21,6 +21,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
   static const String _filtroTodasTemporadas = '__all_seasons__';
   String _filtroTipo = AppConstants.tipoTodos;
   String _filtroTemporada = _filtroTodasTemporadas;
+  List<String> _temporadas = [];
   final List<Sesion> _sesiones = [];
   final List<Sesion> _sesionesFiltradas = [];
   bool _isLoading = false;
@@ -129,9 +130,11 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
   }
 
   void _aplicarFiltro() {
-    final temporadas = _sesiones.map((s) => s.temporadaNormalizada).toSet();
+    final temporadas = _sesiones.map((s) => s.temporadaNormalizada).toSet().toList()
+      ..sort((a, b) => b.compareTo(a));
+    _temporadas = temporadas;
     if (_filtroTemporada != _filtroTodasTemporadas &&
-        !temporadas.contains(_filtroTemporada)) {
+        !_temporadas.contains(_filtroTemporada)) {
       _filtroTemporada = _filtroTodasTemporadas;
     }
 
@@ -149,9 +152,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
   }
 
   List<String> _temporadasDisponibles() {
-    final temporadas = _sesiones.map((s) => s.temporadaNormalizada).toSet().toList()
-      ..sort((a, b) => b.compareTo(a));
-    return temporadas;
+    return _temporadas;
   }
 
   Future<void> _borrarSesion(Sesion sesion) async {
