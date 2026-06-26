@@ -1781,4 +1781,65 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get feedbackSubmitError => 'Could not send feedback';
+
+  @override
+  String get seasons => 'Seasons';
+
+  @override
+  String get manageSeasonsSubtitle => 'Organise your sessions by season';
+
+  @override
+  String get seasonsManagement => 'Season management';
+
+  @override
+  String get noSeasonsYet => 'No seasons yet';
+
+  @override
+  String get noSeasonsYetHint => 'Tap + to create the first one';
+
+  @override
+  String get activeSeason => 'Active season';
+
+  @override
+  String get setAsActive => 'Set as active';
+
+  @override
+  String get renameSeason => 'Rename season';
+
+  @override
+  String get deleteSeason => 'Delete season';
+
+  @override
+  String deleteSeasonConfirm(String name) =>
+      'Delete season "$name"? Associated sessions will not be removed.';
+
+  @override
+  String get newSeasonTitle => 'New season';
+
+  @override
+  String get newSeasonHint => 'E.g.: 2025-2026';
+
+  @override
+  String get seasonNameRequired => 'Name cannot be empty';
+
+  @override
+  String get seasonAlreadyExists => 'A season with that name already exists';
+
+  @override
+  String get seasonAdded => 'Season created';
+
+  @override
+  String get seasonRenamed => 'Season renamed';
+
+  @override
+  String get seasonDeleted => 'Season deleted';
+
+  @override
+  String get sinTemporada => 'No season';
+
+  @override
+  String get defaultSeasonLabel => 'Default';
+
+  @override
+  String get selectSeason => 'Season';
 }

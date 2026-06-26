@@ -1392,5 +1392,88 @@
   "feedbackSubmitError": "Could not send feedback",
   "@feedbackSubmitError": {
     "description": "Error prefix shown when feedback submission fails"
+  },
+  "seasons": "Seasons",
+  "@seasons": {
+    "description": "Label for seasons section"
+  },
+  "manageSeasonsSubtitle": "Organise your sessions by season",
+  "@manageSeasonsSubtitle": {
+    "description": "Subtitle for the seasons management card on home"
+  },
+  "seasonsManagement": "Season management",
+  "@seasonsManagement": {
+    "description": "Title for the seasons management screen"
+  },
+  "noSeasonsYet": "No seasons yet",
+  "@noSeasonsYet": {
+    "description": "Empty state label when no seasons exist"
+  },
+  "noSeasonsYetHint": "Tap + to create the first one",
+  "@noSeasonsYetHint": {
+    "description": "Hint shown below the empty state label"
+  },
+  "activeSeason": "Active season",
+  "@activeSeason": {
+    "description": "Label indicating the active/default season"
+  },
+  "setAsActive": "Set as active",
+  "@setAsActive": {
+    "description": "Action to set a season as the active default"
+  },
+  "renameSeason": "Rename season",
+  "@renameSeason": {
+    "description": "Action to rename a season"
+  },
+  "deleteSeason": "Delete season",
+  "@deleteSeason": {
+    "description": "Action to delete a season"
+  },
+  "deleteSeasonConfirm": "Delete season \"{name}\"? Associated sessions will not be removed.",
+  "@deleteSeasonConfirm": {
+    "description": "Confirmation message before deleting a season",
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "newSeasonTitle": "New season",
+  "@newSeasonTitle": {
+    "description": "Title of the dialog for creating a new season"
+  },
+  "newSeasonHint": "E.g.: 2025-2026",
+  "@newSeasonHint": {
+    "description": "Hint text for the season name field"
+  },
+  "seasonNameRequired": "Name cannot be empty",
+  "@seasonNameRequired": {
+    "description": "Validation error for empty season name"
+  },
+  "seasonAlreadyExists": "A season with that name already exists",
+  "@seasonAlreadyExists": {
+    "description": "Validation error when trying to add a duplicate season name"
+  },
+  "seasonAdded": "Season created",
+  "@seasonAdded": {
+    "description": "Snackbar confirmation when a season is successfully added"
+  },
+  "seasonRenamed": "Season renamed",
+  "@seasonRenamed": {
+    "description": "Snackbar confirmation when a season is successfully renamed"
+  },
+  "seasonDeleted": "Season deleted",
+  "@seasonDeleted": {
+    "description": "Snackbar confirmation when a season is deleted"
+  },
+  "sinTemporada": "No season",
+  "@sinTemporada": {
+    "description": "Label for the special no-season option"
+  },
+  "defaultSeasonLabel": "Default",
+  "@defaultSeasonLabel": {
+    "description": "Badge shown next to the active/default season"
+  },
+  "selectSeason": "Season",
+  "@selectSeason": {
+    "description": "Label for the season selector in the session registration form"
   }
 }

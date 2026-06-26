@@ -1795,4 +1795,65 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get feedbackSubmitError => 'No se pudo enviar el feedback';
+
+  @override
+  String get seasons => 'Temporadas';
+
+  @override
+  String get manageSeasonsSubtitle => 'Organiza tus sesiones por temporadas';
+
+  @override
+  String get seasonsManagement => 'Gestión de temporadas';
+
+  @override
+  String get noSeasonsYet => 'Aún no hay temporadas';
+
+  @override
+  String get noSeasonsYetHint => 'Pulsa + para crear la primera';
+
+  @override
+  String get activeSeason => 'Temporada activa';
+
+  @override
+  String get setAsActive => 'Marcar como activa';
+
+  @override
+  String get renameSeason => 'Renombrar temporada';
+
+  @override
+  String get deleteSeason => 'Eliminar temporada';
+
+  @override
+  String deleteSeasonConfirm(String name) =>
+      '¿Eliminar la temporada "$name"? Las sesiones asociadas no se borrarán.';
+
+  @override
+  String get newSeasonTitle => 'Nueva temporada';
+
+  @override
+  String get newSeasonHint => 'Ej: 2025-2026';
+
+  @override
+  String get seasonNameRequired => 'El nombre no puede estar vacío';
+
+  @override
+  String get seasonAlreadyExists => 'Ya existe una temporada con ese nombre';
+
+  @override
+  String get seasonAdded => 'Temporada creada';
+
+  @override
+  String get seasonRenamed => 'Temporada renombrada';
+
+  @override
+  String get seasonDeleted => 'Temporada eliminada';
+
+  @override
+  String get sinTemporada => 'Sin temporada';
+
+  @override
+  String get defaultSeasonLabel => 'Predeterminada';
+
+  @override
+  String get selectSeason => 'Temporada';
 }

@@ -125,6 +125,18 @@ void main() {
     });
   });
 
+  group('AppConstants - Temporadas', () {
+    test('constante Sin temporada debe estar definida', () {
+      expect(AppConstants.temporadaSinTemporada, equals('Sin temporada'));
+      expect(AppConstants.temporadaSinTemporada, isNotEmpty);
+    });
+
+    test('claves de preferencias de temporadas deben estar definidas', () {
+      expect(AppConstants.prefKeyTemporadaActiva, equals('temporada_activa'));
+      expect(AppConstants.prefKeyTemporadas, equals('temporadas_list'));
+    });
+  });
+
   group('AppConstants - No se puede instanciar', () {
     test('constructor privado previene instanciación', () {
       // Esta prueba verifica que AppConstants tenga un constructor privado

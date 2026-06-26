@@ -68,6 +68,8 @@ class AppConstants {
   // ===== Preferencias compartidas (keys) =====
   static const String prefKeyThemeMode = 'theme_mode';
   static const String prefKeyLocale = 'locale';
+  static const String prefKeyTemporadaActiva = 'temporada_activa';
+  static const String prefKeyTemporadas = 'temporadas_list';
 
   // ===== Estadísticas =====
   static const int ventanaPromedioMovil = 5; // Número de partidas para promedio móvil

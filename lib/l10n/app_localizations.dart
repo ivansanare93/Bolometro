@@ -3493,6 +3493,126 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No se pudo enviar el feedback'**
   String get feedbackSubmitError;
+
+  /// Label for seasons section
+  ///
+  /// In es, this message translates to:
+  /// **'Temporadas'**
+  String get seasons;
+
+  /// Subtitle for the seasons management card on home
+  ///
+  /// In es, this message translates to:
+  /// **'Organiza tus sesiones por temporadas'**
+  String get manageSeasonsSubtitle;
+
+  /// Title for the seasons management screen
+  ///
+  /// In es, this message translates to:
+  /// **'Gestión de temporadas'**
+  String get seasonsManagement;
+
+  /// Empty state label when no seasons exist
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay temporadas'**
+  String get noSeasonsYet;
+
+  /// Hint shown below the empty state label
+  ///
+  /// In es, this message translates to:
+  /// **'Pulsa + para crear la primera'**
+  String get noSeasonsYetHint;
+
+  /// Label indicating the active/default season
+  ///
+  /// In es, this message translates to:
+  /// **'Temporada activa'**
+  String get activeSeason;
+
+  /// Action to set a season as the active default
+  ///
+  /// In es, this message translates to:
+  /// **'Marcar como activa'**
+  String get setAsActive;
+
+  /// Action to rename a season
+  ///
+  /// In es, this message translates to:
+  /// **'Renombrar temporada'**
+  String get renameSeason;
+
+  /// Action to delete a season
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar temporada'**
+  String get deleteSeason;
+
+  /// Confirmation message before deleting a season
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar la temporada "{name}"? Las sesiones asociadas no se borrarán.'**
+  String deleteSeasonConfirm(String name);
+
+  /// Title of the dialog for creating a new season
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva temporada'**
+  String get newSeasonTitle;
+
+  /// Hint text for the season name field
+  ///
+  /// In es, this message translates to:
+  /// **'Ej: 2025-2026'**
+  String get newSeasonHint;
+
+  /// Validation error for empty season name
+  ///
+  /// In es, this message translates to:
+  /// **'El nombre no puede estar vacío'**
+  String get seasonNameRequired;
+
+  /// Validation error when trying to add a duplicate season name
+  ///
+  /// In es, this message translates to:
+  /// **'Ya existe una temporada con ese nombre'**
+  String get seasonAlreadyExists;
+
+  /// Snackbar confirmation when a season is successfully added
+  ///
+  /// In es, this message translates to:
+  /// **'Temporada creada'**
+  String get seasonAdded;
+
+  /// Snackbar confirmation when a season is successfully renamed
+  ///
+  /// In es, this message translates to:
+  /// **'Temporada renombrada'**
+  String get seasonRenamed;
+
+  /// Snackbar confirmation when a season is deleted
+  ///
+  /// In es, this message translates to:
+  /// **'Temporada eliminada'**
+  String get seasonDeleted;
+
+  /// Label for the special no-season option
+  ///
+  /// In es, this message translates to:
+  /// **'Sin temporada'**
+  String get sinTemporada;
+
+  /// Badge shown next to the active/default season
+  ///
+  /// In es, this message translates to:
+  /// **'Predeterminada'**
+  String get defaultSeasonLabel;
+
+  /// Label for the season selector in the session registration form
+  ///
+  /// In es, this message translates to:
+  /// **'Temporada'**
+  String get selectSeason;
 }
 
 class _AppLocalizationsDelegate
