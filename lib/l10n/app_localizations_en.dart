@@ -1844,6 +1844,25 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get selectSeason => 'Season';
 
+  @override
+  String seasonFocusTitle(String season) => 'Season summary: $season';
+
+  @override
+  String get seasonComparisonSection => 'Comparison with previous season';
+
+  @override
+  String get seasonComparisonUnavailable =>
+      'No previous season available for comparison.';
+
+  @override
+  String get seasonRecordsSection => 'Season records';
+
+  @override
+  String get seasonBestGameLabel => 'Best game';
+
+  @override
+  String get seasonBestSessionLabel => 'Best session';
+
   // ── PR3 ───────────────────────────────────────────────────────────────────
 
   @override
