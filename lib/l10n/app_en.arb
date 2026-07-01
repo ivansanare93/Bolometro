@@ -1465,6 +1465,52 @@
   "@seasonDeleted": {
     "description": "Snackbar confirmation when a season is deleted"
   },
+  "archiveSeason": "Archive season",
+  "@archiveSeason": {
+    "description": "Action to archive a season"
+  },
+  "archiveSeasonConfirm": "Archive season \"{name}\"? You will still be able to view it but not add new sessions.",
+  "@archiveSeasonConfirm": {
+    "description": "Confirmation message before archiving a season",
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "unarchiveSeason": "Unarchive season",
+  "@unarchiveSeason": {
+    "description": "Action to unarchive a season"
+  },
+  "seasonArchived": "Season archived",
+  "@seasonArchived": {
+    "description": "Snackbar confirmation when a season is archived"
+  },
+  "seasonUnarchived": "Season unarchived",
+  "@seasonUnarchived": {
+    "description": "Snackbar confirmation when a season is unarchived"
+  },
+  "archivedSeasons": "Archived seasons",
+  "@archivedSeasons": {
+    "description": "Section title for archived seasons list"
+  },
+  "archivedSeasonLabel": "Archived",
+  "@archivedSeasonLabel": {
+    "description": "Badge shown next to archived seasons"
+  },
+  "showArchivedSeasons": "Show archived",
+  "@showArchivedSeasons": {
+    "description": "Button label to show archived seasons"
+  },
+  "hideArchivedSeasons": "Hide archived",
+  "@hideArchivedSeasons": {
+    "description": "Button label to hide archived seasons"
+  },
+  "sessionCountForSeason": "{count, plural, =1{1 session} other{{count} sessions}}",
+  "@sessionCountForSeason": {
+    "description": "Number of sessions associated with a season",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "sinTemporada": "No season",
   "@sinTemporada": {
     "description": "Label for the special no-season option"
