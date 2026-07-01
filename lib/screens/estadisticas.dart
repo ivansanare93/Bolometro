@@ -254,6 +254,23 @@ class _EstadisticasPantallaCompletaState
 
   String _seasonLabel(Sesion sesion) => sesion.temporadaNormalizada;
 
+  List<Sesion> _seasonScopedSesiones(List<Sesion> sesiones, String temporada) {
+    return sesiones.where((s) {
+      final tipoOk = _filter.tipo == AppConstants.tipoTodos || s.tipo == _filter.tipo;
+      return tipoOk && s.temporadaNormalizada == temporada;
+    }).toList();
+  }
+
+  String _signedValue(num value, {int fractionDigits = 0}) {
+    final absValue = value.abs();
+    final text = fractionDigits > 0
+        ? absValue.toStringAsFixed(fractionDigits)
+        : absValue.toStringAsFixed(0);
+    if (value > 0) return '+$text';
+    if (value < 0) return '-$text';
+    return '±0';
+  }
+
   // ---------------------------------------------------------------------------
   // Build
   // ---------------------------------------------------------------------------
@@ -389,6 +406,39 @@ class _EstadisticasPantallaCompletaState
           final tasaConversionSpare = stats['tasaConversionSpare'] as double?;
           final conversionSparePorPin = stats['conversionSparePorPin'] as Map<String, List<int>>? ?? {};
           final hayEstadisticasPines = promedioPrimerTiro != null || tasaConversionSpare != null;
+
+          // Season-focused summary + previous-season comparison.
+          final selectedSeason = _filter.temporada;
+          Map<String, dynamic>? selectedSeasonStats;
+          Map<String, dynamic>? previousSeasonStats;
+          String? previousSeason;
+          if (selectedSeason != null) {
+            final seasonTimelineSesiones = _filter.tipo == AppConstants.tipoTodos
+                ? snapshot.data!
+                : snapshot.data!
+                    .where((s) => s.tipo == _filter.tipo)
+                    .toList();
+            previousSeason =
+                EstadisticasUtils.temporadaAnterior(seasonTimelineSesiones, selectedSeason);
+
+            final scopedCurrent = _seasonScopedSesiones(snapshot.data!, selectedSeason);
+            if (scopedCurrent.isNotEmpty) {
+              selectedSeasonStats = estadisticasCache.getEstadisticas(
+                scopedCurrent,
+                filterKey: 'season_focus_${_filter.tipo}_$selectedSeason',
+              );
+            }
+
+            if (previousSeason != null) {
+              final scopedPrevious = _seasonScopedSesiones(snapshot.data!, previousSeason);
+              if (scopedPrevious.isNotEmpty) {
+                previousSeasonStats = estadisticasCache.getEstadisticas(
+                  scopedPrevious,
+                  filterKey: 'season_focus_${_filter.tipo}_$previousSeason',
+                );
+              }
+            }
+          }
           
           // Extract theme colors once to avoid repeated lookups
           final greyColor = Colors.grey[700];
@@ -412,6 +462,21 @@ class _EstadisticasPantallaCompletaState
                   child: _buildFilterBar(l10n, isDark, snapshot.data!),
                 ),
               ),
+
+              if (selectedSeason != null)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+                    child: _buildSeasonFocusCard(
+                      l10n: l10n,
+                      isDark: isDark,
+                      selectedSeason: selectedSeason,
+                      selectedSeasonStats: selectedSeasonStats ?? stats,
+                      previousSeason: previousSeason,
+                      previousSeasonStats: previousSeasonStats,
+                    ),
+                  ),
+                ),
 
               // ── STICKY KPI SUMMARY HEADER ────────────────────────────────
               SliverPersistentHeader(
@@ -758,6 +823,184 @@ class _EstadisticasPantallaCompletaState
     return '${fecha.day.toString().padLeft(2, '0')}/${fecha.month.toString().padLeft(2, '0')}/${fecha.year}';
   }
 
+  Widget _buildSeasonFocusCard({
+    required AppLocalizations l10n,
+    required bool isDark,
+    required String selectedSeason,
+    required Map<String, dynamic> selectedSeasonStats,
+    required String? previousSeason,
+    required Map<String, dynamic>? previousSeasonStats,
+  }) {
+    final avg = (selectedSeasonStats['promedioGeneral'] as double? ?? 0.0);
+    final bestGame = (selectedSeasonStats['mejorPartida'] as Partida?)?.total ?? 0;
+    final totalGames = selectedSeasonStats['totalPartidas'] as int? ?? 0;
+    final totalSessions = selectedSeasonStats['totalSesiones'] as int? ?? 0;
+    final seasonRecord = selectedSeasonStats['sesionRecord'] as Sesion?;
+    final textColor = Theme.of(context).colorScheme.onSurface;
+
+    final previousAvg = (previousSeasonStats?['promedioGeneral'] as double?) ?? 0.0;
+    final previousBest = (previousSeasonStats?['mejorPartida'] as Partida?)?.total ?? 0;
+    final previousGames = previousSeasonStats?['totalPartidas'] as int? ?? 0;
+    final previousSessions = previousSeasonStats?['totalSesiones'] as int? ?? 0;
+    final deltaAvg = avg - previousAvg;
+    final deltaBest = bestGame - previousBest;
+    final deltaGames = totalGames - previousGames;
+    final deltaSessions = totalSessions - previousSessions;
+
+    return Card(
+      elevation: isDark ? 0 : 1.5,
+      color: isDark
+          ? Theme.of(context).colorScheme.surface.withOpacity(0.9)
+          : Colors.blue[50],
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.calendar_month_rounded, color: Colors.blue[700], size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l10n.seasonFocusTitle(selectedSeason),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  KpiCardDinamico(
+                    label: l10n.average,
+                    value: avg.toStringAsFixed(1),
+                    icon: Icons.bar_chart_rounded,
+                    color: Colors.blue[700]!,
+                    esSubida: true,
+                  ),
+                  KpiCardDinamico(
+                    label: l10n.best,
+                    value: '$bestGame',
+                    icon: Icons.emoji_events_rounded,
+                    color: Colors.green[600]!,
+                    esSubida: true,
+                  ),
+                  KpiCardDinamico(
+                    label: l10n.games,
+                    value: '$totalGames',
+                    icon: Icons.sports_score_rounded,
+                    color: Colors.purple[600]!,
+                    esSubida: true,
+                  ),
+                  KpiCardDinamico(
+                    label: l10n.sessions,
+                    value: '$totalSessions',
+                    icon: Icons.calendar_view_week_rounded,
+                    color: Colors.teal[600]!,
+                    esSubida: true,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              l10n.seasonComparisonSection,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: textColor.withOpacity(0.9),
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 6),
+            if (previousSeasonStats != null && previousSeason != null)
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _SeasonDeltaChip(
+                      label: l10n.average,
+                      value: _signedValue(deltaAvg, fractionDigits: 1),
+                      positive: deltaAvg >= 0,
+                    ),
+                    _SeasonDeltaChip(
+                      label: l10n.best,
+                      value: _signedValue(deltaBest.toDouble()),
+                      positive: deltaBest >= 0,
+                    ),
+                    _SeasonDeltaChip(
+                      label: l10n.games,
+                      value: _signedValue(deltaGames.toDouble()),
+                      positive: deltaGames >= 0,
+                    ),
+                    _SeasonDeltaChip(
+                      label: l10n.sessions,
+                      value: _signedValue(deltaSessions.toDouble()),
+                      positive: deltaSessions >= 0,
+                    ),
+                  ],
+                ),
+              )
+            else
+              Text(
+                l10n.seasonComparisonUnavailable,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: textColor.withOpacity(0.7),
+                ),
+              ),
+            const SizedBox(height: 10),
+            Text(
+              l10n.seasonRecordsSection,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: textColor.withOpacity(0.9),
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.emoji_events_outlined, size: 18, color: Colors.amber[700]),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    '${l10n.seasonBestGameLabel}: $bestGame',
+                    style: TextStyle(fontSize: 12, color: textColor.withOpacity(0.85)),
+                  ),
+                ),
+              ],
+            ),
+            if (seasonRecord != null) ...[
+              const SizedBox(height: 4),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.star_outline_rounded, size: 18, color: Colors.green[600]),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      '${l10n.seasonBestSessionLabel}: ${l10n.gamesWithAverage(seasonRecord.partidas.length, _formatearFechaCorta(seasonRecord.fecha), EstadisticasUtils.promedioSesion(seasonRecord).toStringAsFixed(1))}',
+                      style: TextStyle(fontSize: 12, color: textColor.withOpacity(0.85)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   /// Builds a compact table showing per-pin spare conversion stats.
   /// Entries are sorted by number of attempts (descending) so the most
   /// common leaves appear first.
@@ -956,11 +1199,12 @@ class _EstadisticasPantallaCompletaState
           const SizedBox(height: 6),
           Row(
             children: [
-              const Text(
-                'Temporada:',
+              Text(
+                l10n.selectSeason + ':',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
+                  color: onSurface.withOpacity(0.65),
                 ),
               ),
               const SizedBox(width: 6),
@@ -1328,6 +1572,55 @@ class _StickyKpi extends StatelessWidget {
               color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
             ),
             overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SeasonDeltaChip extends StatelessWidget {
+  const _SeasonDeltaChip({
+    required this.label,
+    required this.value,
+    required this.positive,
+  });
+
+  final String label;
+  final String value;
+  final bool positive;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = positive ? Colors.green[700]! : Colors.red[600]!;
+    final bg = positive ? Colors.green[50]! : Colors.red[50]!;
+
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.35)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              color: color.withOpacity(0.85),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
           ),
         ],
       ),

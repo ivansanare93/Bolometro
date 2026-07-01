@@ -412,4 +412,54 @@ class EstadisticasUtils {
 
     return resultado;
   }
+
+  /// Ordena temporadas por su última actividad (más reciente primero).
+  ///
+  /// Por defecto excluye "Sin temporada" para comparativas entre temporadas
+  /// explícitas. Se puede incluir con [includeSinTemporada] cuando aplique.
+  static List<String> ordenarTemporadasPorActividad(
+    List<Sesion> sesiones, {
+    bool includeSinTemporada = false,
+  }) {
+    final ultimaFechaPorTemporada = <String, DateTime>{};
+
+    for (final sesion in sesiones) {
+      final temporada = sesion.temporadaNormalizada;
+      if (!includeSinTemporada &&
+          temporada == AppConstants.temporadaSinTemporada) {
+        continue;
+      }
+      final actual = ultimaFechaPorTemporada[temporada];
+      if (actual == null || sesion.fecha.isAfter(actual)) {
+        ultimaFechaPorTemporada[temporada] = sesion.fecha;
+      }
+    }
+
+    final temporadas = ultimaFechaPorTemporada.keys.toList();
+    temporadas.sort((a, b) {
+      final fechaA = ultimaFechaPorTemporada[a]!;
+      final fechaB = ultimaFechaPorTemporada[b]!;
+      final cmpFecha = fechaB.compareTo(fechaA);
+      if (cmpFecha != 0) return cmpFecha;
+      return b.compareTo(a);
+    });
+    return temporadas;
+  }
+
+  /// Devuelve la temporada inmediatamente anterior a [temporadaActual] según
+  /// la actividad registrada en [sesiones], o null si no existe.
+  static String? temporadaAnterior(
+    List<Sesion> sesiones,
+    String temporadaActual,
+  ) {
+    if (temporadaActual == AppConstants.temporadaSinTemporada) {
+      return null;
+    }
+    final ordenadas = ordenarTemporadasPorActividad(sesiones);
+    final index = ordenadas.indexOf(temporadaActual);
+    if (index == -1 || index >= ordenadas.length - 1) {
+      return null;
+    }
+    return ordenadas[index + 1];
+  }
 }

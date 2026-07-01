@@ -1475,5 +1475,32 @@
   "selectSeason": "Season",
   "@selectSeason": {
     "description": "Label for the season selector in the session registration form"
+  },
+  "seasonFocusTitle": "Season summary: {season}",
+  "@seasonFocusTitle": {
+    "description": "Title for season-focused statistics summary card",
+    "placeholders": {
+      "season": { "type": "String" }
+    }
+  },
+  "seasonComparisonSection": "Comparison with previous season",
+  "@seasonComparisonSection": {
+    "description": "Heading for previous season comparison inside season stats card"
+  },
+  "seasonComparisonUnavailable": "No previous season available for comparison.",
+  "@seasonComparisonUnavailable": {
+    "description": "Fallback text when there is no previous season comparison"
+  },
+  "seasonRecordsSection": "Season records",
+  "@seasonRecordsSection": {
+    "description": "Heading for season record highlights section"
+  },
+  "seasonBestGameLabel": "Best game",
+  "@seasonBestGameLabel": {
+    "description": "Label for season best game metric"
+  },
+  "seasonBestSessionLabel": "Best session",
+  "@seasonBestSessionLabel": {
+    "description": "Label for season best session metric"
   }
 }
