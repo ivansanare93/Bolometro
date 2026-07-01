@@ -3551,7 +3551,7 @@ abstract class AppLocalizations {
   /// Confirmation message before deleting a season
   ///
   /// In es, this message translates to:
-  /// **'¿Eliminar la temporada "{name}"? Las sesiones asociadas no se borrarán.'**
+  /// **'¿Eliminar la temporada \"{name}\"? Las sesiones asociadas no se borrarán.'**
   String deleteSeasonConfirm(String name);
 
   /// Title of the dialog for creating a new season

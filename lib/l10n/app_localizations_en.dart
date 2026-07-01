@@ -1810,8 +1810,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteSeason => 'Delete season';
 
   @override
-  String deleteSeasonConfirm(String name) =>
-      'Delete season "$name"? Associated sessions will not be removed.';
+  String deleteSeasonConfirm(String name) {
+    return 'Delete season \"$name\"? Associated sessions will not be removed.';
+  }
 
   @override
   String get newSeasonTitle => 'New season';
