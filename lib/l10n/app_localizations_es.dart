@@ -1876,6 +1876,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get archivedSeasonLabel => 'Archivada';
 
   @override
+  String get showArchivedSeasons => 'Mostrar archivadas';
+
+  @override
+  String get hideArchivedSeasons => 'Ocultar archivadas';
+
+  @override
   String get sinTemporada => 'Sin temporada';
 
   @override
