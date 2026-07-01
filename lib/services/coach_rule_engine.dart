@@ -385,7 +385,7 @@ class CoachRuleEngine {
             id: 'average_drop_tip',
             title: 'Tu promedio cayó recientemente',
             message:
-                'Bajaste ${m.previousAverage - m.recentAverage >= 0 ? (m.previousAverage - m.recentAverage).toStringAsFixed(1) : '0'} puntos.',
+                'Bajaste ${(m.previousAverage - m.recentAverage).toStringAsFixed(1)} puntos.',
             detail:
                 'Vuelve a una configuración simple (línea y velocidad estable) para recuperar base técnica.',
             actionText: 'volver a una línea estable en la próxima sesión',
@@ -472,7 +472,7 @@ class CoachRuleEngine {
             id: 'average_up_tip',
             title: 'Tu promedio va en alza',
             message:
-                'Subiste ${ (m.recentAverage - m.previousAverage).toStringAsFixed(1)} puntos.',
+                'Subiste ${(m.recentAverage - m.previousAverage).toStringAsFixed(1)} puntos.',
             detail:
                 'Buen trabajo: ahora consolida este salto con una meta de regularidad para no retroceder.',
             actionText: 'consolidar este nuevo promedio',

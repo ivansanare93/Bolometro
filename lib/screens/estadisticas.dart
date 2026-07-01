@@ -1,3 +1,5 @@
+import 'dart:convert' show jsonEncode;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/sesion.dart';
@@ -285,7 +287,7 @@ class _EstadisticasPantallaCompletaState
     required List<Sesion> sesiones,
     required Map<String, dynamic> stats,
   }) {
-    final cacheKey = [
+    final cacheKey = jsonEncode([
       _filter.cacheKey,
       sesiones.length,
       sesiones.expand((s) => s.partidas).length,
@@ -293,7 +295,7 @@ class _EstadisticasPantallaCompletaState
       _coachInteractionState.weeklyGoal ?? '',
       _coachInteractionState.weeklyGoalCompleted ? '1' : '0',
       _coachInteractionState.showTipExplanation ? '1' : '0',
-    ].join('_');
+    ]);
 
     if (_coachAdviceCacheKey == cacheKey && _cachedCoachAdvice != null) {
       return _cachedCoachAdvice!;
@@ -621,7 +623,7 @@ class _EstadisticasPantallaCompletaState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // ── SECCIÓN 1: ESTADÍSTICAS GENERALES ──────────────────
+                      // ── SECCIÓN 1: ENTRENADOR ───────────────────────────────
                       _buildSectionHeader(
                         title: 'Entrenador',
                         icon: Icons.sports_rounded,
@@ -653,7 +655,9 @@ class _EstadisticasPantallaCompletaState
                               listen: false,
                             );
                             analytics.logCoachQuickActionTapped('focus_today');
-                          } catch (_) {}
+                          } catch (e) {
+                            debugPrint('Error logging coach quick action focus: $e');
+                          }
                           _showCoachDialog(
                             title: 'Enfoque de hoy',
                             body: coachAdvice.focusMessage,
@@ -666,7 +670,9 @@ class _EstadisticasPantallaCompletaState
                               listen: false,
                             );
                             analytics.logCoachQuickActionTapped('explain_tip');
-                          } catch (_) {}
+                          } catch (e) {
+                            debugPrint('Error logging coach quick action explain: $e');
+                          }
                           setState(() {
                             _coachInteractionState =
                                 _coachInteractionState.copyWith(
@@ -684,7 +690,9 @@ class _EstadisticasPantallaCompletaState
                             );
                             analytics.logCoachQuickActionTapped('weekly_goal');
                             analytics.logCoachWeeklyGoalSet('smart_goal');
-                          } catch (_) {}
+                          } catch (e) {
+                            debugPrint('Error logging coach weekly goal action: $e');
+                          }
                           setState(() {
                             _coachInteractionState =
                                 _coachInteractionState.copyWith(
@@ -714,7 +722,9 @@ class _EstadisticasPantallaCompletaState
                                 ? 'improving'
                                 : (delta <= -6 ? 'declining' : 'stable');
                             analytics.logCoachProgressAlertShown(alertType);
-                          } catch (_) {}
+                          } catch (e) {
+                            debugPrint('Error logging coach progress action: $e');
+                          }
                           _showCoachDialog(
                             title: 'Progreso',
                             body: coachAdvice.progressMessage,
@@ -727,7 +737,9 @@ class _EstadisticasPantallaCompletaState
                               listen: false,
                             );
                             analytics.logCoachWeeklyGoalCompleted('smart_goal');
-                          } catch (_) {}
+                          } catch (e) {
+                            debugPrint('Error logging coach weekly goal completion: $e');
+                          }
                           setState(() {
                             _coachInteractionState =
                                 _coachInteractionState.copyWith(
@@ -744,7 +756,7 @@ class _EstadisticasPantallaCompletaState
                       ),
                       const SizedBox(height: 12),
 
-                      // ── SECCIÓN 1: ESTADÍSTICAS GENERALES ──────────────────
+                      // ── SECCIÓN 2: ESTADÍSTICAS GENERALES ──────────────────
                       _buildSectionHeader(
                         title: l10n.statsGeneralSection,
                         icon: Icons.bar_chart_rounded,
