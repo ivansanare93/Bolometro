@@ -134,6 +134,12 @@ abstract class AppLocalizations {
   /// **'Sesiones'**
   String get sessions;
 
+  /// No description provided for @games.
+  ///
+  /// In es, this message translates to:
+  /// **'Partidas'**
+  String get games;
+
   /// No description provided for @statistics.
   ///
   /// In es, this message translates to:

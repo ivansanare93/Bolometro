@@ -27,6 +27,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get sessions => 'Sesiones';
 
   @override
+  String get games => 'Partidas';
+
+  @override
   String get statistics => 'Estadísticas';
 
   @override
