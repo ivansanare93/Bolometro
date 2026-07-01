@@ -3644,6 +3644,18 @@ abstract class AppLocalizations {
   /// **'Archivada'**
   String get archivedSeasonLabel;
 
+  /// Button label to show archived seasons
+  ///
+  /// In es, this message translates to:
+  /// **'Mostrar archivadas'**
+  String get showArchivedSeasons;
+
+  /// Button label to hide archived seasons
+  ///
+  /// In es, this message translates to:
+  /// **'Ocultar archivadas'**
+  String get hideArchivedSeasons;
+
   /// Label for the special no-season option
   ///
   /// In es, this message translates to:
