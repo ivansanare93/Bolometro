@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../services/temporada_service.dart';
+import '../repositories/data_repository.dart';
+import '../models/sesion.dart';
 import '../utils/app_constants.dart';
 import '../l10n/app_localizations.dart';
 
-/// Screen for basic season management: view, create, rename, delete and
-/// mark one season as the active/default.
+/// Screen for basic season management: view, create, rename, archive/restore,
+/// delete and mark one season as the active/default.
+/// PR3 additions: session counts per season, archive/unarchive flow.
 class TemporadasScreen extends StatefulWidget {
   const TemporadasScreen({super.key});
 
@@ -14,8 +18,11 @@ class TemporadasScreen extends StatefulWidget {
 
 class _TemporadasScreenState extends State<TemporadasScreen> {
   List<String> _temporadas = [];
-  String? _temporadaActiva; // null = "Sin temporada"
+  List<String> _archivadas = [];
+  String? _temporadaActiva;
+  Map<String, int> _sessionCounts = {};
   bool _loading = true;
+  bool _showArchived = false;
 
   @override
   void initState() {
@@ -25,11 +32,30 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
 
   Future<void> _load() async {
     final temporadas = await TemporadaService.getTemporadas();
+    final archivadas = await TemporadaService.getArchivedTemporadas();
     final activa = await TemporadaService.getTemporadaActiva();
+
+    // Compute session counts
+    Map<String, int> counts = {};
+    if (mounted) {
+      try {
+        final repo = Provider.of<DataRepository>(context, listen: false);
+        final sesiones = await repo.obtenerSesiones();
+        for (final s in sesiones) {
+          final key = s.temporadaNormalizada;
+          counts[key] = (counts[key] ?? 0) + 1;
+        }
+      } catch (e) {
+        debugPrint('TemporadasScreen: error loading session counts: $e');
+      }
+    }
+
     if (mounted) {
       setState(() {
         _temporadas = temporadas;
+        _archivadas = archivadas;
         _temporadaActiva = activa;
+        _sessionCounts = counts;
         _loading = false;
       });
     }
@@ -201,6 +227,47 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
     }
   }
 
+  Future<void> _confirmArchive(String name) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.archiveSeason),
+        content: Text(l10n.archiveSeasonConfirm(name)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.archiveSeason),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await TemporadaService.archiveTemporada(name);
+      await _load();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.seasonArchived)),
+        );
+      }
+    }
+  }
+
+  Future<void> _unarchive(String name) async {
+    final l10n = AppLocalizations.of(context)!;
+    await TemporadaService.unarchiveTemporada(name);
+    await _load();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.seasonUnarchived)),
+      );
+    }
+  }
+
   Future<void> _confirmDelete(String name) async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
@@ -242,9 +309,32 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // Active seasons are those NOT in the archived list
+    final activeTemporadas =
+        _temporadas.where((t) => !_archivadas.contains(t)).toList();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.seasonsManagement),
+        actions: [
+          if (_archivadas.isNotEmpty)
+            TextButton.icon(
+              onPressed: () =>
+                  setState(() => _showArchived = !_showArchived),
+              icon: Icon(
+                _showArchived
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
+                size: 18,
+              ),
+              label: Text(
+                _showArchived
+                    ? l10n.hideArchivedSeasons
+                    : l10n.showArchivedSeasons,
+                style: const TextStyle(fontSize: 13),
+              ),
+            ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddDialog,
@@ -266,6 +356,8 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
                 // "Sin temporada" row
                 _SinTemporadaRow(
                   isActive: _temporadaActiva == null,
+                  sessionCount:
+                      _sessionCounts[AppConstants.temporadaSinTemporada] ?? 0,
                   onSetActive: () => _setActiva(null),
                   l10n: l10n,
                   cs: cs,
@@ -274,21 +366,51 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
                 const Divider(height: 1),
                 // Season list
                 Expanded(
-                  child: _temporadas.isEmpty
+                  child: activeTemporadas.isEmpty && !_showArchived
                       ? _EmptyState(l10n: l10n)
                       : ListView.separated(
                           padding: const EdgeInsets.only(bottom: 88),
-                          itemCount: _temporadas.length,
+                          itemCount: activeTemporadas.length +
+                              (_showArchived && _archivadas.isNotEmpty
+                                  ? _archivadas.length + 1
+                                  : 0),
                           separatorBuilder: (_, __) =>
                               const Divider(height: 1),
                           itemBuilder: (_, i) {
-                            final name = _temporadas[i];
-                            final isActive = _temporadaActiva == name;
+                            if (i < activeTemporadas.length) {
+                              final name = activeTemporadas[i];
+                              final isActive = _temporadaActiva == name;
+                              return _SeasonTile(
+                                name: name,
+                                isActive: isActive,
+                                isArchived: false,
+                                sessionCount: _sessionCounts[name] ?? 0,
+                                onSetActive: () => _setActiva(name),
+                                onRename: () => _showRenameDialog(name),
+                                onToggleArchive: () => _confirmArchive(name),
+                                onDelete: () => _confirmDelete(name),
+                                l10n: l10n,
+                                cs: cs,
+                              );
+                            }
+                            // Archived section
+                            final archivedIdx = i - activeTemporadas.length;
+                            if (archivedIdx == 0) {
+                              return _SectionHeader(
+                                title: l10n.archivedSeasons,
+                                cs: cs,
+                                isDark: isDark,
+                              );
+                            }
+                            final name = _archivadas[archivedIdx - 1];
                             return _SeasonTile(
                               name: name,
-                              isActive: isActive,
-                              onSetActive: () => _setActiva(name),
+                              isActive: false,
+                              isArchived: true,
+                              sessionCount: _sessionCounts[name] ?? 0,
+                              onSetActive: () {},
                               onRename: () => _showRenameDialog(name),
+                              onToggleArchive: () => _unarchive(name),
                               onDelete: () => _confirmDelete(name),
                               l10n: l10n,
                               cs: cs,
@@ -303,6 +425,37 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
 }
 
 // ── Sub-widgets ────────────────────────────────────────────────────────────
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final ColorScheme cs;
+  final bool isDark;
+
+  const _SectionHeader({
+    required this.title,
+    required this.cs,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: isDark
+          ? cs.surfaceContainerHighest.withOpacity(0.4)
+          : cs.surfaceContainerHighest.withOpacity(0.6),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: cs.onSurface.withOpacity(0.55),
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+}
 
 class _ActiveSeasonBanner extends StatelessWidget {
   final String? temporadaActiva;
@@ -362,6 +515,7 @@ class _ActiveSeasonBanner extends StatelessWidget {
 
 class _SinTemporadaRow extends StatelessWidget {
   final bool isActive;
+  final int sessionCount;
   final VoidCallback onSetActive;
   final AppLocalizations l10n;
   final ColorScheme cs;
@@ -369,6 +523,7 @@ class _SinTemporadaRow extends StatelessWidget {
 
   const _SinTemporadaRow({
     required this.isActive,
+    required this.sessionCount,
     required this.onSetActive,
     required this.l10n,
     required this.cs,
@@ -389,6 +544,15 @@ class _SinTemporadaRow extends StatelessWidget {
           color: cs.onSurface.withOpacity(0.7),
         ),
       ),
+      subtitle: sessionCount > 0
+          ? Text(
+              l10n.sessionCountForSeason(sessionCount),
+              style: TextStyle(
+                fontSize: 12,
+                color: cs.onSurface.withOpacity(0.45),
+              ),
+            )
+          : null,
       trailing: isActive
           ? _ActiveBadge(label: l10n.defaultSeasonLabel, cs: cs)
           : TextButton(
@@ -403,8 +567,11 @@ class _SinTemporadaRow extends StatelessWidget {
 class _SeasonTile extends StatelessWidget {
   final String name;
   final bool isActive;
+  final bool isArchived;
+  final int sessionCount;
   final VoidCallback onSetActive;
   final VoidCallback onRename;
+  final VoidCallback onToggleArchive;
   final VoidCallback onDelete;
   final AppLocalizations l10n;
   final ColorScheme cs;
@@ -412,8 +579,11 @@ class _SeasonTile extends StatelessWidget {
   const _SeasonTile({
     required this.name,
     required this.isActive,
+    required this.isArchived,
+    required this.sessionCount,
     required this.onSetActive,
     required this.onRename,
+    required this.onToggleArchive,
     required this.onDelete,
     required this.l10n,
     required this.cs,
@@ -423,20 +593,41 @@ class _SeasonTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(
-        Icons.event_note_rounded,
-        color: isActive ? cs.primary : cs.onSurface.withOpacity(0.45),
+        isArchived
+            ? Icons.archive_outlined
+            : Icons.event_note_rounded,
+        color: isArchived
+            ? cs.onSurface.withOpacity(0.35)
+            : isActive
+                ? cs.primary
+                : cs.onSurface.withOpacity(0.45),
       ),
       title: Text(
         name,
         style: TextStyle(
           fontWeight: isActive ? FontWeight.w700 : FontWeight.normal,
-          color: isActive ? cs.primary : null,
+          color: isArchived
+              ? cs.onSurface.withOpacity(0.5)
+              : isActive
+                  ? cs.primary
+                  : null,
         ),
       ),
+      subtitle: sessionCount > 0
+          ? Text(
+              l10n.sessionCountForSeason(sessionCount),
+              style: TextStyle(
+                fontSize: 12,
+                color: cs.onSurface.withOpacity(0.45),
+              ),
+            )
+          : null,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (isActive)
+          if (isArchived)
+            _ArchivedBadge(label: l10n.archivedSeasonLabel, cs: cs)
+          else if (isActive)
             _ActiveBadge(label: l10n.defaultSeasonLabel, cs: cs)
           else
             TextButton(
@@ -447,6 +638,7 @@ class _SeasonTile extends StatelessWidget {
           PopupMenuButton<String>(
             onSelected: (value) {
               if (value == 'rename') onRename();
+              if (value == 'archive') onToggleArchive();
               if (value == 'delete') onDelete();
             },
             itemBuilder: (_) => [
@@ -457,6 +649,23 @@ class _SeasonTile extends StatelessWidget {
                     const Icon(Icons.edit_outlined, size: 18),
                     const SizedBox(width: 8),
                     Text(l10n.renameSeason),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'archive',
+                child: Row(
+                  children: [
+                    Icon(
+                      isArchived
+                          ? Icons.unarchive_outlined
+                          : Icons.archive_outlined,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(isArchived
+                        ? l10n.unarchiveSeason
+                        : l10n.archiveSeason),
                   ],
                 ),
               ),
@@ -500,6 +709,33 @@ class _ActiveBadge extends StatelessWidget {
           fontSize: 11,
           fontWeight: FontWeight.w600,
           color: cs.onPrimaryContainer,
+        ),
+      ),
+    );
+  }
+}
+
+class _ArchivedBadge extends StatelessWidget {
+  final String label;
+  final ColorScheme cs;
+
+  const _ArchivedBadge({required this.label, required this.cs});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cs.onSurface.withOpacity(0.18)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: cs.onSurface.withOpacity(0.6),
         ),
       ),
     );
