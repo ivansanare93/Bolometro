@@ -1853,6 +1853,29 @@ class AppLocalizationsEs extends AppLocalizations {
   String get seasonDeleted => 'Temporada eliminada';
 
   @override
+  String get archiveSeason => 'Archivar temporada';
+
+  @override
+  String archiveSeasonConfirm(String name) {
+    return '¿Archivar la temporada "$name"? Podrás consultarla pero no añadir sesiones.';
+  }
+
+  @override
+  String get unarchiveSeason => 'Desarchivar temporada';
+
+  @override
+  String get seasonArchived => 'Temporada archivada';
+
+  @override
+  String get seasonUnarchived => 'Temporada desarchivada';
+
+  @override
+  String get archivedSeasons => 'Temporadas archivadas';
+
+  @override
+  String get archivedSeasonLabel => 'Archivada';
+
+  @override
   String get sinTemporada => 'Sin temporada';
 
   @override

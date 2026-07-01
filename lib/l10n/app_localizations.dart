@@ -3602,6 +3602,48 @@ abstract class AppLocalizations {
   /// **'Temporada eliminada'**
   String get seasonDeleted;
 
+  /// Action to archive a season
+  ///
+  /// In es, this message translates to:
+  /// **'Archivar temporada'**
+  String get archiveSeason;
+
+  /// Confirmation message before archiving a season
+  ///
+  /// In es, this message translates to:
+  /// **'¿Archivar la temporada "{name}"? Podrás consultarla pero no añadir sesiones.'**
+  String archiveSeasonConfirm(String name);
+
+  /// Action to unarchive a season
+  ///
+  /// In es, this message translates to:
+  /// **'Desarchivar temporada'**
+  String get unarchiveSeason;
+
+  /// Snackbar confirmation when a season is archived
+  ///
+  /// In es, this message translates to:
+  /// **'Temporada archivada'**
+  String get seasonArchived;
+
+  /// Snackbar confirmation when a season is unarchived
+  ///
+  /// In es, this message translates to:
+  /// **'Temporada desarchivada'**
+  String get seasonUnarchived;
+
+  /// Section title for archived seasons list
+  ///
+  /// In es, this message translates to:
+  /// **'Temporadas archivadas'**
+  String get archivedSeasons;
+
+  /// Badge label shown for archived seasons
+  ///
+  /// In es, this message translates to:
+  /// **'Archivada'**
+  String get archivedSeasonLabel;
+
   /// Label for the special no-season option
   ///
   /// In es, this message translates to:
