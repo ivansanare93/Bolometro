@@ -327,11 +327,10 @@ class _RegistroCompletoSesionScreenState
                     (lugar) => lugar.toLowerCase().contains(
                           textEditingValue.text.toLowerCase(),
                         ),
-                  );
+                  ).toList();
                 },
                 onSelected: (String selected) {
                   _lugar = selected;
-                  _lugarController.text = selected;
                   _saveDraft();
                 },
                 fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
