@@ -1881,4 +1881,39 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get seasonBestSessionLabel => 'Mejor sesión';
+
+  @override
+  String get selectAll => 'Seleccionar todo';
+
+  @override
+  String get deselectAll => 'Deseleccionar todo';
+
+  @override
+  String get selectSessions => 'Seleccionar sesiones';
+
+  @override
+  String get groupBySeasonTooltip => 'Agrupar por temporada';
+
+  @override
+  String get assignToSeason => 'Asignar a temporada';
+
+  @override
+  String selectedSessionsCount(int count) {
+    return '$count sesiones seleccionadas';
+  }
+
+  @override
+  String sessionCountForSeason(int count) {
+    return '$count sesiones';
+  }
+
+  @override
+  String bulkAssignConfirm(int count, String seasonLabel) {
+    return '¿Asignar $count sesiones a "$seasonLabel"?';
+  }
+
+  @override
+  String bulkAssignSuccess(int count) {
+    return '$count sesiones actualizadas';
+  }
 }
