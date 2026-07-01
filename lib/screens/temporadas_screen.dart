@@ -387,7 +387,7 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
                                 sessionCount: _sessionCounts[name] ?? 0,
                                 onSetActive: () => _setActiva(name),
                                 onRename: () => _showRenameDialog(name),
-                                onArchive: () => _confirmArchive(name),
+                                onToggleArchive: () => _confirmArchive(name),
                                 onDelete: () => _confirmDelete(name),
                                 l10n: l10n,
                                 cs: cs,
@@ -410,7 +410,7 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
                               sessionCount: _sessionCounts[name] ?? 0,
                               onSetActive: () {},
                               onRename: () => _showRenameDialog(name),
-                              onArchive: () => _unarchive(name),
+                              onToggleArchive: () => _unarchive(name),
                               onDelete: () => _confirmDelete(name),
                               l10n: l10n,
                               cs: cs,
@@ -571,7 +571,7 @@ class _SeasonTile extends StatelessWidget {
   final int sessionCount;
   final VoidCallback onSetActive;
   final VoidCallback onRename;
-  final VoidCallback onArchive;
+  final VoidCallback onToggleArchive;
   final VoidCallback onDelete;
   final AppLocalizations l10n;
   final ColorScheme cs;
@@ -583,7 +583,7 @@ class _SeasonTile extends StatelessWidget {
     required this.sessionCount,
     required this.onSetActive,
     required this.onRename,
-    required this.onArchive,
+    required this.onToggleArchive,
     required this.onDelete,
     required this.l10n,
     required this.cs,
@@ -638,7 +638,7 @@ class _SeasonTile extends StatelessWidget {
           PopupMenuButton<String>(
             onSelected: (value) {
               if (value == 'rename') onRename();
-              if (value == 'archive') onArchive();
+              if (value == 'archive') onToggleArchive();
               if (value == 'delete') onDelete();
             },
             itemBuilder: (_) => [

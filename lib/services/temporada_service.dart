@@ -116,9 +116,10 @@ class TemporadaService {
       temporadas.remove(name);
       await _saveTemporadas(temporadas);
 
-      // Also remove from archived list if present
-      final archivadas = await getArchivedTemporadas();
-      if (archivadas.remove(name)) {
+      // Also remove from archived list if present (skip I/O when not archived)
+      if (await isArchived(name)) {
+        final archivadas = await getArchivedTemporadas();
+        archivadas.remove(name);
         await _saveArchivedTemporadas(archivadas);
       }
 

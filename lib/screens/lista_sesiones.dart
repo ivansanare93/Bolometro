@@ -266,9 +266,10 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
   }
 
   void _selectAll() {
-    setState(() => _selected
-      ..clear()
-      ..addAll(_sesionesFiltradas));
+    setState(() {
+      _selected.clear();
+      _selected.addAll(_sesionesFiltradas);
+    });
   }
 
   void _deselectAll() {
