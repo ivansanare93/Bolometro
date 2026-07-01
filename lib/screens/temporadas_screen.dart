@@ -26,8 +26,10 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
 
   List<String> get temporadas => _temporadas;
   List<String> get archivadas => _archivadas;
-  List<String> get activeTemporadas =>
-      _temporadas.where((t) => !_archivadas.contains(t)).toList();
+  List<String> get activeTemporadas {
+    final archivedTemporadas = _archivadas.toSet();
+    return _temporadas.where((t) => !archivedTemporadas.contains(t)).toList();
+  }
   String? get temporadaActiva => _temporadaActiva;
   Map<String, int> get sessionCounts => _sessionCounts;
   bool get loading => _loading;
@@ -317,7 +319,7 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
     final l10n = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final visibleActiveTemporadas = activeTemporadas;
+    final activeTemporadasList = activeTemporadas;
 
     // Active seasons are those NOT in the archived list
     return Scaffold(
@@ -373,19 +375,19 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
                 const Divider(height: 1),
                 // Season list
                 Expanded(
-                  child: visibleActiveTemporadas.isEmpty && !_showArchived
+                  child: activeTemporadasList.isEmpty && !_showArchived
                       ? _EmptyState(l10n: l10n)
                       : ListView.separated(
                           padding: const EdgeInsets.only(bottom: 88),
-                          itemCount: visibleActiveTemporadas.length +
+                          itemCount: activeTemporadasList.length +
                               (_showArchived && _archivadas.isNotEmpty
                                   ? _archivadas.length + 1
                                   : 0),
                           separatorBuilder: (_, __) =>
                               const Divider(height: 1),
                           itemBuilder: (_, i) {
-                            if (i < visibleActiveTemporadas.length) {
-                              final name = visibleActiveTemporadas[i];
+                            if (i < activeTemporadasList.length) {
+                              final name = activeTemporadasList[i];
                               final isActive = _temporadaActiva == name;
                               return _SeasonTile(
                                 name: name,
@@ -401,8 +403,7 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
                               );
                             }
                             // Archived section
-                            final archivedIdx =
-                                i - visibleActiveTemporadas.length;
+                            final archivedIdx = i - activeTemporadasList.length;
                             if (archivedIdx == 0) {
                               return _SectionHeader(
                                 title: l10n.archivedSeasons,
