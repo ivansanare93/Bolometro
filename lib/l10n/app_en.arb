@@ -1549,5 +1549,55 @@
   "seasonBestSessionLabel": "Best session",
   "@seasonBestSessionLabel": {
     "description": "Label for season best session metric"
+  },
+  "selectAll": "Select all",
+  "@selectAll": {
+    "description": "Tooltip/action to select all filtered sessions in bulk mode"
+  },
+  "deselectAll": "Deselect all",
+  "@deselectAll": {
+    "description": "Tooltip/action to clear the current bulk selection"
+  },
+  "selectSessions": "Select sessions",
+  "@selectSessions": {
+    "description": "Tooltip/action to enter session bulk-selection mode"
+  },
+  "groupBySeasonTooltip": "Group by season",
+  "@groupBySeasonTooltip": {
+    "description": "Tooltip/action to toggle grouping sessions by season"
+  },
+  "assignToSeason": "Assign to season",
+  "@assignToSeason": {
+    "description": "Dialog title and action to assign selected sessions to a season"
+  },
+  "selectedSessionsCount": "{count, plural, =1{1 session selected} other{{count} sessions selected}}",
+  "@selectedSessionsCount": {
+    "description": "Title/label showing how many sessions are selected in bulk mode",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkAssignConfirm": "Assign {count, plural, =1{1 session} other{{count} sessions}} to \"{seasonLabel}\"?",
+  "@bulkAssignConfirm": {
+    "description": "Confirmation prompt before assigning selected sessions to a season",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "seasonLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkAssignSuccess": "{count, plural, =1{1 session updated} other{{count} sessions updated}}",
+  "@bulkAssignSuccess": {
+    "description": "Snackbar message shown after bulk assigning sessions to a season",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }
