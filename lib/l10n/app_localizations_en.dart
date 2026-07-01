@@ -1845,7 +1845,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectSeason => 'Season';
 
   @override
-  String seasonFocusTitle(String season) => 'Season summary: $season';
+  String seasonFocusTitle(String season) {
+    return 'Season summary: $season';
+  }
 
   @override
   String get seasonComparisonSection => 'Comparison with previous season';
@@ -1862,65 +1864,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get seasonBestSessionLabel => 'Best session';
-
-  // ── PR3 ───────────────────────────────────────────────────────────────────
-
-  @override
-  String get archiveSeason => 'Archive season';
-
-  @override
-  String get unarchiveSeason => 'Restore season';
-
-  @override
-  String get archivedSeasonLabel => 'Archived';
-
-  @override
-  String archiveSeasonConfirm(String name) =>
-      'Archive season "$name"? You can restore it at any time.';
-
-  @override
-  String get seasonArchived => 'Season archived';
-
-  @override
-  String get seasonUnarchived => 'Season restored';
-
-  @override
-  String get archivedSeasons => 'Archived seasons';
-
-  @override
-  String get showArchivedSeasons => 'Show archived';
-
-  @override
-  String get hideArchivedSeasons => 'Hide archived';
-
-  @override
-  String sessionCountForSeason(int count) =>
-      count == 1 ? '1 session' : '$count sessions';
-
-  @override
-  String get selectSessions => 'Select sessions';
-
-  @override
-  String selectedSessionsCount(int count) =>
-      count == 1 ? '1 selected' : '$count selected';
-
-  @override
-  String get assignToSeason => 'Assign to season';
-
-  @override
-  String bulkAssignConfirm(int count, String season) =>
-      'Assign ${count == 1 ? '1 session' : '$count sessions'} to "$season"?';
-
-  @override
-  String bulkAssignSuccess(int count) =>
-      count == 1 ? '1 session assigned' : '$count sessions assigned';
-
-  @override
-  String get selectAll => 'Select all';
-
-  @override
-  String get deselectAll => 'Deselect all';
-
-  @override
-  String get groupBySeasonTooltip => 'Group by season';
 }

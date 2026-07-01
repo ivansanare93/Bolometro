@@ -1859,11 +1859,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get selectSeason => 'Temporada';
 
   @override
-  String seasonFocusTitle(String season) => 'Resumen de la temporada $season';
+  String seasonFocusTitle(String season) {
+    return 'Resumen de la temporada $season';
+  }
 
   @override
-  String get seasonComparisonSection =>
-      'Comparación con la temporada anterior';
+  String get seasonComparisonSection => 'Comparación con la temporada anterior';
 
   @override
   String get seasonComparisonUnavailable =>
@@ -1877,65 +1878,4 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get seasonBestSessionLabel => 'Mejor sesión';
-
-  // ── PR3 ───────────────────────────────────────────────────────────────────
-
-  @override
-  String get archiveSeason => 'Archivar temporada';
-
-  @override
-  String get unarchiveSeason => 'Restaurar temporada';
-
-  @override
-  String get archivedSeasonLabel => 'Archivada';
-
-  @override
-  String archiveSeasonConfirm(String name) =>
-      '¿Archivar la temporada "$name"? Podrás restaurarla en cualquier momento.';
-
-  @override
-  String get seasonArchived => 'Temporada archivada';
-
-  @override
-  String get seasonUnarchived => 'Temporada restaurada';
-
-  @override
-  String get archivedSeasons => 'Temporadas archivadas';
-
-  @override
-  String get showArchivedSeasons => 'Mostrar archivadas';
-
-  @override
-  String get hideArchivedSeasons => 'Ocultar archivadas';
-
-  @override
-  String sessionCountForSeason(int count) =>
-      count == 1 ? '1 sesión' : '$count sesiones';
-
-  @override
-  String get selectSessions => 'Seleccionar sesiones';
-
-  @override
-  String selectedSessionsCount(int count) =>
-      count == 1 ? '1 seleccionada' : '$count seleccionadas';
-
-  @override
-  String get assignToSeason => 'Asignar a temporada';
-
-  @override
-  String bulkAssignConfirm(int count, String season) =>
-      '¿Asignar ${count == 1 ? '1 sesión' : '$count sesiones'} a "$season"?';
-
-  @override
-  String bulkAssignSuccess(int count) =>
-      count == 1 ? '1 sesión asignada' : '$count sesiones asignadas';
-
-  @override
-  String get selectAll => 'Seleccionar todo';
-
-  @override
-  String get deselectAll => 'Deseleccionar todo';
-
-  @override
-  String get groupBySeasonTooltip => 'Agrupar por temporada';
 }
