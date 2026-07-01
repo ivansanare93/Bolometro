@@ -3614,6 +3614,42 @@ abstract class AppLocalizations {
   /// **'Temporada'**
   String get selectSeason;
 
+  /// Title for season-focused statistics summary card
+  ///
+  /// In es, this message translates to:
+  /// **'Resumen de la temporada {season}'**
+  String seasonFocusTitle(String season);
+
+  /// Heading for previous season comparison inside season stats card
+  ///
+  /// In es, this message translates to:
+  /// **'Comparación con la temporada anterior'**
+  String get seasonComparisonSection;
+
+  /// Fallback text when there is no previous season comparison
+  ///
+  /// In es, this message translates to:
+  /// **'No hay temporada anterior disponible para comparar.'**
+  String get seasonComparisonUnavailable;
+
+  /// Heading for season record highlights section
+  ///
+  /// In es, this message translates to:
+  /// **'Récords de la temporada'**
+  String get seasonRecordsSection;
+
+  /// Label for season best game metric
+  ///
+  /// In es, this message translates to:
+  /// **'Mejor partida'**
+  String get seasonBestGameLabel;
+
+  /// Label for season best session metric
+  ///
+  /// In es, this message translates to:
+  /// **'Mejor sesión'**
+  String get seasonBestSessionLabel;
+
   // ── PR3: archive, bulk-assign, grouping ───────────────────────────────────
 
   /// Menu action to archive a season

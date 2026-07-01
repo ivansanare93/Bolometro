@@ -1610,5 +1610,32 @@
   "selectSeason": "Temporada",
   "@selectSeason": {
     "description": "Label for the season selector in the session registration form"
+  },
+  "seasonFocusTitle": "Resumen de la temporada {season}",
+  "@seasonFocusTitle": {
+    "description": "Title for season-focused statistics summary card",
+    "placeholders": {
+      "season": { "type": "String" }
+    }
+  },
+  "seasonComparisonSection": "Comparación con la temporada anterior",
+  "@seasonComparisonSection": {
+    "description": "Heading for previous season comparison inside season stats card"
+  },
+  "seasonComparisonUnavailable": "No hay temporada anterior disponible para comparar.",
+  "@seasonComparisonUnavailable": {
+    "description": "Fallback text when there is no previous season comparison"
+  },
+  "seasonRecordsSection": "Récords de la temporada",
+  "@seasonRecordsSection": {
+    "description": "Heading for season record highlights section"
+  },
+  "seasonBestGameLabel": "Mejor partida",
+  "@seasonBestGameLabel": {
+    "description": "Label for season best game metric"
+  },
+  "seasonBestSessionLabel": "Mejor sesión",
+  "@seasonBestSessionLabel": {
+    "description": "Label for season best session metric"
   }
 }

@@ -776,4 +776,82 @@ void main() {
       expect(result, isEmpty);
     });
   });
+
+  group('EstadisticasUtils - temporadas', () {
+    test('ordenarTemporadasPorActividad sorts seasons by latest activity', () {
+      final sesiones = [
+        Sesion(
+          fecha: DateTime(2024, 5, 10),
+          lugar: 'A',
+          tipo: AppConstants.tipoEntrenamiento,
+          temporada: '2023-2024',
+          partidas: [Partida(total: 100, frames: [])],
+        ),
+        Sesion(
+          fecha: DateTime(2025, 3, 10),
+          lugar: 'B',
+          tipo: AppConstants.tipoEntrenamiento,
+          temporada: '2024-2025',
+          partidas: [Partida(total: 120, frames: [])],
+        ),
+        Sesion(
+          fecha: DateTime(2025, 4, 1),
+          lugar: 'C',
+          tipo: AppConstants.tipoEntrenamiento,
+          partidas: [Partida(total: 110, frames: [])],
+        ),
+      ];
+
+      final ordered = EstadisticasUtils.ordenarTemporadasPorActividad(sesiones);
+      expect(ordered, equals(['2024-2025', '2023-2024']));
+    });
+
+    test('temporadaAnterior returns null when no previous season exists', () {
+      final sesiones = [
+        Sesion(
+          fecha: DateTime(2025, 3, 10),
+          lugar: 'B',
+          tipo: AppConstants.tipoEntrenamiento,
+          temporada: '2024-2025',
+          partidas: [Partida(total: 120, frames: [])],
+        ),
+      ];
+
+      expect(
+        EstadisticasUtils.temporadaAnterior(sesiones, '2024-2025'),
+        isNull,
+      );
+    });
+
+    test('temporadaAnterior returns the immediate older season', () {
+      final sesiones = [
+        Sesion(
+          fecha: DateTime(2026, 1, 10),
+          lugar: 'A',
+          tipo: AppConstants.tipoEntrenamiento,
+          temporada: '2025-2026',
+          partidas: [Partida(total: 130, frames: [])],
+        ),
+        Sesion(
+          fecha: DateTime(2025, 1, 10),
+          lugar: 'B',
+          tipo: AppConstants.tipoEntrenamiento,
+          temporada: '2024-2025',
+          partidas: [Partida(total: 120, frames: [])],
+        ),
+        Sesion(
+          fecha: DateTime(2024, 1, 10),
+          lugar: 'C',
+          tipo: AppConstants.tipoEntrenamiento,
+          temporada: '2023-2024',
+          partidas: [Partida(total: 110, frames: [])],
+        ),
+      ];
+
+      expect(
+        EstadisticasUtils.temporadaAnterior(sesiones, '2025-2026'),
+        equals('2024-2025'),
+      );
+    });
+  });
 }
