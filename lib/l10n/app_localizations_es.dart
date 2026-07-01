@@ -1857,7 +1857,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String archiveSeasonConfirm(String name) {
-    return '¿Archivar la temporada "$name"? Podrás consultarla pero no añadir sesiones.';
+    return '¿Archivar la temporada \"$name\"? Podrás consultarla pero no añadir sesiones.';
   }
 
   @override
@@ -1880,6 +1880,17 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get hideArchivedSeasons => 'Ocultar archivadas';
+
+  @override
+  String sessionCountForSeason(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sesiones',
+      one: '1 sesión',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get sinTemporada => 'Sin temporada';
@@ -1910,39 +1921,4 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get seasonBestSessionLabel => 'Mejor sesión';
-
-  @override
-  String get selectAll => 'Seleccionar todo';
-
-  @override
-  String get deselectAll => 'Deseleccionar todo';
-
-  @override
-  String get selectSessions => 'Seleccionar sesiones';
-
-  @override
-  String get groupBySeasonTooltip => 'Agrupar por temporada';
-
-  @override
-  String get assignToSeason => 'Asignar a temporada';
-
-  @override
-  String selectedSessionsCount(int count) {
-    return '$count sesiones seleccionadas';
-  }
-
-  @override
-  String sessionCountForSeason(int count) {
-    return '$count sesiones';
-  }
-
-  @override
-  String bulkAssignConfirm(int count, String seasonLabel) {
-    return '¿Asignar $count sesiones a "$seasonLabel"?';
-  }
-
-  @override
-  String bulkAssignSuccess(int count) {
-    return '$count sesiones actualizadas';
-  }
 }

@@ -3611,7 +3611,7 @@ abstract class AppLocalizations {
   /// Confirmation message before archiving a season
   ///
   /// In es, this message translates to:
-  /// **'¿Archivar la temporada "{name}"? Podrás consultarla pero no añadir sesiones.'**
+  /// **'¿Archivar la temporada \"{name}\"? Podrás consultarla pero no añadir sesiones.'**
   String archiveSeasonConfirm(String name);
 
   /// Action to unarchive a season
@@ -3638,7 +3638,7 @@ abstract class AppLocalizations {
   /// **'Temporadas archivadas'**
   String get archivedSeasons;
 
-  /// Badge label shown for archived seasons
+  /// Badge shown next to archived seasons
   ///
   /// In es, this message translates to:
   /// **'Archivada'**
@@ -3655,6 +3655,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ocultar archivadas'**
   String get hideArchivedSeasons;
+
+  /// Number of sessions associated with a season
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 sesión} other{{count} sesiones}}'**
+  String sessionCountForSeason(int count);
 
   /// Label for the special no-season option
   ///
@@ -3709,60 +3715,6 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Mejor sesión'**
   String get seasonBestSessionLabel;
-
-  /// No description provided for @selectAll.
-  ///
-  /// In es, this message translates to:
-  /// **'Seleccionar todo'**
-  String get selectAll;
-
-  /// No description provided for @deselectAll.
-  ///
-  /// In es, this message translates to:
-  /// **'Deseleccionar todo'**
-  String get deselectAll;
-
-  /// No description provided for @selectSessions.
-  ///
-  /// In es, this message translates to:
-  /// **'Seleccionar sesiones'**
-  String get selectSessions;
-
-  /// No description provided for @groupBySeasonTooltip.
-  ///
-  /// In es, this message translates to:
-  /// **'Agrupar por temporada'**
-  String get groupBySeasonTooltip;
-
-  /// No description provided for @assignToSeason.
-  ///
-  /// In es, this message translates to:
-  /// **'Asignar a temporada'**
-  String get assignToSeason;
-
-  /// No description provided for @selectedSessionsCount.
-  ///
-  /// In es, this message translates to:
-  /// **'{count} sesiones seleccionadas'**
-  String selectedSessionsCount(int count);
-
-  /// No description provided for @sessionCountForSeason.
-  ///
-  /// In es, this message translates to:
-  /// **'{count} sesiones'**
-  String sessionCountForSeason(int count);
-
-  /// No description provided for @bulkAssignConfirm.
-  ///
-  /// In es, this message translates to:
-  /// **'¿Asignar {count} sesiones a "{seasonLabel}"?'**
-  String bulkAssignConfirm(int count, String seasonLabel);
-
-  /// No description provided for @bulkAssignSuccess.
-  ///
-  /// In es, this message translates to:
-  /// **'{count} sesiones actualizadas'**
-  String bulkAssignSuccess(int count);
 }
 
 class _AppLocalizationsDelegate

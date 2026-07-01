@@ -1843,7 +1843,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String archiveSeasonConfirm(String name) {
-    return 'Archive season "$name"? You will still be able to view it but not add new sessions.';
+    return 'Archive season \"$name\"? You will still be able to view it but not add new sessions.';
   }
 
   @override
@@ -1866,6 +1866,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hideArchivedSeasons => 'Hide archived';
+
+  @override
+  String sessionCountForSeason(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sessions',
+      one: '1 session',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get sinTemporada => 'No season';
@@ -1896,39 +1907,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get seasonBestSessionLabel => 'Best session';
-
-  @override
-  String get selectAll => 'Select all';
-
-  @override
-  String get deselectAll => 'Deselect all';
-
-  @override
-  String get selectSessions => 'Select sessions';
-
-  @override
-  String get groupBySeasonTooltip => 'Group by season';
-
-  @override
-  String get assignToSeason => 'Assign to season';
-
-  @override
-  String selectedSessionsCount(int count) {
-    return '$count sessions selected';
-  }
-
-  @override
-  String sessionCountForSeason(int count) {
-    return '$count sessions';
-  }
-
-  @override
-  String bulkAssignConfirm(int count, String seasonLabel) {
-    return 'Assign $count sessions to "$seasonLabel"?';
-  }
-
-  @override
-  String bulkAssignSuccess(int count) {
-    return '$count sessions updated';
-  }
 }
