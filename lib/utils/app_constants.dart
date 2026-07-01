@@ -70,6 +70,7 @@ class AppConstants {
   static const String prefKeyLocale = 'locale';
   static const String prefKeyTemporadaActiva = 'temporada_activa';
   static const String prefKeyTemporadas = 'temporadas_list';
+  static const String prefKeyLugares = 'lugares_list';
 
   // ===== Estadísticas =====
   static const int ventanaPromedioMovil = 5; // Número de partidas para promedio móvil
