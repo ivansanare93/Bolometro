@@ -353,6 +353,46 @@ class DataRepository extends ChangeNotifier {
     }
   }
 
+  /// Asigna [nuevaTemporada] a todas las [sesiones] indicadas (bulk).
+  /// Persiste cada sesión actualizada en Hive y, si está en modo online,
+  /// también en Firestore.  Notifica a los listeners una sola vez al final.
+  Future<int> actualizarTemporadaEnLote(
+    List<Sesion> sesiones,
+    String? nuevaTemporada,
+  ) async {
+    int updated = 0;
+    try {
+      final box = await _getSesionesBox();
+      final allSesiones = box.values.toList();
+
+      for (final sesion in sesiones) {
+        final millis = sesion.fecha.millisecondsSinceEpoch;
+        final idx = allSesiones.indexWhere(
+          (s) => s.fecha.millisecondsSinceEpoch == millis,
+        );
+        if (idx == -1) continue;
+
+        final updatedSesion = sesion.copyWith(
+          temporada: nuevaTemporada,
+          clearTemporada: nuevaTemporada == null,
+        );
+        await box.putAt(idx, updatedSesion);
+        allSesiones[idx] = updatedSesion;
+
+        if (_isOnlineMode && _userId != null) {
+          await _firestoreService.guardarSesion(_userId!, updatedSesion);
+        }
+        updated++;
+      }
+
+      if (updated > 0) notifyListeners();
+    } catch (e) {
+      debugPrint('Error al actualizar temporada en lote: $e');
+      rethrow;
+    }
+    return updated;
+  }
+
   // ===== Notas =====
 
   /// Obtener box de notas, abriéndolo si es necesario
