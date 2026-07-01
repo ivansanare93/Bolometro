@@ -11,6 +11,7 @@ import '../repositories/data_repository.dart';
 import '../services/analytics_service.dart';
 import '../services/achievement_service.dart';
 import '../services/draft_service.dart';
+import '../services/lugar_service.dart';
 import '../services/temporada_service.dart';
 import '../l10n/app_localizations.dart';
 import 'home.dart';
@@ -30,10 +31,12 @@ class _RegistroCompletoSesionScreenState
   String _tipo = AppConstants.tipoEntrenamiento;
   String _temporada = DateTime.now().year.toString();
   List<String> _temporadasDisponibles = [];
+  List<String> _lugaresDisponibles = [];
   final List<Partida> _partidas = [];
 
   // TextEditingController to keep the location field in sync with restored draft
   final TextEditingController _lugarController = TextEditingController();
+  final FocusNode _lugarFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -56,6 +59,7 @@ class _RegistroCompletoSesionScreenState
   Future<void> _initializeDefaults() async {
     final temporadas = await TemporadaService.getTemporadas();
     final activa = await TemporadaService.getTemporadaActiva();
+    final lugares = await LugarService.getLugares();
 
     if (mounted) {
       setState(() {
@@ -63,6 +67,7 @@ class _RegistroCompletoSesionScreenState
         if (activa != null) {
           _temporada = activa;
         }
+        _lugaresDisponibles = lugares;
       });
     }
 
@@ -73,6 +78,7 @@ class _RegistroCompletoSesionScreenState
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _lugarController.dispose();
+    _lugarFocusNode.dispose();
     super.dispose();
   }
 
@@ -195,6 +201,7 @@ class _RegistroCompletoSesionScreenState
       );
       await dataRepository.guardarSesion(nuevaSesion);
       await DraftService.clearSesionDraft();
+      await LugarService.addLugar(_lugar);
 
       final analytics = Provider.of<AnalyticsService>(context, listen: false);
       await analytics.logSessionCreated(_tipo);
@@ -309,15 +316,61 @@ class _RegistroCompletoSesionScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextFormField(
-                controller: _lugarController,
-                decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context)!.location,
-                  border: const OutlineInputBorder(),
-                ),
-                onChanged: (v) {
-                  _lugar = v;
+              RawAutocomplete<String>(
+                textEditingController: _lugarController,
+                focusNode: _lugarFocusNode,
+                optionsBuilder: (TextEditingValue textEditingValue) {
+                  if (textEditingValue.text.isEmpty) {
+                    return _lugaresDisponibles;
+                  }
+                  return _lugaresDisponibles.where(
+                    (lugar) => lugar.toLowerCase().contains(
+                          textEditingValue.text.toLowerCase(),
+                        ),
+                  ).toList();
+                },
+                onSelected: (String selected) {
+                  _lugar = selected;
                   _saveDraft();
+                },
+                fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                  return TextFormField(
+                    controller: controller,
+                    focusNode: focusNode,
+                    onEditingComplete: onEditingComplete,
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.location,
+                      border: const OutlineInputBorder(),
+                    ),
+                    onChanged: (v) {
+                      _lugar = v;
+                      _saveDraft();
+                    },
+                  );
+                },
+                optionsViewBuilder: (context, onSelected, options) {
+                  return Align(
+                    alignment: Alignment.topLeft,
+                    child: Material(
+                      elevation: 4,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 200),
+                        child: ListView.builder(
+                          padding: EdgeInsets.zero,
+                          shrinkWrap: true,
+                          itemCount: options.length,
+                          itemBuilder: (context, index) {
+                            final option = options.elementAt(index);
+                            return ListTile(
+                              leading: const Icon(Icons.location_on_outlined, size: 18),
+                              title: Text(option),
+                              onTap: () => onSelected(option),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 16),

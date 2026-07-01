@@ -70,6 +70,7 @@ class AppConstants {
   static const String prefKeyLocale = 'locale';
   static const String prefKeyTemporadaActiva = 'temporada_activa';
   static const String prefKeyTemporadas = 'temporadas_list';
+  static const String prefKeyLugares = 'lugares_list';
   static const String prefKeyTemporadasArchivadas = 'temporadas_archivadas';
 
   // ===== Estadísticas =====
