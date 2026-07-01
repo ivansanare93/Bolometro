@@ -842,6 +842,10 @@ class _EstadisticasPantallaCompletaState
     final previousBest = (previousSeasonStats?['mejorPartida'] as Partida?)?.total ?? 0;
     final previousGames = previousSeasonStats?['totalPartidas'] as int? ?? 0;
     final previousSessions = previousSeasonStats?['totalSesiones'] as int? ?? 0;
+    final deltaAvg = avg - previousAvg;
+    final deltaBest = bestGame - previousBest;
+    final deltaGames = totalGames - previousGames;
+    final deltaSessions = totalSessions - previousSessions;
 
     return Card(
       elevation: isDark ? 0 : 1.5,
@@ -923,23 +927,23 @@ class _EstadisticasPantallaCompletaState
                   children: [
                     _SeasonDeltaChip(
                       label: l10n.average,
-                      value: _signedValue(avg - previousAvg, fractionDigits: 1),
-                      positive: (avg - previousAvg) >= 0,
+                      value: _signedValue(deltaAvg, fractionDigits: 1),
+                      positive: deltaAvg >= 0,
                     ),
                     _SeasonDeltaChip(
                       label: l10n.best,
-                      value: _signedValue((bestGame - previousBest).toDouble()),
-                      positive: bestGame - previousBest >= 0,
+                      value: _signedValue(deltaBest.toDouble()),
+                      positive: deltaBest >= 0,
                     ),
                     _SeasonDeltaChip(
                       label: l10n.games,
-                      value: _signedValue((totalGames - previousGames).toDouble()),
-                      positive: totalGames - previousGames >= 0,
+                      value: _signedValue(deltaGames.toDouble()),
+                      positive: deltaGames >= 0,
                     ),
                     _SeasonDeltaChip(
                       label: l10n.sessions,
-                      value: _signedValue((totalSessions - previousSessions).toDouble()),
-                      positive: totalSessions - previousSessions >= 0,
+                      value: _signedValue(deltaSessions.toDouble()),
+                      positive: deltaSessions >= 0,
                     ),
                   ],
                 ),
@@ -1196,7 +1200,7 @@ class _EstadisticasPantallaCompletaState
           Row(
             children: [
               Text(
-                '${l10n.selectSeason}:',
+                l10n.selectSeason + ':',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
