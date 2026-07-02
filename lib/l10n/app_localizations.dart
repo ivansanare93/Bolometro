@@ -3715,6 +3715,54 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Mejor sesión'**
   String get seasonBestSessionLabel;
+
+  /// Tooltip/acción para seleccionar todas las sesiones filtradas en modo selección múltiple
+  ///
+  /// In es, this message translates to:
+  /// **'Seleccionar todo'**
+  String get selectAll;
+
+  /// Tooltip/acción para limpiar la selección múltiple actual
+  ///
+  /// In es, this message translates to:
+  /// **'Deseleccionar todo'**
+  String get deselectAll;
+
+  /// Tooltip/acción para entrar en modo de selección múltiple de sesiones
+  ///
+  /// In es, this message translates to:
+  /// **'Seleccionar sesiones'**
+  String get selectSessions;
+
+  /// Tooltip/acción para alternar el agrupado de sesiones por temporada
+  ///
+  /// In es, this message translates to:
+  /// **'Agrupar por temporada'**
+  String get groupBySeasonTooltip;
+
+  /// Título del diálogo y acción para asignar sesiones seleccionadas a una temporada
+  ///
+  /// In es, this message translates to:
+  /// **'Asignar a temporada'**
+  String get assignToSeason;
+
+  /// Título/etiqueta que muestra cuántas sesiones hay seleccionadas en modo múltiple
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 sesión seleccionada} other{{count} sesiones seleccionadas}}'**
+  String selectedSessionsCount(int count);
+
+  /// Mensaje de confirmación antes de asignar sesiones seleccionadas a una temporada
+  ///
+  /// In es, this message translates to:
+  /// **'¿Asignar {count, plural, =1{1 sesión} other{{count} sesiones}} a \"{seasonLabel}\"?'**
+  String bulkAssignConfirm(int count, String seasonLabel);
+
+  /// Mensaje de confirmación al terminar la asignación masiva de sesiones
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 sesión actualizada} other{{count} sesiones actualizadas}}'**
+  String bulkAssignSuccess(int count);
 }
 
 class _AppLocalizationsDelegate

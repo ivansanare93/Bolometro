@@ -1907,4 +1907,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get seasonBestSessionLabel => 'Best session';
+
+  @override
+  String get selectAll => 'Select all';
+
+  @override
+  String get deselectAll => 'Deselect all';
+
+  @override
+  String get selectSessions => 'Select sessions';
+
+  @override
+  String get groupBySeasonTooltip => 'Group by season';
+
+  @override
+  String get assignToSeason => 'Assign to season';
+
+  @override
+  String selectedSessionsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sessions selected',
+      one: '1 session selected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkAssignConfirm(int count, String seasonLabel) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sessions',
+      one: '1 session',
+    );
+    return 'Assign $_temp0 to \"$seasonLabel\"?';
+  }
+
+  @override
+  String bulkAssignSuccess(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sessions updated',
+      one: '1 session updated',
+    );
+    return '$_temp0';
+  }
 }
