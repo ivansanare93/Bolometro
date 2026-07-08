@@ -81,6 +81,65 @@ class AnalyticsService {
     );
   }
 
+  // Coach events
+  Future<void> logCoachTipShown({
+    required String tipId,
+    required String category,
+    required String priority,
+    required int position,
+  }) async {
+    await _analytics.logEvent(
+      name: 'coach_tip_shown',
+      parameters: {
+        'tip_id': tipId,
+        'category': category,
+        'priority': priority,
+        'position': position,
+      },
+    );
+  }
+
+  Future<void> logCoachTipClicked({
+    required String tipId,
+    required String action,
+  }) async {
+    await _analytics.logEvent(
+      name: 'coach_tip_clicked',
+      parameters: {
+        'tip_id': tipId,
+        'action': action,
+      },
+    );
+  }
+
+  Future<void> logCoachQuickActionTapped(String actionId) async {
+    await _analytics.logEvent(
+      name: 'coach_quick_action_tapped',
+      parameters: {'action_id': actionId},
+    );
+  }
+
+  Future<void> logCoachWeeklyGoalSet(String goalType) async {
+    await _analytics.logEvent(
+      name: 'coach_weekly_goal_set',
+      parameters: {'goal_type': goalType},
+    );
+  }
+
+  Future<void> logCoachWeeklyGoalCompleted(String goalType) async {
+    await _analytics.logEvent(
+      name: 'coach_weekly_goal_completed',
+      parameters: {'goal_type': goalType},
+    );
+  }
+
+  Future<void> logCoachProgressAlertShown(String alertType) async {
+    await _analytics.logEvent(
+      name: 'coach_progress_alert_shown',
+      parameters: {'alert_type': alertType},
+    );
+  }
+
   // Profile events
   Future<void> logProfileUpdated() async {
     await _analytics.logEvent(name: 'profile_updated');
