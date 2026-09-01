@@ -72,7 +72,7 @@ Future<String?> seleccionarBolaBottomSheet(
 
 /// Campo compacto (ListTile) que muestra la bola seleccionada para una
 /// partida y permite cambiarla mediante [seleccionarBolaBottomSheet].
-class SeleccionarBolaField extends StatelessWidget {
+class SeleccionarBolaField extends StatefulWidget {
   final String? ballId;
   final ValueChanged<String?> onChanged;
 
@@ -83,12 +83,37 @@ class SeleccionarBolaField extends StatelessWidget {
   });
 
   @override
+  State<SeleccionarBolaField> createState() => _SeleccionarBolaFieldState();
+}
+
+class _SeleccionarBolaFieldState extends State<SeleccionarBolaField> {
+  late Future<BowlingBall?> _bolaFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _bolaFuture = _cargarBola();
+  }
+
+  @override
+  void didUpdateWidget(covariant SeleccionarBolaField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.ballId != widget.ballId) {
+      _bolaFuture = _cargarBola();
+    }
+  }
+
+  Future<BowlingBall?> _cargarBola() {
+    final ballId = widget.ballId;
+    if (ballId == null) return Future.value(null);
+    return Provider.of<DataRepository>(context, listen: false)
+        .obtenerBola(ballId);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder<BowlingBall?>(
-      future: ballId == null
-          ? Future.value(null)
-          : Provider.of<DataRepository>(context, listen: false)
-              .obtenerBola(ballId!),
+      future: _bolaFuture,
       builder: (context, snapshot) {
         final nombreBola = snapshot.data?.name ?? 'Sin especificar';
         return Card(
@@ -100,9 +125,10 @@ class SeleccionarBolaField extends StatelessWidget {
             onTap: () async {
               final seleccionada = await seleccionarBolaBottomSheet(
                 context,
-                seleccionActualId: ballId,
+                seleccionActualId: widget.ballId,
               );
-              onChanged(seleccionada);
+              if (!context.mounted) return;
+              widget.onChanged(seleccionada);
             },
           ),
         );

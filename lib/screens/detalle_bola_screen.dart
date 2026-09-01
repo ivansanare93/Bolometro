@@ -97,12 +97,20 @@ class _DetalleBolaScreenState extends State<DetalleBolaScreen> {
     );
     if (confirmado != true) return;
 
+    final nuevoEstadoActivo = !_bola.isActive;
     if (_bola.isActive) {
       await repo.archivarBola(_bola);
     } else {
       await repo.reactivarBola(_bola);
     }
-    if (mounted) setState(() => _bola.isActive = !_bola.isActive);
+    // No confiamos en que `archivarBola`/`reactivarBola` mute `_bola` in
+    // place: reconstruimos explícitamente el estado local con `copyWith`,
+    // usando el valor calculado antes de la llamada al repositorio.
+    if (mounted) {
+      setState(() {
+        _bola = _bola.copyWith(isActive: nuevoEstadoActivo);
+      });
+    }
   }
 
   Future<void> _agregarMantenimiento() async {
@@ -184,7 +192,14 @@ class _DetalleBolaScreenState extends State<DetalleBolaScreen> {
       },
     );
 
-    if (registrado != true) return;
+    if (registrado != true) {
+      notasController.dispose();
+      return;
+    }
+    if (!mounted) {
+      notasController.dispose();
+      return;
+    }
 
     final repo = Provider.of<DataRepository>(context, listen: false);
     final analytics = Provider.of<AnalyticsService>(context, listen: false);
@@ -196,6 +211,7 @@ class _DetalleBolaScreenState extends State<DetalleBolaScreen> {
           ? null
           : notasController.text.trim(),
     );
+    notasController.dispose();
     await repo.crearMantenimiento(mantenimiento);
     try {
       await analytics.logMaintenanceLogged(tipo);

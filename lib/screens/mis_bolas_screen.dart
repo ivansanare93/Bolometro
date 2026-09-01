@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../models/bowling_ball.dart';
 import '../repositories/data_repository.dart';
-import '../services/analytics_service.dart';
 import 'detalle_bola_screen.dart';
 import 'editar_bola_screen.dart';
 
@@ -206,15 +205,5 @@ class _BolaCard extends StatelessWidget {
         onTap: onTap,
       ),
     );
-  }
-}
-
-/// Registra el evento de analítica `ball_created` de forma segura, ignorando
-/// errores (por ejemplo en tests donde Firebase no está inicializado).
-Future<void> logBallCreatedSafely(AnalyticsService analytics) async {
-  try {
-    await analytics.logBallCreated();
-  } catch (_) {
-    // Ignorar errores de analítica: no deben bloquear el flujo de usuario.
   }
 }

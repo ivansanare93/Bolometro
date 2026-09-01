@@ -1,4 +1,5 @@
 import '../models/partida.dart';
+import '../utils/app_constants.dart';
 import '../utils/estadisticas_utils.dart';
 
 /// Estadísticas agregadas de una bola concreta, calculadas a partir de las
@@ -45,8 +46,8 @@ class BallStatsService {
 
     // Tendencia: compara el promedio de las últimas partidas con el de las
     // anteriores a esas, usando la misma ventana definida para el resto de
-    // la app (AppConstants.ventanaPromedioMovil).
-    const ventana = 5;
+    // la app.
+    const ventana = AppConstants.ventanaPromedioMovil;
     double tendencia = 0;
     if (partidas.length > ventana) {
       final recientes = totales.sublist(totales.length - ventana);

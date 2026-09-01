@@ -47,16 +47,26 @@ void main() {
       expect(stats.strikeRate, equals(100));
     });
 
-    test('tendencia is zero with 5 games or fewer', () {
-      final partidas = List.generate(5, (i) => _partida(150 + i));
+    test('tendencia is zero with AppConstants.ventanaPromedioMovil games or fewer', () {
+      final partidas = List.generate(
+        AppConstants.ventanaPromedioMovil,
+        (i) => _partida(150 + i),
+      );
       final stats = BallStatsService.calcular(partidas);
       expect(stats.tendencia, equals(0));
     });
 
     test('tendencia reflects improvement across recent games', () {
-      // 6 partidas antiguas de 100, luego 5 recientes de 200 -> mejora
-      final antiguas = List.generate(6, (_) => _partida(100));
-      final recientes = List.generate(5, (_) => _partida(200));
+      // AppConstants.ventanaPromedioMovil+1 partidas antiguas de 100, luego
+      // AppConstants.ventanaPromedioMovil recientes de 200 -> mejora.
+      final antiguas = List.generate(
+        AppConstants.ventanaPromedioMovil + 1,
+        (_) => _partida(100),
+      );
+      final recientes = List.generate(
+        AppConstants.ventanaPromedioMovil,
+        (_) => _partida(200),
+      );
       final stats = BallStatsService.calcular([...antiguas, ...recientes]);
 
       expect(stats.tendencia, greaterThan(0));

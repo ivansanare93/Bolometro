@@ -133,7 +133,7 @@ class BowlingBall extends HiveObject {
         id: json['id'] as String?,
         name: json['name'] as String? ?? '',
         brand: json['brand'] as String?,
-        weightLbs: (json['weightLbs'] as num?)?.toDouble() ?? 0,
+        weightLbs: (json['weightLbs'] as num?)?.toDouble() ?? 14,
         coverstock: json['coverstock'] as String?,
         finish: json['finish'] as String?,
         purchaseDate: _parseDateTime(json['purchaseDate']),

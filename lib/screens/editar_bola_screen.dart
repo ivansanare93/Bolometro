@@ -111,7 +111,11 @@ class _EditarBolaScreenState extends State<EditarBolaScreen> {
           notes: notas.isEmpty ? null : notas,
         );
         await repo.crearBola(nueva);
-        await logBallCreatedSafely(analytics);
+        try {
+          await analytics.logBallCreated();
+        } catch (e) {
+          debugPrint('Error logging ball creation: $e');
+        }
       }
       if (!mounted) return;
       Navigator.pop(context, true);
