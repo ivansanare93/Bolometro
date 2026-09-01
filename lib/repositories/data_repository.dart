@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import '../models/sesion.dart';
+import '../models/partida.dart';
 import '../models/nota.dart';
 import '../models/perfil_usuario.dart';
 import '../models/user_progress.dart';
 import '../models/achievement.dart';
+import '../models/bowling_ball.dart';
 import '../services/firestore_service.dart';
 import '../utils/app_constants.dart';
 import '../exceptions/sync_exceptions.dart';
@@ -54,6 +56,24 @@ class DataRepository extends ChangeNotifier {
     return AppConstants.boxNotas;
   }
 
+  /// Obtener nombre del box de bolas específico del usuario
+  String get bolasBoxName => _getBolasBoxName();
+  String _getBolasBoxName() {
+    if (_userId != null) {
+      return '${AppConstants.boxBolas}_$_userId';
+    }
+    return AppConstants.boxBolas;
+  }
+
+  /// Obtener nombre del box de mantenimientos de bolas específico del usuario
+  String get mantenimientosBolasBoxName => _getMantenimientosBolasBoxName();
+  String _getMantenimientosBolasBoxName() {
+    if (_userId != null) {
+      return '${AppConstants.boxMantenimientosBolas}_$_userId';
+    }
+    return AppConstants.boxMantenimientosBolas;
+  }
+
   /// Obtener box de sesiones, abriéndolo si es necesario
   Future<Box<Sesion>> _getSesionesBox() async {
     final boxName = _getSesionesBoxName();
@@ -61,6 +81,24 @@ class DataRepository extends ChangeNotifier {
       return await Hive.openBox<Sesion>(boxName);
     }
     return Hive.box<Sesion>(boxName);
+  }
+
+  /// Obtener box de bolas, abriéndolo si es necesario
+  Future<Box<BowlingBall>> _getBolasBox() async {
+    final boxName = _getBolasBoxName();
+    if (!Hive.isBoxOpen(boxName)) {
+      return await Hive.openBox<BowlingBall>(boxName);
+    }
+    return Hive.box<BowlingBall>(boxName);
+  }
+
+  /// Obtener box de mantenimientos de bolas, abriéndolo si es necesario
+  Future<Box<BallMaintenance>> _getMantenimientosBolasBox() async {
+    final boxName = _getMantenimientosBolasBoxName();
+    if (!Hive.isBoxOpen(boxName)) {
+      return await Hive.openBox<BallMaintenance>(boxName);
+    }
+    return Hive.box<BallMaintenance>(boxName);
   }
 
   /// Obtener box de perfil, abriéndolo si es necesario
@@ -125,6 +163,8 @@ class DataRepository extends ChangeNotifier {
       await _getSesionesBox();
       await _getPerfilBox();
       await _getNotasBox();
+      await _getBolasBox();
+      await _getMantenimientosBolasBox();
       // Migrar datos guardados en modo offline al box del usuario autenticado.
       // Esto garantiza que los datos locales previos al primer inicio de sesión
       // estén disponibles cuando Firestore aún no los tenga (p.ej. primera vez
@@ -187,6 +227,35 @@ class DataRepository extends ChangeNotifier {
           );
         }
       }
+
+      // Migrar bolas y mantenimientos desde el box por defecto
+      final userBolasBox = await _getBolasBox();
+      if (userBolasBox.isEmpty && Hive.isBoxOpen(AppConstants.boxBolas)) {
+        final defaultBolasBox = Hive.box<BowlingBall>(AppConstants.boxBolas);
+        if (defaultBolasBox.isNotEmpty) {
+          await userBolasBox.putAll({
+            for (final bola in defaultBolasBox.values) bola.id: bola,
+          });
+          debugPrint(
+            '${defaultBolasBox.length} bolas offline migradas al box del usuario autenticado',
+          );
+        }
+      }
+
+      final userMantenimientosBox = await _getMantenimientosBolasBox();
+      if (userMantenimientosBox.isEmpty &&
+          Hive.isBoxOpen(AppConstants.boxMantenimientosBolas)) {
+        final defaultMantenimientosBox =
+            Hive.box<BallMaintenance>(AppConstants.boxMantenimientosBolas);
+        if (defaultMantenimientosBox.isNotEmpty) {
+          await userMantenimientosBox.putAll({
+            for (final m in defaultMantenimientosBox.values) m.id: m,
+          });
+          debugPrint(
+            '${defaultMantenimientosBox.length} mantenimientos de bolas offline migrados al box del usuario autenticado',
+          );
+        }
+      }
     } catch (e) {
       debugPrint('Error al migrar datos offline al usuario: $e');
     }
@@ -199,6 +268,8 @@ class DataRepository extends ChangeNotifier {
     final sesionesBoxName = _getSesionesBoxName();
     final perfilBoxName = _getPerfilBoxName();
     final notasBoxName = _getNotasBoxName();
+    final bolasBoxName = _getBolasBoxName();
+    final mantenimientosBoxName = _getMantenimientosBolasBoxName();
 
     try {
       // Cerrar boxes si están abiertas
@@ -211,11 +282,19 @@ class DataRepository extends ChangeNotifier {
       if (Hive.isBoxOpen(notasBoxName)) {
         await Hive.box<Nota>(notasBoxName).close();
       }
+      if (Hive.isBoxOpen(bolasBoxName)) {
+        await Hive.box<BowlingBall>(bolasBoxName).close();
+      }
+      if (Hive.isBoxOpen(mantenimientosBoxName)) {
+        await Hive.box<BallMaintenance>(mantenimientosBoxName).close();
+      }
 
       // Borrar del disco para evitar mezcla de datos entre usuarios
       await Hive.deleteBoxFromDisk(sesionesBoxName);
       await Hive.deleteBoxFromDisk(perfilBoxName);
       await Hive.deleteBoxFromDisk(notasBoxName);
+      await Hive.deleteBoxFromDisk(bolasBoxName);
+      await Hive.deleteBoxFromDisk(mantenimientosBoxName);
 
       debugPrint('Datos locales del usuario eliminados del disco');
     } catch (e) {
@@ -544,6 +623,137 @@ class DataRepository extends ChangeNotifier {
         await _firestoreService.guardarNota(_userId!, local);
       }
     }
+  }
+
+  // ===== Bolas (equipación) =====
+
+  /// Obtener todas las bolas activas (isActive == true), ordenadas por
+  /// nombre. Usado para selección al registrar partidas.
+  Future<List<BowlingBall>> listarBolasActivas() async {
+    try {
+      final box = await _getBolasBox();
+      final activas = box.values.where((b) => b.isActive).toList();
+      activas.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      return activas;
+    } catch (e) {
+      debugPrint('Error al listar bolas activas: $e');
+      return [];
+    }
+  }
+
+  /// Obtener todas las bolas (activas y archivadas), ordenadas por fecha de
+  /// creación descendente. Usado en el listado "Mis Bolas".
+  Future<List<BowlingBall>> listarTodasLasBolas() async {
+    try {
+      final box = await _getBolasBox();
+      final bolas = box.values.toList();
+      bolas.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return bolas;
+    } catch (e) {
+      debugPrint('Error al listar bolas: $e');
+      return [];
+    }
+  }
+
+  /// Buscar una bola por su id.
+  Future<BowlingBall?> obtenerBola(String ballId) async {
+    try {
+      final box = await _getBolasBox();
+      return box.get(ballId);
+    } catch (e) {
+      debugPrint('Error al obtener bola: $e');
+      return null;
+    }
+  }
+
+  /// Crear una nueva bola de bolos.
+  Future<BowlingBall> crearBola(BowlingBall bola) async {
+    final box = await _getBolasBox();
+    await box.put(bola.id, bola);
+    notifyListeners();
+    return bola;
+  }
+
+  /// Actualizar una bola existente.
+  Future<void> actualizarBola(BowlingBall bola) async {
+    final box = await _getBolasBox();
+    bola.updatedAt = DateTime.now();
+    await box.put(bola.id, bola);
+    notifyListeners();
+  }
+
+  /// Archivar (soft delete) una bola. Se conserva para no perder el
+  /// histórico de partidas/estadísticas asociadas a ella.
+  Future<void> archivarBola(BowlingBall bola) async {
+    final box = await _getBolasBox();
+    bola.isActive = false;
+    bola.updatedAt = DateTime.now();
+    await box.put(bola.id, bola);
+    notifyListeners();
+  }
+
+  /// Reactivar una bola previamente archivada.
+  Future<void> reactivarBola(BowlingBall bola) async {
+    final box = await _getBolasBox();
+    bola.isActive = true;
+    bola.updatedAt = DateTime.now();
+    await box.put(bola.id, bola);
+    notifyListeners();
+  }
+
+  /// Asigna (o quita, si [ballId] es null) una bola a la partida ubicada en
+  /// el índice [indicePartida] dentro de [sesion], y persiste el cambio.
+  Future<void> asignarBolaAPartida({
+    required Sesion sesion,
+    required int indicePartida,
+    String? ballId,
+  }) async {
+    if (indicePartida < 0 || indicePartida >= sesion.partidas.length) {
+      throw RangeError.index(indicePartida, sesion.partidas);
+    }
+    final partidas = List<Partida>.from(sesion.partidas);
+    partidas[indicePartida] = partidas[indicePartida].copyWith(ballId: ballId);
+    sesion.partidas = partidas;
+    await actualizarSesion(sesion);
+  }
+
+  // ===== Mantenimiento de bolas =====
+
+  /// Registrar un nuevo mantenimiento para una bola.
+  Future<BallMaintenance> crearMantenimiento(BallMaintenance mantenimiento) async {
+    final box = await _getMantenimientosBolasBox();
+    await box.put(mantenimiento.id, mantenimiento);
+    notifyListeners();
+    return mantenimiento;
+  }
+
+  /// Listar los mantenimientos registrados para una bola, más reciente primero.
+  Future<List<BallMaintenance>> listarMantenimientosPorBola(String ballId) async {
+    try {
+      final box = await _getMantenimientosBolasBox();
+      final registros = box.values.where((m) => m.ballId == ballId).toList();
+      registros.sort((a, b) => b.date.compareTo(a.date));
+      return registros;
+    } catch (e) {
+      debugPrint('Error al listar mantenimientos de la bola: $e');
+      return [];
+    }
+  }
+
+  /// Obtener todas las partidas (aplanando todas las sesiones) que usaron
+  /// la bola indicada por [ballId]. Usado para calcular estadísticas por bola.
+  Future<List<Partida>> obtenerPartidasPorBola(String ballId) async {
+    final sesiones = await obtenerSesiones();
+    final partidas = <Partida>[];
+    for (final sesion in sesiones) {
+      partidas.addAll(sesion.partidas.where((p) => p.ballId == ballId));
+    }
+    partidas.sort((a, b) {
+      final fechaA = a.fecha ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final fechaB = b.fecha ?? DateTime.fromMillisecondsSinceEpoch(0);
+      return fechaA.compareTo(fechaB);
+    });
+    return partidas;
   }
 
   /// Obtener perfil de usuario

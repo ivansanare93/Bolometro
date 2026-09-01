@@ -21,9 +21,42 @@
 - Sistema de logros y nivel (gamificación).
 - Sistema social: amigos, solicitudes y rankings.
 - Perfil de usuario y personalización básica.
+- **Mis Bolas**: inventario de equipación (bolas de bolos), asignación de bola por partida, estadísticas por bola y registro de mantenimiento.
 - Modo offline con almacenamiento local (Hive).
 - Sincronización cloud con Firebase (Google Sign-In + Firestore).
 - Soporte multi-plataforma: Android, iOS, Web, Windows, macOS y Linux.
+
+---
+
+## 🎳 Mis Bolas (equipación)
+
+Bolómetro incluye un inventario básico de equipación centrado en las bolas de
+bolos y su impacto en el rendimiento.
+
+### Cómo usarlo
+
+1. Desde la pantalla principal, entra en **"Mis Bolas"**.
+2. Pulsa el botón **+** para agregar una bola (nombre, peso, marca, coverstock,
+   acabado, fecha de compra y notas son opcionales salvo nombre y peso).
+3. Al registrar o editar una partida, usa el campo **"Bola utilizada"** para
+   asignar una de tus bolas activas, o deja **"Sin especificar"**.
+4. Entra en el detalle de una bola para ver sus **estadísticas** (partidas
+   jugadas, promedio, mejor partida, % de strikes y tendencia reciente) y su
+   **historial de mantenimiento** (limpieza, resurfacing, extracción de
+   aceite u otro).
+5. Puedes **archivar** una bola que ya no uses (no se borra: se conserva su
+   histórico) o **reactivarla** más adelante.
+
+### Limitaciones del MVP
+
+- El inventario de equipación (bolas y mantenimientos) se guarda únicamente
+  de forma local (Hive) y todavía no se sincroniza con Firestore/la nube.
+- Solo se admite un tipo de equipación (bolas); no hay soporte para zapatos,
+  muñequeras u otros accesorios.
+- La "tendencia" de rendimiento es un cálculo simple (comparación de
+  promedios recientes vs. anteriores), no un modelo predictivo.
+- No hay recordatorios automáticos (notificaciones) de mantenimiento
+  periódico; el registro es manual.
 
 ---
 

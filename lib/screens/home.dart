@@ -14,6 +14,7 @@ import 'rankings_screen.dart';
 import 'achievements_screen.dart';
 import 'registro_completo_sesion.dart';
 import 'notas_screen.dart';
+import 'mis_bolas_screen.dart';
 import 'feedback_screen.dart';
 import 'temporadas_screen.dart';
 import '../providers/theme_provider.dart';
@@ -941,6 +942,21 @@ Future<void> _bootstrap(
                           context,
                           MaterialPageRoute(
                             builder: (_) => const NotasScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      leading: const Text('🎳', style: TextStyle(fontSize: 32)),
+                      title: const Text('Mis Bolas'),
+                      subtitle: const Text('Equipación y estadísticas por bola'),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const MisBolasScreen(),
                           ),
                         );
                       },
