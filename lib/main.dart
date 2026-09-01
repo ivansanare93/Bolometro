@@ -26,6 +26,7 @@ import 'screens/registro_sesion.dart';
 import 'screens/login_screen.dart';
 
 import 'models/perfil_usuario.dart';
+import 'models/bowling_ball.dart';
 import 'services/auth_service.dart';
 import 'services/analytics_service.dart';
 import 'services/achievement_service.dart';
@@ -85,12 +86,20 @@ void main() async {
   if (!Hive.isAdapterRegistered(17)) {
     Hive.registerAdapter(UserProgressAdapter());
   }
+  if (!Hive.isAdapterRegistered(19)) {
+    Hive.registerAdapter(BowlingBallAdapter());
+  }
+  if (!Hive.isAdapterRegistered(20)) {
+    Hive.registerAdapter(BallMaintenanceAdapter());
+  }
   
   // Abrir boxes por defecto para modo offline (sin usuario autenticado)
   // Los boxes específicos de usuario se abrirán cuando se autentique
   await Hive.openBox<Sesion>(AppConstants.boxSesiones);
   await Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
   await Hive.openBox<Nota>(AppConstants.boxNotas);
+  await Hive.openBox<BowlingBall>(AppConstants.boxBolas);
+  await Hive.openBox<BallMaintenance>(AppConstants.boxMantenimientosBolas);
 
   runApp(
     MultiProvider(

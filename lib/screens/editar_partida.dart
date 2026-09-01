@@ -12,6 +12,7 @@ import '../utils/teclado_tiros_adaptativo.dart';
 import '../widgets/resumen_puntuacion.dart';
 import '../widgets/score_sheet_pin_strip.dart';
 import '../widgets/notas_field.dart';
+import '../widgets/seleccionar_bola_field.dart';
 import 'home.dart';
 import '../l10n/app_localizations.dart';
 
@@ -33,6 +34,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
     with SingleTickerProviderStateMixin {
   late List<List<String>> framesText;
   late String? notas;
+  late String? _ballId;
   Map<int, Set<int>> erroresPorTiro = {};
   final marcadorKey = GlobalKey<MarcadorBolosState>();
   final ValueNotifier<Set<String>> teclasDeshabilitadas = ValueNotifier({});
@@ -75,6 +77,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
         )
         .toList();
     notas = widget.partida.notas;
+    _ballId = widget.partida.ballId;
     erroresPorTiro = _obtenerErroresPorTiro(framesText);
     pinesPorTiro = List.generate(
       10,
@@ -186,11 +189,15 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
       notas: notas,
       total: nuevoTotal,
       pinesPorTiro: pinesPorTiro,
+      ballId: _ballId,
     );
 
     try {
       final analytics = Provider.of<AnalyticsService>(context, listen: false);
       await analytics.logGameEdited();
+      if (_ballId != null && _ballId != widget.partida.ballId) {
+        await analytics.logBallAssignedToGame();
+      }
     } catch (e) {
       debugPrint('Error logging game edit: $e');
     }
@@ -498,6 +505,11 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
                   ),
                 ),
               ),
+            const SizedBox(height: 16),
+            SeleccionarBolaField(
+              ballId: _ballId,
+              onChanged: (value) => setState(() => _ballId = value),
+            ),
             const SizedBox(height: 16),
             if (!_modoVisual)
               NotasField(

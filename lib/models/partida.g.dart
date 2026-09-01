@@ -29,13 +29,14 @@ class PartidaAdapter extends TypeAdapter<Partida> {
               .map((dynamic e) => (e as List?)?.cast<int>())
               .toList())
           ?.toList(),
+      ballId: fields[6] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Partida obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.fecha)
       ..writeByte(1)
@@ -47,7 +48,9 @@ class PartidaAdapter extends TypeAdapter<Partida> {
       ..writeByte(4)
       ..write(obj.total)
       ..writeByte(5)
-      ..write(obj.pinesPorTiro);
+      ..write(obj.pinesPorTiro)
+      ..writeByte(6)
+      ..write(obj.ballId);
   }
 
   @override

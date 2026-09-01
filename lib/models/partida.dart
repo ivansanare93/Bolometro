@@ -24,6 +24,11 @@ class Partida extends HiveObject {
   @HiveField(5)
   final List<List<List<int>?>> pinesPorTiro;
 
+  /// Identificador opcional de la bola de bolos ([BowlingBall.id]) usada en
+  /// esta partida. `null` significa "sin especificar".
+  @HiveField(6)
+  final String? ballId;
+
   Partida({
     this.fecha,
     this.lugar,
@@ -31,6 +36,7 @@ class Partida extends HiveObject {
     this.notas,
     required this.total,
     List<List<List<int>?>>? pinesPorTiro,
+    this.ballId,
   }) : pinesPorTiro =
            pinesPorTiro ?? List.generate(10, (_) => List.filled(3, null));
 
@@ -41,6 +47,7 @@ class Partida extends HiveObject {
     String? notas,
     int? total,
     List<List<List<int>?>>? pinesPorTiro,
+    Object? ballId = _sentinel,
   }) {
     return Partida(
       fecha: fecha ?? this.fecha,
@@ -49,6 +56,7 @@ class Partida extends HiveObject {
       notas: notas ?? this.notas,
       total: total ?? this.total,
       pinesPorTiro: pinesPorTiro ?? this.pinesPorTiro,
+      ballId: ballId == _sentinel ? this.ballId : ballId as String?,
     );
   }
 
@@ -68,6 +76,7 @@ class Partida extends HiveObject {
         return tiro.join(',');
       }).join(';');
     }).toList(),
+    'ballId': ballId,
   };
 
   factory Partida.fromJson(Map<String, dynamic> json) {
@@ -151,6 +160,10 @@ class Partida extends HiveObject {
       notas: json['notas'],
       total: json['total'],
       pinesPorTiro: parsedPinesPorTiro,
+      ballId: json['ballId'] as String?,
     );
   }
 }
+
+/// Sentinel object used in [Partida.copyWith] to distinguish null from "not provided".
+const Object _sentinel = Object();

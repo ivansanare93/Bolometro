@@ -23,13 +23,16 @@ Este documento mantiene un registro centralizado de todos los `typeId` asignados
 | 15 | `Friend` | `lib/models/friend.dart` | Amigo en el sistema social |
 | 16 | `FriendRequest` | `lib/models/friend_request.dart` | Solicitud de amistad |
 | 17 | `UserProgress` | `lib/models/user_progress.dart` | Progreso del usuario (XP, nivel) |
+| 18 | `NotaAdjunto` | `lib/models/nota.dart` | Adjunto (imagen) de una nota |
+| 19 | `BowlingBall` | `lib/models/bowling_ball.dart` | Bola de bolos del inventario ("Mis Bolas") |
+| 20 | `BallMaintenance` | `lib/models/bowling_ball.dart` | Registro de mantenimiento de una bola |
 
 ## TypeIDs Disponibles
 
 Los siguientes typeId están disponibles para nuevos modelos:
 - 3-9 (rango bajo)
 - 12 (individual)
-- 18+ (rango alto)
+- 21+ (rango alto)
 
 ## Historial de Cambios
 

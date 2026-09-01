@@ -53,6 +53,22 @@ class AnalyticsService {
     await _analytics.logEvent(name: 'game_edited');
   }
 
+  // Equipment (bowling balls) events
+  Future<void> logBallCreated() async {
+    await _analytics.logEvent(name: 'ball_created');
+  }
+
+  Future<void> logBallAssignedToGame() async {
+    await _analytics.logEvent(name: 'ball_assigned_to_game');
+  }
+
+  Future<void> logMaintenanceLogged(String maintenanceType) async {
+    await _analytics.logEvent(
+      name: 'maintenance_logged',
+      parameters: {'maintenance_type': maintenanceType},
+    );
+  }
+
   // User actions
   Future<void> logLogin(String method) async {
     await _analytics.logLogin(loginMethod: method);

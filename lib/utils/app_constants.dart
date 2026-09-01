@@ -36,6 +36,8 @@ class AppConstants {
   static const String boxUserProgress = 'userProgress';
   static const String boxAchievements = 'achievements';
   static const String boxNotas = 'notas';
+  static const String boxBolas = 'bolas';
+  static const String boxMantenimientosBolas = 'mantenimientos_bolas';
 
   // ===== Configuración de UI =====
   static const double cardBorderRadius = 12.0;

@@ -12,6 +12,7 @@ import '../widgets/teclado_selector_pins.dart';
 import '../widgets/resumen_puntuacion.dart';
 import '../widgets/notas_field.dart';
 import '../widgets/score_sheet_pin_strip.dart';
+import '../widgets/seleccionar_bola_field.dart';
 import 'home.dart';
 import '../utils/teclado_tiros_adaptativo.dart';
 import '../l10n/app_localizations.dart';
@@ -29,6 +30,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
   final marcadorKey = GlobalKey<MarcadorBolosState>();
   late List<List<String>> framesText;
   String? notas;
+  String? _ballId;
   Map<int, Set<int>> erroresPorTiro = {};
 
   // Estructura visual de pines: [frame][tiro][pines]
@@ -272,11 +274,15 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
       notas: notas?.trim().isEmpty == true ? null : notas?.trim(),
       total: nuevoTotal,
       pinesPorTiro: pinesPorTiro, // <-- Guardamos aquí el array de pines visual
+      ballId: _ballId,
     );
 
     try {
       final analytics = Provider.of<AnalyticsService>(context, listen: false);
       await analytics.logGameCreated(nuevoTotal);
+      if (_ballId != null) {
+        await analytics.logBallAssignedToGame();
+      }
     } catch (e) {
       debugPrint('Error logging game creation: $e');
     }
@@ -595,6 +601,14 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
                   },
                   deshabilitadosNotifier: teclasDeshabilitadas,
                 ),
+              const SizedBox(height: 16),
+              SeleccionarBolaField(
+                ballId: _ballId,
+                onChanged: (value) {
+                  setState(() => _ballId = value);
+                  _saveDraft();
+                },
+              ),
               const SizedBox(height: 16),
               if (!_modoVisual)
                 NotasField(
