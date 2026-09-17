@@ -1,9 +1,13 @@
+import 'dart:convert' show jsonEncode;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/sesion.dart';
 import '../models/partida.dart';
+import '../models/coach_models.dart';
 import '../repositories/data_repository.dart';
 import '../services/analytics_service.dart';
+import '../services/coach_rule_engine.dart';
 import '../utils/estadisticas_utils.dart';
 import '../utils/estadisticas_cache.dart';
 import '../utils/app_constants.dart';
@@ -15,6 +19,7 @@ import '../widgets/estadisticas/pastel_porcentajes.dart';
 import '../widgets/estadisticas/top_partidas_widget.dart';
 import '../widgets/estadisticas/mini_grafico_promedio_movil.dart';
 import '../widgets/estadisticas/histograma_puntuaciones.dart';
+import '../widgets/estadisticas/coach_advice_section.dart';
 import '../widgets/info_tooltip_icon.dart';
 import 'home.dart';
 import '../l10n/app_localizations.dart';
@@ -48,6 +53,13 @@ class _EstadisticasPantallaCompletaState
   List<Sesion>? _cachedSesiones;
   List<Sesion>? _cachedFilteredSesiones;
   StatsFilter? _cachedFilter;
+
+  final CoachRuleEngine _coachRuleEngine = CoachRuleEngine();
+  CoachInteractionState _coachInteractionState = const CoachInteractionState();
+  CoachSessionAdvice? _cachedCoachAdvice;
+  String? _coachAdviceCacheKey;
+  String? _lastLoggedCoachTipsKey;
+  CoachInputMetrics? _lastCoachMetrics;
 
   @override
   void initState() {
@@ -271,6 +283,107 @@ class _EstadisticasPantallaCompletaState
     return '±0';
   }
 
+  CoachSessionAdvice _getCoachAdvice({
+    required List<Sesion> sesiones,
+    required Map<String, dynamic> stats,
+  }) {
+    final cacheKey = jsonEncode([
+      _filter.cacheKey,
+      sesiones.length,
+      sesiones.expand((s) => s.partidas).length,
+      sesiones.isEmpty ? 0 : sesiones.last.fecha.millisecondsSinceEpoch,
+      _coachInteractionState.weeklyGoal ?? '',
+      _coachInteractionState.weeklyGoalCompleted ? '1' : '0',
+      _coachInteractionState.showTipExplanation ? '1' : '0',
+    ]);
+
+    if (_coachAdviceCacheKey == cacheKey && _cachedCoachAdvice != null) {
+      return _cachedCoachAdvice!;
+    }
+
+    final metrics = CoachRuleEngine.buildInputMetrics(sesiones, stats);
+    final advice = _coachRuleEngine.generateAdvice(
+      metrics: metrics,
+      interactionState: _coachInteractionState,
+      maxTips: 3,
+    );
+
+    _lastCoachMetrics = metrics;
+    _coachInteractionState = advice.interactionState;
+    _coachAdviceCacheKey = cacheKey;
+    _cachedCoachAdvice = advice;
+
+    return advice;
+  }
+
+  String _categoryName(CoachTipCategory category) {
+    switch (category) {
+      case CoachTipCategory.correctivo:
+        return 'correctivo';
+      case CoachTipCategory.objetivo:
+        return 'objetivo';
+      case CoachTipCategory.refuerzo:
+        return 'refuerzo';
+      case CoachTipCategory.proximaSesion:
+        return 'proxima_sesion';
+    }
+  }
+
+  void _logCoachTipsShown(CoachSessionAdvice advice) {
+    if (advice.tips.isEmpty) return;
+    final tipsKey = advice.tips.map((tip) => tip.id).join('|');
+    final fullKey = '${_filter.cacheKey}_$tipsKey';
+    if (_lastLoggedCoachTipsKey == fullKey) return;
+    _lastLoggedCoachTipsKey = fullKey;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      try {
+        final analytics = Provider.of<AnalyticsService>(context, listen: false);
+        for (int i = 0; i < advice.tips.length; i++) {
+          final tip = advice.tips[i];
+          analytics.logCoachTipShown(
+            tipId: tip.id,
+            category: _categoryName(tip.category),
+            priority: tip.priority.name,
+            position: i + 1,
+          );
+        }
+      } catch (e) {
+        debugPrint('Error logging coach tips shown: $e');
+      }
+    });
+  }
+
+  void _showCoachDialog({
+    required String title,
+    required String body,
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: Text(body),
+        actions: [
+          if (actionLabel != null && onAction != null)
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                onAction();
+              },
+              child: Text(actionLabel),
+            ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ---------------------------------------------------------------------------
   // Build
   // ---------------------------------------------------------------------------
@@ -438,7 +551,14 @@ class _EstadisticasPantallaCompletaState
                 );
               }
             }
+
           }
+
+          final coachAdvice = _getCoachAdvice(
+            sesiones: sesiones,
+            stats: stats,
+          );
+          _logCoachTipsShown(coachAdvice);
           
           // Extract theme colors once to avoid repeated lookups
           final greyColor = Colors.grey[700];
@@ -503,7 +623,140 @@ class _EstadisticasPantallaCompletaState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // ── SECCIÓN 1: ESTADÍSTICAS GENERALES ──────────────────
+                      // ── SECCIÓN 1: ENTRENADOR ───────────────────────────────
+                      _buildSectionHeader(
+                        title: 'Entrenador',
+                        icon: Icons.sports_rounded,
+                        color: Colors.indigo[500]!,
+                      ),
+                      const SizedBox(height: 4),
+                      CoachAdviceSection(
+                        advice: coachAdvice,
+                        onPrimaryTipTap: () {
+                          final tip = coachAdvice.primaryTip;
+                          if (tip == null) return;
+                          try {
+                            final analytics = Provider.of<AnalyticsService>(
+                              context,
+                              listen: false,
+                            );
+                            analytics.logCoachTipClicked(
+                              tipId: tip.id,
+                              action: 'open_primary_tip',
+                            );
+                          } catch (e) {
+                            debugPrint('Error logging coach tip click: $e');
+                          }
+                        },
+                        onQuickFocusTap: () {
+                          try {
+                            final analytics = Provider.of<AnalyticsService>(
+                              context,
+                              listen: false,
+                            );
+                            analytics.logCoachQuickActionTapped('focus_today');
+                          } catch (e) {
+                            debugPrint('Error logging coach quick action focus: $e');
+                          }
+                          _showCoachDialog(
+                            title: 'Enfoque de hoy',
+                            body: coachAdvice.focusMessage,
+                          );
+                        },
+                        onQuickExplainTap: () {
+                          try {
+                            final analytics = Provider.of<AnalyticsService>(
+                              context,
+                              listen: false,
+                            );
+                            analytics.logCoachQuickActionTapped('explain_tip');
+                          } catch (e) {
+                            debugPrint('Error logging coach quick action explain: $e');
+                          }
+                          setState(() {
+                            _coachInteractionState =
+                                _coachInteractionState.copyWith(
+                              showTipExplanation:
+                                  !_coachInteractionState.showTipExplanation,
+                            );
+                            _coachAdviceCacheKey = null;
+                          });
+                        },
+                        onQuickWeeklyGoalTap: () {
+                          try {
+                            final analytics = Provider.of<AnalyticsService>(
+                              context,
+                              listen: false,
+                            );
+                            analytics.logCoachQuickActionTapped('weekly_goal');
+                            analytics.logCoachWeeklyGoalSet('smart_goal');
+                          } catch (e) {
+                            debugPrint('Error logging coach weekly goal action: $e');
+                          }
+                          setState(() {
+                            _coachInteractionState =
+                                _coachInteractionState.copyWith(
+                              weeklyGoal: coachAdvice.weeklyGoalSuggestion,
+                              weeklyGoalCompleted: false,
+                              weeklyGoalSetAt: DateTime.now(),
+                            );
+                            _coachAdviceCacheKey = null;
+                          });
+                          _showCoachDialog(
+                            title: 'Reto semanal',
+                            body: coachAdvice.weeklyGoalSuggestion,
+                          );
+                        },
+                        onQuickProgressTap: () {
+                          try {
+                            final analytics = Provider.of<AnalyticsService>(
+                              context,
+                              listen: false,
+                            );
+                            analytics.logCoachQuickActionTapped('progress_check');
+                            final metrics = _lastCoachMetrics;
+                            final delta = metrics == null
+                                ? 0
+                                : metrics.recentAverage - metrics.previousAverage;
+                            final alertType = delta >= 6
+                                ? 'improving'
+                                : (delta <= -6 ? 'declining' : 'stable');
+                            analytics.logCoachProgressAlertShown(alertType);
+                          } catch (e) {
+                            debugPrint('Error logging coach progress action: $e');
+                          }
+                          _showCoachDialog(
+                            title: 'Progreso',
+                            body: coachAdvice.progressMessage,
+                          );
+                        },
+                        onWeeklyGoalCompletedTap: () {
+                          try {
+                            final analytics = Provider.of<AnalyticsService>(
+                              context,
+                              listen: false,
+                            );
+                            analytics.logCoachWeeklyGoalCompleted('smart_goal');
+                          } catch (e) {
+                            debugPrint('Error logging coach weekly goal completion: $e');
+                          }
+                          setState(() {
+                            _coachInteractionState =
+                                _coachInteractionState.copyWith(
+                              weeklyGoalCompleted: true,
+                            );
+                            _coachAdviceCacheKey = null;
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('¡Reto semanal marcado como completado!'),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+
+                      // ── SECCIÓN 2: ESTADÍSTICAS GENERALES ──────────────────
                       _buildSectionHeader(
                         title: l10n.statsGeneralSection,
                         icon: Icons.bar_chart_rounded,
