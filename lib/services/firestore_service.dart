@@ -13,7 +13,7 @@ import '../exceptions/sync_exceptions.dart';
 /// Servicio para interactuar con Firestore
 /// Maneja la sincronización de datos del usuario en la nube
 class FirestoreService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   static const String _feedbackDestinationEmail = 'appbolometro@gmail.com';
   static const int _dailyEngagementTargetMinutes = 5;
 

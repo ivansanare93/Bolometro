@@ -28,10 +28,12 @@ class _EditarBolaScreenState extends State<EditarBolaScreen> {
   late final TextEditingController _notasController;
   DateTime? _fechaCompra;
   bool _guardando = false;
+  String? _ownerUid;
 
   @override
   void initState() {
     super.initState();
+    _ownerUid = context.read<DataRepository>().arsenalUserId;
     final bola = widget.ball;
     _nombreController = TextEditingController(text: bola?.name ?? '');
     _marcaController = TextEditingController(text: bola?.brand ?? '');
@@ -75,6 +77,7 @@ class _EditarBolaScreenState extends State<EditarBolaScreen> {
   }
 
   Future<void> _guardar() async {
+    if (_ownerUid != context.read<DataRepository>().arsenalUserId) return;
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _guardando = true);
@@ -130,6 +133,10 @@ class _EditarBolaScreenState extends State<EditarBolaScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_ownerUid != context.watch<DataRepository>().arsenalUserId) {
+      return Scaffold(appBar: AppBar(title: const Text('Cuenta cambiada')),
+        body: const Center(child: Text('Vuelve al arsenal de la cuenta actual.')));
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isEditing ? 'Editar Bola' : 'Agregar Bola'),

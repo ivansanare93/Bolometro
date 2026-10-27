@@ -112,6 +112,69 @@ service cloud.firestore {
         // Solo el propietario puede leer y escribir su bitácora
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
+
+      // Arsenal privado. Preparado localmente; requiere despliegue autorizado.
+      match /{arsenalCollection}/{entityId} {
+        function owner() {
+          return request.auth != null && request.auth.uid == userId
+            && arsenalCollection in ['balls', 'ball_maintenance'];
+        }
+        function validPayload(p) {
+          return p is map && p.id == entityId &&
+            (arsenalCollection == 'balls'
+              ? p.keys().hasAll(['id', 'name', 'brand', 'weightLbs', 'coverstock',
+                  'finish', 'purchaseDate', 'isActive', 'notes', 'createdAt', 'updatedAt'])
+                && p.keys().hasOnly(['id', 'name', 'brand', 'weightLbs', 'coverstock',
+                  'finish', 'purchaseDate', 'isActive', 'notes', 'createdAt', 'updatedAt'])
+                && p.name is string && p.name.size() > 0 && p.name.size() <= 500
+                && p.weightLbs is number && p.weightLbs > 0 && p.weightLbs <= 20
+                && p.isActive is bool && p.createdAt is string && p.updatedAt is string
+                && (p.brand == null || p.brand is string)
+                && (p.coverstock == null || p.coverstock is string)
+                && (p.finish == null || p.finish is string)
+                && (p.purchaseDate == null || p.purchaseDate is string)
+                && (p.notes == null || p.notes is string)
+              : p.keys().hasAll(['id', 'ballId', 'type', 'date', 'notes'])
+                && p.keys().hasOnly(['id', 'ballId', 'type', 'date', 'notes'])
+                && p.ballId is string && p.date is string
+                && p.type in ['cleaning', 'resurfacing', 'oilExtraction', 'other']
+                && (p.notes == null || p.notes is string)
+                && existsAfter(/databases/$(database)/documents/users/$(userId)/balls/$(p.ballId)));
+        }
+        function validEnvelope(d, op) {
+          return d.keys().hasOnly(['id', 'revision', 'baseRevision', 'operationId',
+              'payload', 'kind', 'updatedAt'])
+            && d.id == entityId && d.operationId == op
+            && d.revision is int && d.revision >= 1
+            && d.baseRevision is int && d.baseRevision >= 0
+            && d.updatedAt == request.time && validPayload(d.payload);
+        }
+        function acceptedWrite() {
+          let d = request.resource.data;
+          let history = getAfter(/databases/$(database)/documents/users/$(userId)/$(arsenalCollection)/$(entityId)/revisions/$(d.operationId));
+          return validEnvelope(d, d.operationId) && d.kind == 'accepted'
+            && d.revision == d.baseRevision + 1
+            && history.data == d;
+        }
+        allow read: if owner();
+        allow create: if owner() && acceptedWrite()
+          && request.resource.data.baseRevision == 0;
+        allow update: if owner() && acceptedWrite()
+          && request.resource.data.baseRevision == resource.data.revision;
+        allow delete: if false;
+
+        match /revisions/{operationId} {
+          allow read: if owner();
+          allow create: if owner() && validEnvelope(request.resource.data, operationId)
+            && ((request.resource.data.kind == 'accepted'
+                && getAfter(/databases/$(database)/documents/users/$(userId)/$(arsenalCollection)/$(entityId)).data == request.resource.data)
+              || (request.resource.data.kind == 'conflict'
+                && get(/databases/$(database)/documents/users/$(userId)/$(arsenalCollection)/$(entityId)).data.revision != request.resource.data.baseRevision
+                && getAfter(/databases/$(database)/documents/users/$(userId)/$(arsenalCollection)/$(entityId)).data == get(/databases/$(database)/documents/users/$(userId)/$(arsenalCollection)/$(entityId)).data
+                && request.resource.data.revision == get(/databases/$(database)/documents/users/$(userId)/$(arsenalCollection)/$(entityId)).data.revision));
+          allow update, delete: if false;
+        }
+      }
     }
     
     // Configuración pública de la app (versión mínima, URL de actualización, etc.)

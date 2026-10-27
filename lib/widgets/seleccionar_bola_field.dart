@@ -6,8 +6,8 @@ import '../repositories/data_repository.dart';
 
 /// Abre un bottom sheet para seleccionar una bola activa entre las
 /// registradas por el usuario, incluyendo la opción "Sin especificar".
-/// Devuelve el [BowlingBall.id] elegido, o `null` si se elige "Sin
-/// especificar" o se cierra sin seleccionar.
+/// Devuelve el [BowlingBall.id] elegido, o `null` al elegir "Sin especificar".
+/// Cancelar conserva [seleccionActualId].
 Future<String?> seleccionarBolaBottomSheet(
   BuildContext context, {
   String? seleccionActualId,
@@ -17,7 +17,7 @@ Future<String?> seleccionarBolaBottomSheet(
 
   if (!context.mounted) return seleccionActualId;
 
-  return showModalBottomSheet<String?>(
+  final seleccion = await showModalBottomSheet<_BallSelection>(
     context: context,
     isScrollControlled: true,
     builder: (context) {
@@ -39,7 +39,7 @@ Future<String?> seleccionarBolaBottomSheet(
                 leading: const Icon(Icons.block),
                 title: const Text('Sin especificar'),
                 selected: seleccionActualId == null,
-                onTap: () => Navigator.pop(context, null),
+                onTap: () => Navigator.pop(context, const _BallSelection(null)),
               ),
               if (bolas.isEmpty)
                 const Padding(
@@ -58,7 +58,7 @@ Future<String?> seleccionarBolaBottomSheet(
                         ? Text(bola.brand!)
                         : null,
                     selected: seleccionActualId == bola.id,
-                    onTap: () => Navigator.pop(context, bola.id),
+                    onTap: () => Navigator.pop(context, _BallSelection(bola.id)),
                   ),
                 ),
               const SizedBox(height: 8),
@@ -68,6 +68,12 @@ Future<String?> seleccionarBolaBottomSheet(
       );
     },
   );
+  return seleccion == null ? seleccionActualId : seleccion.id;
+}
+
+class _BallSelection {
+  final String? id;
+  const _BallSelection(this.id);
 }
 
 /// Campo compacto (ListTile) que muestra la bola seleccionada para una
@@ -128,6 +134,7 @@ class _SeleccionarBolaFieldState extends State<SeleccionarBolaField> {
                 seleccionActualId: widget.ballId,
               );
               if (!context.mounted) return;
+              if (seleccionada == widget.ballId) return;
               widget.onChanged(seleccionada);
             },
           ),

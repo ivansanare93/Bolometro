@@ -7,6 +7,7 @@ import '../repositories/data_repository.dart';
 import '../services/analytics_service.dart';
 import '../services/ball_stats_service.dart';
 import 'editar_bola_screen.dart';
+import '../widgets/arsenal_history_button.dart';
 
 /// Pantalla de detalle de una bola: muestra sus datos, estadísticas de
 /// rendimiento y el historial de mantenimiento, con acciones para editar,
@@ -26,10 +27,12 @@ class _DetalleBolaScreenState extends State<DetalleBolaScreen> {
   String? _error;
   EstadisticasBola _stats = EstadisticasBola.vacia();
   List<BallMaintenance> _mantenimientos = [];
+  String? _ownerUid;
 
   @override
   void initState() {
     super.initState();
+    _ownerUid = context.read<DataRepository>().arsenalUserId;
     _bola = widget.ball;
     _cargarDatos();
   }
@@ -41,10 +44,13 @@ class _DetalleBolaScreenState extends State<DetalleBolaScreen> {
     });
     try {
       final repo = Provider.of<DataRepository>(context, listen: false);
+      final uid = repo.arsenalUserId;
+      final current = await repo.obtenerBola(_bola.id);
       final partidas = await repo.obtenerPartidasPorBola(_bola.id);
       final mantenimientos = await repo.listarMantenimientosPorBola(_bola.id);
-      if (!mounted) return;
+      if (!mounted || uid != repo.arsenalUserId) return;
       setState(() {
+        if (current != null) _bola = current;
         _stats = BallStatsService.calcular(partidas);
         _mantenimientos = mantenimientos;
         _cargando = false;
@@ -95,7 +101,7 @@ class _DetalleBolaScreenState extends State<DetalleBolaScreen> {
         ],
       ),
     );
-    if (confirmado != true) return;
+    if (confirmado != true || !mounted || _ownerUid != repo.arsenalUserId) return;
 
     final nuevoEstadoActivo = !_bola.isActive;
     if (_bola.isActive) {
@@ -192,7 +198,8 @@ class _DetalleBolaScreenState extends State<DetalleBolaScreen> {
       },
     );
 
-    if (registrado != true) {
+    if (registrado != true || !mounted ||
+        _ownerUid != context.read<DataRepository>().arsenalUserId) {
       notasController.dispose();
       return;
     }
@@ -223,12 +230,18 @@ class _DetalleBolaScreenState extends State<DetalleBolaScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_ownerUid != context.watch<DataRepository>().arsenalUserId) {
+      return Scaffold(appBar: AppBar(title: const Text('Cuenta cambiada')),
+        body: const Center(child: Text('Vuelve al arsenal de la cuenta actual.')));
+    }
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
           title: Text(_bola.name),
           actions: [
+            ArsenalHistoryButton(collection: 'balls', id: _bola.id,
+              onRestored: _cargarDatos),
             IconButton(
               icon: const Icon(Icons.edit),
               tooltip: 'Editar',
@@ -333,6 +346,8 @@ class _DetalleBolaScreenState extends State<DetalleBolaScreen> {
           margin: const EdgeInsets.symmetric(vertical: 6),
           child: ListTile(
             leading: const Icon(Icons.build_outlined),
+            trailing: ArsenalHistoryButton(collection: 'ball_maintenance', id: m.id,
+              onRestored: _cargarDatos),
             title: Text(BallMaintenanceType.label(m.type)),
             subtitle: Text(
               [

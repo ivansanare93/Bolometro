@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
@@ -22,9 +23,11 @@ Widget _wrap(Widget child, DataRepository repo) {
 void main() {
   group('SeleccionarBolaField', () {
     late DataRepository repository;
+    late Directory sandbox;
 
     setUp(() async {
-      Hive.init('test_hive_seleccionar_bola');
+      sandbox = await Directory.systemTemp.createTemp('bolometro_selector_test_');
+      Hive.init(sandbox.path);
 
       if (!Hive.isAdapterRegistered(0)) {
         Hive.registerAdapter(PartidaAdapter());
@@ -58,8 +61,8 @@ void main() {
     });
 
     tearDown(() async {
-      await Hive.deleteFromDisk();
       await Hive.close();
+      await sandbox.delete(recursive: true);
     });
 
     testWidgets('shows "Sin especificar" when no ball is selected', (tester) async {
@@ -74,10 +77,46 @@ void main() {
       expect(find.text('Sin especificar'), findsOneWidget);
     });
 
+    for (final dismissal in ['back', 'barrier', 'drag']) {
+      testWidgets('cancel via $dismissal preserves selection without callback', (tester) async {
+        await tester.runAsync(() => repository.crearBola(BowlingBall(id: 'selected', name: 'Selected', weightLbs: 15)));
+        var calls = 0;
+        await tester.pumpWidget(_wrap(SeleccionarBolaField(ballId: 'selected',
+          onChanged: (_) => calls++), repository));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Bola utilizada'));
+        await tester.pumpAndSettle();
+        if (dismissal == 'back') {
+          await tester.binding.handlePopRoute();
+        } else if (dismissal == 'barrier') {
+          await tester.tapAt(const Offset(10, 10));
+        } else {
+          await tester.drag(find.byType(BottomSheet), const Offset(0, 600));
+        }
+        await tester.pumpAndSettle();
+        expect(find.byType(BottomSheet), findsNothing);
+        expect(calls, 0);
+        expect(find.text('Selected'), findsOneWidget);
+      });
+    }
+
+    testWidgets('explicit Sin especificar still clears an existing selection', (tester) async {
+      await tester.runAsync(() => repository.crearBola(BowlingBall(id: 'selected', name: 'Selected', weightLbs: 15)));
+      String? result = 'not-called';
+      await tester.pumpWidget(_wrap(SeleccionarBolaField(ballId: 'selected',
+        onChanged: (value) => result = value), repository));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bola utilizada'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sin especificar'));
+      await tester.pumpAndSettle();
+      expect(result, isNull);
+    });
+
     testWidgets('tapping opens a bottom sheet listing active balls', (tester) async {
-      await repository.crearBola(
+      await tester.runAsync(() => repository.crearBola(
         BowlingBall(name: 'Storm Phaze II', weightLbs: 15),
-      );
+      ));
 
       String? seleccionado = 'not-called';
       await tester.pumpWidget(

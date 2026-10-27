@@ -9,6 +9,7 @@ import 'package:bolometro/models/nota.dart';
 import 'package:bolometro/models/perfil_usuario.dart';
 import 'package:bolometro/utils/app_constants.dart';
 import 'package:bolometro/exceptions/sync_exceptions.dart';
+import 'support/test_firestore_service.dart';
 
 /// Tests para DataRepository y funcionalidad de sincronización
 /// 
@@ -46,7 +47,7 @@ void main() {
       await Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
       await Hive.openBox<Nota>(AppConstants.boxNotas);
 
-      repository = DataRepository();
+      repository = DataRepository(firestoreService: TestFirestoreService(), autoSyncArsenal: false);
     });
 
     tearDown(() async {
@@ -177,7 +178,7 @@ void main() {
 
       await Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
 
-      repository = DataRepository();
+      repository = DataRepository(firestoreService: TestFirestoreService(), autoSyncArsenal: false);
     });
 
     tearDown(() async {
@@ -236,7 +237,7 @@ void main() {
       await Hive.openBox<Sesion>(AppConstants.boxSesiones);
       await Hive.openBox<PerfilUsuario>(AppConstants.boxPerfilUsuario);
 
-      repository = DataRepository();
+      repository = DataRepository(firestoreService: TestFirestoreService(), autoSyncArsenal: false);
     });
 
     tearDown(() async {

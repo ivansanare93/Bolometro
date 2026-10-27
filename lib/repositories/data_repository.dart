@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import '../models/sesion.dart';
@@ -8,13 +10,123 @@ import '../models/user_progress.dart';
 import '../models/achievement.dart';
 import '../models/bowling_ball.dart';
 import '../services/firestore_service.dart';
+import '../services/arsenal_remote_store.dart';
+import '../services/arsenal_sync_service.dart';
 import '../utils/app_constants.dart';
 import '../exceptions/sync_exceptions.dart';
 
 /// Repositorio que abstrae el acceso a datos
 /// Maneja tanto almacenamiento local (Hive) como remoto (Firestore)
 class DataRepository extends ChangeNotifier {
-  final FirestoreService _firestoreService = FirestoreService();
+  final FirestoreService _firestoreService;
+  final ArsenalRemoteStore _arsenalRemote;
+  final bool autoSyncArsenal;
+  final bool arsenalBackupEnabled;
+  ArsenalSyncService? _arsenal;
+  int _accountGeneration = 0;
+
+  DataRepository({FirestoreService? firestoreService,
+    ArsenalRemoteStore? arsenalRemote, this.autoSyncArsenal = true,
+    bool? arsenalBackupEnabled})
+      : _firestoreService = firestoreService ?? FirestoreService(),
+        _arsenalRemote = arsenalRemote ?? FirestoreArsenalStore(),
+        arsenalBackupEnabled = arsenalBackupEnabled ??
+          const bool.fromEnvironment('ARSENAL_BACKUP_ENABLED');
+
+  String? get arsenalUserId => _userId;
+  ArsenalSyncService? get arsenalSync => _arsenal;
+
+  Future<void> sincronizarArsenal() async {
+    if (!arsenalBackupEnabled) throw StateError('El respaldo remoto está pendiente de activación.');
+    final service = _arsenal;
+    if (service == null) throw AuthenticationException();
+    await service.sync();
+  }
+
+  void _tryArsenalSync() {
+    final service = _arsenal;
+    if (!arsenalBackupEnabled || !autoSyncArsenal || service == null) return;
+    unawaited(service.sync().catchError((Object error) {
+      debugPrint('Arsenal conservado localmente; respaldo pendiente: $error');
+    }));
+  }
+
+  static Future<void> _guestImportTail = Future.value();
+
+  Future<int> bolasInvitadasDisponibles() async {
+    if (_userId == null) return 0;
+    final claims = await Hive.openBox<dynamic>('arsenal_guest_claims');
+    final source = await Hive.openBox<BowlingBall>(AppConstants.boxBolas);
+    return source.values.where((b) => claims.get('balls/${b.id}') == null ||
+        claims.get('balls/${b.id}') == _userId).length;
+  }
+
+  /// Explicitly confirmed by the user. Claim before copy; retry is idempotent.
+  /// A collision aborts before any existing account payload is overwritten.
+  Future<void> importarArsenalInvitado() {
+    final uid = _userId;
+    final service = _arsenal;
+    if (uid == null || service == null) throw AuthenticationException();
+    final result = _guestImportTail.then((_) async {
+      if (_userId != uid || service.paused) throw StateError('La cuenta ha cambiado');
+      final claims = await Hive.openBox<dynamic>('arsenal_guest_claims');
+      final sourceBalls = await Hive.openBox<BowlingBall>(AppConstants.boxBolas);
+      final sourceMaintenance = await Hive.openBox<BallMaintenance>(AppConstants.boxMantenimientosBolas);
+      final sourceSessions = await Hive.openBox<Sesion>(AppConstants.boxSesiones);
+      final targetSessions = await _getSesionesBox();
+      bool available(String key) => claims.get(key) == null || claims.get(key) == uid;
+      final balls = sourceBalls.values.where((b) => available('balls/${b.id}')).toList();
+      final ids = balls.map((b) => b.id).toSet();
+      final maintenance = sourceMaintenance.values
+          .where((m) => ids.contains(m.ballId) && available('ball_maintenance/${m.id}')).toList();
+      final sessions = sourceSessions.values.where((s) =>
+          s.partidas.any((p) => ids.contains(p.ballId)) &&
+          s.partidas.every((p) => p.ballId == null || ids.contains(p.ballId)) &&
+          available('sessions/${s.fecha.toIso8601String()}')).toList();
+      void check(Map<String, dynamic>? target, Map<String, dynamic> source) {
+        if (target != null && jsonEncode(target) != jsonEncode(source)) {
+          throw StateError('Conflicto de IDs al importar. Ambas copias se conservan; no se ha sobrescrito el destino.');
+        }
+      }
+      for (final ball in balls) check(service.balls.get(ball.id)?.toJson(), ball.toJson());
+      for (final item in maintenance) check(service.maintenance.get(item.id)?.toJson(), item.toJson());
+      for (final session in sessions) {
+        final existing = targetSessions.values.where((s) => s.fecha == session.fecha);
+        check(existing.isEmpty ? null : existing.first.toJson(), session.toJson());
+      }
+      Future<void> claim(String key) async {
+        if (_userId != uid || service.paused) throw StateError('La cuenta ha cambiado');
+        await claims.put(key, uid);
+        await claims.flush();
+      }
+      for (final ball in balls) {
+        await claim('balls/${ball.id}');
+        await service.importIfAbsent('balls', ball.toJson());
+      }
+      for (final item in maintenance) {
+        await claim('ball_maintenance/${item.id}');
+        await service.importIfAbsent('ball_maintenance', item.toJson());
+      }
+      for (final session in sessions) {
+        await claim('sessions/${session.fecha.toIso8601String()}');
+        if (!targetSessions.values.any((s) => s.fecha == session.fecha)) {
+          await targetSessions.add(session.copyWith(
+            partidas: session.partidas.map((p) => p.copyWith()).toList()));
+        }
+      }
+      notifyListeners();
+      _tryArsenalSync();
+    });
+    _guestImportTail = result.then<void>((_) {}, onError: (Object _, StackTrace __) {});
+    return result;
+  }
+
+  @override
+  void dispose() {
+    _arsenal?.paused = true;
+    _arsenal = null;
+    super.dispose();
+  }
   
   String? _userId;
   bool _isOnlineMode = false;
@@ -155,6 +267,11 @@ class DataRepository extends ChangeNotifier {
 
   /// Configurar el usuario autenticado y modo online
   Future<void> setUser(String? userId) async {
+    final generation = ++_accountGeneration;
+    final previous = _arsenal;
+    _arsenal = null;
+    if (previous != null) await previous.pause();
+    if (generation != _accountGeneration) return;
     _userId = userId;
     _isOnlineMode = userId != null;
     
@@ -170,6 +287,19 @@ class DataRepository extends ChangeNotifier {
       // estén disponibles cuando Firestore aún no los tenga (p.ej. primera vez
       // que el usuario inicia sesión con una cuenta de Google).
       await _migrarDatosOffline();
+      if (generation != _accountGeneration) return;
+      final balls = await _getBolasBox();
+      final maintenance = await _getMantenimientosBolasBox();
+      final journal = await Hive.openBox<dynamic>('arsenal_sync_$userId');
+      if (generation != _accountGeneration) return;
+      late final ArsenalSyncService service;
+      service = ArsenalSyncService(uid: userId!, balls: balls,
+        maintenance: maintenance, journal: journal, remote: _arsenalRemote,
+        onChanged: () { if (identical(_arsenal, service)) notifyListeners(); });
+      _arsenal = service;
+      await service.recover();
+      if (generation != _accountGeneration) { await service.pause(); return; }
+      _tryArsenalSync();
     }
     
     notifyListeners();
@@ -198,7 +328,7 @@ class DataRepository extends ChangeNotifier {
         final perfilOffline = defaultPerfilBox.get('perfil') ??
             (defaultPerfilBox.isNotEmpty ? defaultPerfilBox.getAt(0) : null);
         if (perfilOffline != null) {
-          await userPerfilBox.put('perfil', perfilOffline);
+          await userPerfilBox.put('perfil', perfilOffline.copyWith());
           debugPrint('Perfil offline migrado al box del usuario autenticado');
         }
       }
@@ -207,7 +337,10 @@ class DataRepository extends ChangeNotifier {
       if (userSesionesBox.isEmpty && Hive.isBoxOpen(AppConstants.boxSesiones)) {
         final defaultSesionesBox = Hive.box<Sesion>(AppConstants.boxSesiones);
         if (defaultSesionesBox.isNotEmpty) {
-          await userSesionesBox.addAll(defaultSesionesBox.values);
+          // Games linked to guest balls require explicit ownership selection.
+          await userSesionesBox.addAll(defaultSesionesBox.values
+              .where((s) => s.partidas.every((p) => p.ballId == null)).map((s) =>
+              s.copyWith(partidas: s.partidas.map((p) => p.copyWith()).toList())));
           debugPrint(
             '${defaultSesionesBox.length} sesiones offline migradas al box del usuario autenticado',
           );
@@ -228,42 +361,19 @@ class DataRepository extends ChangeNotifier {
         }
       }
 
-      // Migrar bolas y mantenimientos desde el box por defecto
-      final userBolasBox = await _getBolasBox();
-      if (userBolasBox.isEmpty && Hive.isBoxOpen(AppConstants.boxBolas)) {
-        final defaultBolasBox = Hive.box<BowlingBall>(AppConstants.boxBolas);
-        if (defaultBolasBox.isNotEmpty) {
-          await userBolasBox.putAll({
-            for (final bola in defaultBolasBox.values) bola.id: bola,
-          });
-          debugPrint(
-            '${defaultBolasBox.length} bolas offline migradas al box del usuario autenticado',
-          );
-        }
-      }
-
-      final userMantenimientosBox = await _getMantenimientosBolasBox();
-      if (userMantenimientosBox.isEmpty &&
-          Hive.isBoxOpen(AppConstants.boxMantenimientosBolas)) {
-        final defaultMantenimientosBox =
-            Hive.box<BallMaintenance>(AppConstants.boxMantenimientosBolas);
-        if (defaultMantenimientosBox.isNotEmpty) {
-          await userMantenimientosBox.putAll({
-            for (final m in defaultMantenimientosBox.values) m.id: m,
-          });
-          debugPrint(
-            '${defaultMantenimientosBox.length} mantenimientos de bolas offline migrados al box del usuario autenticado',
-          );
-        }
-      }
+      // Arsenal and its linked games are imported only by importarArsenalInvitado.
     } catch (e) {
       debugPrint('Error al migrar datos offline al usuario: $e');
     }
   }
 
-  /// Limpiar datos locales del usuario cuando cierra sesión
+  /// Cerrar la cuenta local sin eliminar su única copia de datos.
+  /// Las cajas siguen aisladas por UID y se reabren al volver a esa cuenta.
   Future<void> clearUserData() async {
     if (_userId == null) return;
+    ++_accountGeneration;
+
+    final signingOutUserId = _userId;
 
     final sesionesBoxName = _getSesionesBoxName();
     final perfilBoxName = _getPerfilBoxName();
@@ -272,6 +382,9 @@ class DataRepository extends ChangeNotifier {
     final mantenimientosBoxName = _getMantenimientosBolasBoxName();
 
     try {
+      final service = _arsenal;
+      _arsenal = null;
+      if (service != null) await service.pause();
       // Cerrar boxes si están abiertas
       if (Hive.isBoxOpen(sesionesBoxName)) {
         await Hive.box<Sesion>(sesionesBoxName).close();
@@ -288,17 +401,20 @@ class DataRepository extends ChangeNotifier {
       if (Hive.isBoxOpen(mantenimientosBoxName)) {
         await Hive.box<BallMaintenance>(mantenimientosBoxName).close();
       }
+      final journalName = 'arsenal_sync_$signingOutUserId';
+      if (Hive.isBoxOpen(journalName)) await Hive.box<dynamic>(journalName).close();
 
-      // Borrar del disco para evitar mezcla de datos entre usuarios
-      await Hive.deleteBoxFromDisk(sesionesBoxName);
-      await Hive.deleteBoxFromDisk(perfilBoxName);
-      await Hive.deleteBoxFromDisk(notasBoxName);
-      await Hive.deleteBoxFromDisk(bolasBoxName);
-      await Hive.deleteBoxFromDisk(mantenimientosBoxName);
-
-      debugPrint('Datos locales del usuario eliminados del disco');
+      // Cerrar no implica borrar. Hive.close persiste las escrituras pendientes.
+      // No desconectar una cuenta distinta si cambió durante los awaits.
+      if (_userId == signingOutUserId) {
+        _userId = null;
+        _isOnlineMode = false;
+        notifyListeners();
+      }
+      debugPrint('Cuenta local cerrada; datos conservados en sus cajas por UID');
     } catch (e) {
-      debugPrint('Error al borrar datos locales del usuario: $e');
+      debugPrint('No se pudo cerrar la cuenta local de forma segura: $e');
+      rethrow;
     }
   }
 
@@ -668,37 +784,49 @@ class DataRepository extends ChangeNotifier {
 
   /// Crear una nueva bola de bolos.
   Future<BowlingBall> crearBola(BowlingBall bola) async {
+    final uid = _userId;
+    final service = _arsenal;
     final box = await _getBolasBox();
-    await box.put(bola.id, bola);
+    if (_userId != uid) throw StateError('La cuenta ha cambiado');
+    if (box.containsKey(bola.id)) throw StateError('Ya existe una bola con este ID');
+    if (uid != null) {
+      if (service == null || service.uid != uid) throw StateError('Cuenta inicializándose');
+      await service.save('balls', bola.toJson());
+      _tryArsenalSync();
+    } else {
+      await box.put(bola.id, bola);
+    }
     notifyListeners();
     return bola;
   }
 
   /// Actualizar una bola existente.
   Future<void> actualizarBola(BowlingBall bola) async {
+    final uid = _userId;
+    final service = _arsenal;
     final box = await _getBolasBox();
-    bola.updatedAt = DateTime.now();
-    await box.put(bola.id, bola);
+    if (_userId != uid) throw StateError('La cuenta ha cambiado');
+    if (!box.containsKey(bola.id)) throw StateError('La bola no pertenece a esta cuenta');
+    final updated = bola.copyWith(updatedAt: DateTime.now());
+    if (uid != null) {
+      if (service == null || service.uid != uid) throw StateError('Cuenta inicializándose');
+      await service.save('balls', updated.toJson());
+      _tryArsenalSync();
+    } else {
+      await box.put(updated.id, updated);
+    }
     notifyListeners();
   }
 
   /// Archivar (soft delete) una bola. Se conserva para no perder el
   /// histórico de partidas/estadísticas asociadas a ella.
   Future<void> archivarBola(BowlingBall bola) async {
-    final box = await _getBolasBox();
-    bola.isActive = false;
-    bola.updatedAt = DateTime.now();
-    await box.put(bola.id, bola);
-    notifyListeners();
+    await actualizarBola(bola.copyWith(isActive: false));
   }
 
   /// Reactivar una bola previamente archivada.
   Future<void> reactivarBola(BowlingBall bola) async {
-    final box = await _getBolasBox();
-    bola.isActive = true;
-    bola.updatedAt = DateTime.now();
-    await box.put(bola.id, bola);
-    notifyListeners();
+    await actualizarBola(bola.copyWith(isActive: true));
   }
 
   /// Asigna (o quita, si [ballId] es null) una bola a la partida ubicada en
@@ -721,8 +849,20 @@ class DataRepository extends ChangeNotifier {
 
   /// Registrar un nuevo mantenimiento para una bola.
   Future<BallMaintenance> crearMantenimiento(BallMaintenance mantenimiento) async {
+    final uid = _userId;
+    final service = _arsenal;
     final box = await _getMantenimientosBolasBox();
-    await box.put(mantenimiento.id, mantenimiento);
+    if (_userId != uid) throw StateError('La cuenta ha cambiado');
+    if (box.containsKey(mantenimiento.id)) throw StateError('Ya existe este mantenimiento');
+    final balls = await _getBolasBox();
+    if (!balls.containsKey(mantenimiento.ballId)) throw StateError('Bola inexistente');
+    if (uid != null) {
+      if (service == null || service.uid != uid) throw StateError('Cuenta inicializándose');
+      await service.save('ball_maintenance', mantenimiento.toJson());
+      _tryArsenalSync();
+    } else {
+      await box.put(mantenimiento.id, mantenimiento);
+    }
     notifyListeners();
     return mantenimiento;
   }
@@ -895,6 +1035,7 @@ class DataRepository extends ChangeNotifier {
       _isSyncing = true;
       notifyListeners();
 
+      if (arsenalBackupEnabled) await sincronizarArsenal();
       debugPrint('Iniciando sincronización bidireccional...');
 
       // 1. Obtener sesiones existentes en Firestore (fuente de verdad)
@@ -1061,6 +1202,7 @@ class DataRepository extends ChangeNotifier {
       _isSyncing = true;
       notifyListeners();
 
+      if (arsenalBackupEnabled) await sincronizarArsenal();
       debugPrint('Descargando datos desde la nube...');
 
       // Obtener sesiones desde Firestore
@@ -1189,6 +1331,7 @@ class DataRepository extends ChangeNotifier {
       _isSyncing = true;
       notifyListeners();
 
+      if (arsenalBackupEnabled) await sincronizarArsenal();
       debugPrint('Subiendo todos los datos locales a la nube...');
 
       // 1. Obtener todas las sesiones locales
