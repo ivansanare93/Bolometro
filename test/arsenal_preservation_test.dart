@@ -523,12 +523,84 @@ void main() {
     },
   );
 
-  test('remote feature stays disabled unless explicitly activated', () async {
+  test('test build restricts backup to fictional accounts in the allowlist', () async {
+    repository.dispose();
+    repository = DataRepository(firestoreService: remote, arsenalRemote: backup,
+      autoSyncArsenal: true, arsenalBackupEnabled: true,
+      arsenalBackupTestUids: {'allowed-fictional-account'});
+    await seedUser();
+    expect(repository.arsenalBackupEnabled, isFalse);
+    await expectLater(repository.sincronizarArsenal(), throwsStateError);
+    expect(backup.owners, isEmpty);
+    expect(repository.arsenalSync!.pendingCount, 2);
+    await repository.setUser('allowed-fictional-account');
+    expect(repository.arsenalBackupEnabled, isTrue);
+    await repository.sincronizarArsenal();
+    expect(backup.owners, isNotEmpty);
+    expect(backup.owners.every((uid) => uid == 'allowed-fictional-account'), isTrue);
+    await repository.setUser('account-a');
+    expect(repository.arsenalBackupEnabled, isFalse);
+    expect((await repository.obtenerBola('ball-legacy'))!.id, 'ball-legacy');
+  });
+
+  test('empty allowlist never enables backup for an unintended account', () async {
+    repository.dispose();
+    repository = DataRepository(firestoreService: remote, arsenalRemote: backup,
+      autoSyncArsenal: true, arsenalBackupEnabled: true,
+      arsenalBackupTestUids: {' ', ''});
+    await seedUser();
+    expect(repository.arsenalBackupEnabled, isFalse);
+    await expectLater(repository.sincronizarArsenal(), throwsStateError);
+    expect(backup.owners, isEmpty);
+  });
+
+  test('allowlisted account remains disabled when main feature flag is false', () async {
+    repository.dispose();
+    repository = DataRepository(firestoreService: remote, arsenalRemote: backup,
+      arsenalBackupEnabled: false, arsenalBackupTestUids: {'account-a'});
+    await seedUser();
+    expect(repository.arsenalBackupEnabled, isFalse);
+    expect(backup.owners, isEmpty);
+  });
+
+  test('compile-time backup flag controls real sync with enabled default', () async {
     repository.dispose();
     repository = DataRepository(
       firestoreService: remote,
       arsenalRemote: backup,
+      autoSyncArsenal: false,
     );
+    await seedUser();
+    const enabled = bool.fromEnvironment('ARSENAL_BACKUP_ENABLED', defaultValue: true);
+    expect(repository.arsenalBackupEnabled, enabled);
+    if (enabled) {
+      await repository.sincronizarArsenal();
+      expect(backup.records.keys, containsAll([
+        'account-a/balls/ball-legacy', 'account-a/ball_maintenance/maintenance-legacy']));
+      expect(repository.arsenalSync!.pendingCount, 0);
+    } else {
+      await expectLater(repository.sincronizarArsenal(), throwsStateError);
+      expect(backup.owners, isEmpty);
+      expect(repository.arsenalSync!.pendingCount, 2);
+    }
+  });
+
+  test('default account login backs up existing inventory automatically', () async {
+    await seedUser();
+    repository.dispose();
+    repository = DataRepository(firestoreService: remote, arsenalRemote: backup);
+    await repository.setUser('account-a');
+    await repository.arsenalSync!.sync();
+    expect(backup.records.keys, containsAll([
+      'account-a/balls/ball-legacy', 'account-a/ball_maintenance/maintenance-legacy']));
+    expect(repository.arsenalSync!.pendingCount, 0);
+    expect(backup.owners.every((uid) => uid == 'account-a'), isTrue);
+  });
+
+  test('explicit opt out keeps inventory local and does not contact backup', () async {
+    repository.dispose();
+    repository = DataRepository(firestoreService: remote, arsenalRemote: backup,
+      arsenalBackupEnabled: false);
     await seedUser();
     expect(repository.arsenalBackupEnabled, isFalse);
     await expectLater(repository.sincronizarArsenal(), throwsStateError);

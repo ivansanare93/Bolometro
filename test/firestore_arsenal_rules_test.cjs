@@ -108,3 +108,65 @@ test('owner can back up maintenance of an existing ball', async () => {
   const f = fixture(); await f.seed(); f.maintenance();
   const r = await f.commit(); assert.equal(r.status, 200, JSON.stringify(r.body));
 });
+
+function notificationFixture() {
+  const f = fixture();
+  const path = `users/${f.uid}/notifications/notice`;
+  const payload = { type: 'friend_request', createdAt: new Date().toISOString(), read: false };
+  const create = (data = payload, author = 'test-notification-sender') =>
+    request('POST', ':commit', author, { writes: [f.write(path, data)] });
+  return { ...f, path, payload, create };
+}
+
+for (const type of ['friend_request', 'friend_request_accepted', 'daily_engagement']) {
+  test(`published notification policy accepts authenticated creation: ${type}`, async () => {
+    const f = notificationFixture();
+    const result = await f.create({ ...f.payload, type });
+    assert.equal(result.status, 200, JSON.stringify(result.body));
+  });
+}
+for (const field of ['type', 'createdAt', 'read']) {
+  test(`notification creation rejects missing ${field}`, async () => {
+    const f = notificationFixture();
+    const payload = { ...f.payload }; delete payload[field];
+    assert.equal((await f.create(payload)).status, 403);
+  });
+}
+test('notification creation rejects read=true', async () => {
+  const f = notificationFixture();
+  assert.equal((await f.create({ ...f.payload, read: true })).status, 403);
+});
+test('notification creation rejects unsupported type', async () => {
+  const f = notificationFixture();
+  assert.equal((await f.create({ ...f.payload, type: 'unknown' })).status, 403);
+});
+test('notification creation rejects unauthenticated sender', async () => {
+  const f = notificationFixture();
+  assert.equal((await f.create(f.payload, null)).status, 403);
+});
+test('notification read update and delete remain restricted to recipient', async () => {
+  const f = notificationFixture();
+  assert.equal((await f.create()).status, 200);
+  assert.equal((await request('GET', `/${f.path}`, 'other')).status, 403);
+  assert.equal((await request('GET', `/${f.path}`, f.uid)).status, 200);
+  const update = (uid) => request('POST', ':commit', uid,
+    { writes: [f.write(f.path, { ...f.payload, read: true })] });
+  assert.equal((await update('other')).status, 403);
+  assert.equal((await update(f.uid)).status, 200);
+  assert.equal((await request('DELETE', `/${f.path}`, 'other')).status, 403);
+  assert.equal((await request('DELETE', `/${f.path}`, f.uid)).status, 200);
+});
+for (const document of ['progress', 'achievements/example']) {
+  test(`gamification remains private to its owner: ${document}`, async () => {
+    const f = fixture();
+    const path = `users/${f.uid}/gamification/${document === 'progress' ? document : 'progress/' + document}`;
+    const write = (uid) => request('POST', ':commit', uid,
+      { writes: [f.write(path, { points: 10 })] });
+    const result = await write(f.uid);
+    assert.equal(result.status, 200, JSON.stringify(result.body));
+    assert.equal((await request('GET', `/${path}`, f.uid)).status, 200);
+    assert.equal((await request('GET', `/${path}`, 'other')).status, 403);
+    assert.equal((await request('GET', `/${path}`)).status, 403);
+    assert.equal((await write('other')).status, 403);
+  });
+}

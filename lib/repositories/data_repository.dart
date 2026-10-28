@@ -21,17 +21,30 @@ class DataRepository extends ChangeNotifier {
   final FirestoreService _firestoreService;
   final ArsenalRemoteStore _arsenalRemote;
   final bool autoSyncArsenal;
-  final bool arsenalBackupEnabled;
+  final bool _arsenalBackupRequested;
+  final Set<String>? _arsenalBackupTestUids;
+  /// A local test build can restrict backup to explicitly chosen fictional UIDs.
+  /// A defined but empty list disables backup for every account (fail closed).
+  bool get arsenalBackupEnabled => _arsenalBackupRequested &&
+      (_arsenalBackupTestUids == null || _arsenalBackupTestUids.contains(_userId));
   ArsenalSyncService? _arsenal;
   int _accountGeneration = 0;
 
   DataRepository({FirestoreService? firestoreService,
     ArsenalRemoteStore? arsenalRemote, this.autoSyncArsenal = true,
-    bool? arsenalBackupEnabled})
+    bool? arsenalBackupEnabled, Set<String>? arsenalBackupTestUids})
       : _firestoreService = firestoreService ?? FirestoreService(),
         _arsenalRemote = arsenalRemote ?? FirestoreArsenalStore(),
-        arsenalBackupEnabled = arsenalBackupEnabled ??
-          const bool.fromEnvironment('ARSENAL_BACKUP_ENABLED');
+        _arsenalBackupRequested = arsenalBackupEnabled ??
+          const bool.fromEnvironment('ARSENAL_BACKUP_ENABLED', defaultValue: true),
+        _arsenalBackupTestUids = arsenalBackupTestUids != null
+          ? _normalizeTestUids(arsenalBackupTestUids)
+          : const bool.hasEnvironment('ARSENAL_BACKUP_TEST_UIDS')
+            ? _normalizeTestUids(const String.fromEnvironment('ARSENAL_BACKUP_TEST_UIDS').split(','))
+            : null;
+
+  static Set<String> _normalizeTestUids(Iterable<String> values) =>
+      Set<String>.unmodifiable(values.map((value) => value.trim()).where((value) => value.isNotEmpty));
 
   String? get arsenalUserId => _userId;
   ArsenalSyncService? get arsenalSync => _arsenal;

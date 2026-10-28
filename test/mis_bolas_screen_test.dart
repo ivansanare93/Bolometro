@@ -15,6 +15,7 @@ import 'package:bolometro/screens/editar_bola_screen.dart';
 import 'package:bolometro/screens/detalle_bola_screen.dart';
 import 'package:bolometro/utils/app_constants.dart';
 import 'support/test_firestore_service.dart';
+import 'support/memory_arsenal_store.dart';
 
 Widget _wrap(Widget child, DataRepository repo) {
   return ChangeNotifierProvider<DataRepository>.value(
@@ -60,7 +61,8 @@ void main() {
       await Hive.openBox<BowlingBall>(AppConstants.boxBolas);
       await Hive.openBox<BallMaintenance>(AppConstants.boxMantenimientosBolas);
 
-      repository = DataRepository(firestoreService: TestFirestoreService());
+      repository = DataRepository(firestoreService: TestFirestoreService(),
+        arsenalRemote: MemoryArsenalStore(), autoSyncArsenal: false);
     });
 
     tearDown(() async {
