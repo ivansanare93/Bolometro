@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'stats_selection.dart';
 import 'package:flutter/foundation.dart';
 import '../models/sesion.dart';
 import '../models/partida.dart';
@@ -9,85 +11,48 @@ import 'app_constants.dart';
 class EstadisticasCache extends ChangeNotifier {
   Map<String, dynamic>? _cache;
   DateTime? _lastUpdate;
-  int _lastSesionesCount = 0;
-  int _lastPartidasCount = 0;
+  String? _accountId;
+  bool _boundAccount = false;
+  final Map<
+    String,
+    ({String content, Map<String, dynamic> stats, DateTime time})
+  >
+  _entries = {};
 
-  // Filter-keyed cache entries used when filters are active.
-  final Map<String, Map<String, dynamic>> _filteredCache = {};
-  final Map<String, DateTime> _filteredCacheTimestamps = {};
-
-  /// Obtener estadísticas con cache, vinculadas a una clave de filtro.
-  ///
-  /// [filterKey] should be a stable string that uniquely identifies the active
-  /// filter combination (e.g. [StatsFilter.cacheKey]). When it is empty the
-  /// un-keyed legacy cache is used, which is keyed only on session/game counts.
+  /// Bounded, account-scoped cache. Compare serialized content, not just counts
+  /// or object identity: legacy session lists and pin arrays can be mutated.
   Map<String, dynamic> getEstadisticas(
     List<Sesion> sesiones, {
     String filterKey = '',
+    String? accountId,
   }) {
-    final todasPartidas = <Partida>[];
-    for (final sesion in sesiones) {
-      todasPartidas.addAll(sesion.partidas);
+    if (!_boundAccount || _accountId != accountId) {
+      _entries.clear();
+      _cache = null;
+      _lastUpdate = null;
+      _accountId = accountId;
+      _boundAccount = true;
     }
-
-    if (filterKey.isNotEmpty) {
-      return _getWithFilterKey(sesiones, todasPartidas, filterKey);
+    final ordered = StatsSelection.chronologicalSessions(sesiones);
+    final content = jsonEncode(ordered.map((s) => s.toJson()).toList());
+    final entry = _entries[filterKey];
+    final now = DateTime.now();
+    if (entry != null &&
+        entry.content == content &&
+        now.difference(entry.time) <
+            const Duration(minutes: AppConstants.cacheExpirationMinutes)) {
+      return entry.stats;
     }
-
-    // Legacy path: keyed on counts.
-    if (_shouldRefresh(sesiones.length, todasPartidas.length)) {
-      _cache = _calcularEstadisticas(sesiones, todasPartidas);
-      _lastUpdate = DateTime.now();
-      _lastSesionesCount = sesiones.length;
-      _lastPartidasCount = todasPartidas.length;
-      notifyListeners();
+    final partidas = StatsSelection.games(ordered).map((e) => e.$2).toList();
+    final stats = _calcularEstadisticas(ordered, partidas);
+    if (_entries.length >= 32 && !_entries.containsKey(filterKey)) {
+      _entries.remove(_entries.keys.first);
     }
-
-    return _cache ?? {};
-  }
-
-  Map<String, dynamic> _getWithFilterKey(
-    List<Sesion> sesiones,
-    List<Partida> partidas,
-    String filterKey,
-  ) {
-    final existing = _filteredCache[filterKey];
-    final ts = _filteredCacheTimestamps[filterKey];
-    final expired = ts == null ||
-        DateTime.now().difference(ts).inMinutes >
-            AppConstants.cacheExpirationMinutes;
-
-    if (existing != null && !expired) {
-      return existing;
-    }
-
-    final result = _calcularEstadisticas(sesiones, partidas);
-    _filteredCache[filterKey] = result;
-    _filteredCacheTimestamps[filterKey] = DateTime.now();
-    notifyListeners();
-    return result;
-  }
-
-  /// Determinar si el cache debe refrescarse
-  bool _shouldRefresh(int sesionesCount, int partidasCount) {
-    // Si no hay cache, refrescar
-    if (_cache == null || _lastUpdate == null) {
-      return true;
-    }
-
-    // Si cambió la cantidad de sesiones o partidas, refrescar
-    if (sesionesCount != _lastSesionesCount ||
-        partidasCount != _lastPartidasCount) {
-      return true;
-    }
-
-    // Si pasó el tiempo de expiración, refrescar
-    if (DateTime.now().difference(_lastUpdate!).inMinutes >
-        AppConstants.cacheExpirationMinutes) {
-      return true;
-    }
-
-    return false;
+    _entries[filterKey] = (content: content, stats: stats, time: now);
+    _cache = stats;
+    _lastUpdate = now;
+    // Reading statistics is allowed during build; do not notify from a getter.
+    return stats;
   }
 
   /// Calcular todas las estadísticas
@@ -96,24 +61,26 @@ class EstadisticasCache extends ChangeNotifier {
     List<Partida> partidas,
   ) {
     if (partidas.isEmpty) {
-      return _getEmptyStats();
+      return {..._getEmptyStats(), 'totalSesiones': sesiones.length};
     }
 
-    final partidasFrames =
-        partidas.map((p) => p.frames).toList();
+    final partidasFrames = partidas.map((p) => p.frames).toList();
 
     // Calcular estadísticas
-    final porcentajes =
-        EstadisticasUtils.calcularPorcentajes(partidasFrames);
-    final rachaStrikes =
-        EstadisticasUtils.rachaMaximaDe(AppConstants.simboloStrike, partidasFrames);
-    final rachaSpares =
-        EstadisticasUtils.rachaMaximaDe(AppConstants.simboloSpare, partidasFrames);
+    final porcentajes = EstadisticasUtils.calcularPorcentajes(partidasFrames);
+    final rachaStrikes = EstadisticasUtils.rachaMaximaDe(
+      AppConstants.simboloStrike,
+      partidasFrames,
+    );
+    final rachaSpares = EstadisticasUtils.rachaMaximaDe(
+      AppConstants.simboloSpare,
+      partidasFrames,
+    );
 
     final promedioGeneral = partidas.isEmpty
         ? 0.0
         : partidas.map((p) => p.total).reduce((a, b) => a + b) /
-            partidas.length;
+              partidas.length;
 
     final mejorPartida = partidas.isEmpty
         ? null
@@ -123,8 +90,12 @@ class EstadisticasCache extends ChangeNotifier {
         ? null
         : partidas.reduce((a, b) => a.total < b.total ? a : b);
 
-    final sesionRecord = EstadisticasUtils.sesionRecord(sesiones);
-    final sesionPeor = EstadisticasUtils.sesionPeor(sesiones);
+    final sesionRecord = EstadisticasUtils.sesionRecord(
+      sesiones.where((s) => s.partidas.isNotEmpty).toList(),
+    );
+    final sesionPeor = EstadisticasUtils.sesionPeor(
+      sesiones.where((s) => s.partidas.isNotEmpty).toList(),
+    );
 
     final mejorEntrenamiento = EstadisticasUtils.mejorPuntuacionPorTipo(
       sesiones,
@@ -135,26 +106,46 @@ class EstadisticasCache extends ChangeNotifier {
       AppConstants.tipoCompeticion,
     );
 
-    final promedioUltimas5 =
-        EstadisticasUtils.promedioUltimasPartidas(partidas, AppConstants.ultimasPartidasPromedio5);
-    final promedioUltimas10 =
-        EstadisticasUtils.promedioUltimasPartidas(partidas, AppConstants.ultimasPartidasPromedio10);
+    final promedioUltimas5 = EstadisticasUtils.promedioUltimasPartidas(
+      partidas,
+      AppConstants.ultimasPartidasPromedio5,
+    );
+    final promedioUltimas10 = EstadisticasUtils.promedioUltimasPartidas(
+      partidas,
+      AppConstants.ultimasPartidasPromedio10,
+    );
 
-    final histograma =
-        EstadisticasUtils.calcularHistograma(partidas, binSize: AppConstants.histogramaBinSize);
+    final histograma = EstadisticasUtils.calcularHistograma(
+      partidas,
+      binSize: AppConstants.histogramaBinSize,
+    );
 
-    final topMejores =
-        EstadisticasUtils.topNPartidas(partidas, AppConstants.maxPartidasTop, mejores: true);
-    final topPeores =
-        EstadisticasUtils.topNPartidas(partidas, AppConstants.maxPartidasTop, mejores: false);
+    final topMejores = EstadisticasUtils.topNPartidas(
+      partidas,
+      AppConstants.maxPartidasTop,
+      mejores: true,
+    );
+    final topPeores = EstadisticasUtils.topNPartidas(
+      partidas,
+      AppConstants.maxPartidasTop,
+      mejores: false,
+    );
 
     // Calculate moving average (expensive operation, cached here)
-    final promedioMovil = EstadisticasUtils.promedioMovil(partidas, AppConstants.ventanaPromedioMovil);
+    final promedioMovil = EstadisticasUtils.promedioMovil(
+      partidas,
+      AppConstants.ventanaPromedioMovil,
+    );
 
     // Calcular estadísticas basadas en datos de pines (teclado visual)
-    final promedioPrimerTiro = EstadisticasUtils.calcularPromedioPrimerTiro(partidas);
-    final tasaConversionSpare = EstadisticasUtils.calcularTasaConversionSpare(partidas);
-    final conversionSparePorPin = EstadisticasUtils.calcularConversionSparePorPin(partidas);
+    final promedioPrimerTiro = EstadisticasUtils.calcularPromedioPrimerTiro(
+      partidas,
+    );
+    final tasaConversionSpare = EstadisticasUtils.calcularTasaConversionSpare(
+      partidas,
+    );
+    final conversionSparePorPin =
+        EstadisticasUtils.calcularConversionSparePorPin(partidas);
 
     return {
       'porcentajes': porcentajes,
@@ -212,10 +203,7 @@ class EstadisticasCache extends ChangeNotifier {
   void invalidateCache() {
     _cache = null;
     _lastUpdate = null;
-    _lastSesionesCount = 0;
-    _lastPartidasCount = 0;
-    _filteredCache.clear();
-    _filteredCacheTimestamps.clear();
+    _entries.clear();
     notifyListeners();
   }
 

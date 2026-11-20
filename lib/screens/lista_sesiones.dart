@@ -7,6 +7,7 @@ import '../utils/app_constants.dart';
 import '../repositories/data_repository.dart';
 import '../services/analytics_service.dart';
 import '../services/temporada_service.dart';
+import '../widgets/season_selector.dart';
 import 'home.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/skeleton_loaders.dart';
@@ -61,7 +62,8 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
 
   void _onScroll() {
     if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - AppConstants.scrollThreshold) {
+        _scrollController.position.maxScrollExtent -
+            AppConstants.scrollThreshold) {
       if (!_isLoading && _hasMore) {
         _cargarMasSesiones();
       }
@@ -80,7 +82,10 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
     });
 
     try {
-      final dataRepository = Provider.of<DataRepository>(context, listen: false);
+      final dataRepository = Provider.of<DataRepository>(
+        context,
+        listen: false,
+      );
       final nuevasSesiones = await dataRepository.obtenerSesionesPaginadas(
         limite: AppConstants.pageSize,
         offset: 0,
@@ -117,7 +122,10 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
     });
 
     try {
-      final dataRepository = Provider.of<DataRepository>(context, listen: false);
+      final dataRepository = Provider.of<DataRepository>(
+        context,
+        listen: false,
+      );
       final nuevasSesiones = await dataRepository.obtenerSesionesPaginadas(
         limite: AppConstants.pageSize,
         offset: (_currentPage + 1) * AppConstants.pageSize,
@@ -154,7 +162,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
             _filtroTipo == AppConstants.tipoTodos || s.tipo == _filtroTipo;
         final coincideTemporada =
             _filtroTemporada == _filtroTodasTemporadas ||
-                s.temporadaNormalizada == _filtroTemporada;
+            s.temporadaNormalizada == _filtroTemporada;
         return coincideTipo && coincideTemporada;
       }),
     );
@@ -177,12 +185,15 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
 
   Future<void> _borrarSesion(Sesion sesion) async {
     try {
-      final dataRepository = Provider.of<DataRepository>(context, listen: false);
+      final dataRepository = Provider.of<DataRepository>(
+        context,
+        listen: false,
+      );
       await dataRepository.eliminarSesion(sesion);
-      
+
       final analytics = Provider.of<AnalyticsService>(context, listen: false);
       await analytics.logSessionDeleted();
-      
+
       setState(() {
         _sesiones.remove(sesion);
         _recalcularTemporadas();
@@ -191,7 +202,9 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.sessionDeletedSuccess)),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.sessionDeletedSuccess),
+          ),
         );
       }
     } catch (e) {
@@ -199,7 +212,9 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.sessionDeleteErrorMessage),
+            content: Text(
+              AppLocalizations.of(context)!.sessionDeleteErrorMessage,
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -209,27 +224,28 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
 
   Future<bool> _mostrarDialogoConfirmacion() async {
     return await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.deleteSessionTitle),
-        content: Text(
-          AppLocalizations.of(context)!.deleteSessionConfirmation,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              AppLocalizations.of(context)!.delete,
-              style: const TextStyle(color: Colors.red),
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text(AppLocalizations.of(context)!.deleteSessionTitle),
+            content: Text(
+              AppLocalizations.of(context)!.deleteSessionConfirmation,
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(AppLocalizations.of(context)!.cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(
+                  AppLocalizations.of(context)!.delete,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    ) ?? false;
+        ) ??
+        false;
   }
 
   Future<void> _confirmarYEliminarSesion(Sesion sesion) async {
@@ -279,87 +295,69 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
   Future<void> _showBulkAssignDialog() async {
     if (_selected.isEmpty) return;
     final l10n = AppLocalizations.of(context)!;
-    final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accountRepo = context.read<DataRepository>();
+    final accountToken = accountRepo.seasonAccountToken;
 
     // Load all available seasons (including "Sin temporada")
-    final temporadas = await TemporadaService.getTemporadas();
+    final temporadas = await TemporadaService.getTemporadasConSesiones(
+      _sesiones,
+    );
+    final archived = (await TemporadaService.getArchivedTemporadas()).toSet();
     if (!mounted) return;
-
-    final options = [AppConstants.temporadaSinTemporada, ...temporadas];
-    String? selectedOption = options.first;
+    String? selectedOption;
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) {
-        return StatefulBuilder(builder: (ctx, setS) {
-          return AlertDialog(
-            title: Text(l10n.assignToSeason),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.selectedSessionsCount(_selected.length),
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.6),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF1A1F2E)
-                        : Colors.grey[100],
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: cs.onSurface.withOpacity(0.18)),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      isExpanded: true,
-                      value: selectedOption,
-                      items: options
-                          .map((t) => DropdownMenuItem(
-                                value: t,
-                                child: Text(t),
-                              ))
-                          .toList(),
-                      onChanged: (v) {
-                        if (v != null) setS(() => selectedOption = v);
-                      },
+        return StatefulBuilder(
+          builder: (ctx, setS) {
+            return AlertDialog(
+              title: Text(l10n.assignToSeason),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.selectedSessionsCount(_selected.length),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Theme.of(
+                        ctx,
+                      ).colorScheme.onSurface.withOpacity(0.6),
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  SeasonSelector(
+                    value: selectedOption,
+                    seasons: temporadas,
+                    archived: archived,
+                    onChanged: (value) => setS(() => selectedOption = value),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: Text(l10n.cancel),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: Text(l10n.accept),
                 ),
               ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: Text(l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: Text(l10n.accept),
-              ),
-            ],
-          );
-        });
+            );
+          },
+        );
       },
     );
 
     if (confirmed != true || !mounted) return;
 
-    final targetTemporada = selectedOption == AppConstants.temporadaSinTemporada
-        ? null
-        : selectedOption;
+    final targetTemporada = selectedOption;
 
     // Confirm before bulk-assign
     final count = _selected.length;
-    final seasonLabel =
-        targetTemporada ?? AppConstants.temporadaSinTemporada;
+    final seasonLabel = targetTemporada ?? AppConstants.temporadaSinTemporada;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -376,11 +374,14 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
         ],
       ),
     );
-    if (ok != true || !mounted) return;
+    if (ok != true ||
+        !mounted ||
+        accountToken != accountRepo.seasonAccountToken)
+      return;
 
     try {
       final repo = Provider.of<DataRepository>(context, listen: false);
-      final updated = await repo.actualizarTemporadaEnLote(
+      final updated = await repo.asignarTemporadaEnLote(
         _selected.toList(),
         targetTemporada,
       );
@@ -391,7 +392,13 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
       await _cargarSesiones();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.bulkAssignSuccess(updated))),
+          SnackBar(
+            content: Text(
+              updated.pending > 0
+                  ? l10n.seasonChangesPending(updated.pending)
+                  : l10n.bulkAssignSuccess(updated.updated),
+            ),
+          ),
         );
       }
     } catch (e) {
@@ -416,13 +423,16 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
 
     // Maintain the sorted season order from _temporadas
     final seasonOrder = _temporadas
-        .where((t) => _sesionesFiltradas.any((s) => s.temporadaNormalizada == t))
+        .where(
+          (t) => _sesionesFiltradas.any((s) => s.temporadaNormalizada == t),
+        )
         .toList();
 
     final items = <Object>[];
     for (final season in seasonOrder) {
-      final group =
-          _sesionesFiltradas.where((s) => s.temporadaNormalizada == season).toList();
+      final group = _sesionesFiltradas
+          .where((s) => s.temporadaNormalizada == season)
+          .toList();
       if (group.isEmpty) continue;
       items.add(_SeasonHeader(season: season, count: group.length));
       items.addAll(group);
@@ -442,9 +452,11 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_selectMode
-            ? l10n.selectedSessionsCount(_selected.length)
-            : l10n.sessionListTitle),
+        title: Text(
+          _selectMode
+              ? l10n.selectedSessionsCount(_selected.length)
+              : l10n.sessionListTitle,
+        ),
         centerTitle: true,
         actions: [
           if (_selectMode) ...[
@@ -476,8 +488,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
                     : Icons.group_work_outlined,
               ),
               tooltip: l10n.groupBySeasonTooltip,
-              onPressed: () =>
-                  setState(() => _groupBySeason = !_groupBySeason),
+              onPressed: () => setState(() => _groupBySeason = !_groupBySeason),
             ),
             IconButton(
               icon: const Icon(Icons.checklist_rounded),
@@ -545,8 +556,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
                 : RefreshIndicator(
                     onRefresh: _cargarSesiones,
                     child: showGrouped
-                        ? _buildGroupedList(
-                            groupedItems, cs, l10n)
+                        ? _buildGroupedList(groupedItems, cs, l10n)
                         : _buildFlatList(cs, l10n),
                   ),
           ),
@@ -578,7 +588,10 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
   }
 
   Widget _buildGroupedList(
-      List<Object> items, ColorScheme cs, AppLocalizations l10n) {
+    List<Object> items,
+    ColorScheme cs,
+    AppLocalizations l10n,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListView.builder(
       controller: _scrollController,
@@ -608,7 +621,11 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
     );
   }
 
-  Widget _buildSesionItem(Sesion sesion, ColorScheme cs, AppLocalizations l10n) {
+  Widget _buildSesionItem(
+    Sesion sesion,
+    ColorScheme cs,
+    AppLocalizations l10n,
+  ) {
     final isSelected = _selected.contains(sesion);
     if (_selectMode) {
       return CheckboxListTile(
@@ -638,9 +655,7 @@ class _ListaSesionesScreenState extends State<ListaSesionesScreen> {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (_) => VerSesion(sesion: sesion),
-            ),
+            MaterialPageRoute(builder: (_) => VerSesion(sesion: sesion)),
           );
         },
       ),
@@ -745,10 +760,7 @@ class _FilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final seasonValues = {
-      _filtroTodasTemporadas,
-      ...temporadasDisponibles,
-    };
+    final seasonValues = {_filtroTodasTemporadas, ...temporadasDisponibles};
     final selectedSeason = seasonValues.contains(filtroTemporada)
         ? filtroTemporada
         : _filtroTodasTemporadas;
@@ -767,20 +779,27 @@ class _FilterBar extends StatelessWidget {
                   selected: selected,
                   onSelected: (_) => onChanged(tipo),
                   selectedColor: cs.primary,
-                  backgroundColor:
-                      isDark ? const Color(0xFF1A1F2E) : Colors.grey[100],
+                  backgroundColor: isDark
+                      ? const Color(0xFF1A1F2E)
+                      : Colors.grey[100],
                   labelStyle: TextStyle(
-                    color: selected ? Colors.white : cs.onSurface.withOpacity(0.75),
+                    color: selected
+                        ? Colors.white
+                        : cs.onSurface.withOpacity(0.75),
                     fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                     fontSize: 13,
                   ),
                   side: BorderSide(
-                    color: selected ? cs.primary : cs.onSurface.withOpacity(0.18),
+                    color: selected
+                        ? cs.primary
+                        : cs.onSurface.withOpacity(0.18),
                     width: 1.2,
                   ),
                   elevation: selected ? 2 : 0,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 2,
+                  ),
                 ),
               );
             }).toList(),
@@ -852,8 +871,8 @@ class _EmptyState extends StatelessWidget {
           Text(
             l10n.noSessionsSaved,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: cs.onSurface.withOpacity(0.65),
-                ),
+              color: cs.onSurface.withOpacity(0.65),
+            ),
           ),
           const SizedBox(height: 6),
           Text(
@@ -901,4 +920,3 @@ class _DismissBackground extends StatelessWidget {
     );
   }
 }
-

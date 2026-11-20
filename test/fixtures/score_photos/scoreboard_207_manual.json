@@ -1,0 +1,63 @@
+{
+  "id": "scoreboard-chat-207-h40",
+  "source": {
+    "kind": "manual_transcription_from_chat_image",
+    "verified_on": "2026-11-19",
+    "native_ocr_executed": false,
+    "notes": "Visual transcription for scoring regression. Not an ML Kit output or measured OCR accuracy. Player name omitted."
+  },
+  "frames": [
+    [
+      "9",
+      "/"
+    ],
+    [
+      "X"
+    ],
+    [
+      "X"
+    ],
+    [
+      "9",
+      "/"
+    ],
+    [
+      "X"
+    ],
+    [
+      "9",
+      "/"
+    ],
+    [
+      "9",
+      "/"
+    ],
+    [
+      "X"
+    ],
+    [
+      "6",
+      "/"
+    ],
+    [
+      "9",
+      "/",
+      "X"
+    ]
+  ],
+  "cumulative_scores": [
+    20,
+    49,
+    69,
+    89,
+    109,
+    128,
+    148,
+    168,
+    187,
+    207
+  ],
+  "scratch_total": 207,
+  "displayed_handicap_total": 247,
+  "handicap_difference": 40
+}

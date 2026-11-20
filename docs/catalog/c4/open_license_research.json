@@ -1,0 +1,408 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-11-03",
+  "scope": "Editorial research only. No images downloaded, approved or packaged.",
+  "summary": {
+    "catalogueModelsReviewed": 28,
+    "exactModelLicensedMatchesConfirmed": 0,
+    "outOfCataloguePhotographsWithPublishedReuseBasis": 1,
+    "genericPhotographsWithPublishedReuseBasis": 2,
+    "appApprovedPhotographsAdded": 0
+  },
+  "method": {
+    "exactModelQueries": 28,
+    "queryBatches": 7,
+    "repositories": "Web-indexed Wikimedia Commons and Flickr searches, direct Commons category/file-page review and supplementary queries.",
+    "visualReview": "No image pixels reviewed; published file-page metadata only.",
+    "nonExhaustive": true
+  },
+  "limitations": [
+    {
+      "source": "Wikimedia Commons API",
+      "result": "web tool inaccessible; local Python client reported CERTIFICATE_VERIFY_FAILED; TLS verification was not bypassed"
+    },
+    {
+      "source": "Openverse API",
+      "result": "web tool inaccessible; local API request timed out; coverage not completed"
+    },
+    {
+      "source": "Flickr original file page",
+      "result": "One direct page could not be opened; an indexed Commons copy is not a completed review of all Flickr results"
+    },
+    {
+      "source": "Raw Hammer Anger file",
+      "result": "Listed by Commons category but file page inaccessible; licence not confirmed and not counted as licensed candidate"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "commons.storm-infinite-physix",
+      "title": "Storm Infinite Physix bowling ball.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:Storm_Infinite_Physix_bowling_ball.jpg",
+      "author": "Contributor 118,784",
+      "authorUrl": "https://commons.wikimedia.org/wiki/User:Contributor_118%2C784",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "status": "licensed_out_of_catalog",
+      "modelIdentity": "Storm Infinite Physix (identified by uploader description)",
+      "matchingCatalogIds": [],
+      "evidence": "File page identifies own work, author, model and CC0 dedication. Not one of the 28 catalogue models.",
+      "creditProposal": "Storm Infinite Physix bowling ball - Contributor 118,784 - Wikimedia Commons - CC0 1.0",
+      "requirements": [
+        "Confirm exact product identity and visually review pixels before any use.",
+        "Do not substitute for another Storm model.",
+        "Adding a new catalogue model requires separate technical verification."
+      ],
+      "checkedAt": "2026-11-03",
+      "publishedLicenseChecked": true,
+      "pixelReviewCompleted": false,
+      "appApprovalGranted": false,
+      "includedInApp": false,
+      "imageDownloadPerformed": false
+    },
+    {
+      "id": "commons.generic-red-ball",
+      "title": "Bowling ball.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:Bowling_ball.jpg",
+      "author": "Crcjfly",
+      "authorUrl": "https://commons.wikimedia.org/wiki/User:Crcjfly",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "status": "licensed_generic_only",
+      "modelIdentity": null,
+      "matchingCatalogIds": [],
+      "evidence": "File page describes a red bowling ball and declares own work with CC BY-SA 4.0. No exact catalogue model identified.",
+      "creditProposal": "Bowling ball - Crcjfly - Wikimedia Commons - CC BY-SA 4.0",
+      "requirements": [
+        "Attribute creator, link source and licence and identify changes.",
+        "Distribute adaptations under the same or a compatible licence.",
+        "Use only as an explicitly generic photograph after visual review and app approval."
+      ],
+      "checkedAt": "2026-11-03",
+      "publishedLicenseChecked": true,
+      "pixelReviewCompleted": false,
+      "appApprovalGranted": false,
+      "includedInApp": false,
+      "imageDownloadPerformed": false
+    },
+    {
+      "id": "commons.generic-ball-return",
+      "title": "Bowlingball.JPG",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:Bowlingball.JPG",
+      "author": "Scl chua",
+      "authorUrl": "https://en.wikipedia.org/wiki/User:Scl_chua",
+      "license": "public-domain-author-dedication",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Bowlingball.JPG#Licensing",
+      "status": "licensed_generic_only",
+      "modelIdentity": null,
+      "matchingCatalogIds": [],
+      "evidence": "File page identifies bowling balls on a ball return and an author public-domain dedication. No exact catalogue model identified.",
+      "creditProposal": "Bowlingball - Scl chua - Wikimedia Commons - public-domain dedication",
+      "requirements": [
+        "Retain source and dedication evidence.",
+        "Visually review before proposing generic use; not an individual commercial-model photo."
+      ],
+      "checkedAt": "2026-11-03",
+      "publishedLicenseChecked": true,
+      "pixelReviewCompleted": false,
+      "appApprovalGranted": false,
+      "includedInApp": false,
+      "imageDownloadPerformed": false
+    }
+  ],
+  "rejected": [
+    {
+      "modelId": "motiv.venom-shock-pearl",
+      "pageUrl": "https://www.kindpng.com/imgv/TiwTbmw_motiv-venom-shock-pearl-bowling-ball-hd-png/",
+      "status": "not_accepted_for_public_catalogue",
+      "reason": "Page specifies Personal Use Only; uploader authority and public-app redistribution not verified. Free download is not an open licence."
+    }
+  ],
+  "models": [
+    {
+      "id": "brunswick.beyond-infinity",
+      "manufacturer": "Brunswick",
+      "model": "Beyond Infinity",
+      "query": "\"Brunswick\" \"Beyond Infinity\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "brunswick.combat-solid",
+      "manufacturer": "Brunswick",
+      "model": "Combat Solid",
+      "query": "\"Brunswick\" \"Combat Solid\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "brunswick.endeavor",
+      "manufacturer": "Brunswick",
+      "model": "Endeavor",
+      "query": "\"Brunswick\" \"Endeavor\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "brunswick.infinity-quest-pearl",
+      "manufacturer": "Brunswick",
+      "model": "Infinity Quest Pearl",
+      "query": "\"Brunswick\" \"Infinity Quest Pearl\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "brunswick.ultimate-defender",
+      "manufacturer": "Brunswick",
+      "model": "Ultimate Defender",
+      "query": "\"Brunswick\" \"Ultimate Defender\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "hammer.arctic-vibe",
+      "manufacturer": "Hammer",
+      "model": "Arctic Vibe",
+      "query": "\"Hammer\" \"Arctic Vibe\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "hammer.black-widow-3-0",
+      "manufacturer": "Hammer",
+      "model": "Black Widow 3.0",
+      "query": "\"Hammer\" \"Black Widow 3.0\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "hammer.full-effect",
+      "manufacturer": "Hammer",
+      "model": "Full Effect",
+      "query": "\"Hammer\" \"Full Effect\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "hammer.hammer-effect",
+      "manufacturer": "Hammer",
+      "model": "Hammer Effect",
+      "query": "\"Hammer\" \"Hammer Effect\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "hammer.maximum-effect",
+      "manufacturer": "Hammer",
+      "model": "Maximum Effect",
+      "query": "\"Hammer\" \"Maximum Effect\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "hammer.true-blood",
+      "manufacturer": "Hammer",
+      "model": "True Blood",
+      "query": "\"Hammer\" \"True Blood\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "motiv.black-venom",
+      "manufacturer": "MOTIV",
+      "model": "Black Venom",
+      "query": "\"MOTIV\" \"Black Venom\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "motiv.covert-revolt",
+      "manufacturer": "MOTIV",
+      "model": "Covert Revolt",
+      "query": "\"MOTIV\" \"Covert Revolt\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "motiv.hyper-venom",
+      "manufacturer": "MOTIV",
+      "model": "Hyper Venom",
+      "query": "\"MOTIV\" \"Hyper Venom\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "motiv.venom-recoil",
+      "manufacturer": "MOTIV",
+      "model": "Venom Recoil",
+      "query": "\"MOTIV\" \"Venom Recoil\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "motiv.venom-shock",
+      "manufacturer": "MOTIV",
+      "model": "Venom Shock",
+      "query": "\"MOTIV\" \"Venom Shock\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "motiv.venom-shock-pearl",
+      "manufacturer": "MOTIV",
+      "model": "Venom Shock Pearl",
+      "query": "\"MOTIV\" \"Venom Shock Pearl\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "roto-grip.attention-star",
+      "manufacturer": "Roto Grip",
+      "model": "Attention Star",
+      "query": "\"Roto Grip\" \"Attention Star\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "roto-grip.magic-gem",
+      "manufacturer": "Roto Grip",
+      "model": "Magic Gem",
+      "query": "\"Roto Grip\" \"Magic Gem\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "roto-grip.perfect-gem",
+      "manufacturer": "Roto Grip",
+      "model": "Perfect Gem",
+      "query": "\"Roto Grip\" \"Perfect Gem\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "roto-grip.rst-hyperdrive-pearl",
+      "manufacturer": "Roto Grip",
+      "model": "RST Hyperdrive Pearl",
+      "query": "\"Roto Grip\" \"RST Hyperdrive Pearl\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "roto-grip.transformer",
+      "manufacturer": "Roto Grip",
+      "model": "Transformer",
+      "query": "\"Roto Grip\" \"Transformer\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "storm.hy-road",
+      "manufacturer": "Storm",
+      "model": "Hy-Road",
+      "query": "\"Storm\" \"Hy-Road\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "storm.iq-tour-edition",
+      "manufacturer": "Storm",
+      "model": "!Q Tour Edition",
+      "query": "\"Storm\" \"IQ Tour Edition\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "storm.phaze-ii",
+      "manufacturer": "Storm",
+      "model": "Phaze II",
+      "query": "\"Storm\" \"Phaze II\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "storm.phaze-iii",
+      "manufacturer": "Storm",
+      "model": "Phaze III",
+      "query": "\"Storm\" \"Phaze III\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "storm.phaze-v",
+      "manufacturer": "Storm",
+      "model": "Phaze V",
+      "query": "\"Storm\" \"Phaze V\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    },
+    {
+      "id": "storm.pitch-black",
+      "manufacturer": "Storm",
+      "model": "Pitch Black",
+      "query": "\"Storm\" \"Pitch Black\" bowling photo (\"Creative Commons\" OR \"CC BY\" OR \"CC0\" OR site:commons.wikimedia.org OR site:flickr.com)",
+      "queryOutcome": "no_results_returned_by_search_tool",
+      "status": "no_exact_licensed_match_confirmed",
+      "candidateIds": [],
+      "notAnExhaustiveAbsenceClaim": true
+    }
+  ],
+  "licenseReferences": [
+    "https://creativecommons.org/publicdomain/zero/1.0/",
+    "https://creativecommons.org/licenses/by-sa/4.0/",
+    "https://creativecommons.org/licenses/by-sa/2.0/"
+  ]
+}

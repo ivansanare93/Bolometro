@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/app_constants.dart';
+import '../models/sesion.dart';
+import 'season_assignment_store.dart';
 
 /// Service for persisting and managing the list of seasons (temporadas) and
 /// the currently active/default season used when registering a new session.
@@ -12,7 +14,7 @@ class TemporadaService {
   /// user left it (most recently created first by default on first use).
   /// Never includes [AppConstants.temporadaSinTemporada] – that option is
   /// always implied by the UI and stored as `null` in the active-season key.
-  static Future<List<String>> getTemporadas() async {
+  static Future<List<String>> getTemporadas({bool strict = false}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(AppConstants.prefKeyTemporadas);
@@ -21,6 +23,7 @@ class TemporadaService {
       return decoded.cast<String>();
     } catch (e) {
       debugPrint('TemporadaService: error loading seasons: $e');
+      if (strict) rethrow;
       return [];
     }
   }
@@ -43,12 +46,47 @@ class TemporadaService {
     }
   }
 
+  /// Names found in existing sessions remain manageable even after recovery
+  /// onto another device. This does not silently claim preferences for a UID.
+  static Future<List<String>> getTemporadasConSesiones(
+    Iterable<Sesion> sessions,
+  ) async {
+    return {
+      ...await getTemporadas(strict: true),
+      ...sessions.map((s) => normalizeSeason(s.temporada)).whereType<String>(),
+    }.toList();
+  }
+
+  static Future<List<String>> getTemporadasDisponibles(
+    Iterable<Sesion> sessions,
+  ) async {
+    final archived = await getArchivedTemporadas(strict: true);
+    return (await getTemporadasConSesiones(
+      sessions,
+    )).where((name) => !archived.contains(name)).toList();
+  }
+
+  /// Preserve the legacy year suggestion only if no choice has ever been saved.
+  static Future<String?> getTemporadaPredeterminada({DateTime? now}) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!prefs.containsKey(AppConstants.prefKeyTemporadaActiva)) {
+      final year = (now ?? DateTime.now()).year.toString();
+      return await isArchived(year) ? null : year;
+    }
+    final active = normalizeSeason(await getTemporadaActiva());
+    return active != null && !await isArchived(active) ? active : null;
+  }
+
   // ── Write ─────────────────────────────────────────────────────────────────
 
   static Future<void> _saveTemporadas(List<String> temporadas) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-        AppConstants.prefKeyTemporadas, json.encode(temporadas));
+    if (!await prefs.setString(
+      AppConstants.prefKeyTemporadas,
+      json.encode(temporadas),
+    )) {
+      throw StateError('Cannot save seasons');
+    }
   }
 
   /// Persists [name] as the active/default season.
@@ -56,9 +94,19 @@ class TemporadaService {
   static Future<void> setTemporadaActiva(String? name) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(AppConstants.prefKeyTemporadaActiva, name ?? '');
+      final normalized = normalizeSeason(name);
+      if (normalized != null && await isArchived(normalized)) {
+        throw StateError('Restore season before setting it as default');
+      }
+      if (!await prefs.setString(
+        AppConstants.prefKeyTemporadaActiva,
+        normalized ?? '',
+      )) {
+        throw StateError('Cannot save default season');
+      }
     } catch (e) {
       debugPrint('TemporadaService: error saving active season: $e');
+      rethrow;
     }
   }
 
@@ -70,8 +118,11 @@ class TemporadaService {
       return false;
     }
     try {
-      final temporadas = await getTemporadas();
-      if (temporadas.contains(trimmed)) return false;
+      final temporadas = await getTemporadas(strict: true);
+      if (temporadas.any(
+        (t) => t.trim().toLowerCase() == trimmed.toLowerCase(),
+      ))
+        return false;
       temporadas.insert(0, trimmed);
       await _saveTemporadas(temporadas);
       return true;
@@ -85,21 +136,34 @@ class TemporadaService {
   /// the renamed season was the active one.  Returns `true` on success.
   static Future<bool> renameTemporada(String oldName, String newName) async {
     final trimmedNew = newName.trim();
-    if (trimmedNew.isEmpty || trimmedNew == AppConstants.temporadaSinTemporada) {
+    if (trimmedNew.isEmpty ||
+        trimmedNew == AppConstants.temporadaSinTemporada) {
       return false;
     }
     try {
-      final temporadas = await getTemporadas();
+      final temporadas = await getTemporadas(strict: true);
       final idx = temporadas.indexOf(oldName);
       if (idx == -1) return false;
-      if (temporadas.contains(trimmedNew) && trimmedNew != oldName) return false;
+      if (temporadas.any(
+        (t) =>
+            t != oldName && t.trim().toLowerCase() == trimmedNew.toLowerCase(),
+      ))
+        return false;
       temporadas[idx] = trimmedNew;
       await _saveTemporadas(temporadas);
 
+      final archived = await getArchivedTemporadas(strict: true);
+      if (archived.contains(oldName)) {
+        await _saveArchivedTemporadas(
+          archived.map((n) => n == oldName ? trimmedNew : n).toList(),
+        );
+      }
       // Keep active-season in sync
       final activa = await getTemporadaActiva();
       if (activa == oldName) {
-        await setTemporadaActiva(trimmedNew);
+        await setTemporadaActiva(
+          archived.contains(oldName) ? null : trimmedNew,
+        );
       }
       return true;
     } catch (e) {
@@ -112,13 +176,13 @@ class TemporadaService {
   /// active season is cleared (set to "Sin temporada").
   static Future<void> deleteTemporada(String name) async {
     try {
-      final temporadas = await getTemporadas();
+      final temporadas = await getTemporadas(strict: true);
       temporadas.remove(name);
       await _saveTemporadas(temporadas);
 
       // Also remove from archived list if present (skip I/O when not archived)
       if (await isArchived(name)) {
-        final archivadas = await getArchivedTemporadas();
+        final archivadas = await getArchivedTemporadas(strict: true);
         archivadas.remove(name);
         await _saveArchivedTemporadas(archivadas);
       }
@@ -129,13 +193,16 @@ class TemporadaService {
       }
     } catch (e) {
       debugPrint('TemporadaService: error deleting season: $e');
+      rethrow;
     }
   }
 
   // ── Archive ───────────────────────────────────────────────────────────────
 
   /// Returns the list of archived season names.
-  static Future<List<String>> getArchivedTemporadas() async {
+  static Future<List<String>> getArchivedTemporadas({
+    bool strict = false,
+  }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(AppConstants.prefKeyTemporadasArchivadas);
@@ -144,15 +211,19 @@ class TemporadaService {
       return decoded.cast<String>();
     } catch (e) {
       debugPrint('TemporadaService: error loading archived seasons: $e');
+      if (strict) rethrow;
       return [];
     }
   }
 
-  static Future<void> _saveArchivedTemporadas(
-      List<String> archivadas) async {
+  static Future<void> _saveArchivedTemporadas(List<String> archivadas) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-        AppConstants.prefKeyTemporadasArchivadas, json.encode(archivadas));
+    if (!await prefs.setString(
+      AppConstants.prefKeyTemporadasArchivadas,
+      json.encode(archivadas),
+    )) {
+      throw StateError('Cannot save archived seasons');
+    }
   }
 
   /// Archives [name]: it stays in the main list (for historical filtering)
@@ -160,10 +231,10 @@ class TemporadaService {
   /// Returns `true` on success.
   static Future<bool> archiveTemporada(String name) async {
     try {
-      final temporadas = await getTemporadas();
+      final temporadas = await getTemporadas(strict: true);
       if (!temporadas.contains(name)) return false;
 
-      final archivadas = await getArchivedTemporadas();
+      final archivadas = await getArchivedTemporadas(strict: true);
       if (!archivadas.contains(name)) {
         archivadas.add(name);
         await _saveArchivedTemporadas(archivadas);
@@ -185,7 +256,7 @@ class TemporadaService {
   /// list). Returns `true` on success.
   static Future<bool> unarchiveTemporada(String name) async {
     try {
-      final archivadas = await getArchivedTemporadas();
+      final archivadas = await getArchivedTemporadas(strict: true);
       if (archivadas.remove(name)) {
         await _saveArchivedTemporadas(archivadas);
         return true;
@@ -199,7 +270,7 @@ class TemporadaService {
 
   /// Returns `true` if [name] is in the archived list.
   static Future<bool> isArchived(String name) async {
-    final archivadas = await getArchivedTemporadas();
+    final archivadas = await getArchivedTemporadas(strict: true);
     return archivadas.contains(name);
   }
 }

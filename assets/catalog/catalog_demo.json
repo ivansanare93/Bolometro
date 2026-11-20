@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "version": 1,
+  "updatedAt": "2026-10-28T00:00:00Z",
+  "isTestData": true,
+  "balls": [
+    {
+      "id": "fixture.orbita-solid",
+      "manufacturer": "Fabricante ficticio Alfa",
+      "model": "Órbita Solid (ficticia)",
+      "aliases": ["orbita de ejemplo"],
+      "releaseYear": null,
+      "status": "current",
+      "coverType": "Reactive solid (dato ficticio)",
+      "coverMaterial": "Material de prueba Alfa",
+      "coreName": "Núcleo de ejemplo Alfa",
+      "coreType": "Simétrico (dato ficticio)",
+      "factoryFinish": "3000 grit (dato ficticio)",
+      "weights": [
+        {"weightLbs": 14, "rgInches": 2.54, "differentialInches": 0.03, "intermediateDifferentialInches": null, "coreName": null, "coreType": null},
+        {"weightLbs": 15, "rgInches": 2.5, "differentialInches": 0.04, "intermediateDifferentialInches": null, "coreName": null, "coreType": null}
+      ],
+      "officialUrl": null,
+      "photo": null,
+      "updatedAt": "2026-10-28T00:00:00Z",
+      "sources": [{"id": "synthetic", "kind": "fixture", "url": null, "checkedAt": "2026-10-28T00:00:00Z"}],
+      "fieldSources": {},
+      "isTestData": true
+    },
+    {
+      "id": "fixture.archivo-pearl",
+      "manufacturer": "Fabricante ficticio Beta",
+      "model": "Archivo Pearl (ficticia)",
+      "aliases": [],
+      "releaseYear": null,
+      "status": "discontinued",
+      "coverType": null,
+      "coverMaterial": null,
+      "coreName": null,
+      "coreType": null,
+      "factoryFinish": null,
+      "weights": [{"weightLbs": 15, "rgInches": null, "differentialInches": null, "intermediateDifferentialInches": null, "coreName": null, "coreType": null}],
+      "officialUrl": null,
+      "photo": null,
+      "updatedAt": "2026-10-28T00:00:00Z",
+      "sources": [{"id": "synthetic", "kind": "fixture", "url": null, "checkedAt": "2026-10-28T00:00:00Z"}],
+      "fieldSources": {},
+      "isTestData": true
+    },
+    {
+      "id": "fixture.modelo-desconocido",
+      "manufacturer": "Fabricante ficticio Alfa",
+      "model": "Modelo sin especificaciones (ficticio)",
+      "aliases": [],
+      "releaseYear": null,
+      "status": "unknown",
+      "coverType": null,
+      "coverMaterial": null,
+      "coreName": null,
+      "coreType": null,
+      "factoryFinish": null,
+      "weights": [],
+      "officialUrl": null,
+      "photo": null,
+      "updatedAt": "2026-10-28T00:00:00Z",
+      "sources": [{"id": "synthetic", "kind": "fixture", "url": null, "checkedAt": "2026-10-28T00:00:00Z"}],
+      "fieldSources": {},
+      "isTestData": true
+    }
+  ]
+}

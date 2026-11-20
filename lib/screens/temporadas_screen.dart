@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/temporada_service.dart';
+import '../services/season_management_service.dart';
+import '../services/season_assignment_store.dart';
+import '../widgets/season_selector.dart';
 import '../repositories/data_repository.dart';
-import '../models/sesion.dart';
 import '../utils/app_constants.dart';
 import '../l10n/app_localizations.dart';
 
@@ -23,6 +25,11 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
   Map<String, int> _sessionCounts = {};
   bool _loading = true;
   bool _showArchived = false;
+  bool _busy = false;
+  bool _missingRemote = false;
+  int? _loadedAccountToken;
+  final Map<String, Set<int>> _sessionIds = {};
+  SeasonAssignmentResult _pending = const SeasonAssignmentResult();
 
   List<String> get temporadas => _temporadas;
   List<String> get archivadas => _archivadas;
@@ -30,6 +37,7 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
     final archivedTemporadas = _archivadas.toSet();
     return _temporadas.where((t) => !archivedTemporadas.contains(t)).toList();
   }
+
   String? get temporadaActiva => _temporadaActiva;
   Map<String, int> get sessionCounts => _sessionCounts;
   bool get loading => _loading;
@@ -42,7 +50,7 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
   }
 
   Future<void> _load() async {
-    final temporadas = await TemporadaService.getTemporadas();
+    var temporadas = await TemporadaService.getTemporadas();
     final archivadas = await TemporadaService.getArchivedTemporadas();
     final activa = await TemporadaService.getTemporadaActiva();
 
@@ -51,10 +59,24 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
     if (mounted) {
       try {
         final repo = Provider.of<DataRepository>(context, listen: false);
+        final token = repo.seasonAccountToken;
         final sesiones = await repo.obtenerSesiones();
+        if (token != repo.seasonAccountToken) return;
+        _loadedAccountToken = token;
+        _sessionIds.clear();
+        temporadas = await TemporadaService.getTemporadasConSesiones(sesiones);
+        _pending = await repo.estadoCambiosTemporada();
+        _missingRemote =
+            _pending.pending > 0 &&
+            (await repo.pendientesTemporada()).any(
+              (entry) => (entry['error'] as String? ?? '').contains(
+                'remote_session_missing',
+              ),
+            );
         for (final s in sesiones) {
           final key = s.temporadaNormalizada;
           counts[key] = (counts[key] ?? 0) + 1;
+          (_sessionIds[key] ??= {}).add(s.fecha.millisecondsSinceEpoch);
         }
       } catch (e) {
         debugPrint('TemporadasScreen: error loading session counts: $e');
@@ -75,8 +97,11 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
   // ── Actions ───────────────────────────────────────────────────────────────
 
   Future<void> _setActiva(String? name) async {
-    await TemporadaService.setTemporadaActiva(name);
-    if (mounted) setState(() => _temporadaActiva = name);
+    final l10n = AppLocalizations.of(context)!;
+    await _perform(() async {
+      await TemporadaService.setTemporadaActiva(name);
+      return const SeasonAssignmentResult();
+    }, l10n.saveSuccess);
   }
 
   Future<void> _showAddDialog() async {
@@ -101,7 +126,11 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
                 ),
                 onSubmitted: (_) async {
                   await _submitAdd(
-                      l10n, controller, setDialogState, () => Navigator.pop(ctx));
+                    l10n,
+                    controller,
+                    setDialogState,
+                    () => Navigator.pop(ctx),
+                  );
                 },
               ),
               actions: [
@@ -112,7 +141,11 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
                 TextButton(
                   onPressed: () async {
                     await _submitAdd(
-                        l10n, controller, setDialogState, () => Navigator.pop(ctx));
+                      l10n,
+                      controller,
+                      setDialogState,
+                      () => Navigator.pop(ctx),
+                    );
                   },
                   child: Text(l10n.accept),
                 ),
@@ -135,13 +168,13 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
       setDialogState(() {});
       return;
     }
-    if (_temporadas.contains(name) ||
+    if (_temporadas.any((item) => item.toLowerCase() == name.toLowerCase()) ||
         name == AppConstants.temporadaSinTemporada) {
       setDialogState(() {});
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.seasonAlreadyExists)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.seasonAlreadyExists)));
       }
       return;
     }
@@ -150,9 +183,9 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
       await _load();
       closeDialog();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.seasonAdded)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.seasonAdded)));
       }
     }
   }
@@ -165,37 +198,49 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
     await showDialog<void>(
       context: context,
       builder: (ctx) {
-        return StatefulBuilder(builder: (ctx, setDialogState) {
-          return AlertDialog(
-            title: Text(l10n.renameSeason),
-            content: TextField(
-              controller: controller,
-              autofocus: true,
-              decoration: InputDecoration(
-                hintText: l10n.newSeasonHint,
-                errorText: errorText,
-                border: const OutlineInputBorder(),
-              ),
-              onSubmitted: (_) async {
-                await _submitRename(oldName, l10n, controller, setDialogState,
-                    () => Navigator.pop(ctx));
-              },
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () async {
-                  await _submitRename(oldName, l10n, controller, setDialogState,
-                      () => Navigator.pop(ctx));
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            return AlertDialog(
+              title: Text(l10n.renameSeason),
+              content: TextField(
+                controller: controller,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: l10n.newSeasonHint,
+                  errorText: errorText,
+                  border: const OutlineInputBorder(),
+                ),
+                onSubmitted: (_) async {
+                  await _submitRename(
+                    oldName,
+                    l10n,
+                    controller,
+                    setDialogState,
+                    () => Navigator.pop(ctx),
+                  );
                 },
-                child: Text(l10n.accept),
               ),
-            ],
-          );
-        });
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text(l10n.cancel),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    await _submitRename(
+                      oldName,
+                      l10n,
+                      controller,
+                      setDialogState,
+                      () => Navigator.pop(ctx),
+                    );
+                  },
+                  child: Text(l10n.accept),
+                ),
+              ],
+            );
+          },
+        );
       },
     );
   }
@@ -216,24 +261,84 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
       closeDialog();
       return;
     }
-    if (_temporadas.contains(newName) ||
+    if (_temporadas.any(
+          (item) =>
+              item != oldName && item.toLowerCase() == newName.toLowerCase(),
+        ) ||
         newName == AppConstants.temporadaSinTemporada) {
       setDialogState(() {});
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.seasonAlreadyExists)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.seasonAlreadyExists)));
       }
       return;
     }
-    final ok = await TemporadaService.renameTemporada(oldName, newName);
-    if (ok) {
-      await _load();
-      closeDialog();
-      if (mounted) {
+    final count = _sessionCounts[oldName] ?? 0;
+    final approved = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.renameSeason),
+        content: Text(l10n.bulkAssignConfirm(count, newName)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.accept),
+          ),
+        ],
+      ),
+    );
+    if (approved != true || !mounted || _busy) return;
+    closeDialog();
+    await _perform(
+      () => SeasonManagementService(context.read<DataRepository>()).rename(
+        oldName,
+        newName,
+        expectedSessionIds: _sessionIds[oldName] ?? {},
+      ),
+      l10n.seasonRenamed,
+    );
+  }
+
+  Future<void> _perform(
+    Future<SeasonAssignmentResult> Function() action,
+    String success,
+  ) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      if (_loadedAccountToken !=
+          context.read<DataRepository>().seasonAccountToken) {
+        throw StateError('Account changed; reload seasons');
+      }
+      final result = await action();
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result.pending > 0
+                ? l10n.seasonChangesPending(result.pending)
+                : success,
+          ),
+        ),
+      );
+    } catch (error) {
+      if (mounted)
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.seasonRenamed)),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.seasonOperationFailed),
+          ),
         );
+      debugPrint('Season operation preserved for review: $error');
+    } finally {
+      if (mounted) {
+        await _load();
+        if (mounted) setState(() => _busy = false);
       }
     }
   }
@@ -258,34 +363,83 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
       ),
     );
     if (confirmed == true) {
-      await TemporadaService.archiveTemporada(name);
-      await _load();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.seasonArchived)),
-        );
-      }
+      await _perform(() async {
+        if (!(await TemporadaService.getTemporadas()).contains(name)) {
+          if (!await TemporadaService.addTemporada(name))
+            throw StateError('Cannot register season');
+        }
+        if (!await TemporadaService.archiveTemporada(name))
+          throw StateError('Cannot archive season');
+        return const SeasonAssignmentResult();
+      }, l10n.seasonArchived);
+      return;
     }
   }
 
   Future<void> _unarchive(String name) async {
     final l10n = AppLocalizations.of(context)!;
-    await TemporadaService.unarchiveTemporada(name);
-    await _load();
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.seasonUnarchived)),
-      );
-    }
+    await _perform(() async {
+      if (!await TemporadaService.unarchiveTemporada(name))
+        throw StateError('Cannot restore season');
+      return const SeasonAssignmentResult();
+    }, l10n.seasonUnarchived);
   }
 
   Future<void> _confirmDelete(String name) async {
     final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
+    String? destination;
+    final count = _sessionCounts[name] ?? 0;
+    final choice = await showDialog<String>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text(l10n.deleteSeason),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(l10n.seasonRemovalExplanation),
+              const SizedBox(height: 12),
+              Text(l10n.selectedSessionsCount(count)),
+              const SizedBox(height: 12),
+              SeasonSelector(
+                value: destination,
+                seasons: _temporadas,
+                archived: _archivadas.toSet(),
+                excluded: {name},
+                allowCreate: false,
+                onChanged: (value) => setDialogState(() => destination = value),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, 'archive'),
+              child: Text(l10n.archiveSeason),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, 'remove'),
+              child: Text(l10n.removeSeasonAndReassign),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || choice == null) return;
+    if (choice == 'archive') {
+      await _confirmArchive(name);
+      return;
+    }
+    final approved = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.deleteSeason),
-        content: Text(l10n.deleteSeasonConfirm(name)),
+        content: Text(
+          l10n.bulkAssignConfirm(count, destination ?? l10n.sinTemporada),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -293,22 +447,126 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(
-              l10n.deleteSeason,
-              style: TextStyle(color: Theme.of(ctx).colorScheme.error),
-            ),
+            child: Text(l10n.accept),
           ),
         ],
       ),
     );
-    if (confirmed == true) {
-      await TemporadaService.deleteTemporada(name);
-      await _load();
-      if (mounted) {
+    if (!mounted || approved != true) return;
+    await _perform(
+      () => SeasonManagementService(
+        context.read<DataRepository>(),
+      ).remove(name, destination, expectedSessionIds: _sessionIds[name] ?? {}),
+      l10n.seasonDeleted,
+    );
+  }
+
+  Future<void> _reviewMissing() async {
+    final repo = context.read<DataRepository>();
+    final token = repo.seasonAccountToken;
+    try {
+      final entries = await repo.pendientesTemporada();
+      final missing = entries
+          .where(
+            (entry) => (entry['error'] as String? ?? '').contains(
+              'remote_session_missing',
+            ),
+          )
+          .toList();
+      if (!mounted || missing.isEmpty || token != repo.seasonAccountToken)
+        return;
+      final entry = missing.first;
+      final l10n = AppLocalizations.of(context)!;
+      final approved = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.backupMissingSession),
+          content: Text(
+            '${l10n.backupMissingSessionExplanation}\n${(entry['session'] as Map)['fecha']}',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.accept),
+            ),
+          ],
+        ),
+      );
+      if (!mounted || approved != true) return;
+      await _perform(
+        () => repo.respaldarSesionPendienteAusente(
+          entry['id'] as String,
+          accountToken: token,
+        ),
+        l10n.saveSuccess,
+      );
+    } catch (error) {
+      if (mounted)
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.seasonDeleted)),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.seasonOperationFailed),
+          ),
         );
-      }
+    }
+  }
+
+  Future<void> _reviewConflict() async {
+    final repo = context.read<DataRepository>();
+    final token = repo.seasonAccountToken;
+    try {
+      final conflicts = await repo.conflictosTemporada();
+      if (conflicts.isEmpty) return;
+      final conflict = conflicts.first;
+      final date = DateTime.parse(
+        (conflict['session'] as Map)['fecha'] as String,
+      );
+      final remote = await repo.temporadaRemotaParaRevision(date);
+      if (!mounted || token != repo.seasonAccountToken) return;
+      final l10n = AppLocalizations.of(context)!;
+      final choice = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.reviewSeasonConflict),
+          content: Text(
+            '${date.toLocal()}\n${l10n.localSeasonChoice}: ${conflict['target'] ?? l10n.sinTemporada}\n${l10n.remoteSeasonChoice}: ${remote ?? l10n.sinTemporada}',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.remoteSeasonChoice),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.localSeasonChoice),
+            ),
+          ],
+        ),
+      );
+      if (choice == null || !mounted) return;
+      await _perform(
+        () => repo.resolverConflictoTemporada(
+          conflict['id'] as String,
+          remote,
+          useLocal: choice,
+          accountToken: token,
+        ),
+        l10n.saveSuccess,
+      );
+    } catch (error) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.seasonOperationFailed),
+          ),
+        );
     }
   }
 
@@ -328,8 +586,7 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
         actions: [
           if (_archivadas.isNotEmpty)
             TextButton.icon(
-              onPressed: () =>
-                  setState(() => _showArchived = !_showArchived),
+              onPressed: () => setState(() => _showArchived = !_showArchived),
               icon: Icon(
                 _showArchived
                     ? Icons.visibility_off_outlined
@@ -346,15 +603,42 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddDialog,
+        onPressed: _busy ? null : _showAddDialog,
         tooltip: l10n.newSeasonTitle,
         child: const Icon(Icons.add),
       ),
-      body: _loading
+      body: _loading || _busy
           ? const Center(child: CircularProgressIndicator())
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (_pending.pending > 0)
+                  ListTile(
+                    leading: const Icon(Icons.cloud_upload_outlined),
+                    title: Text(l10n.seasonChangesPending(_pending.pending)),
+                    subtitle: _pending.conflicts > 0
+                        ? Text(l10n.seasonConflictsPending(_pending.conflicts))
+                        : null,
+                    trailing: TextButton(
+                      onPressed: () => _perform(
+                        () => context
+                            .read<DataRepository>()
+                            .reintentarCambiosTemporada(),
+                        l10n.saveSuccess,
+                      ),
+                      child: Text(l10n.retrySeasonChanges),
+                    ),
+                  ),
+                if (_missingRemote)
+                  TextButton(
+                    onPressed: _reviewMissing,
+                    child: Text(l10n.backupMissingSession),
+                  ),
+                if (_pending.conflicts > 0)
+                  TextButton(
+                    onPressed: _reviewConflict,
+                    child: Text(l10n.reviewSeasonConflict),
+                  ),
                 // Active season info banner
                 _ActiveSeasonBanner(
                   temporadaActiva: _temporadaActiva,
@@ -379,12 +663,12 @@ class _TemporadasScreenState extends State<TemporadasScreen> {
                       ? _EmptyState(l10n: l10n)
                       : ListView.separated(
                           padding: const EdgeInsets.only(bottom: 88),
-                          itemCount: activeTemporadasList.length +
+                          itemCount:
+                              activeTemporadasList.length +
                               (_showArchived && _archivadas.isNotEmpty
                                   ? _archivadas.length + 1
                                   : 0),
-                          separatorBuilder: (_, __) =>
-                              const Divider(height: 1),
+                          separatorBuilder: (_, __) => const Divider(height: 1),
                           itemBuilder: (_, i) {
                             if (i < activeTemporadasList.length) {
                               final name = activeTemporadasList[i];
@@ -490,8 +774,7 @@ class _ActiveSeasonBanner extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          Icon(Icons.calendar_view_month_rounded,
-              color: cs.primary, size: 20),
+          Icon(Icons.calendar_view_month_rounded, color: cs.primary, size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -566,8 +849,10 @@ class _SinTemporadaRow extends StatelessWidget {
           ? _ActiveBadge(label: l10n.defaultSeasonLabel, cs: cs)
           : TextButton(
               onPressed: onSetActive,
-              child: Text(l10n.setAsActive,
-                  style: TextStyle(fontSize: 12, color: cs.primary)),
+              child: Text(
+                l10n.setAsActive,
+                style: TextStyle(fontSize: 12, color: cs.primary),
+              ),
             ),
     );
   }
@@ -602,14 +887,12 @@ class _SeasonTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(
-        isArchived
-            ? Icons.archive_outlined
-            : Icons.event_note_rounded,
+        isArchived ? Icons.archive_outlined : Icons.event_note_rounded,
         color: isArchived
             ? cs.onSurface.withOpacity(0.35)
             : isActive
-                ? cs.primary
-                : cs.onSurface.withOpacity(0.45),
+            ? cs.primary
+            : cs.onSurface.withOpacity(0.45),
       ),
       title: Text(
         name,
@@ -618,8 +901,8 @@ class _SeasonTile extends StatelessWidget {
           color: isArchived
               ? cs.onSurface.withOpacity(0.5)
               : isActive
-                  ? cs.primary
-                  : null,
+              ? cs.primary
+              : null,
         ),
       ),
       subtitle: sessionCount > 0
@@ -641,8 +924,10 @@ class _SeasonTile extends StatelessWidget {
           else
             TextButton(
               onPressed: onSetActive,
-              child: Text(l10n.setAsActive,
-                  style: TextStyle(fontSize: 12, color: cs.primary)),
+              child: Text(
+                l10n.setAsActive,
+                style: TextStyle(fontSize: 12, color: cs.primary),
+              ),
             ),
           PopupMenuButton<String>(
             onSelected: (value) {
@@ -657,7 +942,7 @@ class _SeasonTile extends StatelessWidget {
                   children: [
                     const Icon(Icons.edit_outlined, size: 18),
                     const SizedBox(width: 8),
-                    Text(l10n.renameSeason),
+                    Expanded(child: Text(l10n.renameSeason)),
                   ],
                 ),
               ),
@@ -672,9 +957,11 @@ class _SeasonTile extends StatelessWidget {
                       size: 18,
                     ),
                     const SizedBox(width: 8),
-                    Text(isArchived
-                        ? l10n.unarchiveSeason
-                        : l10n.archiveSeason),
+                    Expanded(
+                      child: Text(
+                        isArchived ? l10n.unarchiveSeason : l10n.archiveSeason,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -682,11 +969,14 @@ class _SeasonTile extends StatelessWidget {
                 value: 'delete',
                 child: Row(
                   children: [
-                    Icon(Icons.delete_outline, size: 18,
-                        color: cs.error),
+                    Icon(Icons.delete_outline, size: 18, color: cs.error),
                     const SizedBox(width: 8),
-                    Text(l10n.deleteSeason,
-                        style: TextStyle(color: cs.error)),
+                    Expanded(
+                      child: Text(
+                        l10n.deleteSeason,
+                        style: TextStyle(color: cs.error),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -763,21 +1053,27 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.calendar_view_month_rounded,
-              size: 56, color: cs.onSurface.withOpacity(0.3)),
+          Icon(
+            Icons.calendar_view_month_rounded,
+            size: 56,
+            color: cs.onSurface.withOpacity(0.3),
+          ),
           const SizedBox(height: 16),
           Text(
             l10n.noSeasonsYet,
             style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                color: cs.onSurface.withOpacity(0.6)),
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: cs.onSurface.withOpacity(0.6),
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             l10n.noSeasonsYetHint,
             style: TextStyle(
-                fontSize: 14, color: cs.onSurface.withOpacity(0.45)),
+              fontSize: 14,
+              color: cs.onSurface.withOpacity(0.45),
+            ),
           ),
         ],
       ),

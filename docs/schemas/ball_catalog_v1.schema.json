@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bolómetro commercial ball catalog, version 1",
+  "type": "object",
+  "required": ["schemaVersion", "version", "updatedAt", "isTestData", "balls"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "version": {"type": "integer", "minimum": 1},
+    "updatedAt": {"$ref": "#/$defs/date"},
+    "isTestData": {"type": "boolean"},
+    "balls": {"type": "array", "maxItems": 10000, "items": {"$ref": "#/$defs/ball"}}
+  },
+  "$defs": {
+    "text": {"type": ["string", "null"], "minLength": 1},
+    "url": {"type": ["string", "null"], "format": "uri", "pattern": "^https://[^/]+"},
+    "date": {"type": "string", "format": "date-time", "pattern": "(?:Z|[+]00:00)$"},
+    "metric": {"type": ["number", "null"], "minimum": 0},
+    "source": {
+      "type": "object",
+      "required": ["id", "kind", "url", "checkedAt"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["fixture", "manufacturer", "licensed_partner", "manual_verified"]},
+        "url": {"$ref": "#/$defs/url"},
+        "checkedAt": {"$ref": "#/$defs/date"}
+      },
+      "if": {"properties": {"kind": {"not": {"const": "fixture"}}}},
+      "then": {"properties": {"url": {"type": "string"}}}
+    },
+    "weight": {
+      "type": "object",
+      "required": ["weightLbs"],
+      "properties": {
+        "weightLbs": {"type": "integer", "minimum": 1, "maximum": 20},
+        "rgInches": {"type": ["number", "null"], "exclusiveMinimum": 0},
+        "differentialInches": {"$ref": "#/$defs/metric"},
+        "intermediateDifferentialInches": {"$ref": "#/$defs/metric"},
+        "coreName": {"$ref": "#/$defs/text"},
+        "coreType": {"$ref": "#/$defs/text"}
+      }
+    },
+    "photo": {
+      "type": ["object", "null"],
+      "properties": {
+        "url": {"$ref": "#/$defs/url"},
+        "sourceUrl": {"$ref": "#/$defs/url"},
+        "rightsHolder": {"$ref": "#/$defs/text"},
+        "license": {"$ref": "#/$defs/text"},
+        "licenseUrl": {"$ref": "#/$defs/url"},
+        "permissionReference": {"$ref": "#/$defs/text"},
+        "verifiedAt": {"anyOf": [{"$ref": "#/$defs/date"}, {"type": "null"}]},
+        "displayAuthorized": {"type": "boolean", "default": false},
+        "cacheAuthorized": {"type": "boolean", "default": false}
+      },
+      "if": {"type": "object", "required": ["displayAuthorized"], "properties": {"displayAuthorized": {"const": true}}},
+      "then": {
+        "required": ["url", "sourceUrl", "rightsHolder", "license", "verifiedAt"],
+        "properties": {
+          "url": {"type": "string"}, "sourceUrl": {"type": "string"},
+          "rightsHolder": {"type": "string"}, "license": {"type": "string"},
+          "verifiedAt": {"type": "string"}
+        },
+        "anyOf": [
+          {"required": ["licenseUrl"], "properties": {"licenseUrl": {"type": "string"}}},
+          {"required": ["permissionReference"], "properties": {"permissionReference": {"type": "string"}}}
+        ]
+      }
+    },
+    "ball": {
+      "type": "object",
+      "required": ["id", "manufacturer", "model", "aliases", "status", "weights", "updatedAt", "sources", "fieldSources", "isTestData"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+        "manufacturer": {"type": "string", "minLength": 1},
+        "model": {"type": "string", "minLength": 1},
+        "aliases": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "releaseYear": {"type": ["integer", "null"], "minimum": 1800, "maximum": 2200},
+        "status": {"enum": ["current", "discontinued", "unknown"]},
+        "coverType": {"$ref": "#/$defs/text"}, "coverMaterial": {"$ref": "#/$defs/text"},
+        "coreName": {"$ref": "#/$defs/text"}, "coreType": {"$ref": "#/$defs/text"},
+        "factoryFinish": {"$ref": "#/$defs/text"},
+        "weights": {"type": "array", "items": {"$ref": "#/$defs/weight"}},
+        "officialUrl": {"$ref": "#/$defs/url"},
+        "photo": {"$ref": "#/$defs/photo"},
+        "updatedAt": {"$ref": "#/$defs/date"},
+        "sources": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source"}},
+        "fieldSources": {"type": "object", "additionalProperties": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}},
+        "isTestData": {"type": "boolean"}
+      }
+    }
+  },
+  "$comment": "The Dart validator additionally checks UTC, unique model/source/weight IDs, provenance references, release-year provenance for real data, consistent fixture classification, HTTPS URLs without credentials, finite metrics and a 5 MiB payload limit. Unknown measurements remain null. License evidence must be reviewed by a human before publication."
+}

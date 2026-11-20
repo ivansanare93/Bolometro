@@ -8,11 +8,14 @@ import '../utils/pines_a_tiro_utils.dart';
 import '../utils/registro_tiros_utils.dart';
 import '../widgets/marcador_bolos.dart';
 import '../widgets/teclado_selector_pins.dart';
+import '../widgets/keyboard_mode_selector.dart';
+import '../widgets/game_entry_viewport.dart';
 import '../utils/teclado_tiros_adaptativo.dart';
 import '../widgets/resumen_puntuacion.dart';
 import '../widgets/score_sheet_pin_strip.dart';
 import '../widgets/notas_field.dart';
-import '../widgets/seleccionar_bola_field.dart';
+import '../widgets/game_ball_assignments.dart';
+import '../repositories/data_repository.dart';
 import 'home.dart';
 import '../l10n/app_localizations.dart';
 
@@ -35,11 +38,15 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
   late List<List<String>> framesText;
   late String? notas;
   late String? _ballId;
+  Map<String, String?> _ballAssignments = {};
+  String? _draftUid;
   Map<int, Set<int>> erroresPorTiro = {};
   final marcadorKey = GlobalKey<MarcadorBolosState>();
   final ValueNotifier<Set<String>> teclasDeshabilitadas = ValueNotifier({});
   final ValueNotifier<bool> mostrarTeclado = ValueNotifier(false);
   final ScrollController _scrollController = ScrollController();
+  final GlobalKey _pinSelectorKey = GlobalKey();
+  int _focusRequest = 0;
 
   bool _modoVisual = false;
   bool mostrarSelectorpines = false;
@@ -53,6 +60,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
   @override
   void initState() {
     super.initState();
+    _draftUid = context.read<DataRepository?>()?.arsenalUserId;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
         final analytics = Provider.of<AnalyticsService>(context, listen: false);
@@ -60,24 +68,29 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
       } catch (e) {
         debugPrint('Error logging screen view: $e');
       }
-      final keyboardProvider =
-          Provider.of<KeyboardProvider>(context, listen: false);
+      final keyboardProvider = Provider.of<KeyboardProvider>(
+        context,
+        listen: false,
+      );
       keyboardProvider.initializationFuture.then((_) {
         if (mounted) {
           setState(() {
             _modoVisual = keyboardProvider.modoVisual;
             mostrarSelectorpines = _modoVisual;
           });
+          if (_modoVisual) _enfocarSelectorPines();
         }
       });
     });
-    framesText = widget.partida.frames
-        .map(
-          (f) => f.map(formatearTiroParaMostrar).toList()..length = 3,
-        )
-        .toList();
+    framesText = widget.partida.frames.map((f) {
+      final values = f.map(formatearTiroParaMostrar).toList();
+      while (values.length < 3) values.add('');
+      return values.take(3).toList();
+    }).toList();
+    while (framesText.length < 10) framesText.add(['', '', '']);
     notas = widget.partida.notas;
     _ballId = widget.partida.ballId;
+    _ballAssignments = Map.of(widget.partida.ballIdsByThrow);
     erroresPorTiro = _obtenerErroresPorTiro(framesText);
     pinesPorTiro = List.generate(
       10,
@@ -147,6 +160,14 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
   }
 
   Future<void> _guardar() async {
+    if (_draftUid != context.read<DataRepository?>()?.arsenalUserId) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.ballAccountChanged),
+        ),
+      );
+      return;
+    }
     final nuevosFrames = interpretarFrames(framesText);
     final errores = validarPartida(framesText);
 
@@ -190,6 +211,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
       total: nuevoTotal,
       pinesPorTiro: pinesPorTiro,
       ballId: _ballId,
+      ballIdsByThrow: _ballAssignments,
     );
 
     try {
@@ -224,7 +246,7 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
       _tiroActivo = tiro;
       mostrarSelectorpines = true;
     });
-    _scrollToBottom();
+    _enfocarSelectorPines();
   }
 
   void _onAceptarSeleccionPins(List<int> seleccionados) {
@@ -278,24 +300,40 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
 
     if (advanced) {
       marcadorKey.currentState?.setTiroActivo(nextFrame, nextTiro);
-      _scrollToBottom();
     }
   }
 
-  void _scrollToBottom() {
+  void _enfocarSelectorPines() {
+    final request = ++_focusRequest;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 350),
-          curve: Curves.easeOut,
-        );
-      }
+      if (!mounted || !_modoVisual || request != _focusRequest) return;
+      final target = _pinSelectorKey.currentContext;
+      if (target == null) return;
+      Scrollable.ensureVisible(
+        target,
+        alignment: 0,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (context.watch<DataRepository?>()?.arsenalUserId != _draftUid) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              AppLocalizations.of(context)!.ballAccountChanged,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
     final frames = interpretarFrames(framesText);
     final puntuacionActual = calcularPuntuacionPartida(frames);
     final puntuacionMaxima = calcularPuntuacionMaximaPosible(frames);
@@ -339,191 +377,184 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: GameEntryViewport(
+        pinMode: _modoVisual,
         controller: _scrollController,
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    final newModoVisual = !_modoVisual;
-                    setState(() {
-                      _modoVisual = newModoVisual;
-                      mostrarSelectorpines = newModoVisual;
-                      _actualizarTeclasDeshabilitadas();
-                    });
-                    Provider.of<KeyboardProvider>(context, listen: false)
-                        .setModoVisual(newModoVisual);
-                    if (newModoVisual) _scrollToBottom();
-                  },
-                  icon: Icon(
-                    _modoVisual ? Icons.keyboard : Icons.push_pin_rounded,
-                  ),
-                  label: Text(
-                    _modoVisual
-                        ? AppLocalizations.of(context)!.switchToClassicKeyboard
-                        : AppLocalizations.of(context)!.registerPinsVisually,
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _modoVisual
-                        ? Colors.orange
-                        : const Color(0xFF0077B6),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ],
+        header: [
+          const SizedBox(height: 8),
+          KeyboardModeSelector(
+            modoVisual: _modoVisual,
+            onChanged: (newModoVisual) {
+              setState(() {
+                _modoVisual = newModoVisual;
+                mostrarSelectorpines = newModoVisual;
+                _actualizarTeclasDeshabilitadas();
+              });
+              Provider.of<KeyboardProvider>(
+                context,
+                listen: false,
+              ).setModoVisual(newModoVisual);
+              if (newModoVisual) _enfocarSelectorPines();
+            },
+          ),
+          const SizedBox(height: 8),
+          MarcadorBolos(
+            key: marcadorKey,
+            frames: framesText,
+            puntuaciones: calcularPuntuacionPorFrame(framesText),
+            frameActivo: framesText.indexWhere(
+              (f) =>
+                  tipoDeFrame(f, esUltimo: framesText.indexOf(f) == 9) ==
+                  TipoFrame.incompleto,
             ),
-            const SizedBox(height: 8),
-            MarcadorBolos(
-              key: marcadorKey,
-              frames: framesText,
-              puntuaciones: calcularPuntuacionPorFrame(framesText),
-              frameActivo: framesText.indexWhere(
-                (f) =>
-                    tipoDeFrame(f, esUltimo: framesText.indexOf(f) == 9) ==
-                    TipoFrame.incompleto,
-              ),
-              erroresPorTiro: erroresPorTiro,
-              onChanged: (frame, tiro, valor) {
-                setState(() {
-                  framesText[frame][tiro] = valor.trim().toUpperCase();
-                  if (!_modoVisual) pinesPorTiro[frame][tiro] = null;
-                  erroresPorTiro = _obtenerErroresPorTiro(framesText);
-                });
-                if (!_modoVisual) {
-                  _actualizarTeclasDeshabilitadas();
+            erroresPorTiro: erroresPorTiro,
+            onChanged: (frame, tiro, valor) {
+              setState(() {
+                framesText[frame][tiro] = valor.trim().toUpperCase();
+                if (!_modoVisual || valor.isEmpty) {
+                  pinesPorTiro[frame][tiro] = null;
                 }
-              },
-              onCampoActivoCambio: _modoVisual
-                  ? (frame, tiro) => _onCampoVisualActivo(frame, tiro)
-                  : (frame, tiro) {
-                      mostrarTeclado.value = true;
-                      _actualizarTeclasDeshabilitadas();
-                    },
-              autoFocusEnabled: !_modoVisual,
-              autoAdvanceFocus: true,
+                erroresPorTiro = _obtenerErroresPorTiro(framesText);
+              });
+              if (!_modoVisual) {
+                _actualizarTeclasDeshabilitadas();
+              }
+            },
+            onCampoActivoCambio: _modoVisual
+                ? (frame, tiro) => _onCampoVisualActivo(frame, tiro)
+                : (frame, tiro) {
+                    mostrarTeclado.value = true;
+                    _actualizarTeclasDeshabilitadas();
+                  },
+            autoFocusEnabled: !_modoVisual,
+            autoAdvanceFocus: true,
+          ),
+        ],
+        children: [
+          if (_modoVisual &&
+              pinesPorTiro.any((f) => f.any((t) => t != null))) ...[
+            const SizedBox(height: 6),
+            ScoreSheetPinStrip(
+              pinesPorTiro: pinesPorTiro,
+              frameActivo: _frameActivo,
             ),
+          ],
 
-            if (_modoVisual &&
-                pinesPorTiro.any((f) => f.any((t) => t != null))) ...[
-              const SizedBox(height: 6),
-              ScoreSheetPinStrip(
-                pinesPorTiro: pinesPorTiro,
-                frameActivo: _frameActivo,
-              ),
-            ],
+          const SizedBox(height: 8),
+          ResumenPuntuacion(
+            puntuacionActual: puntuacionActual,
+            puntuacionMaxima: puntuacionMaxima,
+            buenaRacha: buenaRacha,
+          ),
 
-            const SizedBox(height: 8),
-            ResumenPuntuacion(
-              puntuacionActual: puntuacionActual,
-              puntuacionMaxima: puntuacionMaxima,
-              buenaRacha: buenaRacha,
-            ),
+          if (_modoVisual &&
+              mostrarSelectorpines &&
+              _frameActivo != null &&
+              _tiroActivo != null &&
+              !(esStrikeEnPrimerTiro && _tiroActivo == 1 && _frameActivo! < 9))
+            Builder(
+              builder: (_) {
+                List<int> pinesIniciales =
+                    pinesPorTiro[_frameActivo!][_tiroActivo!] ?? [];
 
-            if (_modoVisual &&
-                mostrarSelectorpines &&
-                _frameActivo != null &&
-                _tiroActivo != null &&
-                !(esStrikeEnPrimerTiro &&
-                    _tiroActivo == 1 &&
-                    _frameActivo! < 9))
-              Builder(
-                builder: (_) {
-                  List<int> pinesIniciales =
-                      pinesPorTiro[_frameActivo!][_tiroActivo!] ?? [];
+                if (_frameActivo == 9) {
+                  if (_tiroActivo == 1) {
+                    // Always start with an empty selection; the pins
+                    // knocked in tiro 1 are shown as disabled (greyed out)
+                    // via pinesDeshabilitados, which already provides the
+                    // visual feedback. Pre-selecting them caused those pin
+                    // numbers to be included in 'seleccionados', making
+                    // the recorded count for tiro 2 incorrectly high.
+                    pinesIniciales = [];
+                  } else if (_tiroActivo == 2) {
+                    final tiro1 = pinesPorTiro[9][0] ?? [];
+                    final tiro2 = pinesPorTiro[9][1] ?? [];
+                    final huboStrike1 = tiro1.length == 10;
+                    final huboSpare =
+                        !huboStrike1 && (tiro1.length + tiro2.length == 10);
 
-                  if (_frameActivo == 9) {
-                    if (_tiroActivo == 1) {
-                      // Always start with an empty selection; the pins
-                      // knocked in tiro 1 are shown as disabled (greyed out)
-                      // via pinesDeshabilitados, which already provides the
-                      // visual feedback. Pre-selecting them caused those pin
-                      // numbers to be included in 'seleccionados', making
-                      // the recorded count for tiro 2 incorrectly high.
+                    if (huboStrike1 || huboSpare) {
                       pinesIniciales = [];
-                    } else if (_tiroActivo == 2) {
-                      final tiro1 = pinesPorTiro[9][0] ?? [];
-                      final tiro2 = pinesPorTiro[9][1] ?? [];
-                      final huboStrike1 = tiro1.length == 10;
-                      final huboSpare =
-                          !huboStrike1 && (tiro1.length + tiro2.length == 10);
-
-                      if (huboStrike1 || huboSpare) {
-                        pinesIniciales = [];
-                      } else {
-                        pinesIniciales = [...tiro1, ...tiro2];
-                      }
+                    } else {
+                      pinesIniciales = [...tiro1, ...tiro2];
                     }
                   }
+                }
 
-                  return SelectorpinesWidget(
+                return KeyedSubtree(
+                  key: _pinSelectorKey,
+                  child: SelectorpinesWidget(
                     key: ValueKey((_frameActivo!, _tiroActivo!)),
                     pinesIniciales: pinesIniciales,
                     pinesDeshabilitados: pinesDeshabilitados,
                     onAceptar: _onAceptarSeleccionPins,
+                    onBorrar: () => marcadorKey.currentState?.borrarValor(),
                     isFrame10: _frameActivo == 9,
                     tiroActual: _tiroActivo!,
                     frames: framesText,
                     frameActual: _frameActivo!,
-                  );
-                },
-              )
-            else if (!_modoVisual)
-              AnimatedBuilder(
-                animation: _animController,
-                builder: (context, child) => Opacity(
-                  opacity: _animController.value,
-                  child: SizeTransition(
-                    sizeFactor: _animacionTeclado,
-                    axisAlignment: -1.0,
-                    child: ValueListenableBuilder<bool>(
-                      valueListenable: mostrarTeclado,
-                      builder: (context, visible, _) {
-                        if (!visible) return const SizedBox.shrink();
-                        return TecladoTiros(
-                          onKeyPress: (valor) {
-                            if (valor == '⌫') {
-                              marcadorKey.currentState?.borrarValor();
-                            } else if (valor == '→') {
-                              marcadorKey.currentState?.siguiente();
-                            } else {
-                              marcadorKey.currentState?.insertarValor(valor);
-                            }
-                            _actualizarTeclasDeshabilitadas();
-                          },
-                          deshabilitadosNotifier: teclasDeshabilitadas,
-                        );
-                      },
-                    ),
+                  ),
+                );
+              },
+            )
+          else if (!_modoVisual)
+            AnimatedBuilder(
+              animation: _animController,
+              builder: (context, child) => Opacity(
+                opacity: _animController.value,
+                child: SizeTransition(
+                  sizeFactor: _animacionTeclado,
+                  axisAlignment: -1.0,
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: mostrarTeclado,
+                    builder: (context, visible, _) {
+                      if (!visible) return const SizedBox.shrink();
+                      return TecladoTiros(
+                        onKeyPress: (valor) {
+                          if (valor == '⌫') {
+                            marcadorKey.currentState?.borrarValor();
+                          } else if (valor == '→') {
+                            marcadorKey.currentState?.siguiente();
+                          } else {
+                            marcadorKey.currentState?.insertarValor(valor);
+                          }
+                          _actualizarTeclasDeshabilitadas();
+                        },
+                        deshabilitadosNotifier: teclasDeshabilitadas,
+                      );
+                    },
                   ),
                 ),
               ),
-            const SizedBox(height: 16),
-            SeleccionarBolaField(
-              ballId: _ballId,
-              onChanged: (value) => setState(() => _ballId = value),
             ),
-            const SizedBox(height: 16),
-            if (!_modoVisual)
-              NotasField(
-                initialValue: notas,
-                onChanged: (v) => notas = v,
-                onTap: () {
-                  marcadorKey.currentState?.desactivarCampoActivo();
-                  mostrarTeclado.value = false;
-                  setState(() {});
-                },
-              ),
-            const SizedBox(height: 40), // Deja espacio para el botón fijo
-          ],
-        ),
+          const SizedBox(height: 16),
+          GameBallAssignments(
+            ballId: _ballId,
+            assignments: _ballAssignments,
+            activeFrame: () => _frameActivo ?? 0,
+            onChanged: (id, assignments) {
+              if (_draftUid != context.read<DataRepository?>()?.arsenalUserId)
+                return;
+              setState(() {
+                _ballId = id;
+                _ballAssignments = Map.of(assignments);
+              });
+            },
+          ),
+          const SizedBox(height: 16),
+          if (!_modoVisual)
+            NotasField(
+              initialValue: notas,
+              onChanged: (v) => notas = v,
+              onTap: () {
+                marcadorKey.currentState?.desactivarCampoActivo();
+                mostrarTeclado.value = false;
+                setState(() {});
+              },
+            ),
+          const SizedBox(height: 40), // Deja espacio para el botón fijo
+        ],
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -536,7 +567,12 @@ class _EditarPartidaScreenState extends State<EditarPartidaScreen>
             ),
           ],
         ),
-        padding: EdgeInsets.fromLTRB(16, 12, 16, 16 + MediaQuery.of(context).padding.bottom),
+        padding: EdgeInsets.fromLTRB(
+          16,
+          12,
+          16,
+          16 + MediaQuery.of(context).padding.bottom,
+        ),
         child: ElevatedButton.icon(
           onPressed: _guardar,
           icon: const Icon(Icons.save),

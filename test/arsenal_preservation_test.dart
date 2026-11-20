@@ -523,19 +523,143 @@ void main() {
     },
   );
 
-  test('remote feature stays disabled unless explicitly activated', () async {
-    repository.dispose();
-    repository = DataRepository(
-      firestoreService: remote,
-      arsenalRemote: backup,
-    );
-    await seedUser();
-    expect(repository.arsenalBackupEnabled, isFalse);
-    await expectLater(repository.sincronizarArsenal(), throwsStateError);
-    await repository.sincronizarANube();
-    expect(backup.owners, isEmpty);
-    expect(repository.arsenalSync!.pendingCount, 2);
-  });
+  test(
+    'test build restricts backup to fictional accounts in the allowlist',
+    () async {
+      repository.dispose();
+      repository = DataRepository(
+        firestoreService: remote,
+        arsenalRemote: backup,
+        autoSyncArsenal: true,
+        arsenalBackupEnabled: true,
+        arsenalBackupTestUids: {'allowed-fictional-account'},
+      );
+      await seedUser();
+      expect(repository.arsenalBackupEnabled, isFalse);
+      await expectLater(repository.sincronizarArsenal(), throwsStateError);
+      expect(backup.owners, isEmpty);
+      expect(repository.arsenalSync!.pendingCount, 2);
+      await repository.setUser('allowed-fictional-account');
+      expect(repository.arsenalBackupEnabled, isTrue);
+      await repository.sincronizarArsenal();
+      expect(backup.owners, isNotEmpty);
+      expect(
+        backup.owners.every((uid) => uid == 'allowed-fictional-account'),
+        isTrue,
+      );
+      await repository.setUser('account-a');
+      expect(repository.arsenalBackupEnabled, isFalse);
+      expect((await repository.obtenerBola('ball-legacy'))!.id, 'ball-legacy');
+    },
+  );
+
+  test(
+    'empty allowlist never enables backup for an unintended account',
+    () async {
+      repository.dispose();
+      repository = DataRepository(
+        firestoreService: remote,
+        arsenalRemote: backup,
+        autoSyncArsenal: true,
+        arsenalBackupEnabled: true,
+        arsenalBackupTestUids: {' ', ''},
+      );
+      await seedUser();
+      expect(repository.arsenalBackupEnabled, isFalse);
+      await expectLater(repository.sincronizarArsenal(), throwsStateError);
+      expect(backup.owners, isEmpty);
+    },
+  );
+
+  test(
+    'allowlisted account remains disabled when main feature flag is false',
+    () async {
+      repository.dispose();
+      repository = DataRepository(
+        firestoreService: remote,
+        arsenalRemote: backup,
+        arsenalBackupEnabled: false,
+        arsenalBackupTestUids: {'account-a'},
+      );
+      await seedUser();
+      expect(repository.arsenalBackupEnabled, isFalse);
+      expect(backup.owners, isEmpty);
+    },
+  );
+
+  test(
+    'compile-time backup flag controls real sync with enabled default',
+    () async {
+      repository.dispose();
+      repository = DataRepository(
+        firestoreService: remote,
+        arsenalRemote: backup,
+        autoSyncArsenal: false,
+      );
+      await seedUser();
+      const enabled = bool.fromEnvironment(
+        'ARSENAL_BACKUP_ENABLED',
+        defaultValue: true,
+      );
+      expect(repository.arsenalBackupEnabled, enabled);
+      if (enabled) {
+        await repository.sincronizarArsenal();
+        expect(
+          backup.records.keys,
+          containsAll([
+            'account-a/balls/ball-legacy',
+            'account-a/ball_maintenance/maintenance-legacy',
+          ]),
+        );
+        expect(repository.arsenalSync!.pendingCount, 0);
+      } else {
+        await expectLater(repository.sincronizarArsenal(), throwsStateError);
+        expect(backup.owners, isEmpty);
+        expect(repository.arsenalSync!.pendingCount, 2);
+      }
+    },
+  );
+
+  test(
+    'default account login backs up existing inventory automatically',
+    () async {
+      await seedUser();
+      repository.dispose();
+      repository = DataRepository(
+        firestoreService: remote,
+        arsenalRemote: backup,
+      );
+      await repository.setUser('account-a');
+      await repository.arsenalSync!.sync();
+      expect(
+        backup.records.keys,
+        containsAll([
+          'account-a/balls/ball-legacy',
+          'account-a/ball_maintenance/maintenance-legacy',
+        ]),
+      );
+      expect(repository.arsenalSync!.pendingCount, 0);
+      expect(backup.owners.every((uid) => uid == 'account-a'), isTrue);
+    },
+  );
+
+  test(
+    'explicit opt out keeps inventory local and does not contact backup',
+    () async {
+      repository.dispose();
+      repository = DataRepository(
+        firestoreService: remote,
+        arsenalRemote: backup,
+        arsenalBackupEnabled: false,
+      );
+      await seedUser();
+      expect(repository.arsenalBackupEnabled, isFalse);
+      await expectLater(repository.sincronizarArsenal(), throwsStateError);
+      await repository.sincronizarANube();
+      expect(backup.owners, isEmpty);
+      expect(repository.arsenalSync!.pendingCount, 2);
+    },
+  );
 
   test(
     'history restores an earlier payload as a new revision of the same ID',
@@ -635,25 +759,148 @@ void main() {
     },
   );
 
-  test('legacy variant during interrupted save is backed up before choosing another', () async {
-    await seedUser();
-    final service = repository.arsenalSync!;
-    final old = (await repository.obtenerBola('ball-legacy'))!;
-    await service.journal.put('balls/ball-legacy', {'pending': true,
-      'payload': old.copyWith(notes: 'Interrupted save').toJson(),
-      'previousPayload': old.toJson(), 'operationId': 'interrupted'});
-    await service.balls.put(old.id, old.copyWith(notes: 'Legacy edit after crash'));
-    await repository.setUser(null);
-    await repository.setUser('account-a');
-    await repository.sincronizarArsenal();
-    await repository.setUser(null);
-    await repository.setUser('account-a');
-    await repository.sincronizarArsenal();
-    expect(backup.records['account-a/balls/${old.id}']!.payload['notes'], 'Interrupted save');
-    await repository.arsenalSync!.resolve('balls/ball-legacy', keepLocal: false);
-    await repository.sincronizarArsenal();
-    final history = await repository.arsenalSync!.history('balls', old.id);
-    expect(history.any((v) => v.record.payload['notes'] == 'Legacy edit after crash'), isTrue);
-    expect(history.any((v) => v.record.payload['notes'] == 'Interrupted save'), isTrue);
-  });
+  test(
+    'legacy variant during interrupted save is backed up before choosing another',
+    () async {
+      await seedUser();
+      final service = repository.arsenalSync!;
+      final old = (await repository.obtenerBola('ball-legacy'))!;
+      await service.journal.put('balls/ball-legacy', {
+        'pending': true,
+        'payload': old.copyWith(notes: 'Interrupted save').toJson(),
+        'previousPayload': old.toJson(),
+        'operationId': 'interrupted',
+      });
+      await service.balls.put(
+        old.id,
+        old.copyWith(notes: 'Legacy edit after crash'),
+      );
+      await repository.setUser(null);
+      await repository.setUser('account-a');
+      await repository.sincronizarArsenal();
+      await repository.setUser(null);
+      await repository.setUser('account-a');
+      await repository.sincronizarArsenal();
+      expect(
+        backup.records['account-a/balls/${old.id}']!.payload['notes'],
+        'Interrupted save',
+      );
+      await repository.arsenalSync!.resolve(
+        'balls/ball-legacy',
+        keepLocal: false,
+      );
+      await repository.sincronizarArsenal();
+      final history = await repository.arsenalSync!.history('balls', old.id);
+      expect(
+        history.any(
+          (v) => v.record.payload['notes'] == 'Legacy edit after crash',
+        ),
+        isTrue,
+      );
+      expect(
+        history.any((v) => v.record.payload['notes'] == 'Interrupted save'),
+        isTrue,
+      );
+    },
+  );
+  test(
+    'throw-only guest references require explicit import and retain all original IDs',
+    () async {
+      await repository.crearBola(
+        BowlingBall(id: 'guest-throw-a', name: 'A', weightLbs: 15),
+      );
+      await repository.crearBola(
+        BowlingBall(id: 'guest-throw-b', name: 'B', weightLbs: 14),
+      );
+      final game = Partida(
+        total: 150,
+        frames: [
+          ['8', '/'],
+        ],
+        ballIdsByThrow: {'0:0': 'guest-throw-a', '0:1': 'guest-throw-b'},
+      );
+      final original = Sesion(
+        fecha: DateTime(2026, 11, 19),
+        lugar: 'Test',
+        tipo: AppConstants.tipoEntrenamiento,
+        partidas: [game],
+      );
+      await Hive.box<Sesion>(AppConstants.boxSesiones).add(original);
+      await repository.setUser('account-a');
+      expect(Hive.box<Sesion>(repository.sesionesBoxName).values, isEmpty);
+      await repository.importarArsenalInvitado();
+      final local = Hive.box<Sesion>(repository.sesionesBoxName).values.single;
+      expect(local.fecha, original.fecha);
+      expect(local.partidas.single.ballIdsByThrow, game.ballIdsByThrow);
+      expect(
+        Hive.box<Sesion>(
+          AppConstants.boxSesiones,
+        ).values.single.partidas.single.ballIdsByThrow,
+        game.ballIdsByThrow,
+      );
+      await repository.setUser('account-b');
+      await repository.importarArsenalInvitado();
+      expect(Hive.box<Sesion>(repository.sesionesBoxName).values, isEmpty);
+    },
+  );
+  test(
+    'shared games remain discoverable for either ball after local reopen and JSON transport',
+    () async {
+      final game = Partida(
+        total: 150,
+        ballId: 'a',
+        frames: [
+          ['8', '/'],
+        ],
+        ballIdsByThrow: {'0:1': 'b'},
+      );
+      final original = Sesion(
+        fecha: DateTime(2026, 11, 19),
+        lugar: 'Test',
+        tipo: AppConstants.tipoEntrenamiento,
+        partidas: [game],
+      );
+      await repository.guardarSesion(original);
+      expect(
+        (await repository.obtenerPartidasPorBola('a')).single.ballIdsByThrow,
+        {'0:1': 'b'},
+      );
+      expect((await repository.obtenerPartidasPorBola('b')).single.total, 150);
+      final roundtrip = Sesion.fromJson(original.toJson());
+      expect(roundtrip.partidas.single.ballForThrow(0, 1), 'b');
+      final box = Hive.box<Sesion>(repository.sesionesBoxName);
+      final key = box.keys.single;
+      await box.close();
+      final reopened = await Hive.openBox<Sesion>(repository.sesionesBoxName);
+      expect(reopened.get(key)!.partidas.single.ballForThrow(0, 1), 'b');
+    },
+  );
+  test(
+    'ball history with missing game dates follows session chronology',
+    () async {
+      for (final day in [3, 1, 2]) {
+        await repository.guardarSesion(
+          Sesion(
+            fecha: DateTime(2026, 11, day),
+            lugar: 'Test',
+            tipo: AppConstants.tipoEntrenamiento,
+            partidas: [
+              Partida(
+                total: 100 + day,
+                ballId: 'a',
+                frames: [
+                  ['8', '/'],
+                ],
+                ballIdsByThrow: {'0:1': 'b'},
+              ),
+            ],
+          ),
+        );
+      }
+      expect(
+        (await repository.obtenerPartidasPorBola('b')).map((p) => p.total),
+        [101, 102, 103],
+      );
+    },
+  );
 }

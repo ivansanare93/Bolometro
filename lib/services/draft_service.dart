@@ -8,6 +8,8 @@ import '../models/partida.dart';
 class DraftService {
   static const String _sesionDraftKey = 'draft_sesion_completa';
   static const String _partidaDraftKey = 'draft_partida_actual';
+  static String _key(String base, String? uid) =>
+      uid == null ? base : '${base}_uid_${Uri.encodeComponent(uid)}';
 
   // ── Session draft (RegistroCompletoSesionScreen) ──────────────────────────
 
@@ -16,38 +18,56 @@ class DraftService {
     required String tipo,
     required String temporada,
     required List<Partida> partidas,
+    String? ownerUid,
   }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final draft = {
+        'ownerUid': ownerUid,
         'lugar': lugar,
         'tipo': tipo,
         'temporada': temporada,
         'partidas': partidas.map((p) => p.toJson()).toList(),
         'timestamp': DateTime.now().toIso8601String(),
       };
-      await prefs.setString(_sesionDraftKey, json.encode(draft));
+      await prefs.setString(
+        _key(_sesionDraftKey, ownerUid),
+        json.encode(draft),
+      );
     } catch (e) {
       debugPrint('DraftService: error saving session draft: $e');
     }
   }
 
-  static Future<Map<String, dynamic>?> loadSesionDraft() async {
+  static Future<Map<String, dynamic>?> loadSesionDraft({
+    String? ownerUid,
+  }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final draftStr = prefs.getString(_sesionDraftKey);
+      final draftStr = prefs.getString(_key(_sesionDraftKey, ownerUid));
       if (draftStr == null) return null;
-      return json.decode(draftStr) as Map<String, dynamic>;
+      final data = json.decode(draftStr) as Map<String, dynamic>;
+      if (data.containsKey('ownerUid') && data['ownerUid'] != ownerUid)
+        return null;
+      if (!data.containsKey('ownerUid') &&
+          ownerUid != null &&
+          ((data['partidas'] as List?) ?? []).any(
+            (p) => Partida.fromJson(
+              Map<String, dynamic>.from(p as Map),
+            ).referencedBallIds.isNotEmpty,
+          ))
+        return null;
+      return data;
     } catch (e) {
       debugPrint('DraftService: error loading session draft: $e');
       return null;
     }
   }
 
-  static Future<void> clearSesionDraft() async {
+  static Future<void> clearSesionDraft({String? ownerUid}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_sesionDraftKey);
+      await prefs.remove(_key(_sesionDraftKey, ownerUid));
     } catch (e) {
       debugPrint('DraftService: error clearing session draft: $e');
     }
@@ -65,6 +85,9 @@ class DraftService {
   /// knocked-down pin indices (1–10) or null if no visual selection was made.
   static Future<void> savePartidaDraft({
     required List<List<String>> framesText,
+    String? ownerUid,
+    String? ballId,
+    Map<String, String?> ballIdsByThrow = const {},
     String? notas,
     required List<List<List<int>?>> pinesPorTiro,
   }) async {
@@ -72,39 +95,52 @@ class DraftService {
       final prefs = await SharedPreferences.getInstance();
       final framesJson = framesText.map((f) => f.join(',')).toList();
       final pinesJson = pinesPorTiro.map((frame) {
-        return frame.map((tiro) {
-          if (tiro == null) return 'null';
-          return tiro.join(',');
-        }).join(';');
+        return frame
+            .map((tiro) {
+              if (tiro == null) return 'null';
+              return tiro.join(',');
+            })
+            .join(';');
       }).toList();
       final draft = {
+        'ownerUid': ownerUid,
+        'ballId': ballId,
+        if (ballIdsByThrow.isNotEmpty) 'ballIdsByThrow': ballIdsByThrow,
         'framesText': framesJson,
         'notas': notas,
         'pinesPorTiro': pinesJson,
         'timestamp': DateTime.now().toIso8601String(),
       };
-      await prefs.setString(_partidaDraftKey, json.encode(draft));
+      await prefs.setString(
+        _key(_partidaDraftKey, ownerUid),
+        json.encode(draft),
+      );
     } catch (e) {
       debugPrint('DraftService: error saving game draft: $e');
     }
   }
 
-  static Future<Map<String, dynamic>?> loadPartidaDraft() async {
+  static Future<Map<String, dynamic>?> loadPartidaDraft({
+    String? ownerUid,
+  }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final draftStr = prefs.getString(_partidaDraftKey);
+      final draftStr = prefs.getString(_key(_partidaDraftKey, ownerUid));
       if (draftStr == null) return null;
-      return json.decode(draftStr) as Map<String, dynamic>;
+      final data = json.decode(draftStr) as Map<String, dynamic>;
+      if (data.containsKey('ownerUid') && data['ownerUid'] != ownerUid)
+        return null;
+      return data;
     } catch (e) {
       debugPrint('DraftService: error loading game draft: $e');
       return null;
     }
   }
 
-  static Future<void> clearPartidaDraft() async {
+  static Future<void> clearPartidaDraft({String? ownerUid}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_partidaDraftKey);
+      await prefs.remove(_key(_partidaDraftKey, ownerUid));
     } catch (e) {
       debugPrint('DraftService: error clearing game draft: $e');
     }

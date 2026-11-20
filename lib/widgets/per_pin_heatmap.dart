@@ -98,10 +98,13 @@ class PerPinHeatmap extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: row.map((pin) {
                   final d = byPin[pin];
-                  final pinData = d ??
-                      PinHeatmapData(pin: pin, attempts: 0, converted: 0);
+                  final pinData =
+                      d ?? PinHeatmapData(pin: pin, attempts: 0, converted: 0);
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 3,
+                      vertical: 4,
+                    ),
                     child: _PinCell(data: pinData, isDark: isDark),
                   );
                 }).toList(),
@@ -170,12 +173,13 @@ class _PinCell extends StatelessWidget {
                     Text(
                       'Pin ${data.pin}',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Text(
                       pctText,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
                             color: _pinColor(),
                             fontWeight: FontWeight.w800,
                           ),
@@ -186,10 +190,7 @@ class _PinCell extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _DetailRow(label: 'Intentos', value: '${data.attempts}'),
-            _DetailRow(
-              label: 'Convertidos',
-              value: '${data.converted}',
-            ),
+            _DetailRow(label: 'Convertidos', value: '${data.converted}'),
           ],
         ),
       ),
@@ -268,9 +269,9 @@ class _DetailRow extends StatelessWidget {
           Text(label, style: Theme.of(context).textTheme.bodyMedium),
           Text(
             value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -290,21 +291,24 @@ class _Legend extends StatelessWidget {
     const steps = 5;
     final textColor = isDark ? Colors.white70 : Colors.black54;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 6,
+      runSpacing: 8,
       children: [
         Text('0%', style: TextStyle(fontSize: 10, color: textColor)),
         const SizedBox(width: 6),
         Row(
+          mainAxisSize: MainAxisSize.min,
           children: List.generate(steps, (i) {
             final t = i / (steps - 1);
-            final color =
-                Color.lerp(Colors.deepOrange[600]!, Colors.green[600]!, t)!;
-            return Container(
-              width: 20,
-              height: 10,
-              color: color,
-            );
+            final color = Color.lerp(
+              Colors.deepOrange[600]!,
+              Colors.green[600]!,
+              t,
+            )!;
+            return Container(width: 20, height: 10, color: color);
           }),
         ),
         const SizedBox(width: 6),
@@ -319,7 +323,10 @@ class _Legend extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
-        Text(AppLocalizations.of(context)?.noData ?? 'No data', style: TextStyle(fontSize: 10, color: textColor)),
+        Text(
+          AppLocalizations.of(context)?.noData ?? 'No data',
+          style: TextStyle(fontSize: 10, color: textColor),
+        ),
       ],
     );
   }

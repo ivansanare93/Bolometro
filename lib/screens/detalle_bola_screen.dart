@@ -1,3 +1,4 @@
+import '../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -51,7 +52,7 @@ class _DetalleBolaScreenState extends State<DetalleBolaScreen> {
       if (!mounted || uid != repo.arsenalUserId) return;
       setState(() {
         if (current != null) _bola = current;
-        _stats = BallStatsService.calcular(partidas);
+        _stats = BallStatsService.calcular(partidas, ballId: _bola.id);
         _mantenimientos = mantenimientos;
         _cargando = false;
       });
@@ -101,7 +102,8 @@ class _DetalleBolaScreenState extends State<DetalleBolaScreen> {
         ],
       ),
     );
-    if (confirmado != true || !mounted || _ownerUid != repo.arsenalUserId) return;
+    if (confirmado != true || !mounted || _ownerUid != repo.arsenalUserId)
+      return;
 
     final nuevoEstadoActivo = !_bola.isActive;
     if (_bola.isActive) {
@@ -150,10 +152,12 @@ class _DetalleBolaScreenState extends State<DetalleBolaScreen> {
                     value: tipo,
                     decoration: const InputDecoration(labelText: 'Tipo'),
                     items: BallMaintenanceType.values
-                        .map((t) => DropdownMenuItem(
-                              value: t,
-                              child: Text(BallMaintenanceType.label(t)),
-                            ))
+                        .map(
+                          (t) => DropdownMenuItem(
+                            value: t,
+                            child: Text(BallMaintenanceType.label(t)),
+                          ),
+                        )
                         .toList(),
                     onChanged: (value) {
                       if (value != null) {
@@ -198,7 +202,8 @@ class _DetalleBolaScreenState extends State<DetalleBolaScreen> {
       },
     );
 
-    if (registrado != true || !mounted ||
+    if (registrado != true ||
+        !mounted ||
         _ownerUid != context.read<DataRepository>().arsenalUserId) {
       notasController.dispose();
       return;
@@ -231,8 +236,12 @@ class _DetalleBolaScreenState extends State<DetalleBolaScreen> {
   @override
   Widget build(BuildContext context) {
     if (_ownerUid != context.watch<DataRepository>().arsenalUserId) {
-      return Scaffold(appBar: AppBar(title: const Text('Cuenta cambiada')),
-        body: const Center(child: Text('Vuelve al arsenal de la cuenta actual.')));
+      return Scaffold(
+        appBar: AppBar(title: const Text('Cuenta cambiada')),
+        body: const Center(
+          child: Text('Vuelve al arsenal de la cuenta actual.'),
+        ),
+      );
     }
     return DefaultTabController(
       length: 2,
@@ -240,15 +249,22 @@ class _DetalleBolaScreenState extends State<DetalleBolaScreen> {
         appBar: AppBar(
           title: Text(_bola.name),
           actions: [
-            ArsenalHistoryButton(collection: 'balls', id: _bola.id,
-              onRestored: _cargarDatos),
+            ArsenalHistoryButton(
+              collection: 'balls',
+              id: _bola.id,
+              onRestored: _cargarDatos,
+            ),
             IconButton(
               icon: const Icon(Icons.edit),
               tooltip: 'Editar',
               onPressed: _editar,
             ),
             IconButton(
-              icon: Icon(_bola.isActive ? Icons.archive_outlined : Icons.unarchive_outlined),
+              icon: Icon(
+                _bola.isActive
+                    ? Icons.archive_outlined
+                    : Icons.unarchive_outlined,
+              ),
               tooltip: _bola.isActive ? 'Archivar' : 'Reactivar',
               onPressed: _archivarOReactivar,
             ),
@@ -263,13 +279,10 @@ class _DetalleBolaScreenState extends State<DetalleBolaScreen> {
         body: _cargando
             ? const Center(child: CircularProgressIndicator())
             : _error != null
-                ? Center(child: Text(_error!))
-                : TabBarView(
-                    children: [
-                      _buildEstadisticas(),
-                      _buildMantenimiento(),
-                    ],
-                  ),
+            ? Center(child: Text(_error!))
+            : TabBarView(
+                children: [_buildEstadisticas(), _buildMantenimiento()],
+              ),
         floatingActionButton: Builder(
           builder: (context) {
             final controller = DefaultTabController.of(context);
@@ -304,23 +317,56 @@ class _DetalleBolaScreenState extends State<DetalleBolaScreen> {
       );
     }
 
-    final tendenciaTexto = _stats.tendencia > 0.05
-        ? '▲ Mejorando (+${_stats.tendencia.toStringAsFixed(1)})'
-        : _stats.tendencia < -0.05
-            ? '▼ Bajando (${_stats.tendencia.toStringAsFixed(1)})'
-            : '– Estable';
-
+    final l = AppLocalizations.of(context)!;
+    final usage = _stats.usage;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _KpiCard(label: 'Partidas jugadas', value: '${_stats.partidasJugadas}'),
-        _KpiCard(label: 'Promedio', value: _stats.promedio.toStringAsFixed(1)),
-        _KpiCard(label: 'Mejor partida', value: '${_stats.mejorPartida}'),
-        _KpiCard(
-          label: '% de strikes',
-          value: '${_stats.strikeRate.toStringAsFixed(1)}%',
+        Text(
+          l.ballParticipation(
+            _stats.partidasJugadas,
+            _stats.partidasExclusivas,
+          ),
         ),
-        _KpiCard(label: 'Tendencia', value: tendenciaTexto),
+        Text(l.ballExclusiveNote, style: Theme.of(context).textTheme.bodySmall),
+        _KpiCard(
+          label: l.average,
+          value: _stats.promedio?.toStringAsFixed(1) ?? '\u2014',
+        ),
+        _KpiCard(
+          label: l.best,
+          value: _stats.mejorPartida?.toString() ?? '\u2014',
+        ),
+        if (_stats.partidasExclusivas == 0) Text(l.ballNoExclusive),
+        if (usage != null) ...[
+          Text(
+            l.ballUsageNumbers(
+              usage.throwsCount,
+              usage.framesCount,
+              usage.pins,
+            ),
+          ),
+          _KpiCard(
+            label: l.strikes,
+            value: _stats.strikeRate == null
+                ? '\u2014'
+                : '${_stats.strikeRate!.toStringAsFixed(1)}%',
+          ),
+          Text(l.ballStrikeSample(usage.strikes, usage.fullRackThrows)),
+          _KpiCard(
+            label: l.spares,
+            value: usage.spareRate == null
+                ? '\u2014'
+                : '${usage.spareRate!.toStringAsFixed(1)}%',
+          ),
+          Text(l.ballSpareSample(usage.spares, usage.spareAttempts)),
+        ],
+        if (_stats.tendencia != null)
+          Text(
+            l.statisticsMeanChange(
+              '${_stats.tendencia! > 0 ? '+' : ''}${_stats.tendencia!.toStringAsFixed(1)}',
+            ),
+          ),
       ],
     );
   }
@@ -346,8 +392,11 @@ class _DetalleBolaScreenState extends State<DetalleBolaScreen> {
           margin: const EdgeInsets.symmetric(vertical: 6),
           child: ListTile(
             leading: const Icon(Icons.build_outlined),
-            trailing: ArsenalHistoryButton(collection: 'ball_maintenance', id: m.id,
-              onRestored: _cargarDatos),
+            trailing: ArsenalHistoryButton(
+              collection: 'ball_maintenance',
+              id: m.id,
+              onRestored: _cargarDatos,
+            ),
             title: Text(BallMaintenanceType.label(m.type)),
             subtitle: Text(
               [

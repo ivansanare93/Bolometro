@@ -1955,4 +1955,617 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get numericKeyboardLabel => 'Numeric';
+
+  @override
+  String get pinKeyboardLabel => 'Pins';
+
+  @override
+  String get deleteThrow => 'Delete throw';
+
+  @override
+  String get clearPinSelection => 'Clear selection';
+
+  @override
+  String get restoreSeasonBeforeAssigning =>
+      'Restore the archived season before assigning sessions.';
+
+  @override
+  String get seasonOperationFailed =>
+      'The operation could not complete. Data is retained; review pending changes before retrying.';
+
+  @override
+  String get seasonRemovalExplanation =>
+      'No sessions will be deleted. Archive the season, or choose where its sessions belong before removing it.';
+
+  @override
+  String get removeSeasonAndReassign => 'Remove and reassign';
+
+  @override
+  String get retrySeasonChanges => 'Retry';
+
+  @override
+  String seasonChangesPending(int count) {
+    return 'Changes retained on this device. Sessions awaiting account confirmation: $count.';
+  }
+
+  @override
+  String seasonConflictsPending(int count) {
+    return 'Conflicts requiring review: $count. They will not be overwritten automatically.';
+  }
+
+  @override
+  String get reviewSeasonConflict => 'Review conflict';
+
+  @override
+  String get localSeasonChoice => 'Keep device season';
+
+  @override
+  String get remoteSeasonChoice => 'Keep account season';
+
+  @override
+  String get backupMissingSession => 'Back up missing session';
+
+  @override
+  String get backupMissingSessionExplanation =>
+      'This session is retained on this device but is missing from the account. Create its backup including games? An existing session will not be overwritten.';
+
+  @override
+  String get statisticsRefresh => 'Refresh statistics';
+
+  @override
+  String get statisticsLoadError =>
+      'Statistics could not be loaded. Please try again.';
+
+  @override
+  String get statisticsSeasonScope =>
+      'Full-season summaries, filtered by session type only. Dates, individual session and game limits do not apply. The previous season is determined by its most recent recorded activity. Ball and venue filters do not apply either.';
+
+  @override
+  String get statisticsFilters => 'Filters';
+
+  @override
+  String get statisticsResetFilters => 'Reset filters';
+
+  @override
+  String get statisticsSummary => 'Filtered results summary';
+
+  @override
+  String statisticsSample(int games, int sessions) {
+    String _temp0 = intl.Intl.pluralLogic(
+      games,
+      locale: localeName,
+      other: '$games games',
+      one: '1 game',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      sessions,
+      locale: localeName,
+      other: '$sessions sessions',
+      one: '1 session',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String statisticsRecentSample(int count) {
+    return 'Recent average based on $count available games.';
+  }
+
+  @override
+  String get statisticsChartTitle => 'Game progress';
+
+  @override
+  String get statisticsScoreLegend => 'Game score';
+
+  @override
+  String statisticsMovingLegend(int count) {
+    return 'Moving average ($count)';
+  }
+
+  @override
+  String get statisticsChartHint =>
+      'Tap a point to inspect the result. The horizontal axis follows game order, not elapsed days.';
+
+  @override
+  String statisticsMovingNeeds(int count) {
+    return 'The moving average needs at least $count games.';
+  }
+
+  @override
+  String statisticsGameNumber(int number) {
+    return 'Game $number';
+  }
+
+  @override
+  String get statisticsPreviousGame => 'Previous game';
+
+  @override
+  String get statisticsNextGame => 'Next game';
+
+  @override
+  String statisticsFirstSample(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count first throws with recorded pin data.',
+      one: '1 first throw with recorded pin data.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statisticsSpareSample(int converted, int attempts) {
+    String _temp0 = intl.Intl.pluralLogic(
+      attempts,
+      locale: localeName,
+      other: '$attempts recorded opportunities.',
+      one: '1 recorded opportunity.',
+    );
+    return '$converted converted out of $_temp0';
+  }
+
+  @override
+  String statisticsPinCoverage(int games, int total) {
+    return '$games of $total games have some pin data; samples may be partial.';
+  }
+
+  @override
+  String get statisticsNoPinData =>
+      'No pin data. Record throws with the pin keyboard to see this breakdown.';
+
+  @override
+  String get statisticsNoSample => 'Not enough data';
+
+  @override
+  String get statisticsSpareTableHint =>
+      'Each row shows conversions / opportunities for that leave. The map groups all leaves containing each pin; these are not single-pin spare rates.';
+
+  @override
+  String get statisticsFilteredEmpty =>
+      'No games match these filters. Change or reset them.';
+
+  @override
+  String get statisticsUnknownDate => 'No date';
+
+  @override
+  String get statisticsProgress => 'Consistency and recent comparison';
+
+  @override
+  String get statisticsDeviation => 'Score standard deviation';
+
+  @override
+  String get statisticsDeviationNote =>
+      'Population standard deviation of the recorded set: lower means scores are closer together, not necessarily better. At least two games are required.';
+
+  @override
+  String statisticsMetricPoints(String value) {
+    return '$value points';
+  }
+
+  @override
+  String statisticsAnalysisSample(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count games analyzed',
+      one: '1 game analyzed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statisticsComparisonWindow => 'Games per block';
+
+  @override
+  String get statisticsComparisonScope =>
+      'Compares consecutive blocks containing the same number of games within the filtered set, including the last-games limit. These are not equal-duration periods.';
+
+  @override
+  String statisticsComparisonNeeds(int required, int available) {
+    return '$required filtered games are needed; $available are available. Incomplete blocks are not compared.';
+  }
+
+  @override
+  String statisticsRecentBlock(int count) {
+    return 'Latest $count games';
+  }
+
+  @override
+  String statisticsPreviousBlock(int count) {
+    return 'Previous $count games';
+  }
+
+  @override
+  String statisticsMeanChange(String value) {
+    return 'Average change: $value points';
+  }
+
+  @override
+  String get statisticsChangeNote =>
+      'The difference describes these games. It does not prove a skill improvement or an effect of equipment or venue.';
+
+  @override
+  String get statisticsByBall => 'Performance by ball';
+
+  @override
+  String get statisticsByVenue => 'Performance by venue';
+
+  @override
+  String get statisticsGroupsNote =>
+      'Data from the filtered set, ordered by game count. Consider sample sizes and playing conditions; this is not a ranking of which is best.';
+
+  @override
+  String get statisticsAllBalls => 'All balls';
+
+  @override
+  String get statisticsWithoutBall => 'No ball specified';
+
+  @override
+  String statisticsBallReference(String id) {
+    return 'Ball with ID $id';
+  }
+
+  @override
+  String get statisticsBallFilter => 'Ball used';
+
+  @override
+  String get statisticsVenueFilter => 'Session venue';
+
+  @override
+  String get statisticsAllVenues => 'All venues';
+
+  @override
+  String get statisticsWithoutVenue => 'No venue specified';
+
+  @override
+  String statisticsGroupSummary(String average, String best) {
+    return 'Average: $average · Best: $best';
+  }
+
+  @override
+  String get ballDefault => 'Default ball';
+
+  @override
+  String get ballDefaultHint =>
+      'Applies to throws without an individual assignment. Changing it does not remove throw overrides.';
+
+  @override
+  String get ballPerThrow => 'Balls by throw';
+
+  @override
+  String get ballThrowsHint =>
+      'Assign each throw or apply a ball to a frame range. Unplayed throws do not count. Changes apply only when saved.';
+
+  @override
+  String ballOverrideCount(int count) {
+    return '$count individual assignments configured';
+  }
+
+  @override
+  String get ballRangeFrom => 'From frame';
+
+  @override
+  String get ballRangeUntil => 'Through frame';
+
+  @override
+  String get ballRangeShots => 'Throws in range';
+
+  @override
+  String get ballAllThrows => 'All throws';
+
+  @override
+  String ballThrowNumber(int number) {
+    return 'Throw $number';
+  }
+
+  @override
+  String get ballApplyRange => 'Assign ball to range';
+
+  @override
+  String get ballClearOverrides => 'Reset to default ball';
+
+  @override
+  String get ballSaveAssignments => 'Save assignments';
+
+  @override
+  String get ballAccountChanged =>
+      'The account has changed. Keep the draft and reopen it with its original account.';
+
+  @override
+  String get ballScoreScope =>
+      'Scores describe entire games in which this ball was used. In the ball breakdown, throws are attributed individually and score averages include only games played exclusively with it.';
+
+  @override
+  String ballParticipation(int games, int exclusive) {
+    return 'Used in $games games; $exclusive exclusive';
+  }
+
+  @override
+  String ballUsageNumbers(int throws, int frames, int pins) {
+    return '$throws throws, used in $frames frames, and $pins pins knocked down (without score bonuses).';
+  }
+
+  @override
+  String ballStrikeSample(int converted, int attempts) {
+    return 'Strikes: $converted/$attempts full-rack throws';
+  }
+
+  @override
+  String ballSpareSample(int converted, int attempts) {
+    return 'Spares: $converted/$attempts spare opportunities';
+  }
+
+  @override
+  String get ballExclusiveNote =>
+      'Average and best score: games played exclusively with this ball only. Shared-game scores are not allocated between balls.';
+
+  @override
+  String get ballNoExclusive =>
+      'No exclusive games available for ball score statistics.';
+
+  @override
+  String get ballUnknownScope =>
+      'Includes games with at least one throw without a specified ball, even if other throws have a ball assigned.';
+
+  @override
+  String get photoScoreTitle => 'Read score from a photo';
+
+  @override
+  String get photoScorePick => 'Select photo';
+
+  @override
+  String get photoScorePrivacy =>
+      'Local recognition on Android. The photo and review progress are preserved only on this device, separately for each account; you can delete them from this screen. They are not attached to games or uploaded. ML Kit may send technical metrics to Google, without photos or recognition results.';
+
+  @override
+  String get photoScoreRegion =>
+      'Drag a rectangle around ONE player’s throws across all 10 frames, excluding names, headers and cumulative scores. To adjust a divider, press Edit row and dividers and drag its line.';
+
+  @override
+  String get photoScoreExtract => 'Read selected row';
+
+  @override
+  String get photoScoreResetRegion => 'Edit row and dividers';
+
+  @override
+  String get photoScoreReviewHint =>
+      'Check each frame against the photo and mark it as reviewed. Use X, /, - or 0–9. ? means ambiguous recognition. Throws are not inferred from the total.';
+
+  @override
+  String get photoScoreFrame => 'Frame';
+
+  @override
+  String get photoScoreThrow => 'Throw';
+
+  @override
+  String get photoScoreReviewed => 'Reviewed';
+
+  @override
+  String get photoScorePrintedTotal => 'Scoreboard total (without handicap)';
+
+  @override
+  String get photoScoreNumbers =>
+      'Recognized numbers: choose the correct total';
+
+  @override
+  String get photoScoreCalculated => 'Calculated total';
+
+  @override
+  String get photoScoreApply => 'Use these throws';
+
+  @override
+  String get photoScoreInvalidFrame =>
+      'Some frames are incomplete or contain incompatible throws. Correct the marked fields.';
+
+  @override
+  String get photoScoreTotalMissing =>
+      'Enter the scoreboard total: 0 to 300, without handicap.';
+
+  @override
+  String get photoScoreMismatch =>
+      'Throws do not match the scoreboard total. Check that you chose the total WITHOUT handicap, and review the throws before continuing.';
+
+  @override
+  String get photoScoreReviewMissing =>
+      'Confirm review of all 10 frames and the total.';
+
+  @override
+  String get photoScoreError =>
+      'Could not read the photo. Try another image or enter throws manually.';
+
+  @override
+  String get photoScoreSize =>
+      'The image exceeds 20 MB or 16 megapixels. Crop the scoreboard or select a smaller photo.';
+
+  @override
+  String get photoScorePlatform =>
+      'Photo recognition is available on Android. You can still enter the game manually.';
+
+  @override
+  String get photoScoreReplaceTitle => 'Replace draft throws?';
+
+  @override
+  String get photoScoreReplaceBody =>
+      'Current throws will be replaced and their visual pin selections removed. Ball assignments and notes are retained. The game will not be saved until you press Save.';
+
+  @override
+  String get photoScoreReplace => 'Replace throws';
+
+  @override
+  String get photoScoreCancel => 'Cancel';
+
+  @override
+  String get photoScoreRaw => 'Recognition';
+
+  @override
+  String get photoScoreNoRegion => 'First select the throws row on the image.';
+
+  @override
+  String get photoScoreCumulative => 'Calculated cumulative score';
+
+  @override
+  String get photoScoreMatchesThrows =>
+      'matches throws; verify against the photo';
+
+  @override
+  String get photoScoreHandicapHint =>
+      'The scoreboard may show the total and total + handicap. Select the total WITHOUT handicap. A match with the throws does not prove recognition is correct.';
+
+  @override
+  String get photoScoreMoveZoom => 'Move / zoom';
+
+  @override
+  String get photoScoreZoomIn => 'Zoom in';
+
+  @override
+  String get photoScoreZoomOut => 'Zoom out';
+
+  @override
+  String get photoScoreResetView => 'Fit image';
+
+  @override
+  String get photoScoreSelectMode =>
+      'Selection mode: drag the row or a divider. Switch to Move / zoom to enlarge or pan.';
+
+  @override
+  String get photoScoreMoveMode =>
+      'View mode: pinch to zoom and drag to pan. Selection stays unchanged.';
+
+  @override
+  String get photoScoreDivider => 'Divider between frames';
+
+  @override
+  String get photoScoreDividerHelp =>
+      'Press Edit row and dividers to adjust this divider using the slider or photo.';
+
+  @override
+  String get photoScorePrevious => 'Previous';
+
+  @override
+  String get photoScoreNext => 'Next';
+
+  @override
+  String get photoScoreConfirmNext => 'Confirm and next';
+
+  @override
+  String get photoScoreConfirmFrame => 'Confirm frame';
+
+  @override
+  String get photoScoreCellInvalid => 'Review';
+
+  @override
+  String get photoScoreMissingThrow =>
+      'A required throw is missing from this frame.';
+
+  @override
+  String get photoScoreUnknownSymbol =>
+      'Unknown symbol. Use X, /, - or a number from 0 to 9.';
+
+  @override
+  String get photoScoreUnexpectedThrow =>
+      'This throw is not allowed after the previous throws. Check strikes and bonuses.';
+
+  @override
+  String get photoScoreInvalidSpare =>
+      'A spare / cannot appear in this position.';
+
+  @override
+  String get photoScorePinSum => 'The sum exceeds ten pins in the same rack.';
+
+  @override
+  String get photoScoreSpareExpected =>
+      'The two throws total ten: mark / for the spare after checking the photo.';
+
+  @override
+  String get photoScoreProgress => 'Reviewed frames';
+
+  @override
+  String get photoScoreResumeTitle => 'A photo review is saved on this device.';
+
+  @override
+  String get photoScoreResume => 'Resume review';
+
+  @override
+  String get photoScoreDiscard => 'Delete saved review';
+
+  @override
+  String get photoScoreDiscardTitle => 'Delete the local copy of this review?';
+
+  @override
+  String get photoScoreDiscardBody =>
+      'The photo and review progress saved for this account will be deleted. The original gallery photo and games will be retained.';
+
+  @override
+  String get photoScoreChangeTitle => 'Change the photo or selection?';
+
+  @override
+  String get photoScoreChangeBody =>
+      'A new reading will replace this review’s corrections and confirmations. Saved games stay unchanged.';
+
+  @override
+  String get photoScoreContinue => 'Continue';
+
+  @override
+  String get photoScoreDraftSaved => 'Review preserved on this device.';
+
+  @override
+  String get photoScoreDraftSaving => 'Saving local review…';
+
+  @override
+  String get photoScoreDraftError =>
+      'Could not preserve or restore the local review. Do not clear app data. You can continue reviewing and retry saving.';
+
+  @override
+  String get photoScoreDraftRetry => 'Retry local save';
+
+  @override
+  String get photoScoreProposalTitle => 'Game proposal';
+
+  @override
+  String get photoScoreChooseRow => 'Choose the player row you want to record.';
+
+  @override
+  String get photoScoreRowLabel => 'Row';
+
+  @override
+  String get photoScoreCorrectReading => 'Correct reading';
+
+  @override
+  String get photoScoreAdjustSelection => 'Adjust row and columns';
+
+  @override
+  String get photoScoreSingleConfirm => 'This is correct, use this game';
+
+  @override
+  String get photoScoreProposalUnknown =>
+      'Some throws are incomplete or incompatible. Correct the reading before continuing.';
+
+  @override
+  String get photoScoreProposalAmbiguous =>
+      'Column assignment is uncertain. Adjust the selection or review frames individually.';
+
+  @override
+  String get photoScoreProposalCoherent =>
+      'The throws are valid and add up to the displayed total. Check they match the photo before confirming.';
+
+  @override
+  String get photoScoreProposalCumulativeMismatch =>
+      'Recognized cumulative scores do not match the calculated scores. Review the photo and individual frames.';
+
+  @override
+  String get photoScoreReturnSummary => 'Back to summary';
+
+  @override
+  String get photoScoreFullPhoto => 'Enlarge photo';
+
+  @override
+  String get photoScoreNoProposals =>
+      'Ten columns and a throw row could not be identified clearly enough. Select the row manually to continue.';
+
+  @override
+  String get photoScoreReviewOriginal =>
+      'Check all ten frames and the total WITHOUT handicap against the photo. Confirming transfers throws to the form; you still need to save the game and session.';
 }

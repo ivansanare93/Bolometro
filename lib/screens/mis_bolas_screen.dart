@@ -1,3 +1,5 @@
+import '../config/catalog_config.dart';
+import '../widgets/ball_photo.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -5,6 +7,8 @@ import '../models/bowling_ball.dart';
 import '../repositories/data_repository.dart';
 import 'detalle_bola_screen.dart';
 import 'editar_bola_screen.dart';
+import 'ball_catalog_screen.dart';
+import '../repositories/ball_catalog_repository.dart';
 import '../widgets/arsenal_history_button.dart';
 
 /// Pantalla "Mis Bolas": listado del inventario de bolas de bolos del
@@ -23,6 +27,7 @@ class _MisBolasScreenState extends State<MisBolasScreen> {
   bool _mostrarArchivadas = false;
   String? _visibleUid;
   bool _boundAccount = false;
+  bool _reviewingConflict = false;
 
   @override
   void didChangeDependencies() {
@@ -65,9 +70,14 @@ class _MisBolasScreenState extends State<MisBolasScreen> {
       await repo.sincronizarArsenal();
       if (mounted) await _cargarBolas();
     } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('No se pudo confirmar el respaldo. Conservamos tus datos en este dispositivo.'),
-      ));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'No se pudo confirmar el respaldo. Conservamos tus datos en este dispositivo.',
+            ),
+          ),
+        );
     }
   }
 
@@ -77,50 +87,181 @@ class _MisBolasScreenState extends State<MisBolasScreen> {
     try {
       final count = await repo.bolasInvitadasDisponibles();
       if (!mounted || uid != repo.arsenalUserId) return;
-      final confirmed = await showDialog<bool>(context: context, builder: (context) => AlertDialog(
-        title: const Text('Importar arsenal de invitado'),
-        content: Text('$count bolas disponibles. Se vincularán a la cuenta actual ($uid), junto con sus mantenimientos y partidas relacionadas. La copia original se conserva y no se importará a otra cuenta.'),
-        actions: [TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Importar'))],
-      ));
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Importar arsenal de invitado'),
+          content: Text(
+            '$count bolas disponibles. Se vincularán a la cuenta actual ($uid), junto con sus mantenimientos y partidas relacionadas. La copia original se conserva y no se importará a otra cuenta.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Importar'),
+            ),
+          ],
+        ),
+      );
       if (confirmed != true || uid != repo.arsenalUserId) return;
       await repo.importarArsenalInvitado();
       if (mounted) await _cargarBolas();
     } catch (error) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$error')));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('$error')));
     }
   }
 
   Future<void> _reviewConflict(String key) async {
+    if (_reviewingConflict) return;
     final repo = context.read<DataRepository>();
     final service = repo.arsenalSync;
     if (service == null) return;
-    final conflict = service.conflict(key);
-    final keepLocal = await showDialog<bool>(context: context, builder: (context) => AlertDialog(
-      title: const Text('Dos versiones conservadas'),
-      content: SingleChildScrollView(child: SelectableText(
-        'Este dispositivo:\n${describeArsenalPayload((conflict['legacyVariant'] ?? conflict['payload']) as Map?)}\n\nCuenta:\n${describeArsenalPayload(conflict['remotePayload'] as Map?)}\n\nLas versiones enviadas se conservan en el historial del respaldo. Elige cuál quieres usar.' )),
-      actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Más tarde')),
-        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Usar cuenta')),
-        TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Usar dispositivo'))],
-    ));
-    if (keepLocal == null || !identical(service, repo.arsenalSync)) return;
+    if (!repo.arsenalBackupEnabled) {
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('El respaldo está desactivado'),
+          content: const Text(
+            'Esta versión o cuenta no tiene habilitado el respaldo. Tus versiones siguen conservadas en este dispositivo. Actualiza la app con el respaldo habilitado para comprobar la copia de la cuenta antes de elegir. No desinstales ni borres los datos.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cerrar'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    setState(() => _reviewingConflict = true);
     try {
-      await service.resolve(key, keepLocal: keepLocal);
+      try {
+        await repo.sincronizarArsenal();
+      } catch (_) {
+        if (mounted && identical(service, repo.arsenalSync)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'No se pudieron recuperar las versiones. Se conservan tus datos. Comprueba la conexión y vuelve a revisar el conflicto.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+      if (!mounted || !identical(service, repo.arsenalSync)) return;
+      if (!service.conflicts.contains(key)) {
+        await _cargarBolas();
+        return;
+      }
+      if (!service.canResolveConflict(key)) {
+        throw StateError(
+          'Todavía no se han confirmado las dos versiones. Vuelve a sincronizar antes de elegir.',
+        );
+      }
+      final conflict = service.conflict(key);
+      final keepLocal = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Dos versiones conservadas'),
+          content: SingleChildScrollView(
+            child: SelectableText(
+              'Este dispositivo:\n${describeArsenalPayload((conflict['legacyVariant'] ?? conflict['payload']) as Map?)}\n\nCuenta:\n${describeArsenalPayload(conflict['remotePayload'] as Map?)}\n\nLas versiones enviadas se conservan en el historial del respaldo. Elige cuál quieres usar.',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Más tarde'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Usar cuenta'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Usar dispositivo'),
+            ),
+          ],
+        ),
+      );
+      if (!mounted ||
+          keepLocal == null ||
+          !identical(service, repo.arsenalSync))
+        return;
+      await service.resolve(
+        key,
+        keepLocal: keepLocal,
+        expectedConflict: conflict,
+      );
+      if (!mounted || !identical(service, repo.arsenalSync)) return;
+      await _cargarBolas();
       await _backup();
     } catch (error) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$error')));
+      if (mounted && identical(service, repo.arsenalSync)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              error is StateError
+                  ? '${error.message}'
+                  : 'No se pudo aplicar la elección. Tus versiones se conservan; vuelve a revisarlas.',
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _reviewingConflict = false);
     }
   }
 
-  List<BowlingBall> get _bolasVisibles => _mostrarArchivadas
-      ? _bolas
-      : _bolas.where((b) => b.isActive).toList();
+  List<BowlingBall> get _bolasVisibles =>
+      _mostrarArchivadas ? _bolas : _bolas.where((b) => b.isActive).toList();
 
   Future<void> _abrirCrearBola() async {
+    final repo = context.read<DataRepository>();
+    final uid = repo.arsenalUserId;
+    final catalogEnabled =
+        context.read<BallCatalogRepository?>()?.commercialCatalogEnabled ??
+        CatalogConfig.commercialEnabled;
+    final choice = catalogEnabled
+        ? await showModalBottomSheet<String>(
+            context: context,
+            builder: (context) => SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.search),
+                    title: const Text('Buscar en catálogo'),
+                    onTap: () => Navigator.pop(context, 'catalog'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.edit_outlined),
+                    title: const Text('Añadir manualmente'),
+                    onTap: () => Navigator.pop(context, 'manual'),
+                  ),
+                ],
+              ),
+            ),
+          )
+        : 'manual';
+    if (!mounted || choice == null || uid != repo.arsenalUserId) return;
     final creada = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(builder: (_) => const EditarBolaScreen()),
+      MaterialPageRoute(
+        builder: (_) => choice == 'catalog'
+            ? BallCatalogScreen(
+                repository: context.read<BallCatalogRepository>(),
+              )
+            : const EditarBolaScreen(),
+      ),
     );
     if (creada == true) {
       await _cargarBolas();
@@ -146,19 +287,31 @@ class _MisBolasScreenState extends State<MisBolasScreen> {
         title: const Text('Mis Bolas'),
         actions: [
           if (repo.arsenalUserId != null) ...[
-            IconButton(tooltip: 'Respaldar y recuperar arsenal',
-              onPressed: !repo.arsenalBackupEnabled || service == null || service.isSyncing ? null : _backup,
-              icon: const Icon(Icons.cloud_sync)),
-            IconButton(tooltip: 'Importar arsenal de invitado',
+            IconButton(
+              tooltip: 'Respaldar y recuperar arsenal',
+              onPressed:
+                  _reviewingConflict ||
+                      !repo.arsenalBackupEnabled ||
+                      service == null ||
+                      service.isSyncing
+                  ? null
+                  : _backup,
+              icon: const Icon(Icons.cloud_sync),
+            ),
+            IconButton(
+              tooltip: 'Importar arsenal de invitado',
               onPressed: service == null ? null : _importGuest,
-              icon: const Icon(Icons.move_to_inbox_outlined)),
+              icon: const Icon(Icons.move_to_inbox_outlined),
+            ),
           ],
           IconButton(
             tooltip: _mostrarArchivadas
                 ? 'Ocultar archivadas'
                 : 'Mostrar archivadas',
             icon: Icon(
-              _mostrarArchivadas ? Icons.visibility_off : Icons.archive_outlined,
+              _mostrarArchivadas
+                  ? Icons.visibility_off
+                  : Icons.archive_outlined,
             ),
             onPressed: () {
               setState(() => _mostrarArchivadas = !_mostrarArchivadas);
@@ -166,25 +319,47 @@ class _MisBolasScreenState extends State<MisBolasScreen> {
           ),
         ],
       ),
-      body: Column(children: [
-        ListTile(dense: true, leading: Icon(service?.error != null ? Icons.cloud_off : Icons.info_outline),
-          title: Text(repo.arsenalUserId == null
-            ? 'Solo en este dispositivo. Inicia sesión e importa el arsenal para respaldarlo.'
-            : !repo.arsenalBackupEnabled ? 'Conservado en este dispositivo. Respaldo remoto pendiente de activación.'
-            : service?.isSyncing == true ? 'Comprobando respaldo…'
-            : service?.error != null ? 'Respaldo pendiente: no se pudo confirmar con tu cuenta.'
-            : service == null ? 'Preparando cuenta…'
-            : service.conflicts.isNotEmpty ? 'Hay versiones diferentes que necesitan revisión.'
-            : service.pendingCount > 0 ? '${service.pendingCount} cambios pendientes de respaldo.'
-            : service.hasConfirmedBackup ? 'Respaldo confirmado en la última sincronización.'
-            : 'Aún no hay respaldo confirmado.'),
-          subtitle: const Text('No reinstales ni borres los datos mientras haya cambios pendientes.'),
-        ),
-        if (service != null)
-          for (final key in service.conflicts)
-            TextButton(onPressed: () => _reviewConflict(key), child: Text('Revisar $key')),
-        Expanded(child: _buildBody(visibles)),
-      ]),
+      body: Column(
+        children: [
+          ListTile(
+            dense: true,
+            leading: Icon(
+              service?.error != null ? Icons.cloud_off : Icons.info_outline,
+            ),
+            title: Text(
+              repo.arsenalUserId == null
+                  ? 'Solo en este dispositivo. Inicia sesión e importa el arsenal para respaldarlo.'
+                  : !repo.arsenalBackupEnabled
+                  ? 'Conservado en este dispositivo. El respaldo está desactivado para esta versión o cuenta.'
+                  : service?.isSyncing == true
+                  ? 'Comprobando respaldo…'
+                  : service?.error != null
+                  ? 'Respaldo pendiente: no se pudo confirmar con tu cuenta.'
+                  : service == null
+                  ? 'Preparando cuenta…'
+                  : service.conflicts.isNotEmpty
+                  ? 'Hay versiones diferentes que necesitan revisión.'
+                  : service.pendingCount > 0
+                  ? '${service.pendingCount} cambios pendientes de respaldo.'
+                  : service.hasConfirmedBackup
+                  ? 'Respaldo confirmado en la última sincronización.'
+                  : 'Aún no hay respaldo confirmado.',
+            ),
+            subtitle: const Text(
+              'No reinstales ni borres los datos mientras haya cambios pendientes.',
+            ),
+          ),
+          if (service != null)
+            for (final key in service.conflicts)
+              TextButton(
+                onPressed: _reviewingConflict
+                    ? null
+                    : () => _reviewConflict(key),
+                child: Text('Revisar $key'),
+              ),
+          Expanded(child: _buildBody(visibles)),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _abrirCrearBola,
         tooltip: 'Agregar bola',
@@ -255,10 +430,7 @@ class _MisBolasScreenState extends State<MisBolasScreen> {
         itemCount: visibles.length,
         itemBuilder: (context, index) {
           final bola = visibles[index];
-          return _BolaCard(
-            bola: bola,
-            onTap: () => _abrirDetalle(bola),
-          );
+          return _BolaCard(bola: bola, onTap: () => _abrirDetalle(bola));
         },
       ),
     );
@@ -276,11 +448,10 @@ class _BolaCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
       child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: bola.isActive
-              ? Theme.of(context).colorScheme.primary
-              : Colors.grey,
-          child: const Text('🎳'),
+        leading: BallPhoto(
+          ownerUid: context.watch<DataRepository>().arsenalUserId,
+          ballId: bola.id,
+          size: 48,
         ),
         title: Text(
           bola.name,
@@ -288,7 +459,8 @@ class _BolaCard extends StatelessWidget {
         ),
         subtitle: Text(
           [
-            if (bola.brand != null && bola.brand!.trim().isNotEmpty) bola.brand!,
+            if (bola.brand != null && bola.brand!.trim().isNotEmpty)
+              bola.brand!,
             '${bola.weightLbs.toStringAsFixed(bola.weightLbs.truncateToDouble() == bola.weightLbs ? 0 : 1)} lbs',
             if (!bola.isActive) 'Archivada',
           ].join(' · '),

@@ -1,0 +1,108 @@
+{
+  "date": "2026-11-19",
+  "image": {
+    "local_source": "C:\\puntosBolos.jpeg",
+    "sha256": "1bfccf05e19adc880d548106cb48ddf423ad5438d66130bc8ae7debfbe74061f",
+    "bytes": 66418
+  },
+  "manual_reference": {
+    "id": "scoreboard-chat-207-h40",
+    "source": {
+      "kind": "manual_transcription_from_chat_image",
+      "verified_on": "2026-11-19",
+      "native_ocr_executed": false,
+      "notes": "Visual transcription for scoring regression. Not an ML Kit output or measured OCR accuracy. Player name omitted."
+    },
+    "frames": [
+      [
+        "9",
+        "/"
+      ],
+      [
+        "X"
+      ],
+      [
+        "X"
+      ],
+      [
+        "9",
+        "/"
+      ],
+      [
+        "X"
+      ],
+      [
+        "9",
+        "/"
+      ],
+      [
+        "9",
+        "/"
+      ],
+      [
+        "X"
+      ],
+      [
+        "6",
+        "/"
+      ],
+      [
+        "9",
+        "/",
+        "X"
+      ]
+    ],
+    "cumulative_scores": [
+      20,
+      49,
+      69,
+      89,
+      109,
+      128,
+      148,
+      168,
+      187,
+      207
+    ],
+    "scratch_total": 207,
+    "displayed_handicap_total": 247,
+    "handicap_difference": 40
+  },
+  "logical_validation": {
+    "total": 207,
+    "cumulative_scores": [
+      20,
+      49,
+      69,
+      89,
+      109,
+      128,
+      148,
+      168,
+      187,
+      207
+    ],
+    "matches_displayed_cumulative_scores": true,
+    "handicap_inclusive_247_rejected": true,
+    "basis": "manual transcription plus automated scoring tests, NOT OCR accuracy"
+  },
+  "native_ocr": {
+    "attempted": true,
+    "completed": false,
+    "recognized_frames": null,
+    "position_or_symbol_accuracy": null,
+    "status": "No valid native OCR output obtained in this host session",
+    "environment_observations": [
+      "API 37 test app processes terminate before a completed OCR report.",
+      "API 36 emulators remain offline, including a 4096 MiB read-only instance.",
+      "Initial test input transfer via Windows command-line/ADB failed and was replaced with a test-only Dart fixture."
+    ],
+    "warning": "These environment failures do not establish that ML Kit fails to recognize this photograph on a physical Android device."
+  },
+  "artifacts": {
+    "fixture_image_in_public_assets": false,
+    "test_fixture_restored_empty": true,
+    "physical_phone_app_replaced": false,
+    "release_apk_created": false
+  }
+}

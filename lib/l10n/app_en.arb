@@ -113,7 +113,7 @@
   "recentGames": "Recent Games",
   "evolution": "Evolution",
   "performance": "Performance",
-  "selectDate": "Select Date",
+  "selectDate": "Select date",
   "selectRange": "Select Range",
   "fromDate": "From",
   "toDate": "To",
@@ -121,7 +121,7 @@
   "clear": "Clear",
   "reset": "Reset",
   "search": "Search",
-  "filter": "Filter",
+  "filter": "Filter:",
   "sort": "Sort",
   "ascending": "Ascending",
   "descending": "Descending",
@@ -248,7 +248,6 @@
   "tapToChangeImage": "Tap to change your image",
   "enterYourName": "Enter your name",
   "enterValidEmail": "Enter a valid email",
-  "selectDate": "Select date",
   "aboutMe": "About me",
   "deleteSessionConfirmation": "Are you sure you want to delete this session?",
   "syncing": "Syncing...",
@@ -262,15 +261,10 @@
   "smartSyncDesc": "Merge local and cloud data",
   "selectSyncDirection": "Select sync type",
   "noDataForStatistics": "No data to display statistics.",
-  "home": "Home",
-  "filter": "Filter:",
   "quickScoreSummary": "Quick summary of your scores",
-  "average": "Average",
   "averageLast5": "Avg. Last 5",
   "best": "Best",
   "worst": "Worst",
-  "strikes": "Strikes",
-  "spares": "Spares",
   "longestStreakDescription": "Longest consecutive strikes and spares in all your games.",
   "percentageStrikesSparesMisses": "Percentage of Strikes, Spares and Misses",
   "recentEvolution": "Recent evolution (moving average of your last 5 games)",
@@ -283,7 +277,6 @@
   "personalRecord": "Personal record!",
   "worstSession": "Worst session:",
   "noSessionsSaved": "No sessions saved.",
-  "location": "Location",
   "gamesCount": "Games: {count}",
   "@gamesCount": {
     "description": "Games counter",
@@ -377,7 +370,7 @@
   "noRankingData": "No data to display",
   "manageFriends": "Manage your friends and requests",
   "enterEmail": "Enter an email address",
-  "you": "YOU",
+  "you": "You",
   "achievements": "Achievements",
   "levelsAndAchievements": "Levels and medals",
   "level": "Level",
@@ -543,7 +536,6 @@
   "@trendChartUnavailable": {
     "description": "Message when individual game data is not available for trend chart"
   },
-  "you": "You",
   "@you": {
     "description": "Current user indicator"
   },
@@ -1434,7 +1426,9 @@
   "@deleteSeasonConfirm": {
     "description": "Confirmation message before deleting a season",
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "newSeasonTitle": "New season",
@@ -1473,7 +1467,9 @@
   "@archiveSeasonConfirm": {
     "description": "Confirmation message before archiving a season",
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "unarchiveSeason": "Unarchive season",
@@ -1508,7 +1504,9 @@
   "@sessionCountForSeason": {
     "description": "Number of sessions associated with a season",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "sinTemporada": "No season",
@@ -1527,7 +1525,9 @@
   "@seasonFocusTitle": {
     "description": "Title for season-focused statistics summary card",
     "placeholders": {
-      "season": { "type": "String" }
+      "season": {
+        "type": "String"
+      }
     }
   },
   "seasonComparisonSection": "Comparison with previous season",
@@ -1599,5 +1599,364 @@
         "type": "int"
       }
     }
-  }
+  },
+  "numericKeyboardLabel": "Numeric",
+  "pinKeyboardLabel": "Pins",
+  "deleteThrow": "Delete throw",
+  "clearPinSelection": "Clear selection",
+  "restoreSeasonBeforeAssigning": "Restore the archived season before assigning sessions.",
+  "seasonOperationFailed": "The operation could not complete. Data is retained; review pending changes before retrying.",
+  "seasonRemovalExplanation": "No sessions will be deleted. Archive the season, or choose where its sessions belong before removing it.",
+  "removeSeasonAndReassign": "Remove and reassign",
+  "retrySeasonChanges": "Retry",
+  "seasonChangesPending": "Changes retained on this device. Sessions awaiting account confirmation: {count}.",
+  "@seasonChangesPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "seasonConflictsPending": "Conflicts requiring review: {count}. They will not be overwritten automatically.",
+  "@seasonConflictsPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewSeasonConflict": "Review conflict",
+  "localSeasonChoice": "Keep device season",
+  "remoteSeasonChoice": "Keep account season",
+  "backupMissingSession": "Back up missing session",
+  "backupMissingSessionExplanation": "This session is retained on this device but is missing from the account. Create its backup including games? An existing session will not be overwritten.",
+  "statisticsRefresh": "Refresh statistics",
+  "statisticsLoadError": "Statistics could not be loaded. Please try again.",
+  "statisticsSeasonScope": "Full-season summaries, filtered by session type only. Dates, individual session and game limits do not apply. The previous season is determined by its most recent recorded activity. Ball and venue filters do not apply either.",
+  "statisticsFilters": "Filters",
+  "statisticsResetFilters": "Reset filters",
+  "statisticsSummary": "Filtered results summary",
+  "statisticsSample": "{games, plural, =1{1 game} other{{games} games}} · {sessions, plural, =1{1 session} other{{sessions} sessions}}",
+  "@statisticsSample": {
+    "placeholders": {
+      "games": {
+        "type": "int"
+      },
+      "sessions": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsRecentSample": "Recent average based on {count} available games.",
+  "@statisticsRecentSample": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsChartTitle": "Game progress",
+  "statisticsScoreLegend": "Game score",
+  "statisticsMovingLegend": "Moving average ({count})",
+  "@statisticsMovingLegend": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsChartHint": "Tap a point to inspect the result. The horizontal axis follows game order, not elapsed days.",
+  "statisticsMovingNeeds": "The moving average needs at least {count} games.",
+  "@statisticsMovingNeeds": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsGameNumber": "Game {number}",
+  "@statisticsGameNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsPreviousGame": "Previous game",
+  "statisticsNextGame": "Next game",
+  "statisticsFirstSample": "{count, plural, =1{1 first throw with recorded pin data.} other{{count} first throws with recorded pin data.}}",
+  "@statisticsFirstSample": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsSpareSample": "{converted} converted out of {attempts, plural, =1{1 recorded opportunity.} other{{attempts} recorded opportunities.}}",
+  "@statisticsSpareSample": {
+    "placeholders": {
+      "converted": {
+        "type": "int"
+      },
+      "attempts": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsPinCoverage": "{games} of {total} games have some pin data; samples may be partial.",
+  "@statisticsPinCoverage": {
+    "placeholders": {
+      "games": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsNoPinData": "No pin data. Record throws with the pin keyboard to see this breakdown.",
+  "statisticsNoSample": "Not enough data",
+  "statisticsSpareTableHint": "Each row shows conversions / opportunities for that leave. The map groups all leaves containing each pin; these are not single-pin spare rates.",
+  "statisticsFilteredEmpty": "No games match these filters. Change or reset them.",
+  "statisticsUnknownDate": "No date",
+  "statisticsProgress": "Consistency and recent comparison",
+  "statisticsDeviation": "Score standard deviation",
+  "statisticsDeviationNote": "Population standard deviation of the recorded set: lower means scores are closer together, not necessarily better. At least two games are required.",
+  "statisticsMetricPoints": "{value} points",
+  "@statisticsMetricPoints": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "statisticsAnalysisSample": "{count, plural, =1{1 game analyzed} other{{count} games analyzed}}",
+  "@statisticsAnalysisSample": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsComparisonWindow": "Games per block",
+  "statisticsComparisonScope": "Compares consecutive blocks containing the same number of games within the filtered set, including the last-games limit. These are not equal-duration periods.",
+  "statisticsComparisonNeeds": "{required} filtered games are needed; {available} are available. Incomplete blocks are not compared.",
+  "@statisticsComparisonNeeds": {
+    "placeholders": {
+      "required": {
+        "type": "int"
+      },
+      "available": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsRecentBlock": "Latest {count} games",
+  "@statisticsRecentBlock": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsPreviousBlock": "Previous {count} games",
+  "@statisticsPreviousBlock": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsMeanChange": "Average change: {value} points",
+  "@statisticsMeanChange": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "statisticsChangeNote": "The difference describes these games. It does not prove a skill improvement or an effect of equipment or venue.",
+  "statisticsByBall": "Performance by ball",
+  "statisticsByVenue": "Performance by venue",
+  "statisticsGroupsNote": "Data from the filtered set, ordered by game count. Consider sample sizes and playing conditions; this is not a ranking of which is best.",
+  "statisticsAllBalls": "All balls",
+  "statisticsWithoutBall": "No ball specified",
+  "statisticsBallReference": "Ball with ID {id}",
+  "@statisticsBallReference": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "statisticsBallFilter": "Ball used",
+  "statisticsVenueFilter": "Session venue",
+  "statisticsAllVenues": "All venues",
+  "statisticsWithoutVenue": "No venue specified",
+  "statisticsGroupSummary": "Average: {average} · Best: {best}",
+  "@statisticsGroupSummary": {
+    "placeholders": {
+      "average": {
+        "type": "String"
+      },
+      "best": {
+        "type": "String"
+      }
+    }
+  },
+  "ballDefault": "Default ball",
+  "ballDefaultHint": "Applies to throws without an individual assignment. Changing it does not remove throw overrides.",
+  "ballPerThrow": "Balls by throw",
+  "ballThrowsHint": "Assign each throw or apply a ball to a frame range. Unplayed throws do not count. Changes apply only when saved.",
+  "ballOverrideCount": "{count} individual assignments configured",
+  "@ballOverrideCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ballRangeFrom": "From frame",
+  "ballRangeUntil": "Through frame",
+  "ballRangeShots": "Throws in range",
+  "ballAllThrows": "All throws",
+  "ballThrowNumber": "Throw {number}",
+  "@ballThrowNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "ballApplyRange": "Assign ball to range",
+  "ballClearOverrides": "Reset to default ball",
+  "ballSaveAssignments": "Save assignments",
+  "ballAccountChanged": "The account has changed. Keep the draft and reopen it with its original account.",
+  "ballScoreScope": "Scores describe entire games in which this ball was used. In the ball breakdown, throws are attributed individually and score averages include only games played exclusively with it.",
+  "ballParticipation": "Used in {games} games; {exclusive} exclusive",
+  "@ballParticipation": {
+    "placeholders": {
+      "games": {
+        "type": "int"
+      },
+      "exclusive": {
+        "type": "int"
+      }
+    }
+  },
+  "ballUsageNumbers": "{throws} throws, used in {frames} frames, and {pins} pins knocked down (without score bonuses).",
+  "@ballUsageNumbers": {
+    "placeholders": {
+      "throws": {
+        "type": "int"
+      },
+      "frames": {
+        "type": "int"
+      },
+      "pins": {
+        "type": "int"
+      }
+    }
+  },
+  "ballStrikeSample": "Strikes: {converted}/{attempts} full-rack throws",
+  "@ballStrikeSample": {
+    "placeholders": {
+      "converted": {
+        "type": "int"
+      },
+      "attempts": {
+        "type": "int"
+      }
+    }
+  },
+  "ballSpareSample": "Spares: {converted}/{attempts} spare opportunities",
+  "@ballSpareSample": {
+    "placeholders": {
+      "converted": {
+        "type": "int"
+      },
+      "attempts": {
+        "type": "int"
+      }
+    }
+  },
+  "ballExclusiveNote": "Average and best score: games played exclusively with this ball only. Shared-game scores are not allocated between balls.",
+  "ballNoExclusive": "No exclusive games available for ball score statistics.",
+  "ballUnknownScope": "Includes games with at least one throw without a specified ball, even if other throws have a ball assigned.",
+  "photoScoreTitle": "Read score from a photo",
+  "photoScorePick": "Select photo",
+  "photoScorePrivacy": "Local recognition on Android. The photo and review progress are preserved only on this device, separately for each account; you can delete them from this screen. They are not attached to games or uploaded. ML Kit may send technical metrics to Google, without photos or recognition results.",
+  "photoScoreRegion": "Drag a rectangle around ONE player’s throws across all 10 frames, excluding names, headers and cumulative scores. To adjust a divider, press Edit row and dividers and drag its line.",
+  "photoScoreExtract": "Read selected row",
+  "photoScoreResetRegion": "Edit row and dividers",
+  "photoScoreReviewHint": "Check each frame against the photo and mark it as reviewed. Use X, /, - or 0–9. ? means ambiguous recognition. Throws are not inferred from the total.",
+  "photoScoreFrame": "Frame",
+  "photoScoreThrow": "Throw",
+  "photoScoreReviewed": "Reviewed",
+  "photoScorePrintedTotal": "Scoreboard total (without handicap)",
+  "photoScoreNumbers": "Recognized numbers: choose the correct total",
+  "photoScoreCalculated": "Calculated total",
+  "photoScoreApply": "Use these throws",
+  "photoScoreInvalidFrame": "Some frames are incomplete or contain incompatible throws. Correct the marked fields.",
+  "photoScoreTotalMissing": "Enter the scoreboard total: 0 to 300, without handicap.",
+  "photoScoreMismatch": "Throws do not match the scoreboard total. Check that you chose the total WITHOUT handicap, and review the throws before continuing.",
+  "photoScoreReviewMissing": "Confirm review of all 10 frames and the total.",
+  "photoScoreError": "Could not read the photo. Try another image or enter throws manually.",
+  "photoScoreSize": "The image exceeds 20 MB or 16 megapixels. Crop the scoreboard or select a smaller photo.",
+  "photoScorePlatform": "Photo recognition is available on Android. You can still enter the game manually.",
+  "photoScoreReplaceTitle": "Replace draft throws?",
+  "photoScoreReplaceBody": "Current throws will be replaced and their visual pin selections removed. Ball assignments and notes are retained. The game will not be saved until you press Save.",
+  "photoScoreReplace": "Replace throws",
+  "photoScoreCancel": "Cancel",
+  "photoScoreRaw": "Recognition",
+  "photoScoreNoRegion": "First select the throws row on the image.",
+  "photoScoreCumulative": "Calculated cumulative score",
+  "photoScoreMatchesThrows": "matches throws; verify against the photo",
+  "photoScoreHandicapHint": "The scoreboard may show the total and total + handicap. Select the total WITHOUT handicap. A match with the throws does not prove recognition is correct.",
+  "photoScoreMoveZoom": "Move / zoom",
+  "photoScoreZoomIn": "Zoom in",
+  "photoScoreZoomOut": "Zoom out",
+  "photoScoreResetView": "Fit image",
+  "photoScoreSelectMode": "Selection mode: drag the row or a divider. Switch to Move / zoom to enlarge or pan.",
+  "photoScoreMoveMode": "View mode: pinch to zoom and drag to pan. Selection stays unchanged.",
+  "photoScoreDivider": "Divider between frames",
+  "photoScoreDividerHelp": "Press Edit row and dividers to adjust this divider using the slider or photo.",
+  "photoScorePrevious": "Previous",
+  "photoScoreNext": "Next",
+  "photoScoreConfirmNext": "Confirm and next",
+  "photoScoreConfirmFrame": "Confirm frame",
+  "photoScoreCellInvalid": "Review",
+  "photoScoreMissingThrow": "A required throw is missing from this frame.",
+  "photoScoreUnknownSymbol": "Unknown symbol. Use X, /, - or a number from 0 to 9.",
+  "photoScoreUnexpectedThrow": "This throw is not allowed after the previous throws. Check strikes and bonuses.",
+  "photoScoreInvalidSpare": "A spare / cannot appear in this position.",
+  "photoScorePinSum": "The sum exceeds ten pins in the same rack.",
+  "photoScoreSpareExpected": "The two throws total ten: mark / for the spare after checking the photo.",
+  "photoScoreProgress": "Reviewed frames",
+  "photoScoreResumeTitle": "A photo review is saved on this device.",
+  "photoScoreResume": "Resume review",
+  "photoScoreDiscard": "Delete saved review",
+  "photoScoreDiscardTitle": "Delete the local copy of this review?",
+  "photoScoreDiscardBody": "The photo and review progress saved for this account will be deleted. The original gallery photo and games will be retained.",
+  "photoScoreChangeTitle": "Change the photo or selection?",
+  "photoScoreChangeBody": "A new reading will replace this review’s corrections and confirmations. Saved games stay unchanged.",
+  "photoScoreContinue": "Continue",
+  "photoScoreDraftSaved": "Review preserved on this device.",
+  "photoScoreDraftSaving": "Saving local review…",
+  "photoScoreDraftError": "Could not preserve or restore the local review. Do not clear app data. You can continue reviewing and retry saving.",
+  "photoScoreDraftRetry": "Retry local save",
+  "photoScoreProposalTitle": "Game proposal",
+  "photoScoreChooseRow": "Choose the player row you want to record.",
+  "photoScoreRowLabel": "Row",
+  "photoScoreCorrectReading": "Correct reading",
+  "photoScoreAdjustSelection": "Adjust row and columns",
+  "photoScoreSingleConfirm": "This is correct, use this game",
+  "photoScoreProposalUnknown": "Some throws are incomplete or incompatible. Correct the reading before continuing.",
+  "photoScoreProposalAmbiguous": "Column assignment is uncertain. Adjust the selection or review frames individually.",
+  "photoScoreProposalCoherent": "The throws are valid and add up to the displayed total. Check they match the photo before confirming.",
+  "photoScoreProposalCumulativeMismatch": "Recognized cumulative scores do not match the calculated scores. Review the photo and individual frames.",
+  "photoScoreReturnSummary": "Back to summary",
+  "photoScoreFullPhoto": "Enlarge photo",
+  "photoScoreNoProposals": "Ten columns and a throw row could not be identified clearly enough. Select the row manually to continue.",
+  "photoScoreReviewOriginal": "Check all ten frames and the total WITHOUT handicap against the photo. Confirming transfers throws to the form; you still need to save the game and session."
 }

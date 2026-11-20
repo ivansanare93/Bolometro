@@ -1,0 +1,29 @@
+{
+  "phase": "C4",
+  "checkedAt": "2026-10-28",
+  "models": 28,
+  "weightVariants": 134,
+  "photos": {
+    "authorized": 0,
+    "pendingAuthorization": 20,
+    "notUsable": 8,
+    "bundledThirdPartyImages": 0
+  },
+  "tests": {
+    "distinctPassed": 184,
+    "newC4": 21,
+    "fullRunPassed": 184,
+    "affectedSuitesRerunPassed": 27,
+    "latestMediaPassed": 19
+  },
+  "analysis": {
+    "files": 14,
+    "diagnostics": 0
+  },
+  "protectedFilesUnchanged": 15,
+  "apkBuilt": false,
+  "firebaseChanged": false,
+  "manufacturerImagesDownloaded": false,
+  "manualAndroidValidation": "pending",
+  "iosGalleryConfiguration": "not validated; NSPhotoLibraryUsageDescription absent"
+}

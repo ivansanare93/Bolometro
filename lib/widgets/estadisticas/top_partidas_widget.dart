@@ -1,3 +1,4 @@
+import '../../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import '../../models/partida.dart';
 
@@ -5,16 +6,18 @@ class TopPartidasWidget extends StatelessWidget {
   final List<Partida> partidas;
   final String titulo;
   final Color color;
+  final DateTime? Function(Partida)? dateForGame;
 
   const TopPartidasWidget({
     Key? key,
     required this.partidas,
     required this.titulo,
     required this.color,
+    this.dateForGame,
   }) : super(key: key);
 
-  static String _formatearFecha(DateTime? fecha) {
-    if (fecha == null) return "Sin fecha";
+  static String _formatearFecha(DateTime? fecha, String unknown) {
+    if (fecha == null) return unknown;
     return "${fecha.day.toString().padLeft(2, '0')}/${fecha.month.toString().padLeft(2, '0')}/${fecha.year}";
   }
 
@@ -63,12 +66,15 @@ class TopPartidasWidget extends StatelessWidget {
           ...partidas.map((p) {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Row(
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   const Text("🎳", style: TextStyle(fontSize: 22)),
                   const SizedBox(width: 8),
                   Text(
-                    "${p.total} pts",
+                    AppLocalizations.of(context)!.points(p.total),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -77,7 +83,10 @@ class TopPartidasWidget extends StatelessWidget {
                   ),
                   const SizedBox(width: 14),
                   Text(
-                    _formatearFecha(p.fecha),
+                    _formatearFecha(
+                      p.fecha ?? dateForGame?.call(p),
+                      AppLocalizations.of(context)!.statisticsUnknownDate,
+                    ),
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,

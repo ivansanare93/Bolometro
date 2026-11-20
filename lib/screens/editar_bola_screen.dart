@@ -1,16 +1,25 @@
+import '../config/catalog_config.dart';
+import 'package:image_picker/image_picker.dart';
+import '../widgets/ball_photo.dart';
+import '../repositories/ball_media_repository.dart';
+import '../repositories/ball_catalog_repository.dart';
+import 'ball_catalog_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../models/bowling_ball.dart';
+import '../models/catalog_selection.dart';
 import '../repositories/data_repository.dart';
 import '../services/analytics_service.dart';
 
 /// Formulario para crear o editar una bola de bolos.
 class EditarBolaScreen extends StatefulWidget {
   final BowlingBall? ball;
+  final CatalogSelection? catalogSelection;
 
-  const EditarBolaScreen({super.key, this.ball});
+  const EditarBolaScreen({super.key, this.ball, this.catalogSelection})
+    : assert(ball == null || catalogSelection == null);
 
   bool get isEditing => ball != null;
 
@@ -29,19 +38,35 @@ class _EditarBolaScreenState extends State<EditarBolaScreen> {
   DateTime? _fechaCompra;
   bool _guardando = false;
   String? _ownerUid;
+  String? _personalPhotoPath;
+  String? _catalogPhotoId;
 
   @override
   void initState() {
     super.initState();
     _ownerUid = context.read<DataRepository>().arsenalUserId;
     final bola = widget.ball;
-    _nombreController = TextEditingController(text: bola?.name ?? '');
-    _marcaController = TextEditingController(text: bola?.brand ?? '');
-    _pesoController = TextEditingController(
-      text: bola != null ? _formatPeso(bola.weightLbs) : '',
+    final selection = widget.catalogSelection;
+    _catalogPhotoId = selection?.product.id;
+    _nombreController = TextEditingController(
+      text: bola?.name ?? selection?.name ?? '',
     );
-    _coverstockController = TextEditingController(text: bola?.coverstock ?? '');
-    _acabadoController = TextEditingController(text: bola?.finish ?? '');
+    _marcaController = TextEditingController(
+      text: bola?.brand ?? selection?.product.manufacturer ?? '',
+    );
+    _pesoController = TextEditingController(
+      text: bola != null
+          ? _formatPeso(bola.weightLbs)
+          : selection != null
+          ? _formatPeso(selection.weightLbs)
+          : '',
+    );
+    _coverstockController = TextEditingController(
+      text: bola?.coverstock ?? selection?.coverstock ?? '',
+    );
+    _acabadoController = TextEditingController(
+      text: bola?.finish ?? selection?.product.factoryFinish ?? '',
+    );
     _notasController = TextEditingController(text: bola?.notes ?? '');
     _fechaCompra = bola?.purchaseDate;
   }
@@ -76,13 +101,49 @@ class _EditarBolaScreenState extends State<EditarBolaScreen> {
     }
   }
 
+  Future<void> _choosePhoto() async {
+    try {
+      final photo = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 85,
+      );
+      if (photo != null &&
+          mounted &&
+          _ownerUid == context.read<DataRepository>().arsenalUserId) {
+        setState(() => _personalPhotoPath = photo.path);
+      }
+    } catch (_) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo abrir la fotografía.')),
+        );
+    }
+  }
+
+  Future<void> _linkModel() async {
+    final repository = context.read<BallCatalogRepository>();
+    final id = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            BallCatalogScreen(repository: repository, selectForPhoto: true),
+      ),
+    );
+    if (mounted &&
+        id != null &&
+        _ownerUid == context.read<DataRepository>().arsenalUserId) {
+      setState(() => _catalogPhotoId = id);
+    }
+  }
+
   Future<void> _guardar() async {
     if (_ownerUid != context.read<DataRepository>().arsenalUserId) return;
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _guardando = true);
     final repo = Provider.of<DataRepository>(context, listen: false);
-    final analytics = Provider.of<AnalyticsService>(context, listen: false);
 
     final peso = double.parse(_pesoController.text.trim().replaceAll(',', '.'));
     final nombre = _nombreController.text.trim();
@@ -91,6 +152,7 @@ class _EditarBolaScreenState extends State<EditarBolaScreen> {
     final acabado = _acabadoController.text.trim();
     final notas = _notasController.text.trim();
 
+    String? savedId;
     try {
       if (widget.isEditing) {
         final actualizada = widget.ball!.copyWith(
@@ -103,6 +165,7 @@ class _EditarBolaScreenState extends State<EditarBolaScreen> {
           notes: notas.isEmpty ? null : notas,
         );
         await repo.actualizarBola(actualizada);
+        savedId = actualizada.id;
       } else {
         final nueva = BowlingBall(
           name: nombre,
@@ -114,10 +177,35 @@ class _EditarBolaScreenState extends State<EditarBolaScreen> {
           notes: notas.isEmpty ? null : notas,
         );
         await repo.crearBola(nueva);
+        savedId = nueva.id;
         try {
-          await analytics.logBallCreated();
+          final analytics = Provider.of<AnalyticsService?>(
+            context,
+            listen: false,
+          );
+          await analytics?.logBallCreated();
         } catch (e) {
           debugPrint('Error logging ball creation: $e');
+        }
+      }
+      if (!mounted) return;
+      if ((_personalPhotoPath != null || _catalogPhotoId != null)) {
+        try {
+          await context.read<BallMediaRepository?>()?.save(
+            uid: _ownerUid,
+            ballId: savedId,
+            catalogId: _catalogPhotoId,
+            personalPath: _personalPhotoPath,
+          );
+        } catch (_) {
+          if (mounted)
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Bola guardada. No se pudo guardar su imagen local.',
+                ),
+              ),
+            );
         }
       }
       if (!mounted) return;
@@ -126,7 +214,9 @@ class _EditarBolaScreenState extends State<EditarBolaScreen> {
       if (!mounted) return;
       setState(() => _guardando = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo guardar la bola. Inténtalo de nuevo.')),
+        const SnackBar(
+          content: Text('No se pudo guardar la bola. Inténtalo de nuevo.'),
+        ),
       );
     }
   }
@@ -134,8 +224,12 @@ class _EditarBolaScreenState extends State<EditarBolaScreen> {
   @override
   Widget build(BuildContext context) {
     if (_ownerUid != context.watch<DataRepository>().arsenalUserId) {
-      return Scaffold(appBar: AppBar(title: const Text('Cuenta cambiada')),
-        body: const Center(child: Text('Vuelve al arsenal de la cuenta actual.')));
+      return Scaffold(
+        appBar: AppBar(title: const Text('Cuenta cambiada')),
+        body: const Center(
+          child: Text('Vuelve al arsenal de la cuenta actual.'),
+        ),
+      );
     }
     return Scaffold(
       appBar: AppBar(
@@ -146,6 +240,40 @@ class _EditarBolaScreenState extends State<EditarBolaScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            Center(
+              child: BallPhoto(
+                ownerUid: _ownerUid,
+                ballId: widget.ball?.id,
+                catalogId: _catalogPhotoId,
+                draftPersonalPath: _personalPhotoPath,
+                size: 128,
+              ),
+            ),
+            TextButton.icon(
+              onPressed: _guardando ? null : _choosePhoto,
+              icon: const Icon(Icons.photo_library_outlined),
+              label: const Text('Elegir fotografía personal'),
+            ),
+            if (context
+                    .watch<BallCatalogRepository?>()
+                    ?.commercialCatalogEnabled ??
+                CatalogConfig.commercialEnabled)
+              TextButton(
+                onPressed: _guardando ? null : _linkModel,
+                child: const Text('Vincular modelo para fotografía'),
+              ),
+            const Text(
+              'La foto personal y el vínculo al modelo se conservan solo en este dispositivo. '
+              'El modelo no sustituye tu foto ni cambia las características de tu bola.',
+            ),
+            const SizedBox(height: 16),
+            if (widget.catalogSelection != null)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 16),
+                child: Text(
+                  'Datos precargados del catálogo. Revisa tu unidad y completa los datos personales antes de guardar.',
+                ),
+              ),
             TextFormField(
               controller: _nombreController,
               decoration: const InputDecoration(
@@ -173,12 +301,15 @@ class _EditarBolaScreenState extends State<EditarBolaScreen> {
                 labelText: 'Peso (lbs) *',
                 hintText: 'p. ej. 15',
               ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               validator: (value) {
                 final texto = value?.trim().replaceAll(',', '.') ?? '';
                 if (texto.isEmpty) return 'El peso es obligatorio';
                 final peso = double.tryParse(texto);
-                if (peso == null) return 'Introduce un peso válido';
+                if (peso == null || !peso.isFinite)
+                  return 'Introduce un peso válido';
                 if (peso <= 0 || peso > 20) {
                   return 'El peso debe estar entre 1 y 20 lbs';
                 }

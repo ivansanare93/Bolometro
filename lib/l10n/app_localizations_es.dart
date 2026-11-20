@@ -1969,4 +1969,633 @@ class AppLocalizationsEs extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get numericKeyboardLabel => 'Numérico';
+
+  @override
+  String get pinKeyboardLabel => 'Pines';
+
+  @override
+  String get deleteThrow => 'Borrar tirada';
+
+  @override
+  String get clearPinSelection => 'Limpiar selección';
+
+  @override
+  String get restoreSeasonBeforeAssigning =>
+      'Restaura la temporada archivada antes de asignarle sesiones.';
+
+  @override
+  String get seasonOperationFailed =>
+      'No se ha completado la operación. Los datos se conservan; revisa los cambios pendientes antes de reintentarlo.';
+
+  @override
+  String get seasonRemovalExplanation =>
+      'No se borrará ninguna sesión. Puedes archivar la temporada o elegir el destino de sus sesiones antes de eliminarla.';
+
+  @override
+  String get removeSeasonAndReassign => 'Eliminar y reasignar';
+
+  @override
+  String get retrySeasonChanges => 'Reintentar';
+
+  @override
+  String seasonChangesPending(int count) {
+    return 'Cambios conservados en el dispositivo. Sesiones pendientes de confirmar en la cuenta: $count.';
+  }
+
+  @override
+  String seasonConflictsPending(int count) {
+    return 'Conflictos que requieren revisión: $count. No se sobrescribirán automáticamente.';
+  }
+
+  @override
+  String get reviewSeasonConflict => 'Revisar conflicto';
+
+  @override
+  String get localSeasonChoice => 'Conservar temporada del dispositivo';
+
+  @override
+  String get remoteSeasonChoice => 'Conservar temporada de la cuenta';
+
+  @override
+  String get backupMissingSession => 'Respaldar sesión ausente';
+
+  @override
+  String get backupMissingSessionExplanation =>
+      'Esta sesión está conservada en el dispositivo pero no existe en la cuenta. ¿Crear su respaldo con sus partidas? Si ya existe, no se sobrescribirá.';
+
+  @override
+  String get statisticsRefresh => 'Actualizar estadísticas';
+
+  @override
+  String get statisticsLoadError =>
+      'No se pudieron cargar las estadísticas. Inténtalo de nuevo.';
+
+  @override
+  String get statisticsSeasonScope =>
+      'Resumen de temporadas completas, filtrado solo por tipo de sesión. No aplica fechas, sesión concreta ni límite de partidas. La temporada anterior se determina por su última actividad registrada. Tampoco aplica filtros de bola o bolera.';
+
+  @override
+  String get statisticsFilters => 'Filtros';
+
+  @override
+  String get statisticsResetFilters => 'Restablecer filtros';
+
+  @override
+  String get statisticsSummary => 'Resumen del conjunto filtrado';
+
+  @override
+  String statisticsSample(int games, int sessions) {
+    String _temp0 = intl.Intl.pluralLogic(
+      games,
+      locale: localeName,
+      other: '$games partidas',
+      one: '1 partida',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      sessions,
+      locale: localeName,
+      other: '$sessions sesiones',
+      one: '1 sesión',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String statisticsRecentSample(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count partidas disponibles.',
+      one: '1 partida disponible.',
+    );
+    return 'Media reciente calculada con $_temp0';
+  }
+
+  @override
+  String get statisticsChartTitle => 'Evolución de tus partidas';
+
+  @override
+  String get statisticsScoreLegend => 'Puntuación por partida';
+
+  @override
+  String statisticsMovingLegend(int count) {
+    return 'Media móvil ($count)';
+  }
+
+  @override
+  String get statisticsChartHint =>
+      'Toca un punto para consultar el resultado. El eje horizontal sigue el orden de las partidas, no los días transcurridos.';
+
+  @override
+  String statisticsMovingNeeds(int count) {
+    return 'La media móvil necesita al menos $count partidas.';
+  }
+
+  @override
+  String statisticsGameNumber(int number) {
+    return 'Partida $number';
+  }
+
+  @override
+  String get statisticsPreviousGame => 'Partida anterior';
+
+  @override
+  String get statisticsNextGame => 'Partida siguiente';
+
+  @override
+  String statisticsFirstSample(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count primeros tiros con pines registrados.',
+      one: '1 primer tiro con pines registrados.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statisticsSpareSample(int converted, int attempts) {
+    String _temp0 = intl.Intl.pluralLogic(
+      converted,
+      locale: localeName,
+      other: '$converted convertidos',
+      one: '1 convertido',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      attempts,
+      locale: localeName,
+      other: '$attempts oportunidades registradas.',
+      one: '1 oportunidad registrada.',
+    );
+    return '$_temp0 de $_temp1';
+  }
+
+  @override
+  String statisticsPinCoverage(int games, int total) {
+    return '$games de $total partidas con algún dato de pines; las muestras pueden ser parciales.';
+  }
+
+  @override
+  String get statisticsNoPinData =>
+      'Sin datos de pines. Registra tiros con el teclado de pines para consultar este desglose.';
+
+  @override
+  String get statisticsNoSample => 'Sin datos suficientes';
+
+  @override
+  String get statisticsSpareTableHint =>
+      'Cada fila muestra conversiones / oportunidades de ese deje. El mapa agrupa todos los dejes que incluyen cada pin; no equivale a remates de pin único.';
+
+  @override
+  String get statisticsFilteredEmpty =>
+      'No hay partidas con estos filtros. Puedes cambiarlos o restablecerlos.';
+
+  @override
+  String get statisticsUnknownDate => 'Sin fecha';
+
+  @override
+  String get statisticsProgress => 'Consistencia y comparación reciente';
+
+  @override
+  String get statisticsDeviation => 'Desviación de puntuaciones';
+
+  @override
+  String get statisticsDeviationNote =>
+      'Desviación estándar del conjunto registrado: menor significa puntuaciones más próximas entre sí, no necesariamente mejores. Se necesitan al menos dos partidas.';
+
+  @override
+  String statisticsMetricPoints(String value) {
+    return '$value puntos';
+  }
+
+  @override
+  String statisticsAnalysisSample(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count partidas analizadas',
+      one: '1 partida analizada',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statisticsComparisonWindow => 'Partidas por bloque';
+
+  @override
+  String get statisticsComparisonScope =>
+      'Compara bloques consecutivos del mismo número de partidas dentro del conjunto filtrado, incluido el límite de últimas partidas. No compara periodos de igual duración.';
+
+  @override
+  String statisticsComparisonNeeds(int required, int available) {
+    return 'Se necesitan $required partidas filtradas; hay $available. No se comparan bloques incompletos.';
+  }
+
+  @override
+  String statisticsRecentBlock(int count) {
+    return 'Últimas $count partidas';
+  }
+
+  @override
+  String statisticsPreviousBlock(int count) {
+    return 'Las $count partidas anteriores';
+  }
+
+  @override
+  String statisticsMeanChange(String value) {
+    return 'Variación del promedio: $value puntos';
+  }
+
+  @override
+  String get statisticsChangeNote =>
+      'La diferencia describe estas partidas. No demuestra una mejora de habilidad ni el efecto de una bola o bolera.';
+
+  @override
+  String get statisticsByBall => 'Rendimiento por bola';
+
+  @override
+  String get statisticsByVenue => 'Rendimiento por bolera';
+
+  @override
+  String get statisticsGroupsNote =>
+      'Datos del conjunto filtrado, ordenados por número de partidas. Compara las muestras y las condiciones de juego; no es una clasificación de cuál es mejor.';
+
+  @override
+  String get statisticsAllBalls => 'Todas las bolas';
+
+  @override
+  String get statisticsWithoutBall => 'Sin bola especificada';
+
+  @override
+  String statisticsBallReference(String id) {
+    return 'Bola con ID $id';
+  }
+
+  @override
+  String get statisticsBallFilter => 'Bola utilizada';
+
+  @override
+  String get statisticsVenueFilter => 'Bolera de la sesión';
+
+  @override
+  String get statisticsAllVenues => 'Todas las boleras';
+
+  @override
+  String get statisticsWithoutVenue => 'Sin bolera especificada';
+
+  @override
+  String statisticsGroupSummary(String average, String best) {
+    return 'Promedio: $average · Mejor: $best';
+  }
+
+  @override
+  String get ballDefault => 'Bola predeterminada';
+
+  @override
+  String get ballDefaultHint =>
+      'Se aplica a los tiros sin asignación individual. Cambiarla no elimina las excepciones por tiro.';
+
+  @override
+  String get ballPerThrow => 'Bolas por tiro';
+
+  @override
+  String get ballThrowsHint =>
+      'Asigna cada tiro o aplica una bola a un intervalo de frames. Los tiros no realizados no cuentan. Los cambios solo se aplican al guardar.';
+
+  @override
+  String ballOverrideCount(int count) {
+    return '$count asignaciones individuales configuradas';
+  }
+
+  @override
+  String get ballRangeFrom => 'Desde el frame';
+
+  @override
+  String get ballRangeUntil => 'Hasta el frame';
+
+  @override
+  String get ballRangeShots => 'Tiros del intervalo';
+
+  @override
+  String get ballAllThrows => 'Todos los tiros';
+
+  @override
+  String ballThrowNumber(int number) {
+    return 'Tiro $number';
+  }
+
+  @override
+  String get ballApplyRange => 'Asignar bola al intervalo';
+
+  @override
+  String get ballClearOverrides => 'Restablecer a la bola predeterminada';
+
+  @override
+  String get ballSaveAssignments => 'Guardar asignaciones';
+
+  @override
+  String get ballAccountChanged =>
+      'La cuenta ha cambiado. Conserva el borrador y vuelve a abrirlo con su cuenta original.';
+
+  @override
+  String get ballScoreScope =>
+      'Las puntuaciones corresponden a partidas completas en las que se utilizó esta bola. En el desglose por bola, los tiros se atribuyen individualmente y los promedios solo incluyen partidas jugadas exclusivamente con ella.';
+
+  @override
+  String ballParticipation(int games, int exclusive) {
+    return '$games partidas con uso; $exclusive exclusivas';
+  }
+
+  @override
+  String ballUsageNumbers(int throws, int frames, int pins) {
+    return '$throws tiros, $frames frames con uso y $pins pines derribados (sin bonus de puntuación).';
+  }
+
+  @override
+  String ballStrikeSample(int converted, int attempts) {
+    return 'Strikes: $converted/$attempts tiros con rack completo';
+  }
+
+  @override
+  String ballSpareSample(int converted, int attempts) {
+    return 'Spares: $converted/$attempts oportunidades de remate';
+  }
+
+  @override
+  String get ballExclusiveNote =>
+      'Promedio y mejor partida: solo partidas jugadas exclusivamente con esta bola. No se reparte la puntuación de las partidas compartidas.';
+
+  @override
+  String get ballNoExclusive =>
+      'Sin partidas exclusivas para calcular puntuaciones por bola.';
+
+  @override
+  String get ballUnknownScope =>
+      'Incluye partidas con algún tiro sin bola especificada, aunque otros tiros tengan una bola asignada.';
+
+  @override
+  String get photoScoreTitle => 'Leer marcador de una foto';
+
+  @override
+  String get photoScorePick => 'Seleccionar foto';
+
+  @override
+  String get photoScorePrivacy =>
+      'Lectura local en Android. La foto y el progreso de revisión se conservan solo en este dispositivo, separados por cuenta; puedes borrarlos desde esta pantalla. No se adjuntan a la partida ni se suben. ML Kit puede enviar métricas técnicas a Google, sin las fotos ni sus lecturas.';
+
+  @override
+  String get photoScoreRegion =>
+      'Arrastra un rectángulo alrededor de los tiros de UN jugador y sus 10 frames, sin nombres, cabeceras ni puntuaciones acumuladas. Para ajustar una división, pulsa Editar fila y divisiones y arrastra su línea.';
+
+  @override
+  String get photoScoreExtract => 'Leer fila seleccionada';
+
+  @override
+  String get photoScoreResetRegion => 'Editar fila y divisiones';
+
+  @override
+  String get photoScoreReviewHint =>
+      'Comprueba cada frame con la foto y márcalo como revisado. Usa X, /, - o 0–9. ? indica lectura ambigua. No se deducen tiros desde el total.';
+
+  @override
+  String get photoScoreFrame => 'Frame';
+
+  @override
+  String get photoScoreThrow => 'Tiro';
+
+  @override
+  String get photoScoreReviewed => 'Revisado';
+
+  @override
+  String get photoScorePrintedTotal => 'Total del marcador (sin hándicap)';
+
+  @override
+  String get photoScoreNumbers => 'Números leídos: elige el total correcto';
+
+  @override
+  String get photoScoreCalculated => 'Total calculado';
+
+  @override
+  String get photoScoreApply => 'Usar estos tiros';
+
+  @override
+  String get photoScoreInvalidFrame =>
+      'Hay frames incompletos o tiros incompatibles. Corrige los campos marcados.';
+
+  @override
+  String get photoScoreTotalMissing =>
+      'Introduce el total del marcador: de 0 a 300, sin hándicap.';
+
+  @override
+  String get photoScoreMismatch =>
+      'Los tiros no coinciden con el total del marcador. Comprueba que has elegido el total SIN hándicap y revisa los tiros antes de continuar.';
+
+  @override
+  String get photoScoreReviewMissing =>
+      'Falta confirmar la revisión de los 10 frames y del total.';
+
+  @override
+  String get photoScoreError =>
+      'No se ha podido leer la foto. Prueba otra imagen o registra los tiros manualmente.';
+
+  @override
+  String get photoScoreSize =>
+      'La imagen supera 20 MB o 16 megapíxeles. Recorta el marcador o selecciona una foto más pequeña.';
+
+  @override
+  String get photoScorePlatform =>
+      'La lectura de fotos está disponible en Android. Puedes seguir registrando la partida manualmente.';
+
+  @override
+  String get photoScoreReplaceTitle => '¿Reemplazar los tiros del borrador?';
+
+  @override
+  String get photoScoreReplaceBody =>
+      'Se sustituirán los tiros actuales y se retirarán sus selecciones visuales de pines. Las bolas asignadas y las notas se conservan. No se guardará la partida hasta que pulses Guardar.';
+
+  @override
+  String get photoScoreReplace => 'Reemplazar tiros';
+
+  @override
+  String get photoScoreCancel => 'Cancelar';
+
+  @override
+  String get photoScoreRaw => 'Lectura';
+
+  @override
+  String get photoScoreNoRegion =>
+      'Selecciona primero la fila de tiros sobre la imagen.';
+
+  @override
+  String get photoScoreCumulative => 'Acumulado calculado';
+
+  @override
+  String get photoScoreMatchesThrows =>
+      'coincide con los tiros; verificar en la foto';
+
+  @override
+  String get photoScoreHandicapHint =>
+      'El marcador puede mostrar el total y el total + hándicap. Selecciona el total SIN hándicap. Que una cifra coincida con los tiros no confirma que la lectura sea correcta.';
+
+  @override
+  String get photoScoreMoveZoom => 'Mover / zoom';
+
+  @override
+  String get photoScoreZoomIn => 'Acercar';
+
+  @override
+  String get photoScoreZoomOut => 'Alejar';
+
+  @override
+  String get photoScoreResetView => 'Ajustar imagen';
+
+  @override
+  String get photoScoreSelectMode =>
+      'Modo selección: arrastra la fila o una división. Para ampliar o desplazar, cambia a Mover / zoom.';
+
+  @override
+  String get photoScoreMoveMode =>
+      'Modo vista: pellizca para ampliar y arrastra para mover. La selección no cambia.';
+
+  @override
+  String get photoScoreDivider => 'División entre frames';
+
+  @override
+  String get photoScoreDividerHelp =>
+      'Pulsa Editar fila y divisiones para ajustar esta división con el deslizador o sobre la foto.';
+
+  @override
+  String get photoScorePrevious => 'Anterior';
+
+  @override
+  String get photoScoreNext => 'Siguiente';
+
+  @override
+  String get photoScoreConfirmNext => 'Confirmar y siguiente';
+
+  @override
+  String get photoScoreConfirmFrame => 'Confirmar frame';
+
+  @override
+  String get photoScoreCellInvalid => 'Revisar';
+
+  @override
+  String get photoScoreMissingThrow =>
+      'Falta un tiro necesario para completar este frame.';
+
+  @override
+  String get photoScoreUnknownSymbol =>
+      'Símbolo desconocido. Usa X, /, - o un número de 0 a 9.';
+
+  @override
+  String get photoScoreUnexpectedThrow =>
+      'Este tiro no está permitido con los tiros anteriores. Revisa los strikes y los bonus.';
+
+  @override
+  String get photoScoreInvalidSpare =>
+      'El spare / no puede ocupar esta posición.';
+
+  @override
+  String get photoScorePinSum =>
+      'La suma supera los diez pines del mismo juego de bolos.';
+
+  @override
+  String get photoScoreSpareExpected =>
+      'Los dos tiros suman diez: marca / en el remate, tras comprobar la foto.';
+
+  @override
+  String get photoScoreProgress => 'Frames revisados';
+
+  @override
+  String get photoScoreResumeTitle =>
+      'Hay una revisión fotográfica guardada en este dispositivo.';
+
+  @override
+  String get photoScoreResume => 'Retomar revisión';
+
+  @override
+  String get photoScoreDiscard => 'Borrar revisión guardada';
+
+  @override
+  String get photoScoreDiscardTitle =>
+      '¿Borrar la copia local de esta revisión?';
+
+  @override
+  String get photoScoreDiscardBody =>
+      'Se borrarán la foto y el progreso guardados para esta cuenta. No se borrará la foto original de tu galería ni ninguna partida.';
+
+  @override
+  String get photoScoreChangeTitle => '¿Cambiar la foto o la selección?';
+
+  @override
+  String get photoScoreChangeBody =>
+      'Una nueva lectura sustituirá las correcciones y confirmaciones de esta revisión. Las partidas guardadas no cambian.';
+
+  @override
+  String get photoScoreContinue => 'Continuar';
+
+  @override
+  String get photoScoreDraftSaved => 'Revisión conservada en este dispositivo.';
+
+  @override
+  String get photoScoreDraftSaving => 'Guardando revisión local…';
+
+  @override
+  String get photoScoreDraftError =>
+      'No se ha podido conservar o recuperar la revisión local. No borres los datos de la app. Puedes seguir revisando e intentar guardarla de nuevo.';
+
+  @override
+  String get photoScoreDraftRetry => 'Reintentar guardado local';
+
+  @override
+  String get photoScoreProposalTitle => 'Propuesta de partida';
+
+  @override
+  String get photoScoreChooseRow =>
+      'Elige la fila del jugador que quieres registrar.';
+
+  @override
+  String get photoScoreRowLabel => 'Fila';
+
+  @override
+  String get photoScoreCorrectReading => 'Corregir lectura';
+
+  @override
+  String get photoScoreAdjustSelection => 'Ajustar fila y columnas';
+
+  @override
+  String get photoScoreSingleConfirm => 'Es correcto, usar esta partida';
+
+  @override
+  String get photoScoreProposalUnknown =>
+      'Hay tiros incompletos o incompatibles. Corrige la lectura antes de continuar.';
+
+  @override
+  String get photoScoreProposalAmbiguous =>
+      'La asignación de columnas es dudosa. Ajusta la selección o revisa los frames individualmente.';
+
+  @override
+  String get photoScoreProposalCoherent =>
+      'Los tiros son válidos y suman el total mostrado. Comprueba que corresponden a la foto antes de confirmar.';
+
+  @override
+  String get photoScoreProposalCumulativeMismatch =>
+      'Los acumulados leídos no coinciden con los calculados. Revisa la foto y los frames individualmente.';
+
+  @override
+  String get photoScoreReturnSummary => 'Volver al resumen';
+
+  @override
+  String get photoScoreFullPhoto => 'Ver foto ampliada';
+
+  @override
+  String get photoScoreNoProposals =>
+      'No se han identificado diez columnas y una fila de tiros con suficiente claridad. Selecciona la fila manualmente para continuar.';
+
+  @override
+  String get photoScoreReviewOriginal =>
+      'Revisa los diez frames y el total SIN hándicap con la foto. Confirmar pasa los tiros al formulario; todavía debes guardar la partida y la sesión.';
 }

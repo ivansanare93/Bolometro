@@ -1,3 +1,6 @@
+import '../widgets/estadisticas/statistics_analysis_panel.dart';
+import '../utils/stats_selection.dart';
+import '../utils/statistics_samples.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/sesion.dart';
@@ -8,14 +11,12 @@ import '../utils/estadisticas_utils.dart';
 import '../utils/estadisticas_cache.dart';
 import '../utils/app_constants.dart';
 import '../utils/stats_filter.dart';
-import '../theme/app_theme.dart';
 import '../widgets/estadisticas/kpi_card_dinamico.dart';
 import '../widgets/estadisticas/racha_card.dart';
 import '../widgets/estadisticas/pastel_porcentajes.dart';
 import '../widgets/estadisticas/top_partidas_widget.dart';
-import '../widgets/estadisticas/mini_grafico_promedio_movil.dart';
+import '../widgets/estadisticas/statistics_score_chart.dart';
 import '../widgets/estadisticas/histograma_puntuaciones.dart';
-import '../widgets/info_tooltip_icon.dart';
 import 'home.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/skeleton_loaders.dart';
@@ -30,12 +31,12 @@ class EstadisticasPantallaCompleta extends StatefulWidget {
 }
 
 class _EstadisticasPantallaCompletaState
-    extends State<EstadisticasPantallaCompleta> {
+    extends State<EstadisticasPantallaCompleta>
+    with WidgetsBindingObserver {
   static const String _allSessionsFilterValue = '__all_sessions__';
   static const String _allSeasonsFilterValue = '__all_seasons__';
 
-  // Thresholds for pin-based stat directional indicators
-  static const double _kGoodFirstBallAverage = 6.0;
+  // Display threshold for per-pin conversion percentages (not a trend).
   static const double _kGoodSpareConversionRate = 50.0;
 
   late Future<List<Sesion>> _sesionesFuture;
@@ -43,16 +44,18 @@ class _EstadisticasPantallaCompletaState
 
   // Active filter state
   StatsFilter _filter = const StatsFilter();
-
-  // Cache for filtered sessions to avoid recalculating on every build
-  List<Sesion>? _cachedSesiones;
-  List<Sesion>? _cachedFilteredSesiones;
-  StatsFilter? _cachedFilter;
+  Map<String, String> _ballNames = {};
+  int _ballNameRequest = 0;
+  bool _statisticsAccountBound = false;
+  String? _statisticsUid;
+  int? _statisticsAccountToken;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       try {
         final analytics = Provider.of<AnalyticsService>(context, listen: false);
         analytics.logScreenView('statistics_screen');
@@ -60,137 +63,92 @@ class _EstadisticasPantallaCompletaState
         debugPrint('Error logging screen view: $e');
       }
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Depend on repository notifications, including edits, sync and account changes.
+    Provider.of<DataRepository>(context);
     _cargarSesiones();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) _refresh();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  Future<void> _refresh() async {
+    setState(_cargarSesiones);
+    try {
+      await _sesionesFuture;
+    } catch (_) {
+      /* Rendered by FutureBuilder. */
+    }
   }
 
   void _cargarSesiones() {
     final dataRepository = Provider.of<DataRepository>(context, listen: false);
+    if (!_statisticsAccountBound ||
+        _statisticsUid != dataRepository.arsenalUserId ||
+        _statisticsAccountToken != dataRepository.seasonAccountToken) {
+      _filter = const StatsFilter();
+      _statisticsUid = dataRepository.arsenalUserId;
+      _statisticsAccountToken = dataRepository.seasonAccountToken;
+      _statisticsAccountBound = true;
+    }
+    _ballNameRequest++;
+    _ballNames = {};
     _sesionesFuture = dataRepository.obtenerSesiones();
+  }
+
+  /// Optional local metadata only. A late response cannot expose another
+  /// account's arsenal labels or interfere with the sessions load.
+  Future<void> _loadBallNames() async {
+    final repo = context.read<DataRepository>();
+    final uid = repo.arsenalUserId;
+    final token = repo.seasonAccountToken;
+    final request = ++_ballNameRequest;
+    try {
+      final balls = await repo.listarTodasLasBolas();
+      if (!mounted ||
+          request != _ballNameRequest ||
+          uid != repo.arsenalUserId ||
+          token != repo.seasonAccountToken)
+        return;
+      setState(
+        () => _ballNames = {
+          for (final b in balls)
+            b.id: '${b.name} \u00b7 ${b.weightLbs} lb \u00b7 ${b.id}',
+        },
+      );
+    } catch (_) {
+      // A referenced ID remains selectable even if optional metadata is unavailable.
+    }
+  }
+
+  String _ballLabel(String? id) {
+    final l = AppLocalizations.of(context)!;
+    return id == null
+        ? l.statisticsWithoutBall
+        : (_ballNames[id] ?? l.statisticsBallReference(id));
   }
 
   // ---------------------------------------------------------------------------
   // Filtering logic
   // ---------------------------------------------------------------------------
 
-  /// Returns the subset of [sesiones] that matches the active [_filter].
-  ///
-  /// Steps:
-  /// 1. Filter by session type.
-  /// 2. Filter by specific session (optional).
-  /// 3. Filter by date range preset (or custom range).
-  /// 4. Expand to individual games, sort by session date asc, then apply the
-  ///    "last N games" limit to produce the final list of [Sesion]s (wrapped
-  ///    so that stats calculations see only the limited games).
+  /// A single chronological pipeline shared with cached metric calculations.
+  /// Date filters refer to session days; recent games use effective game dates.
   List<Sesion> _getFilteredSesiones(List<Sesion> sesiones) {
-    final sesionesSame = _cachedSesiones != null &&
-        _cachedSesiones!.length == sesiones.length &&
-        (_cachedSesiones!.isEmpty ||
-            identical(_cachedSesiones!.first, sesiones.first));
-
-    if (sesionesSame &&
-        _cachedFilter == _filter &&
-        _cachedFilteredSesiones != null) {
-      return _cachedFilteredSesiones!;
-    }
-
-    List<Sesion> filtered = sesiones;
-
-    // 1. Filter by tipo
-    if (_filter.tipo != AppConstants.tipoTodos) {
-      filtered = filtered.where((s) => s.tipo == _filter.tipo).toList();
-    }
-
-    // 2. Filter by season
-    if (_filter.temporada != null) {
-      filtered = filtered
-          .where((s) => s.temporadaNormalizada == _filter.temporada)
-          .toList();
-    }
-
-    // 3. Filter by session
-    if (_filter.sessionKey != null) {
-      filtered = filtered
-          .where((s) => _sessionFilterKey(s) == _filter.sessionKey)
-          .toList();
-    }
-
-    // 4. Filter by date range
-    final dateRange = _effectiveDateRange();
-    if (dateRange != null) {
-      final start = DateTime(
-          dateRange.start.year, dateRange.start.month, dateRange.start.day);
-      final end = DateTime(
-              dateRange.end.year, dateRange.end.month, dateRange.end.day)
-          .add(const Duration(days: 1));
-      filtered = filtered
-          .where((s) =>
-              !s.fecha.isBefore(start) && s.fecha.isBefore(end))
-          .toList();
-    }
-
-    // 5. Apply "last N games" limit.
-    //    Collect all games in chronological order, keep the last N, then
-    //    reconstruct the session list so that only those games are included.
-    final limit = _filter.lastN.limit;
-    if (limit != null) {
-      // Build flat list: (sesion, partida) sorted by sesion.fecha ascending.
-      final sortedSesiones = List<Sesion>.from(filtered)
-        ..sort((a, b) => a.fecha.compareTo(b.fecha));
-
-      final allPairs = <(Sesion, Partida)>[];
-      for (final s in sortedSesiones) {
-        for (final p in s.partidas) {
-          allPairs.add((s, p));
-        }
-      }
-
-      final limited = allPairs.length > limit
-          ? allPairs.sublist(allPairs.length - limit)
-          : allPairs;
-
-      // Rebuild minimal Sesion list preserving the original objects but with
-      // only the selected games.
-      final sesionToPartidas = <Sesion, List<Partida>>{};
-      for (final (s, p) in limited) {
-        sesionToPartidas.putIfAbsent(s, () => []).add(p);
-      }
-      filtered = sesionToPartidas.entries
-          .map((e) => e.key.copyWith(partidas: e.value))
-          .toList()
-        ..sort((a, b) => a.fecha.compareTo(b.fecha));
-    }
-
-    _cachedSesiones = sesiones;
-    _cachedFilter = _filter;
-    _cachedFilteredSesiones = filtered;
-
-    return filtered;
-  }
-
-  /// Returns the effective [DateTimeRange] for the active preset, or null for
-  /// [DateRangePreset.allTime].
-  DateTimeRange? _effectiveDateRange() {
-    final now = DateTime.now();
-    switch (_filter.datePreset) {
-      case DateRangePreset.allTime:
-        return null;
-      case DateRangePreset.last7Days:
-        return DateTimeRange(
-            start: now.subtract(const Duration(days: 7)), end: now);
-      case DateRangePreset.last30Days:
-        return DateTimeRange(
-            start: now.subtract(const Duration(days: 30)), end: now);
-      case DateRangePreset.last90Days:
-        return DateTimeRange(
-            start: now.subtract(const Duration(days: 90)), end: now);
-      case DateRangePreset.thisMonth:
-        return DateTimeRange(
-            start: DateTime(now.year, now.month, 1), end: now);
-      case DateRangePreset.thisYear:
-        return DateTimeRange(start: DateTime(now.year, 1, 1), end: now);
-      case DateRangePreset.custom:
-        return _filter.customRange;
-    }
+    _filter = StatsSelection.availableFilter(sesiones, _filter);
+    return StatsSelection.apply(sesiones, _filter);
   }
 
   // ---------------------------------------------------------------------------
@@ -237,14 +195,7 @@ class _EstadisticasPantallaCompletaState
   }
 
   String _sessionFilterKey(Sesion sesion) {
-    final hiveKey = sesion.key;
-    if (hiveKey != null) {
-      return 'hive_$hiveKey';
-    }
-    return '${sesion.fecha.millisecondsSinceEpoch}|'
-        '${Uri.encodeComponent(sesion.lugar)}|'
-        '${Uri.encodeComponent(sesion.tipo)}|'
-        '${Uri.encodeComponent(sesion.temporadaNormalizada)}';
+    return StatsSelection.sessionKey(sesion);
   }
 
   String _sessionFilterLabel(Sesion sesion, AppLocalizations l10n) {
@@ -256,7 +207,8 @@ class _EstadisticasPantallaCompletaState
 
   List<Sesion> _seasonScopedSesiones(List<Sesion> sesiones, String temporada) {
     return sesiones.where((s) {
-      final tipoOk = _filter.tipo == AppConstants.tipoTodos || s.tipo == _filter.tipo;
+      final tipoOk =
+          _filter.tipo == AppConstants.tipoTodos || s.tipo == _filter.tipo;
       return tipoOk && s.temporadaNormalizada == temporada;
     }).toList();
   }
@@ -284,6 +236,12 @@ class _EstadisticasPantallaCompletaState
         centerTitle: true,
         actions: [
           IconButton(
+            key: const Key('statistics-refresh'),
+            tooltip: l10n.statisticsRefresh,
+            onPressed: _refresh,
+            icon: const Icon(Icons.refresh),
+          ),
+          IconButton(
             icon: const Icon(Icons.home),
             tooltip: AppLocalizations.of(context)!.home,
             onPressed: () {
@@ -299,7 +257,7 @@ class _EstadisticasPantallaCompletaState
       body: FutureBuilder<List<Sesion>>(
         future: _sesionesFuture,
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -329,39 +287,75 @@ class _EstadisticasPantallaCompletaState
             );
           }
 
+          if (snapshot.hasError || !snapshot.hasData) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(l10n.statisticsLoadError, textAlign: TextAlign.center),
+                    const SizedBox(height: 12),
+                    FilledButton(onPressed: _refresh, child: Text(l10n.retry)),
+                  ],
+                ),
+              ),
+            );
+          }
+
           // --- Filtros por tipo y fecha ---
           final sesiones = _getFilteredSesiones(snapshot.data!);
-          
-          final partidas = sesiones.expand((s) => s.partidas).toList();
-          
+
+          final entries = StatsSelection.games(sesiones);
+          final partidas = entries.map((e) => e.$2).toList();
+          final gameDates = {
+            for (final e in entries) e.$2: e.$2.fecha ?? e.$1.fecha,
+          };
+
           // Extract theme colors for the filter
           final isDark = Theme.of(context).brightness == Brightness.dark;
-          
+
           if (partidas.isEmpty) {
-            return Column(
-              children: [
-                _buildFilterBar(l10n, isDark, snapshot.data!),
-                // Centered "no data" message
-                Expanded(
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Text(
-                        AppLocalizations.of(context)!.noDataForStatistics,
-                        style: const TextStyle(fontSize: 17),
-                      ),
-                    ),
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildFilterBar(l10n, isDark, snapshot.data!),
+                  const SizedBox(height: 24),
+                  Icon(
+                    Icons.query_stats,
+                    size: 48,
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  Text(
+                    snapshot.data!.expand((s) => s.partidas).isEmpty
+                        ? l10n.noDataForStatistics
+                        : l10n.statisticsFilteredEmpty,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  if (_filter != const StatsFilter())
+                    TextButton(
+                      key: const Key('statistics-empty-reset'),
+                      onPressed: _resetFilters,
+                      child: Text(l10n.statisticsResetFilters),
+                    ),
+                ],
+              ),
             );
           }
 
           // Usar cache de estadísticas (provider registrado en main.dart)
-          final estadisticasCache = Provider.of<EstadisticasCache>(context, listen: false);
+          final estadisticasCache = Provider.of<EstadisticasCache>(
+            context,
+            listen: false,
+          );
           final stats = estadisticasCache.getEstadisticas(
             sesiones,
             filterKey: _filter.cacheKey,
+            accountId: context.read<DataRepository>().arsenalUserId,
           );
 
           // Log analytics after successful data load (only once)
@@ -370,8 +364,11 @@ class _EstadisticasPantallaCompletaState
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
               try {
-                final analytics = Provider.of<AnalyticsService>(context, listen: false);
-                analytics.logStatisticsViewed(_filter.cacheKey);
+                final analytics = Provider.of<AnalyticsService>(
+                  context,
+                  listen: false,
+                );
+                analytics.logStatisticsViewed(_filter.analyticsKey);
               } catch (e) {
                 debugPrint('Error logging statistics view: $e');
               }
@@ -381,21 +378,20 @@ class _EstadisticasPantallaCompletaState
           // --- OBTENER DATOS DEL CACHE ---
           final promedio = stats['promedioGeneral'] as double;
           final promedioUlt5 = stats['promedioUltimas5'] as double;
-          final promedioUlt10 = stats['promedioUltimas10'] as double;
           final mejor = (stats['mejorPartida'] as Partida?)?.total ?? 0;
           final peor = (stats['peorPartida'] as Partida?)?.total ?? 0;
           final rachaStrike = stats['rachaStrikes'] as int;
           final rachaSpare = stats['rachaSpares'] as int;
           final porcentajes = stats['porcentajes'] as Map<String, double>;
-          
+
           // Las listas ya vienen limitadas del cache
           final topMejores = stats['topMejores'] as List<Partida>;
           final topPeores = stats['topPeores'] as List<Partida>;
-          
+
           // Tomar solo los primeros N para mostrar
           final top3 = topMejores.take(AppConstants.topNPartidas).toList();
           final peores3 = topPeores.take(AppConstants.topNPartidas).toList();
-          
+
           final histograma = stats['histograma'] as Map<String, int>;
           final miniPromedios = stats['promedioMovil'] as List<double>;
           final sesionRecord = stats['sesionRecord'] as Sesion?;
@@ -404,412 +400,316 @@ class _EstadisticasPantallaCompletaState
           // Estadísticas de pines (solo disponibles con el teclado visual)
           final promedioPrimerTiro = stats['promedioPrimerTiro'] as double?;
           final tasaConversionSpare = stats['tasaConversionSpare'] as double?;
-          final conversionSparePorPin = stats['conversionSparePorPin'] as Map<String, List<int>>? ?? {};
-          final hayEstadisticasPines = promedioPrimerTiro != null || tasaConversionSpare != null;
-
+          final conversionSparePorPin =
+              stats['conversionSparePorPin'] as Map<String, List<int>>? ?? {};
           // Season-focused summary + previous-season comparison.
           final selectedSeason = _filter.temporada;
           Map<String, dynamic>? selectedSeasonStats;
           Map<String, dynamic>? previousSeasonStats;
           String? previousSeason;
           if (selectedSeason != null) {
-            final seasonTimelineSesiones = _filter.tipo == AppConstants.tipoTodos
+            final seasonTimelineSesiones =
+                _filter.tipo == AppConstants.tipoTodos
                 ? snapshot.data!
-                : snapshot.data!
-                    .where((s) => s.tipo == _filter.tipo)
-                    .toList();
-            previousSeason =
-                EstadisticasUtils.temporadaAnterior(seasonTimelineSesiones, selectedSeason);
+                : snapshot.data!.where((s) => s.tipo == _filter.tipo).toList();
+            previousSeason = EstadisticasUtils.temporadaAnterior(
+              seasonTimelineSesiones,
+              selectedSeason,
+            );
 
-            final scopedCurrent = _seasonScopedSesiones(snapshot.data!, selectedSeason);
+            final scopedCurrent = _seasonScopedSesiones(
+              snapshot.data!,
+              selectedSeason,
+            );
             if (scopedCurrent.isNotEmpty) {
               selectedSeasonStats = estadisticasCache.getEstadisticas(
                 scopedCurrent,
                 filterKey: 'season_focus_${_filter.tipo}_$selectedSeason',
+                accountId: context.read<DataRepository>().arsenalUserId,
               );
             }
 
             if (previousSeason != null) {
-              final scopedPrevious = _seasonScopedSesiones(snapshot.data!, previousSeason);
+              final scopedPrevious = _seasonScopedSesiones(
+                snapshot.data!,
+                previousSeason,
+              );
               if (scopedPrevious.isNotEmpty) {
                 previousSeasonStats = estadisticasCache.getEstadisticas(
                   scopedPrevious,
                   filterKey: 'season_focus_${_filter.tipo}_$previousSeason',
+                  accountId: context.read<DataRepository>().arsenalUserId,
                 );
               }
             }
           }
-          
-          // Extract theme colors once to avoid repeated lookups
-          final greyColor = Colors.grey[700];
-          final recordCardColor = isDark
-              ? AppTheme.recordCardDark.withOpacity(AppTheme.cardOpacity)
-              : AppTheme.recordCardLight;
-          final worstCardColor = isDark
-              ? AppTheme.worstCardDark.withOpacity(AppTheme.worstCardOpacity)
-              : AppTheme.worstCardLight;
-          final textCardColor = isDark
-              ? Colors.white.withOpacity(AppTheme.textCardOpacity)
-              : Colors.black87;
 
+          final sample = StatisticsPinSample.fromGames(partidas);
+          // Each leave entry counts an opportunity once, unlike the aggregated pin map.
+          final opportunities = conversionSparePorPin.values.fold<int>(
+            0,
+            (n, v) => n + v[0],
+          );
+          final converted = conversionSparePorPin.values.fold<int>(
+            0,
+            (n, v) => n + v[1],
+          );
+          Widget section(
+            String id,
+            String title,
+            IconData icon,
+            List<Widget> children, {
+            String? subtitle,
+          }) => Card(
+            child: ExpansionTile(
+              key: Key('statistics-details-$id'),
+              leading: Icon(icon),
+              title: Text(title, key: Key('statistics-toggle-$id')),
+              subtitle: subtitle == null ? null : Text(subtitle),
+              childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+              expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+              children: children,
+            ),
+          );
           return CustomScrollView(
             slivers: [
-              // ── FILTER BAR ──────────────────────────────────────────────────
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 12),
-                  child: _buildFilterBar(l10n, isDark, snapshot.data!),
-                ),
-              ),
-
-              if (selectedSeason != null)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
-                    child: _buildSeasonFocusCard(
-                      l10n: l10n,
-                      isDark: isDark,
-                      selectedSeason: selectedSeason,
-                      selectedSeasonStats: selectedSeasonStats ?? stats,
-                      previousSeason: previousSeason,
-                      previousSeasonStats: previousSeasonStats,
-                    ),
-                  ),
-                ),
-
-              // ── STICKY KPI SUMMARY HEADER ────────────────────────────────
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _KpiStickyDelegate(
-                  minHeight: 72,
-                  maxHeight: 72,
-                  child: _buildKpiStickyBar(
-                    promedio: promedio,
-                    mejor: mejor,
-                    peor: peor,
-                    totalPartidas: partidas.length,
-                    isDark: isDark,
-                    l10n: l10n,
-                  ),
-                ),
-              ),
-
-              // ── MAIN CONTENT ─────────────────────────────────────────────
               SliverPadding(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 8, horizontal: 14),
-                sliver: SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // ── SECCIÓN 1: ESTADÍSTICAS GENERALES ──────────────────
-                      _buildSectionHeader(
-                        title: l10n.statsGeneralSection,
-                        icon: Icons.bar_chart_rounded,
-                        color: Colors.blue[700]!,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        AppLocalizations.of(context)!.quickScoreSummary,
-                        style: TextStyle(fontSize: 12, color: greyColor),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      RepaintBoundary(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: [
-                              KpiCardDinamico(
-                                label: AppLocalizations.of(context)!.average,
-                                value: promedio.toStringAsFixed(1),
-                                icon: Icons.bar_chart_rounded,
-                                color: Colors.blue[700]!,
-                                esSubida: promedio >= promedioUlt10,
-                              ),
-                              KpiCardDinamico(
-                                label: AppLocalizations.of(context)!.averageLast5,
-                                value: promedioUlt5.toStringAsFixed(1),
-                                icon: Icons.trending_up_rounded,
-                                color: Colors.purple[600]!,
-                                esSubida: promedioUlt5 > promedioUlt10,
-                              ),
-                              KpiCardDinamico(
-                                label: AppLocalizations.of(context)!.best,
-                                value: '$mejor',
-                                icon: Icons.emoji_events_rounded,
-                                color: Colors.green[600]!,
-                                esSubida: true,
-                              ),
-                              KpiCardDinamico(
-                                label: AppLocalizations.of(context)!.worst,
-                                value: '$peor',
-                                icon: Icons.sentiment_dissatisfied_rounded,
-                                color: Colors.red[400]!,
-                                esSubida: false,
-                              ),
-                            ],
-                          ),
+                padding: const EdgeInsets.all(14),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    _buildFilterBar(l10n, isDark, snapshot.data!),
+                    const SizedBox(height: 12),
+                    _buildSummary(
+                      l10n,
+                      partidas.length,
+                      sesiones.length,
+                      promedio,
+                      mejor,
+                      promedioUlt5,
+                    ),
+                    if (_filter.withoutBall)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          l10n.ballUnknownScope,
+                          style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ),
-
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          RachaBadge(
-                            label: AppLocalizations.of(context)!.strikes,
-                            valor: rachaStrike,
-                            icon: Icons.flash_on,
-                            color: Colors.blue[700]!,
-                          ),
-                          RachaBadge(
-                            label: AppLocalizations.of(context)!.spares,
-                            valor: rachaSpare,
-                            icon: Icons.bolt,
-                            color: Colors.green[600]!,
+                    if (_filter.ballId != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          l10n.ballScoreScope,
+                          key: const Key('ball-score-filter-scope'),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    const SizedBox(height: 12),
+                    StatisticsScoreChart(
+                      entries: entries,
+                      averages: miniPromedios,
+                      window: AppConstants.ventanaPromedioMovil,
+                    ),
+                    const SizedBox(height: 12),
+                    StatisticsAnalysisPanel(
+                      entries: entries,
+                      ballLabel: _ballLabel,
+                      onBallNamesNeeded: _loadBallNames,
+                      selectedBallId: _filter.ballId,
+                      onlyUnknownBall: _filter.withoutBall,
+                    ),
+                    if (selectedSeason != null)
+                      section(
+                        'season',
+                        l10n.seasonFocusTitle(selectedSeason),
+                        Icons.calendar_month,
+                        [
+                          _buildSeasonFocusCard(
+                            l10n: l10n,
+                            isDark: isDark,
+                            selectedSeason: selectedSeason,
+                            selectedSeasonStats: selectedSeasonStats ?? stats,
+                            previousSeason: previousSeason,
+                            previousSeasonStats: previousSeasonStats,
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        AppLocalizations.of(context)!.longestStreakDescription,
-                        style: TextStyle(fontSize: 12, color: greyColor),
-                        textAlign: TextAlign.center,
-                      ),
-
-                      const SizedBox(height: 14),
-                      Text(
-                        AppLocalizations.of(context)!.percentageStrikesSparesMisses,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: greyColor,
-                          fontWeight: FontWeight.w500,
+                    section(
+                      'outcomes',
+                      l10n.statsGeneralSection,
+                      Icons.pie_chart_outline,
+                      [
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 8,
+                          alignment: WrapAlignment.center,
+                          children: [
+                            RachaBadge(
+                              label: l10n.strikes,
+                              valor: rachaStrike,
+                              icon: Icons.flash_on,
+                              color: Colors.blue,
+                            ),
+                            RachaBadge(
+                              label: l10n.spares,
+                              valor: rachaSpare,
+                              icon: Icons.bolt,
+                              color: Colors.green,
+                            ),
+                          ],
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 3),
-                      PastelPorcentajes(
-                        porcentajeStrikes: porcentajes['strikes']!,
-                        porcentajeSpares: porcentajes['spares']!,
-                        porcentajeFallos: porcentajes['fallos']!,
-                      ),
-
-                      // ── SECCIÓN 2: EVOLUCIÓN Y DISTRIBUCIÓN ────────────────
-                      const SizedBox(height: 8),
-                      _buildSectionHeader(
-                        title: l10n.statsEvolutionSection,
-                        icon: Icons.show_chart_rounded,
-                        color: Colors.purple[600]!,
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context)!.recentEvolution,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: greyColor,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          InfoTooltipIcon(
-                              message: l10n.tooltipMovingAverage),
-                        ],
-                      ),
-                      const SizedBox(height: 3),
-                      MiniGraficoPromedioMovil(promedios: miniPromedios),
-
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Text(
-                            AppLocalizations.of(context)!.scoreDistribution,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w600),
-                          ),
-                          const SizedBox(width: 4),
-                          InfoTooltipIcon(
-                              message: l10n.tooltipHistogram),
-                        ],
-                      ),
-                      Text(
-                        AppLocalizations.of(context)!.gamesGroupedByRange,
-                        style: TextStyle(fontSize: 12, color: greyColor),
-                      ),
-                      const SizedBox(height: 4),
-                      HistogramaPuntuaciones(histograma: histograma),
-
-                      // ── SECCIÓN 3: MEJORES Y PEORES ────────────────────────
-                      const SizedBox(height: 8),
-                      _buildSectionHeader(
-                        title: l10n.statsBestWorstSection,
-                        icon: Icons.emoji_events_rounded,
-                        color: Colors.orange[700]!,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        AppLocalizations.of(context)!.topBestWorstGames,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: greyColor,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 6),
-                      TopPartidasWidget(
-                        partidas: top3,
-                        titulo: AppLocalizations.of(context)!.top3BestGames,
-                        color: Colors.indigo,
-                      ),
-                      TopPartidasWidget(
-                        partidas: peores3,
-                        titulo: AppLocalizations.of(context)!.top3WorstGames,
-                        color: Colors.red,
-                      ),
-
-                      const SizedBox(height: 12),
-                      Text(
-                        AppLocalizations.of(context)!.bestWorstSessionDescription,
-                        style: TextStyle(fontSize: 12, color: greyColor),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      if (sesionRecord != null)
-                        Card(
-                          color: recordCardColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 16,
-                              horizontal: 20,
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.star,
-                                    color: Colors.green[400], size: 28),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    '${AppLocalizations.of(context)!.personalRecord}\n${AppLocalizations.of(context)!.gamesWithAverage(sesionRecord.partidas.length, _formatearFechaCorta(sesionRecord.fecha), EstadisticasUtils.promedioSesion(sesionRecord).toStringAsFixed(1))}',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: textCardColor,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      if (sesionPeor != null)
-                        Card(
-                          color: worstCardColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 16,
-                              horizontal: 20,
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.error_outline,
-                                  color: Colors.red[300],
-                                  size: 28,
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    '${AppLocalizations.of(context)!.worstSession} ${AppLocalizations.of(context)!.gamesWithAverage(sesionPeor.partidas.length, _formatearFechaCorta(sesionPeor.fecha), EstadisticasUtils.promedioSesion(sesionPeor).toStringAsFixed(1))}',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: textCardColor,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                      // ── SECCIÓN 4: ESTADÍSTICAS DE PINES ──────────────────
-                      if (hayEstadisticasPines) ...[
                         const SizedBox(height: 8),
-                        _buildSectionHeader(
-                          title: l10n.pinStatsSection,
-                          icon: Icons.adjust_rounded,
-                          color: Colors.teal[600]!,
-                        ),
-                        const SizedBox(height: 4),
                         Text(
-                          AppLocalizations.of(context)!.pinStatsNote,
-                          style: TextStyle(fontSize: 11, color: greyColor),
-                          textAlign: TextAlign.center,
+                          l10n.longestStreakDescription,
+                          style: Theme.of(context).textTheme.bodySmall,
                         ),
-                        const SizedBox(height: 8),
-                        RepaintBoundary(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: [
-                                if (promedioPrimerTiro != null)
-                                  KpiCardDinamico(
-                                    label: AppLocalizations.of(context)!
-                                        .firstBallAvg,
-                                    value: promedioPrimerTiro
-                                        .toStringAsFixed(1),
-                                    icon: Icons.looks_one_rounded,
-                                    color: Colors.teal[600]!,
-                                    esSubida: promedioPrimerTiro >=
-                                        _kGoodFirstBallAverage,
-                                  ),
-                                if (tasaConversionSpare != null)
-                                  KpiCardDinamico(
-                                    label: AppLocalizations.of(context)!
-                                        .spareConversionRate,
-                                    value:
-                                        '${tasaConversionSpare.toStringAsFixed(1)}%',
-                                    icon: Icons.adjust_rounded,
-                                    color: Colors.deepOrange[600]!,
-                                    esSubida: tasaConversionSpare >=
-                                        _kGoodSpareConversionRate,
-                                  ),
-                              ],
+                        const SizedBox(height: 12),
+                        Text(l10n.percentageStrikesSparesMisses),
+                        PastelPorcentajes(
+                          porcentajeStrikes: porcentajes['strikes']!,
+                          porcentajeSpares: porcentajes['spares']!,
+                          porcentajeFallos: porcentajes['fallos']!,
+                        ),
+                      ],
+                    ),
+                    section(
+                      'distribution',
+                      l10n.scoreDistribution,
+                      Icons.bar_chart,
+                      [
+                        Text(l10n.gamesGroupedByRange),
+                        const SizedBox(height: 12),
+                        HistogramaPuntuaciones(histograma: histograma),
+                      ],
+                    ),
+                    section(
+                      'records',
+                      l10n.statsBestWorstSection,
+                      Icons.emoji_events_outlined,
+                      [
+                        TopPartidasWidget(
+                          partidas: top3,
+                          dateForGame: (p) => gameDates[p],
+                          titulo: l10n.top3BestGames,
+                          color: Colors.indigo,
+                        ),
+                        TopPartidasWidget(
+                          partidas: peores3,
+                          dateForGame: (p) => gameDates[p],
+                          titulo: l10n.top3WorstGames,
+                          color: Colors.red,
+                        ),
+                        ListTile(
+                          title: Text(l10n.worst),
+                          trailing: Text('$peor'),
+                        ),
+                        Text(
+                          l10n.bestWorstSessionDescription,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        if (sesionRecord != null)
+                          ListTile(
+                            leading: const Icon(Icons.star_outline),
+                            title: Text(l10n.personalRecord),
+                            subtitle: Text(
+                              l10n.gamesWithAverage(
+                                sesionRecord.partidas.length,
+                                _formatearFechaCorta(sesionRecord.fecha),
+                                EstadisticasUtils.promedioSesion(
+                                  sesionRecord,
+                                ).toStringAsFixed(1),
+                              ),
                             ),
                           ),
+                        if (sesionPeor != null)
+                          ListTile(
+                            title: Text(l10n.worstSession),
+                            subtitle: Text(
+                              l10n.gamesWithAverage(
+                                sesionPeor.partidas.length,
+                                _formatearFechaCorta(sesionPeor.fecha),
+                                EstadisticasUtils.promedioSesion(
+                                  sesionPeor,
+                                ).toStringAsFixed(1),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    section(
+                      'pins',
+                      l10n.pinStatsSection,
+                      Icons.sports,
+                      [
+                        Text(
+                          l10n.pinStatsNote,
+                          style: Theme.of(context).textTheme.bodySmall,
                         ),
-                        if (conversionSparePorPin.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        if (sample.gamesWithPins == 0)
+                          Text(l10n.statisticsNoPinData)
+                        else ...[
+                          KpiCardDinamico(
+                            label: l10n.firstBallAvg,
+                            value:
+                                promedioPrimerTiro?.toStringAsFixed(1) ??
+                                '\u2014',
+                            icon: Icons.looks_one_outlined,
+                            color: Colors.teal,
+                            esSubida: null,
+                            compact: true,
+                          ),
+                          Text(
+                            l10n.statisticsFirstSample(sample.firstThrows),
+                            key: const Key('statistics-first-sample'),
+                          ),
                           const SizedBox(height: 12),
-                          _buildSectionHeader(
-                            title: l10n.perPinSpareStats,
-                            icon: Icons.pin_drop_rounded,
-                            color: Colors.deepOrange[600]!,
-                            tooltipText: l10n.tooltipSpareConversion,
+                          KpiCardDinamico(
+                            label: l10n.spareConversionRate,
+                            value: tasaConversionSpare == null
+                                ? '\u2014'
+                                : '${tasaConversionSpare.toStringAsFixed(1)}%',
+                            icon: Icons.adjust,
+                            color: Colors.deepOrange,
+                            esSubida: null,
+                            compact: true,
                           ),
-                          const SizedBox(height: 4),
-                          PerPinHeatmap(
-                            data: buildPerPinHeatmapData(
-                                conversionSparePorPin),
+                          Text(
+                            opportunities == 0
+                                ? l10n.statisticsNoSample
+                                : l10n.statisticsSpareSample(
+                                    converted,
+                                    opportunities,
+                                  ),
+                            key: const Key('statistics-spare-sample'),
                           ),
-                          const SizedBox(height: 8),
-                          _buildPerPinSpareTable(
-                              conversionSparePorPin, l10n),
+                          if (conversionSparePorPin.isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            Text(
+                              l10n.perPinSpareStats,
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              l10n.statisticsSpareTableHint,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            PerPinHeatmap(
+                              data: buildPerPinHeatmapData(
+                                conversionSparePorPin,
+                              ),
+                            ),
+                            _buildPerPinSpareTable(conversionSparePorPin, l10n),
+                          ],
                         ],
                       ],
-                      const SizedBox(height: 20),
-                    ],
-                  ),
+                      subtitle: l10n.statisticsPinCoverage(
+                        sample.gamesWithPins,
+                        partidas.length,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ]),
                 ),
               ),
             ],
@@ -832,14 +732,17 @@ class _EstadisticasPantallaCompletaState
     required Map<String, dynamic>? previousSeasonStats,
   }) {
     final avg = (selectedSeasonStats['promedioGeneral'] as double? ?? 0.0);
-    final bestGame = (selectedSeasonStats['mejorPartida'] as Partida?)?.total ?? 0;
+    final bestGame =
+        (selectedSeasonStats['mejorPartida'] as Partida?)?.total ?? 0;
     final totalGames = selectedSeasonStats['totalPartidas'] as int? ?? 0;
     final totalSessions = selectedSeasonStats['totalSesiones'] as int? ?? 0;
     final seasonRecord = selectedSeasonStats['sesionRecord'] as Sesion?;
     final textColor = Theme.of(context).colorScheme.onSurface;
 
-    final previousAvg = (previousSeasonStats?['promedioGeneral'] as double?) ?? 0.0;
-    final previousBest = (previousSeasonStats?['mejorPartida'] as Partida?)?.total ?? 0;
+    final previousAvg =
+        (previousSeasonStats?['promedioGeneral'] as double?) ?? 0.0;
+    final previousBest =
+        (previousSeasonStats?['mejorPartida'] as Partida?)?.total ?? 0;
     final previousGames = previousSeasonStats?['totalPartidas'] as int? ?? 0;
     final previousSessions = previousSeasonStats?['totalSesiones'] as int? ?? 0;
     final deltaAvg = avg - previousAvg;
@@ -860,7 +763,11 @@ class _EstadisticasPantallaCompletaState
           children: [
             Row(
               children: [
-                Icon(Icons.calendar_month_rounded, color: Colors.blue[700], size: 20),
+                Icon(
+                  Icons.calendar_month_rounded,
+                  color: Colors.blue[700],
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -875,6 +782,12 @@ class _EstadisticasPantallaCompletaState
               ],
             ),
             const SizedBox(height: 8),
+            Text(
+              l10n.statisticsSeasonScope,
+              key: const Key('statistics-season-scope'),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 8),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -884,28 +797,28 @@ class _EstadisticasPantallaCompletaState
                     value: avg.toStringAsFixed(1),
                     icon: Icons.bar_chart_rounded,
                     color: Colors.blue[700]!,
-                    esSubida: true,
+                    esSubida: null,
                   ),
                   KpiCardDinamico(
                     label: l10n.best,
                     value: '$bestGame',
                     icon: Icons.emoji_events_rounded,
                     color: Colors.green[600]!,
-                    esSubida: true,
+                    esSubida: null,
                   ),
                   KpiCardDinamico(
                     label: l10n.games,
                     value: '$totalGames',
                     icon: Icons.sports_score_rounded,
                     color: Colors.purple[600]!,
-                    esSubida: true,
+                    esSubida: null,
                   ),
                   KpiCardDinamico(
                     label: l10n.sessions,
                     value: '$totalSessions',
                     icon: Icons.calendar_view_week_rounded,
                     color: Colors.teal[600]!,
-                    esSubida: true,
+                    esSubida: null,
                   ),
                 ],
               ),
@@ -969,12 +882,19 @@ class _EstadisticasPantallaCompletaState
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.emoji_events_outlined, size: 18, color: Colors.amber[700]),
+                Icon(
+                  Icons.emoji_events_outlined,
+                  size: 18,
+                  color: Colors.amber[700],
+                ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     '${l10n.seasonBestGameLabel}: $bestGame',
-                    style: TextStyle(fontSize: 12, color: textColor.withOpacity(0.85)),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: textColor.withOpacity(0.85),
+                    ),
                   ),
                 ),
               ],
@@ -984,12 +904,19 @@ class _EstadisticasPantallaCompletaState
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.star_outline_rounded, size: 18, color: Colors.green[600]),
+                  Icon(
+                    Icons.star_outline_rounded,
+                    size: 18,
+                    color: Colors.green[600],
+                  ),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       '${l10n.seasonBestSessionLabel}: ${l10n.gamesWithAverage(seasonRecord.partidas.length, _formatearFechaCorta(seasonRecord.fecha), EstadisticasUtils.promedioSesion(seasonRecord).toStringAsFixed(1))}',
-                      style: TextStyle(fontSize: 12, color: textColor.withOpacity(0.85)),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: textColor.withOpacity(0.85),
+                      ),
                     ),
                   ),
                 ],
@@ -1058,7 +985,9 @@ class _EstadisticasPantallaCompletaState
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
-                        color: isGood ? Colors.green[600] : Colors.deepOrange[600],
+                        color: isGood
+                            ? Colors.green[600]
+                            : Colors.deepOrange[600],
                       ),
                       textAlign: TextAlign.end,
                     ),
@@ -1076,34 +1005,261 @@ class _EstadisticasPantallaCompletaState
   // Helper methods
   // ---------------------------------------------------------------------------
 
-  /// Full filter bar: session type + date range presets + last-N-games chips.
+  void _resetFilters() {
+    setState(() => _filter = const StatsFilter());
+  }
+
   Widget _buildFilterBar(
+    AppLocalizations l,
+    bool isDark,
+    List<Sesion> sessions,
+  ) {
+    final labels = [
+      _translateTipo(_filter.tipo, l),
+      if (_filter.temporada != null) _filter.temporada!,
+      if (_filter.ballId != null || _filter.withoutBall)
+        _ballLabel(_filter.ballId),
+      if (_filter.venue != null) '${l.statisticsVenueFilter}: ${_filter.venue}',
+      if (_filter.withoutVenue) l.statisticsWithoutVenue,
+      if (_filter.sessionKey != null)
+        _sessionFilterLabel(
+          sessions.firstWhere(
+            (s) => _sessionFilterKey(s) == _filter.sessionKey,
+          ),
+          l,
+        ),
+      if (_filter.datePreset == DateRangePreset.custom &&
+          _filter.customRange != null)
+        '${_formatearFechaCorta(_filter.customRange!.start)} - ${_formatearFechaCorta(_filter.customRange!.end)}'
+      else
+        _labelForPreset(_filter.datePreset, l),
+      if (_filter.lastN != LastNGames.all) _labelForLastN(_filter.lastN, l),
+    ];
+    return Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ExpansionTile(
+            key: const Key('statistics-filters'),
+            onExpansionChanged: (open) {
+              if (open) _loadBallNames();
+            },
+            leading: const Icon(Icons.tune),
+            title: Text(
+              l.statisticsFilters,
+              key: const Key('statistics-filter-toggle'),
+            ),
+            subtitle: Text(
+              labels.join(' \u00b7 '),
+              key: const Key('statistics-filter-summary'),
+            ),
+            children: [_buildFilterControls(l, isDark, sessions)],
+          ),
+          if (_filter != const StatsFilter())
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                key: const Key('statistics-reset-filters'),
+                onPressed: _resetFilters,
+                child: Text(l.statisticsResetFilters),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummary(
+    AppLocalizations l,
+    int games,
+    int sessions,
+    double average,
+    int best,
+    double recent,
+  ) {
+    final colors = Theme.of(context).colorScheme;
+    final cards = [
+      KpiCardDinamico(
+        key: const Key('statistics-average'),
+        label: l.average,
+        value: average.toStringAsFixed(1),
+        icon: Icons.bar_chart,
+        color: colors.primary,
+        esSubida: null,
+        compact: true,
+      ),
+      KpiCardDinamico(
+        label: l.games,
+        value: '$games',
+        icon: Icons.sports_score,
+        color: colors.secondary,
+        esSubida: null,
+        compact: true,
+      ),
+      KpiCardDinamico(
+        label: l.best,
+        value: '$best',
+        icon: Icons.emoji_events_outlined,
+        color: Colors.teal,
+        esSubida: null,
+        compact: true,
+      ),
+      KpiCardDinamico(
+        label: l.averageLast5,
+        value: recent.toStringAsFixed(1),
+        icon: Icons.history,
+        color: colors.primary,
+        esSubida: null,
+        compact: true,
+      ),
+    ];
+    return Column(
+      key: const Key('statistics-summary'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          l.statisticsSummary,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          l.statisticsSample(games, sessions),
+          key: const Key('statistics-sample'),
+        ),
+        const SizedBox(height: 12),
+        LayoutBuilder(
+          builder: (context, box) {
+            final single =
+                box.maxWidth < 300 ||
+                MediaQuery.textScalerOf(context).scale(1) > 1.35;
+            final width = single ? box.maxWidth : (box.maxWidth - 10) / 2;
+            return Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: cards
+                  .map((c) => SizedBox(width: width, child: c))
+                  .toList(),
+            );
+          },
+        ),
+        const SizedBox(height: 6),
+        Text(
+          l.statisticsRecentSample(
+            games < AppConstants.ultimasPartidasPromedio5
+                ? games
+                : AppConstants.ultimasPartidasPromedio5,
+          ),
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEquipmentFilters(AppLocalizations l, List<Sesion> sessions) {
+    final ballIds =
+        sessions
+            .expand((s) => s.partidas)
+            .expand(StatsSelection.ballKeys)
+            .whereType<String>()
+            .toSet()
+            .toList()
+          ..sort();
+    final venues = <String, String>{};
+    for (final session in sessions) {
+      final key = StatsSelection.venueKey(session);
+      if (key != null) venues.putIfAbsent(key, () => session.lugar.trim());
+    }
+    final venueKeys = venues.keys.toList()..sort();
+    DropdownMenuItem<String> item(String value, String label) =>
+        DropdownMenuItem(
+          value: value,
+          child: Tooltip(
+            message: label,
+            child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+          ),
+        );
+    return Column(
+      children: [
+        DropdownButtonFormField<String>(
+          key: const Key('statistics-ball-filter'),
+          isExpanded: true,
+          value: _filter.withoutBall
+              ? 'none'
+              : _filter.ballId == null
+              ? 'all'
+              : 'ball:${_filter.ballId}',
+          decoration: InputDecoration(labelText: l.statisticsBallFilter),
+          items: [
+            item('all', l.statisticsAllBalls),
+            item('none', l.statisticsWithoutBall),
+            for (final id in ballIds) item('ball:$id', _ballLabel(id)),
+          ],
+          onChanged: (value) {
+            if (value == null) return;
+            setState(() {
+              _filter = value == 'all'
+                  ? _filter.copyWith(clearBall: true)
+                  : value == 'none'
+                  ? _filter.copyWith(withoutBall: true)
+                  : _filter.copyWith(ballId: value.substring(5));
+            });
+          },
+        ),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<String>(
+          key: const Key('statistics-venue-filter'),
+          isExpanded: true,
+          value: _filter.withoutVenue
+              ? 'none'
+              : _filter.venue == null
+              ? 'all'
+              : 'venue:${_filter.venue}',
+          decoration: InputDecoration(labelText: l.statisticsVenueFilter),
+          items: [
+            item('all', l.statisticsAllVenues),
+            item('none', l.statisticsWithoutVenue),
+            for (final key in venueKeys) item('venue:$key', venues[key]!),
+          ],
+          onChanged: (value) {
+            if (value == null) return;
+            setState(() {
+              _filter = value == 'all'
+                  ? _filter.copyWith(clearVenue: true)
+                  : value == 'none'
+                  ? _filter.copyWith(withoutVenue: true)
+                  : _filter.copyWith(venue: value.substring(6));
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  /// Full filter bar: session type + date range presets + last-N-games chips.
+  Widget _buildFilterControls(
     AppLocalizations l10n,
     bool isDark,
     List<Sesion> sesiones,
   ) {
     final primary = Theme.of(context).colorScheme.primary;
     final onSurface = Theme.of(context).colorScheme.onSurface;
-    final sessionOptions = sesiones.asMap().entries
-        .map(
-          (entry) => (
-            key: _sessionFilterKey(entry.value),
-            sesion: entry.value,
-          ),
-        )
-        .toList()
-      ..sort((a, b) => b.sesion.fecha.compareTo(a.sesion.fecha));
-    final selectedSessionValue = sessionOptions.any(
-      (option) => option.key == _filter.sessionKey,
-    )
+    final sessionOptions =
+        sesiones
+            .asMap()
+            .entries
+            .map(
+              (entry) =>
+                  (key: _sessionFilterKey(entry.value), sesion: entry.value),
+            )
+            .toList()
+          ..sort((a, b) => b.sesion.fecha.compareTo(a.sesion.fecha));
+    final selectedSessionValue =
+        sessionOptions.any((option) => option.key == _filter.sessionKey)
         ? _filter.sessionKey
         // If a previously selected session no longer exists, the selector
         // gracefully falls back to the "all sessions" option.
         : null;
-    final seasonOptions = sesiones
-        .map(_seasonLabel)
-        .toSet()
-        .toList()
+    final seasonOptions = sesiones.map(_seasonLabel).toSet().toList()
       ..sort((a, b) {
         final aSinTemporada = a == AppConstants.temporadaSinTemporada;
         final bSinTemporada = b == AppConstants.temporadaSinTemporada;
@@ -1121,10 +1277,7 @@ class _EstadisticasPantallaCompletaState
             ? Theme.of(context).colorScheme.surface
             : Colors.grey[100],
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: primary.withOpacity(0.38),
-          width: 1.3,
-        ),
+        border: Border.all(color: primary.withOpacity(0.38), width: 1.3),
         boxShadow: [
           BoxShadow(
             color: primary.withOpacity(isDark ? 0.13 : 0.06),
@@ -1319,6 +1472,8 @@ class _EstadisticasPantallaCompletaState
 
           // ── Row 4: date range presets ──────────────────────────────────
           const SizedBox(height: 6),
+          _buildEquipmentFilters(l10n, sesiones),
+          const SizedBox(height: 12),
           Row(
             children: [
               Text(
@@ -1347,12 +1502,10 @@ class _EstadisticasPantallaCompletaState
                                 lastDate: DateTime.now(),
                                 initialDateRange: _filter.customRange,
                                 helpText: l10n.selectDateRange,
-                                builder: (ctx, child) => Theme(
-                                  data: Theme.of(ctx),
-                                  child: child!,
-                                ),
+                                builder: (ctx, child) =>
+                                    Theme(data: Theme.of(ctx), child: child!),
                               );
-                              if (picked != null) {
+                              if (picked != null && mounted) {
                                 setState(
                                   () => _filter = _filter.copyWith(
                                     datePreset: DateRangePreset.custom,
@@ -1408,170 +1561,6 @@ class _EstadisticasPantallaCompletaState
                 ),
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Sticky KPI summary bar (4 metrics).
-  Widget _buildKpiStickyBar({
-    required double promedio,
-    required int mejor,
-    required int peor,
-    required int totalPartidas,
-    required bool isDark,
-    required AppLocalizations l10n,
-  }) {
-    final bg = isDark
-        ? Theme.of(context).colorScheme.surface.withOpacity(0.97)
-        : Theme.of(context).colorScheme.surface.withOpacity(0.97);
-    return Material(
-      elevation: 2,
-      color: bg,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        child: Row(
-          children: [
-            _StickyKpi(
-              label: l10n.stickyKpiAverage,
-              value: promedio.toStringAsFixed(1),
-              icon: Icons.bar_chart_rounded,
-              color: Colors.blue[700]!,
-            ),
-            _StickyKpi(
-              label: l10n.stickyKpiBest,
-              value: '$mejor',
-              icon: Icons.emoji_events_rounded,
-              color: Colors.green[600]!,
-            ),
-            _StickyKpi(
-              label: l10n.stickyKpiWorst,
-              value: '$peor',
-              icon: Icons.sentiment_dissatisfied_rounded,
-              color: Colors.red[400]!,
-            ),
-            _StickyKpi(
-              label: l10n.stickyKpiGames,
-              value: '$totalPartidas',
-              icon: Icons.sports_score_rounded,
-              color: Colors.purple[600]!,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader({
-    required String title,
-    required IconData icon,
-    required Color color,
-    String? tooltipText,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: color,
-              letterSpacing: 0.2,
-            ),
-          ),
-          if (tooltipText != null) ...[
-            const SizedBox(width: 4),
-            InfoTooltipIcon(message: tooltipText, color: color.withOpacity(0.6)),
-          ],
-          const SizedBox(width: 10),
-          Expanded(
-            child: Divider(
-              color: color.withOpacity(0.35),
-              thickness: 1.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Helper delegate for the pinned KPI sliver ────────────────────────────────
-
-class _KpiStickyDelegate extends SliverPersistentHeaderDelegate {
-  const _KpiStickyDelegate({
-    required this.minHeight,
-    required this.maxHeight,
-    required this.child,
-  });
-
-  final double minHeight;
-  final double maxHeight;
-  final Widget child;
-
-  @override
-  double get minExtent => minHeight;
-
-  @override
-  double get maxExtent => maxHeight;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return SizedBox.expand(child: child);
-  }
-
-  @override
-  bool shouldRebuild(_KpiStickyDelegate oldDelegate) {
-    return oldDelegate.minHeight != minHeight ||
-        oldDelegate.maxHeight != maxHeight ||
-        oldDelegate.child != child;
-  }
-}
-
-// ── Compact KPI tile used in the sticky header ───────────────────────────────
-
-class _StickyKpi extends StatelessWidget {
-  const _StickyKpi({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: color, size: 18),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 15,
-              color: color,
-            ),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
-            ),
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

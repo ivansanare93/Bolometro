@@ -27,7 +27,7 @@
   "training": "Entrenamiento",
   "competition": "Competición",
   "date": "Fecha",
-  "location": "Ubicación",
+  "location": "Lugar",
   "notes": "Notas",
   "save": "Guardar",
   "cancel": "Cancelar",
@@ -113,7 +113,7 @@
   "recentGames": "Partidas Recientes",
   "evolution": "Evolución",
   "performance": "Rendimiento",
-  "selectDate": "Seleccionar Fecha",
+  "selectDate": "Seleccionar fecha",
   "selectRange": "Seleccionar Rango",
   "fromDate": "Desde",
   "toDate": "Hasta",
@@ -121,7 +121,7 @@
   "clear": "Limpiar",
   "reset": "Restablecer",
   "search": "Buscar",
-  "filter": "Filtrar",
+  "filter": "Filtrar:",
   "sort": "Ordenar",
   "ascending": "Ascendente",
   "descending": "Descendente",
@@ -248,7 +248,6 @@
   "tapToChangeImage": "Pulsa para cambiar tu imagen",
   "enterYourName": "Introduce tu nombre",
   "enterValidEmail": "Introduce un email válido",
-  "selectDate": "Seleccionar fecha",
   "aboutMe": "Sobre mí",
   "deleteSessionConfirmation": "¿Seguro que deseas eliminar esta sesión?",
   "syncing": "Sincronizando...",
@@ -262,15 +261,10 @@
   "smartSyncDesc": "Combinar datos locales y de la nube",
   "selectSyncDirection": "Selecciona el tipo de sincronización",
   "noDataForStatistics": "No hay datos para mostrar estadísticas.",
-  "home": "Inicio",
-  "filter": "Filtrar:",
   "quickScoreSummary": "Resumen rápido de tus puntuaciones",
-  "average": "Promedio",
   "averageLast5": "Prom. Últ. 5",
   "best": "Mejor",
   "worst": "Peor",
-  "strikes": "Strikes",
-  "spares": "Spares",
   "longestStreakDescription": "Mayor número de strikes y spares consecutivos en todas tus partidas.",
   "percentageStrikesSparesMisses": "Porcentaje de Strikes, Spares y Fallos",
   "recentEvolution": "Evolución reciente (media móvil de tus últimas 5 partidas)",
@@ -283,7 +277,6 @@
   "personalRecord": "¡Récord personal!",
   "worstSession": "Peor sesión:",
   "noSessionsSaved": "No hay sesiones guardadas.",
-  "location": "Lugar",
   "gamesCount": "Partidas: {count}",
   "@gamesCount": {
     "description": "Contador de partidas",
@@ -476,9 +469,9 @@
   "@enterEmail": {
     "description": "Mensaje de validación de email"
   },
-  "you": "TÚ",
+  "you": "Tú",
   "@you": {
-    "description": "Indicador de usuario actual en rankings"
+    "description": "Indicador de usuario actual"
   },
   "achievements": "Logros",
   "@achievements": {
@@ -677,10 +670,6 @@
   "trendChartUnavailable": "Gráfico de tendencia disponible solo con datos de partidas individuales",
   "@trendChartUnavailable": {
     "description": "Mensaje cuando no hay datos de partidas individuales para el gráfico de tendencia"
-  },
-  "you": "Tú",
-  "@you": {
-    "description": "Indicador de usuario actual"
   },
   "vsComparison": "vs",
   "@vsComparison": {
@@ -1569,7 +1558,9 @@
   "@deleteSeasonConfirm": {
     "description": "Confirmation message before deleting a season",
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "newSeasonTitle": "Nueva temporada",
@@ -1608,7 +1599,9 @@
   "@archiveSeasonConfirm": {
     "description": "Confirmation message before archiving a season",
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "unarchiveSeason": "Desarchivar temporada",
@@ -1643,7 +1636,9 @@
   "@sessionCountForSeason": {
     "description": "Number of sessions associated with a season",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "sinTemporada": "Sin temporada",
@@ -1662,7 +1657,9 @@
   "@seasonFocusTitle": {
     "description": "Title for season-focused statistics summary card",
     "placeholders": {
-      "season": { "type": "String" }
+      "season": {
+        "type": "String"
+      }
     }
   },
   "seasonComparisonSection": "Comparación con la temporada anterior",
@@ -1734,5 +1731,364 @@
         "type": "int"
       }
     }
-  }
+  },
+  "numericKeyboardLabel": "Numérico",
+  "pinKeyboardLabel": "Pines",
+  "deleteThrow": "Borrar tirada",
+  "clearPinSelection": "Limpiar selección",
+  "restoreSeasonBeforeAssigning": "Restaura la temporada archivada antes de asignarle sesiones.",
+  "seasonOperationFailed": "No se ha completado la operación. Los datos se conservan; revisa los cambios pendientes antes de reintentarlo.",
+  "seasonRemovalExplanation": "No se borrará ninguna sesión. Puedes archivar la temporada o elegir el destino de sus sesiones antes de eliminarla.",
+  "removeSeasonAndReassign": "Eliminar y reasignar",
+  "retrySeasonChanges": "Reintentar",
+  "seasonChangesPending": "Cambios conservados en el dispositivo. Sesiones pendientes de confirmar en la cuenta: {count}.",
+  "@seasonChangesPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "seasonConflictsPending": "Conflictos que requieren revisión: {count}. No se sobrescribirán automáticamente.",
+  "@seasonConflictsPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewSeasonConflict": "Revisar conflicto",
+  "localSeasonChoice": "Conservar temporada del dispositivo",
+  "remoteSeasonChoice": "Conservar temporada de la cuenta",
+  "backupMissingSession": "Respaldar sesión ausente",
+  "backupMissingSessionExplanation": "Esta sesión está conservada en el dispositivo pero no existe en la cuenta. ¿Crear su respaldo con sus partidas? Si ya existe, no se sobrescribirá.",
+  "statisticsRefresh": "Actualizar estadísticas",
+  "statisticsLoadError": "No se pudieron cargar las estadísticas. Inténtalo de nuevo.",
+  "statisticsSeasonScope": "Resumen de temporadas completas, filtrado solo por tipo de sesión. No aplica fechas, sesión concreta ni límite de partidas. La temporada anterior se determina por su última actividad registrada. Tampoco aplica filtros de bola o bolera.",
+  "statisticsFilters": "Filtros",
+  "statisticsResetFilters": "Restablecer filtros",
+  "statisticsSummary": "Resumen del conjunto filtrado",
+  "statisticsSample": "{games, plural, =1{1 partida} other{{games} partidas}} · {sessions, plural, =1{1 sesión} other{{sessions} sesiones}}",
+  "@statisticsSample": {
+    "placeholders": {
+      "games": {
+        "type": "int"
+      },
+      "sessions": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsRecentSample": "Media reciente calculada con {count, plural, =1{1 partida disponible.} other{{count} partidas disponibles.}}",
+  "@statisticsRecentSample": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsChartTitle": "Evolución de tus partidas",
+  "statisticsScoreLegend": "Puntuación por partida",
+  "statisticsMovingLegend": "Media móvil ({count})",
+  "@statisticsMovingLegend": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsChartHint": "Toca un punto para consultar el resultado. El eje horizontal sigue el orden de las partidas, no los días transcurridos.",
+  "statisticsMovingNeeds": "La media móvil necesita al menos {count} partidas.",
+  "@statisticsMovingNeeds": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsGameNumber": "Partida {number}",
+  "@statisticsGameNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsPreviousGame": "Partida anterior",
+  "statisticsNextGame": "Partida siguiente",
+  "statisticsFirstSample": "{count, plural, =1{1 primer tiro con pines registrados.} other{{count} primeros tiros con pines registrados.}}",
+  "@statisticsFirstSample": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsSpareSample": "{converted, plural, =1{1 convertido} other{{converted} convertidos}} de {attempts, plural, =1{1 oportunidad registrada.} other{{attempts} oportunidades registradas.}}",
+  "@statisticsSpareSample": {
+    "placeholders": {
+      "converted": {
+        "type": "int"
+      },
+      "attempts": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsPinCoverage": "{games} de {total} partidas con algún dato de pines; las muestras pueden ser parciales.",
+  "@statisticsPinCoverage": {
+    "placeholders": {
+      "games": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsNoPinData": "Sin datos de pines. Registra tiros con el teclado de pines para consultar este desglose.",
+  "statisticsNoSample": "Sin datos suficientes",
+  "statisticsSpareTableHint": "Cada fila muestra conversiones / oportunidades de ese deje. El mapa agrupa todos los dejes que incluyen cada pin; no equivale a remates de pin único.",
+  "statisticsFilteredEmpty": "No hay partidas con estos filtros. Puedes cambiarlos o restablecerlos.",
+  "statisticsUnknownDate": "Sin fecha",
+  "statisticsProgress": "Consistencia y comparación reciente",
+  "statisticsDeviation": "Desviación de puntuaciones",
+  "statisticsDeviationNote": "Desviación estándar del conjunto registrado: menor significa puntuaciones más próximas entre sí, no necesariamente mejores. Se necesitan al menos dos partidas.",
+  "statisticsMetricPoints": "{value} puntos",
+  "@statisticsMetricPoints": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "statisticsAnalysisSample": "{count, plural, =1{1 partida analizada} other{{count} partidas analizadas}}",
+  "@statisticsAnalysisSample": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsComparisonWindow": "Partidas por bloque",
+  "statisticsComparisonScope": "Compara bloques consecutivos del mismo número de partidas dentro del conjunto filtrado, incluido el límite de últimas partidas. No compara periodos de igual duración.",
+  "statisticsComparisonNeeds": "Se necesitan {required} partidas filtradas; hay {available}. No se comparan bloques incompletos.",
+  "@statisticsComparisonNeeds": {
+    "placeholders": {
+      "required": {
+        "type": "int"
+      },
+      "available": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsRecentBlock": "Últimas {count} partidas",
+  "@statisticsRecentBlock": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsPreviousBlock": "Las {count} partidas anteriores",
+  "@statisticsPreviousBlock": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statisticsMeanChange": "Variación del promedio: {value} puntos",
+  "@statisticsMeanChange": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "statisticsChangeNote": "La diferencia describe estas partidas. No demuestra una mejora de habilidad ni el efecto de una bola o bolera.",
+  "statisticsByBall": "Rendimiento por bola",
+  "statisticsByVenue": "Rendimiento por bolera",
+  "statisticsGroupsNote": "Datos del conjunto filtrado, ordenados por número de partidas. Compara las muestras y las condiciones de juego; no es una clasificación de cuál es mejor.",
+  "statisticsAllBalls": "Todas las bolas",
+  "statisticsWithoutBall": "Sin bola especificada",
+  "statisticsBallReference": "Bola con ID {id}",
+  "@statisticsBallReference": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "statisticsBallFilter": "Bola utilizada",
+  "statisticsVenueFilter": "Bolera de la sesión",
+  "statisticsAllVenues": "Todas las boleras",
+  "statisticsWithoutVenue": "Sin bolera especificada",
+  "statisticsGroupSummary": "Promedio: {average} · Mejor: {best}",
+  "@statisticsGroupSummary": {
+    "placeholders": {
+      "average": {
+        "type": "String"
+      },
+      "best": {
+        "type": "String"
+      }
+    }
+  },
+  "ballDefault": "Bola predeterminada",
+  "ballDefaultHint": "Se aplica a los tiros sin asignación individual. Cambiarla no elimina las excepciones por tiro.",
+  "ballPerThrow": "Bolas por tiro",
+  "ballThrowsHint": "Asigna cada tiro o aplica una bola a un intervalo de frames. Los tiros no realizados no cuentan. Los cambios solo se aplican al guardar.",
+  "ballOverrideCount": "{count} asignaciones individuales configuradas",
+  "@ballOverrideCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ballRangeFrom": "Desde el frame",
+  "ballRangeUntil": "Hasta el frame",
+  "ballRangeShots": "Tiros del intervalo",
+  "ballAllThrows": "Todos los tiros",
+  "ballThrowNumber": "Tiro {number}",
+  "@ballThrowNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "ballApplyRange": "Asignar bola al intervalo",
+  "ballClearOverrides": "Restablecer a la bola predeterminada",
+  "ballSaveAssignments": "Guardar asignaciones",
+  "ballAccountChanged": "La cuenta ha cambiado. Conserva el borrador y vuelve a abrirlo con su cuenta original.",
+  "ballScoreScope": "Las puntuaciones corresponden a partidas completas en las que se utilizó esta bola. En el desglose por bola, los tiros se atribuyen individualmente y los promedios solo incluyen partidas jugadas exclusivamente con ella.",
+  "ballParticipation": "{games} partidas con uso; {exclusive} exclusivas",
+  "@ballParticipation": {
+    "placeholders": {
+      "games": {
+        "type": "int"
+      },
+      "exclusive": {
+        "type": "int"
+      }
+    }
+  },
+  "ballUsageNumbers": "{throws} tiros, {frames} frames con uso y {pins} pines derribados (sin bonus de puntuación).",
+  "@ballUsageNumbers": {
+    "placeholders": {
+      "throws": {
+        "type": "int"
+      },
+      "frames": {
+        "type": "int"
+      },
+      "pins": {
+        "type": "int"
+      }
+    }
+  },
+  "ballStrikeSample": "Strikes: {converted}/{attempts} tiros con rack completo",
+  "@ballStrikeSample": {
+    "placeholders": {
+      "converted": {
+        "type": "int"
+      },
+      "attempts": {
+        "type": "int"
+      }
+    }
+  },
+  "ballSpareSample": "Spares: {converted}/{attempts} oportunidades de remate",
+  "@ballSpareSample": {
+    "placeholders": {
+      "converted": {
+        "type": "int"
+      },
+      "attempts": {
+        "type": "int"
+      }
+    }
+  },
+  "ballExclusiveNote": "Promedio y mejor partida: solo partidas jugadas exclusivamente con esta bola. No se reparte la puntuación de las partidas compartidas.",
+  "ballNoExclusive": "Sin partidas exclusivas para calcular puntuaciones por bola.",
+  "ballUnknownScope": "Incluye partidas con algún tiro sin bola especificada, aunque otros tiros tengan una bola asignada.",
+  "photoScoreTitle": "Leer marcador de una foto",
+  "photoScorePick": "Seleccionar foto",
+  "photoScorePrivacy": "Lectura local en Android. La foto y el progreso de revisión se conservan solo en este dispositivo, separados por cuenta; puedes borrarlos desde esta pantalla. No se adjuntan a la partida ni se suben. ML Kit puede enviar métricas técnicas a Google, sin las fotos ni sus lecturas.",
+  "photoScoreRegion": "Arrastra un rectángulo alrededor de los tiros de UN jugador y sus 10 frames, sin nombres, cabeceras ni puntuaciones acumuladas. Para ajustar una división, pulsa Editar fila y divisiones y arrastra su línea.",
+  "photoScoreExtract": "Leer fila seleccionada",
+  "photoScoreResetRegion": "Editar fila y divisiones",
+  "photoScoreReviewHint": "Comprueba cada frame con la foto y márcalo como revisado. Usa X, /, - o 0–9. ? indica lectura ambigua. No se deducen tiros desde el total.",
+  "photoScoreFrame": "Frame",
+  "photoScoreThrow": "Tiro",
+  "photoScoreReviewed": "Revisado",
+  "photoScorePrintedTotal": "Total del marcador (sin hándicap)",
+  "photoScoreNumbers": "Números leídos: elige el total correcto",
+  "photoScoreCalculated": "Total calculado",
+  "photoScoreApply": "Usar estos tiros",
+  "photoScoreInvalidFrame": "Hay frames incompletos o tiros incompatibles. Corrige los campos marcados.",
+  "photoScoreTotalMissing": "Introduce el total del marcador: de 0 a 300, sin hándicap.",
+  "photoScoreMismatch": "Los tiros no coinciden con el total del marcador. Comprueba que has elegido el total SIN hándicap y revisa los tiros antes de continuar.",
+  "photoScoreReviewMissing": "Falta confirmar la revisión de los 10 frames y del total.",
+  "photoScoreError": "No se ha podido leer la foto. Prueba otra imagen o registra los tiros manualmente.",
+  "photoScoreSize": "La imagen supera 20 MB o 16 megapíxeles. Recorta el marcador o selecciona una foto más pequeña.",
+  "photoScorePlatform": "La lectura de fotos está disponible en Android. Puedes seguir registrando la partida manualmente.",
+  "photoScoreReplaceTitle": "¿Reemplazar los tiros del borrador?",
+  "photoScoreReplaceBody": "Se sustituirán los tiros actuales y se retirarán sus selecciones visuales de pines. Las bolas asignadas y las notas se conservan. No se guardará la partida hasta que pulses Guardar.",
+  "photoScoreReplace": "Reemplazar tiros",
+  "photoScoreCancel": "Cancelar",
+  "photoScoreRaw": "Lectura",
+  "photoScoreNoRegion": "Selecciona primero la fila de tiros sobre la imagen.",
+  "photoScoreCumulative": "Acumulado calculado",
+  "photoScoreMatchesThrows": "coincide con los tiros; verificar en la foto",
+  "photoScoreHandicapHint": "El marcador puede mostrar el total y el total + hándicap. Selecciona el total SIN hándicap. Que una cifra coincida con los tiros no confirma que la lectura sea correcta.",
+  "photoScoreMoveZoom": "Mover / zoom",
+  "photoScoreZoomIn": "Acercar",
+  "photoScoreZoomOut": "Alejar",
+  "photoScoreResetView": "Ajustar imagen",
+  "photoScoreSelectMode": "Modo selección: arrastra la fila o una división. Para ampliar o desplazar, cambia a Mover / zoom.",
+  "photoScoreMoveMode": "Modo vista: pellizca para ampliar y arrastra para mover. La selección no cambia.",
+  "photoScoreDivider": "División entre frames",
+  "photoScoreDividerHelp": "Pulsa Editar fila y divisiones para ajustar esta división con el deslizador o sobre la foto.",
+  "photoScorePrevious": "Anterior",
+  "photoScoreNext": "Siguiente",
+  "photoScoreConfirmNext": "Confirmar y siguiente",
+  "photoScoreConfirmFrame": "Confirmar frame",
+  "photoScoreCellInvalid": "Revisar",
+  "photoScoreMissingThrow": "Falta un tiro necesario para completar este frame.",
+  "photoScoreUnknownSymbol": "Símbolo desconocido. Usa X, /, - o un número de 0 a 9.",
+  "photoScoreUnexpectedThrow": "Este tiro no está permitido con los tiros anteriores. Revisa los strikes y los bonus.",
+  "photoScoreInvalidSpare": "El spare / no puede ocupar esta posición.",
+  "photoScorePinSum": "La suma supera los diez pines del mismo juego de bolos.",
+  "photoScoreSpareExpected": "Los dos tiros suman diez: marca / en el remate, tras comprobar la foto.",
+  "photoScoreProgress": "Frames revisados",
+  "photoScoreResumeTitle": "Hay una revisión fotográfica guardada en este dispositivo.",
+  "photoScoreResume": "Retomar revisión",
+  "photoScoreDiscard": "Borrar revisión guardada",
+  "photoScoreDiscardTitle": "¿Borrar la copia local de esta revisión?",
+  "photoScoreDiscardBody": "Se borrarán la foto y el progreso guardados para esta cuenta. No se borrará la foto original de tu galería ni ninguna partida.",
+  "photoScoreChangeTitle": "¿Cambiar la foto o la selección?",
+  "photoScoreChangeBody": "Una nueva lectura sustituirá las correcciones y confirmaciones de esta revisión. Las partidas guardadas no cambian.",
+  "photoScoreContinue": "Continuar",
+  "photoScoreDraftSaved": "Revisión conservada en este dispositivo.",
+  "photoScoreDraftSaving": "Guardando revisión local…",
+  "photoScoreDraftError": "No se ha podido conservar o recuperar la revisión local. No borres los datos de la app. Puedes seguir revisando e intentar guardarla de nuevo.",
+  "photoScoreDraftRetry": "Reintentar guardado local",
+  "photoScoreProposalTitle": "Propuesta de partida",
+  "photoScoreChooseRow": "Elige la fila del jugador que quieres registrar.",
+  "photoScoreRowLabel": "Fila",
+  "photoScoreCorrectReading": "Corregir lectura",
+  "photoScoreAdjustSelection": "Ajustar fila y columnas",
+  "photoScoreSingleConfirm": "Es correcto, usar esta partida",
+  "photoScoreProposalUnknown": "Hay tiros incompletos o incompatibles. Corrige la lectura antes de continuar.",
+  "photoScoreProposalAmbiguous": "La asignación de columnas es dudosa. Ajusta la selección o revisa los frames individualmente.",
+  "photoScoreProposalCoherent": "Los tiros son válidos y suman el total mostrado. Comprueba que corresponden a la foto antes de confirmar.",
+  "photoScoreProposalCumulativeMismatch": "Los acumulados leídos no coinciden con los calculados. Revisa la foto y los frames individualmente.",
+  "photoScoreReturnSummary": "Volver al resumen",
+  "photoScoreFullPhoto": "Ver foto ampliada",
+  "photoScoreNoProposals": "No se han identificado diez columnas y una fila de tiros con suficiente claridad. Selecciona la fila manualmente para continuar.",
+  "photoScoreReviewOriginal": "Revisa los diez frames y el total SIN hándicap con la foto. Confirmar pasa los tiros al formulario; todavía debes guardar la partida y la sesión."
 }

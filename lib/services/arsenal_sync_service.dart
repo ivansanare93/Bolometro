@@ -104,7 +104,8 @@ class ArsenalSyncService {
   Future<void> recover() => _exclusive(() async {
     for (final key in journal.keys.cast<String>().toList()) {
       final state = _state(key);
-      if ((state['pending'] == true || state['conflict'] == true) && state['payload'] != null) {
+      if ((state['pending'] == true || state['conflict'] == true) &&
+          state['payload'] != null) {
         final parts = key.split('/');
         final payload = Map<String, dynamic>.from(state['payload'] as Map);
         // A legacy client may have edited an already persisted local record.
@@ -114,10 +115,13 @@ class ArsenalSyncService {
             !mapEquals(local, payload) &&
             !mapEquals(local, state['previousPayload'] as Map?)) {
           final previousVariant = state['legacyVariant'] as Map?;
-          if (previousVariant != null && !mapEquals(previousVariant, local) &&
+          if (previousVariant != null &&
+              !mapEquals(previousVariant, local) &&
               state['legacyBackedUp'] != true) {
             paused = true;
-            throw StateError('Several unconfirmed legacy variants; local copies retained for manual recovery.');
+            throw StateError(
+              'Several unconfirmed legacy variants; local copies retained for manual recovery.',
+            );
           }
           if (!mapEquals(previousVariant, local)) {
             state['legacyOperationId'] = generateStableId();
@@ -173,7 +177,9 @@ class ArsenalSyncService {
         if (paused) return;
         final state = await _exclusive(() async => _state(key));
         if (state['pending'] != true &&
-            !(state['legacyVariant'] != null && state['legacyBackedUp'] != true)) continue;
+            !(state['legacyVariant'] != null &&
+                state['legacyBackedUp'] != true))
+          continue;
         final parts = key.split('/');
         final payload = Map<String, dynamic>.from(state['payload'] as Map);
         final result = await remote
@@ -213,15 +219,24 @@ class ArsenalSyncService {
         });
         if (state['legacyVariant'] != null && state['legacyBackedUp'] != true) {
           // Preserve legacy edits outside the journal before resolving them.
-          final archived = await remote.write(uid, parts[0], parts[1], 0,
-              state['legacyOperationId'] as String,
-              Map<String, dynamic>.from(state['legacyVariant'] as Map))
+          final archived = await remote
+              .write(
+                uid,
+                parts[0],
+                parts[1],
+                0,
+                state['legacyOperationId'] as String,
+                Map<String, dynamic>.from(state['legacyVariant'] as Map),
+              )
               .timeout(networkTimeout);
           if (paused) return;
           await _exclusive(() async {
-            await journal.put(key, {..._state(key), 'legacyBackedUp': true,
+            await journal.put(key, {
+              ..._state(key),
+              'legacyBackedUp': true,
               'remotePayload': archived.record.payload,
-              'remoteRevision': archived.record.revision});
+              'remoteRevision': archived.record.revision,
+            });
             await journal.flush();
           });
         }
@@ -241,14 +256,28 @@ class ArsenalSyncService {
           for (final id in localIds) {
             final state = _state('$collection/$id');
             if (state['pending'] != true && !remoteIds.contains(id)) {
-              throw StateError('A previously backed-up record is absent from the server; local copy retained.');
+              throw StateError(
+                'A previously backed-up record is absent from the server; local copy retained.',
+              );
             }
           }
           for (final record in records) {
             validateArsenalPayload(collection, record.id, record.payload);
             final key = '$collection/${record.id}';
             final state = _state(key);
-            if (state['pending'] == true || state['conflict'] == true) continue;
+            if (state['conflict'] == true) {
+              // Refresh the account side without replacing either local copy.
+              // Conflicts can survive recovery with no remote snapshot, or an
+              // older snapshot can become stale while another device edits.
+              await journal.put(key, {
+                ...state,
+                'remotePayload': record.payload,
+                'remoteRevision': record.revision,
+              });
+              await journal.flush();
+              continue;
+            }
+            if (state['pending'] == true) continue;
             // Journal the downloaded payload first, too, to survive a crash.
             await journal.put(key, {
               'revision': record.revision,
@@ -281,6 +310,18 @@ class ArsenalSyncService {
   }
 
   Map<String, dynamic> conflict(String key) => _state(key);
+
+  bool canResolveConflict(String key) {
+    final state = _state(key);
+    return !paused &&
+        !isSyncing &&
+        state['conflict'] == true &&
+        state['payload'] is Map &&
+        state['remotePayload'] is Map &&
+        state['remoteRevision'] is int &&
+        (state['remoteRevision'] as int) > 0 &&
+        (state['legacyVariant'] == null || state['legacyBackedUp'] == true);
+  }
 
   Future<List<ArsenalVersion>> history(String collection, String id) =>
       remote.history(uid, collection, id).timeout(networkTimeout);
@@ -318,29 +359,51 @@ class ArsenalSyncService {
   });
 
   /// Both variants remain in server history; choosing never changes identity.
-  Future<void> resolve(String key, {required bool keepLocal}) =>
-      _exclusive(() async {
-        if (paused) throw StateError('Account changed');
-        final state = _state(key);
-        if (state['conflict'] != true || state['remotePayload'] == null) {
-          throw StateError('Synchronize to retrieve the remote conflict first');
-        }
-        if (state['legacyVariant'] != null && state['legacyBackedUp'] != true) {
-          throw StateError('Sincroniza para respaldar ambas versiones antes de elegir.');
-        }
-        final payload = Map<String, dynamic>.from(
-          (keepLocal
-                  ? state['legacyVariant'] ?? state['payload']
-                  : state['remotePayload'])
-              as Map,
-        );
-        await _enqueue(key, payload, {
-          'revision': state['remoteRevision'],
-          'basePayload': state['remotePayload'],
-        });
-        await _put(key.split('/')[0], payload);
-        onChanged();
-      });
+  Future<void> resolve(
+    String key, {
+    required bool keepLocal,
+    Map<String, dynamic>? expectedConflict,
+  }) => _exclusive(() async {
+    if (paused)
+      throw StateError('La cuenta ha cambiado. Vuelve a abrir tu arsenal.');
+    final state = _state(key);
+    if (!canResolveConflict(key)) {
+      throw StateError(
+        'Sincroniza para recuperar y conservar las dos versiones antes de elegir.',
+      );
+    }
+    if (expectedConflict != null &&
+        (state['operationId'] != expectedConflict['operationId'] ||
+            state['remoteRevision'] != expectedConflict['remoteRevision'] ||
+            !mapEquals(
+              state['payload'] as Map?,
+              expectedConflict['payload'] as Map?,
+            ) ||
+            !mapEquals(
+              state['legacyVariant'] as Map?,
+              expectedConflict['legacyVariant'] as Map?,
+            ) ||
+            !mapEquals(
+              state['remotePayload'] as Map?,
+              expectedConflict['remotePayload'] as Map?,
+            ))) {
+      throw StateError(
+        'Las versiones han cambiado. Vuelve a revisarlas antes de elegir.',
+      );
+    }
+    final payload = Map<String, dynamic>.from(
+      (keepLocal
+              ? state['legacyVariant'] ?? state['payload']
+              : state['remotePayload'])
+          as Map,
+    );
+    await _enqueue(key, payload, {
+      'revision': state['remoteRevision'],
+      'basePayload': state['remotePayload'],
+    });
+    await _put(key.split('/')[0], payload);
+    onChanged();
+  });
 
   Future<void> pause() async {
     paused = true;

@@ -34,9 +34,11 @@ import 'services/notification_service.dart';
 import 'services/engagement_tracking_service.dart';
 import 'services/local_notification_service.dart';
 import 'repositories/data_repository.dart';
+import 'repositories/ball_media_repository.dart';
+import 'repositories/ball_catalog_repository.dart';
 import 'utils/estadisticas_cache.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Inicializar Firebase
@@ -109,6 +111,10 @@ void main() async {
         ChangeNotifierProvider(create: (_) => KeyboardProvider()),
         ChangeNotifierProvider(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (_) => DataRepository()),
+        ChangeNotifierProvider(create: (_) => BallMediaRepository()),
+        ChangeNotifierProvider(
+          create: (_) => BallCatalogRepository(),
+        ),
         ChangeNotifierProvider(create: (_) => EstadisticasCache()),
         ChangeNotifierProvider(create: (_) => AchievementService()),
         Provider(create: (_) => AnalyticsService()),

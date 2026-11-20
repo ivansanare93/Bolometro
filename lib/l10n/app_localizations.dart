@@ -3763,6 +3763,972 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{count, plural, =1{1 sesión actualizada} other{{count} sesiones actualizadas}}'**
   String bulkAssignSuccess(int count);
+
+  /// No description provided for @numericKeyboardLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Numérico'**
+  String get numericKeyboardLabel;
+
+  /// No description provided for @pinKeyboardLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Pines'**
+  String get pinKeyboardLabel;
+
+  /// No description provided for @deleteThrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar tirada'**
+  String get deleteThrow;
+
+  /// No description provided for @clearPinSelection.
+  ///
+  /// In es, this message translates to:
+  /// **'Limpiar selección'**
+  String get clearPinSelection;
+
+  /// No description provided for @restoreSeasonBeforeAssigning.
+  ///
+  /// In es, this message translates to:
+  /// **'Restaura la temporada archivada antes de asignarle sesiones.'**
+  String get restoreSeasonBeforeAssigning;
+
+  /// No description provided for @seasonOperationFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'No se ha completado la operación. Los datos se conservan; revisa los cambios pendientes antes de reintentarlo.'**
+  String get seasonOperationFailed;
+
+  /// No description provided for @seasonRemovalExplanation.
+  ///
+  /// In es, this message translates to:
+  /// **'No se borrará ninguna sesión. Puedes archivar la temporada o elegir el destino de sus sesiones antes de eliminarla.'**
+  String get seasonRemovalExplanation;
+
+  /// No description provided for @removeSeasonAndReassign.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar y reasignar'**
+  String get removeSeasonAndReassign;
+
+  /// No description provided for @retrySeasonChanges.
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentar'**
+  String get retrySeasonChanges;
+
+  /// No description provided for @seasonChangesPending.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambios conservados en el dispositivo. Sesiones pendientes de confirmar en la cuenta: {count}.'**
+  String seasonChangesPending(int count);
+
+  /// No description provided for @seasonConflictsPending.
+  ///
+  /// In es, this message translates to:
+  /// **'Conflictos que requieren revisión: {count}. No se sobrescribirán automáticamente.'**
+  String seasonConflictsPending(int count);
+
+  /// No description provided for @reviewSeasonConflict.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisar conflicto'**
+  String get reviewSeasonConflict;
+
+  /// No description provided for @localSeasonChoice.
+  ///
+  /// In es, this message translates to:
+  /// **'Conservar temporada del dispositivo'**
+  String get localSeasonChoice;
+
+  /// No description provided for @remoteSeasonChoice.
+  ///
+  /// In es, this message translates to:
+  /// **'Conservar temporada de la cuenta'**
+  String get remoteSeasonChoice;
+
+  /// No description provided for @backupMissingSession.
+  ///
+  /// In es, this message translates to:
+  /// **'Respaldar sesión ausente'**
+  String get backupMissingSession;
+
+  /// No description provided for @backupMissingSessionExplanation.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta sesión está conservada en el dispositivo pero no existe en la cuenta. ¿Crear su respaldo con sus partidas? Si ya existe, no se sobrescribirá.'**
+  String get backupMissingSessionExplanation;
+
+  /// No description provided for @statisticsRefresh.
+  ///
+  /// In es, this message translates to:
+  /// **'Actualizar estadísticas'**
+  String get statisticsRefresh;
+
+  /// No description provided for @statisticsLoadError.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudieron cargar las estadísticas. Inténtalo de nuevo.'**
+  String get statisticsLoadError;
+
+  /// No description provided for @statisticsSeasonScope.
+  ///
+  /// In es, this message translates to:
+  /// **'Resumen de temporadas completas, filtrado solo por tipo de sesión. No aplica fechas, sesión concreta ni límite de partidas. La temporada anterior se determina por su última actividad registrada. Tampoco aplica filtros de bola o bolera.'**
+  String get statisticsSeasonScope;
+
+  /// No description provided for @statisticsFilters.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtros'**
+  String get statisticsFilters;
+
+  /// No description provided for @statisticsResetFilters.
+  ///
+  /// In es, this message translates to:
+  /// **'Restablecer filtros'**
+  String get statisticsResetFilters;
+
+  /// No description provided for @statisticsSummary.
+  ///
+  /// In es, this message translates to:
+  /// **'Resumen del conjunto filtrado'**
+  String get statisticsSummary;
+
+  /// No description provided for @statisticsSample.
+  ///
+  /// In es, this message translates to:
+  /// **'{games, plural, =1{1 partida} other{{games} partidas}} · {sessions, plural, =1{1 sesión} other{{sessions} sesiones}}'**
+  String statisticsSample(int games, int sessions);
+
+  /// No description provided for @statisticsRecentSample.
+  ///
+  /// In es, this message translates to:
+  /// **'Media reciente calculada con {count, plural, =1{1 partida disponible.} other{{count} partidas disponibles.}}'**
+  String statisticsRecentSample(int count);
+
+  /// No description provided for @statisticsChartTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Evolución de tus partidas'**
+  String get statisticsChartTitle;
+
+  /// No description provided for @statisticsScoreLegend.
+  ///
+  /// In es, this message translates to:
+  /// **'Puntuación por partida'**
+  String get statisticsScoreLegend;
+
+  /// No description provided for @statisticsMovingLegend.
+  ///
+  /// In es, this message translates to:
+  /// **'Media móvil ({count})'**
+  String statisticsMovingLegend(int count);
+
+  /// No description provided for @statisticsChartHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Toca un punto para consultar el resultado. El eje horizontal sigue el orden de las partidas, no los días transcurridos.'**
+  String get statisticsChartHint;
+
+  /// No description provided for @statisticsMovingNeeds.
+  ///
+  /// In es, this message translates to:
+  /// **'La media móvil necesita al menos {count} partidas.'**
+  String statisticsMovingNeeds(int count);
+
+  /// No description provided for @statisticsGameNumber.
+  ///
+  /// In es, this message translates to:
+  /// **'Partida {number}'**
+  String statisticsGameNumber(int number);
+
+  /// No description provided for @statisticsPreviousGame.
+  ///
+  /// In es, this message translates to:
+  /// **'Partida anterior'**
+  String get statisticsPreviousGame;
+
+  /// No description provided for @statisticsNextGame.
+  ///
+  /// In es, this message translates to:
+  /// **'Partida siguiente'**
+  String get statisticsNextGame;
+
+  /// No description provided for @statisticsFirstSample.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 primer tiro con pines registrados.} other{{count} primeros tiros con pines registrados.}}'**
+  String statisticsFirstSample(int count);
+
+  /// No description provided for @statisticsSpareSample.
+  ///
+  /// In es, this message translates to:
+  /// **'{converted, plural, =1{1 convertido} other{{converted} convertidos}} de {attempts, plural, =1{1 oportunidad registrada.} other{{attempts} oportunidades registradas.}}'**
+  String statisticsSpareSample(int converted, int attempts);
+
+  /// No description provided for @statisticsPinCoverage.
+  ///
+  /// In es, this message translates to:
+  /// **'{games} de {total} partidas con algún dato de pines; las muestras pueden ser parciales.'**
+  String statisticsPinCoverage(int games, int total);
+
+  /// No description provided for @statisticsNoPinData.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin datos de pines. Registra tiros con el teclado de pines para consultar este desglose.'**
+  String get statisticsNoPinData;
+
+  /// No description provided for @statisticsNoSample.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin datos suficientes'**
+  String get statisticsNoSample;
+
+  /// No description provided for @statisticsSpareTableHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada fila muestra conversiones / oportunidades de ese deje. El mapa agrupa todos los dejes que incluyen cada pin; no equivale a remates de pin único.'**
+  String get statisticsSpareTableHint;
+
+  /// No description provided for @statisticsFilteredEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay partidas con estos filtros. Puedes cambiarlos o restablecerlos.'**
+  String get statisticsFilteredEmpty;
+
+  /// No description provided for @statisticsUnknownDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin fecha'**
+  String get statisticsUnknownDate;
+
+  /// No description provided for @statisticsProgress.
+  ///
+  /// In es, this message translates to:
+  /// **'Consistencia y comparación reciente'**
+  String get statisticsProgress;
+
+  /// No description provided for @statisticsDeviation.
+  ///
+  /// In es, this message translates to:
+  /// **'Desviación de puntuaciones'**
+  String get statisticsDeviation;
+
+  /// No description provided for @statisticsDeviationNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Desviación estándar del conjunto registrado: menor significa puntuaciones más próximas entre sí, no necesariamente mejores. Se necesitan al menos dos partidas.'**
+  String get statisticsDeviationNote;
+
+  /// No description provided for @statisticsMetricPoints.
+  ///
+  /// In es, this message translates to:
+  /// **'{value} puntos'**
+  String statisticsMetricPoints(String value);
+
+  /// No description provided for @statisticsAnalysisSample.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 partida analizada} other{{count} partidas analizadas}}'**
+  String statisticsAnalysisSample(int count);
+
+  /// No description provided for @statisticsComparisonWindow.
+  ///
+  /// In es, this message translates to:
+  /// **'Partidas por bloque'**
+  String get statisticsComparisonWindow;
+
+  /// No description provided for @statisticsComparisonScope.
+  ///
+  /// In es, this message translates to:
+  /// **'Compara bloques consecutivos del mismo número de partidas dentro del conjunto filtrado, incluido el límite de últimas partidas. No compara periodos de igual duración.'**
+  String get statisticsComparisonScope;
+
+  /// No description provided for @statisticsComparisonNeeds.
+  ///
+  /// In es, this message translates to:
+  /// **'Se necesitan {required} partidas filtradas; hay {available}. No se comparan bloques incompletos.'**
+  String statisticsComparisonNeeds(int required, int available);
+
+  /// No description provided for @statisticsRecentBlock.
+  ///
+  /// In es, this message translates to:
+  /// **'Últimas {count} partidas'**
+  String statisticsRecentBlock(int count);
+
+  /// No description provided for @statisticsPreviousBlock.
+  ///
+  /// In es, this message translates to:
+  /// **'Las {count} partidas anteriores'**
+  String statisticsPreviousBlock(int count);
+
+  /// No description provided for @statisticsMeanChange.
+  ///
+  /// In es, this message translates to:
+  /// **'Variación del promedio: {value} puntos'**
+  String statisticsMeanChange(String value);
+
+  /// No description provided for @statisticsChangeNote.
+  ///
+  /// In es, this message translates to:
+  /// **'La diferencia describe estas partidas. No demuestra una mejora de habilidad ni el efecto de una bola o bolera.'**
+  String get statisticsChangeNote;
+
+  /// No description provided for @statisticsByBall.
+  ///
+  /// In es, this message translates to:
+  /// **'Rendimiento por bola'**
+  String get statisticsByBall;
+
+  /// No description provided for @statisticsByVenue.
+  ///
+  /// In es, this message translates to:
+  /// **'Rendimiento por bolera'**
+  String get statisticsByVenue;
+
+  /// No description provided for @statisticsGroupsNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Datos del conjunto filtrado, ordenados por número de partidas. Compara las muestras y las condiciones de juego; no es una clasificación de cuál es mejor.'**
+  String get statisticsGroupsNote;
+
+  /// No description provided for @statisticsAllBalls.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las bolas'**
+  String get statisticsAllBalls;
+
+  /// No description provided for @statisticsWithoutBall.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin bola especificada'**
+  String get statisticsWithoutBall;
+
+  /// No description provided for @statisticsBallReference.
+  ///
+  /// In es, this message translates to:
+  /// **'Bola con ID {id}'**
+  String statisticsBallReference(String id);
+
+  /// No description provided for @statisticsBallFilter.
+  ///
+  /// In es, this message translates to:
+  /// **'Bola utilizada'**
+  String get statisticsBallFilter;
+
+  /// No description provided for @statisticsVenueFilter.
+  ///
+  /// In es, this message translates to:
+  /// **'Bolera de la sesión'**
+  String get statisticsVenueFilter;
+
+  /// No description provided for @statisticsAllVenues.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las boleras'**
+  String get statisticsAllVenues;
+
+  /// No description provided for @statisticsWithoutVenue.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin bolera especificada'**
+  String get statisticsWithoutVenue;
+
+  /// No description provided for @statisticsGroupSummary.
+  ///
+  /// In es, this message translates to:
+  /// **'Promedio: {average} · Mejor: {best}'**
+  String statisticsGroupSummary(String average, String best);
+
+  /// No description provided for @ballDefault.
+  ///
+  /// In es, this message translates to:
+  /// **'Bola predeterminada'**
+  String get ballDefault;
+
+  /// No description provided for @ballDefaultHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Se aplica a los tiros sin asignación individual. Cambiarla no elimina las excepciones por tiro.'**
+  String get ballDefaultHint;
+
+  /// No description provided for @ballPerThrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Bolas por tiro'**
+  String get ballPerThrow;
+
+  /// No description provided for @ballThrowsHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Asigna cada tiro o aplica una bola a un intervalo de frames. Los tiros no realizados no cuentan. Los cambios solo se aplican al guardar.'**
+  String get ballThrowsHint;
+
+  /// No description provided for @ballOverrideCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} asignaciones individuales configuradas'**
+  String ballOverrideCount(int count);
+
+  /// No description provided for @ballRangeFrom.
+  ///
+  /// In es, this message translates to:
+  /// **'Desde el frame'**
+  String get ballRangeFrom;
+
+  /// No description provided for @ballRangeUntil.
+  ///
+  /// In es, this message translates to:
+  /// **'Hasta el frame'**
+  String get ballRangeUntil;
+
+  /// No description provided for @ballRangeShots.
+  ///
+  /// In es, this message translates to:
+  /// **'Tiros del intervalo'**
+  String get ballRangeShots;
+
+  /// No description provided for @ballAllThrows.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos los tiros'**
+  String get ballAllThrows;
+
+  /// No description provided for @ballThrowNumber.
+  ///
+  /// In es, this message translates to:
+  /// **'Tiro {number}'**
+  String ballThrowNumber(int number);
+
+  /// No description provided for @ballApplyRange.
+  ///
+  /// In es, this message translates to:
+  /// **'Asignar bola al intervalo'**
+  String get ballApplyRange;
+
+  /// No description provided for @ballClearOverrides.
+  ///
+  /// In es, this message translates to:
+  /// **'Restablecer a la bola predeterminada'**
+  String get ballClearOverrides;
+
+  /// No description provided for @ballSaveAssignments.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar asignaciones'**
+  String get ballSaveAssignments;
+
+  /// No description provided for @ballAccountChanged.
+  ///
+  /// In es, this message translates to:
+  /// **'La cuenta ha cambiado. Conserva el borrador y vuelve a abrirlo con su cuenta original.'**
+  String get ballAccountChanged;
+
+  /// No description provided for @ballScoreScope.
+  ///
+  /// In es, this message translates to:
+  /// **'Las puntuaciones corresponden a partidas completas en las que se utilizó esta bola. En el desglose por bola, los tiros se atribuyen individualmente y los promedios solo incluyen partidas jugadas exclusivamente con ella.'**
+  String get ballScoreScope;
+
+  /// No description provided for @ballParticipation.
+  ///
+  /// In es, this message translates to:
+  /// **'{games} partidas con uso; {exclusive} exclusivas'**
+  String ballParticipation(int games, int exclusive);
+
+  /// No description provided for @ballUsageNumbers.
+  ///
+  /// In es, this message translates to:
+  /// **'{throws} tiros, {frames} frames con uso y {pins} pines derribados (sin bonus de puntuación).'**
+  String ballUsageNumbers(int throws, int frames, int pins);
+
+  /// No description provided for @ballStrikeSample.
+  ///
+  /// In es, this message translates to:
+  /// **'Strikes: {converted}/{attempts} tiros con rack completo'**
+  String ballStrikeSample(int converted, int attempts);
+
+  /// No description provided for @ballSpareSample.
+  ///
+  /// In es, this message translates to:
+  /// **'Spares: {converted}/{attempts} oportunidades de remate'**
+  String ballSpareSample(int converted, int attempts);
+
+  /// No description provided for @ballExclusiveNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Promedio y mejor partida: solo partidas jugadas exclusivamente con esta bola. No se reparte la puntuación de las partidas compartidas.'**
+  String get ballExclusiveNote;
+
+  /// No description provided for @ballNoExclusive.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin partidas exclusivas para calcular puntuaciones por bola.'**
+  String get ballNoExclusive;
+
+  /// No description provided for @ballUnknownScope.
+  ///
+  /// In es, this message translates to:
+  /// **'Incluye partidas con algún tiro sin bola especificada, aunque otros tiros tengan una bola asignada.'**
+  String get ballUnknownScope;
+
+  /// No description provided for @photoScoreTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Leer marcador de una foto'**
+  String get photoScoreTitle;
+
+  /// No description provided for @photoScorePick.
+  ///
+  /// In es, this message translates to:
+  /// **'Seleccionar foto'**
+  String get photoScorePick;
+
+  /// No description provided for @photoScorePrivacy.
+  ///
+  /// In es, this message translates to:
+  /// **'Lectura local en Android. La foto y el progreso de revisión se conservan solo en este dispositivo, separados por cuenta; puedes borrarlos desde esta pantalla. No se adjuntan a la partida ni se suben. ML Kit puede enviar métricas técnicas a Google, sin las fotos ni sus lecturas.'**
+  String get photoScorePrivacy;
+
+  /// No description provided for @photoScoreRegion.
+  ///
+  /// In es, this message translates to:
+  /// **'Arrastra un rectángulo alrededor de los tiros de UN jugador y sus 10 frames, sin nombres, cabeceras ni puntuaciones acumuladas. Para ajustar una división, pulsa Editar fila y divisiones y arrastra su línea.'**
+  String get photoScoreRegion;
+
+  /// No description provided for @photoScoreExtract.
+  ///
+  /// In es, this message translates to:
+  /// **'Leer fila seleccionada'**
+  String get photoScoreExtract;
+
+  /// No description provided for @photoScoreResetRegion.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar fila y divisiones'**
+  String get photoScoreResetRegion;
+
+  /// No description provided for @photoScoreReviewHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Comprueba cada frame con la foto y márcalo como revisado. Usa X, /, - o 0–9. ? indica lectura ambigua. No se deducen tiros desde el total.'**
+  String get photoScoreReviewHint;
+
+  /// No description provided for @photoScoreFrame.
+  ///
+  /// In es, this message translates to:
+  /// **'Frame'**
+  String get photoScoreFrame;
+
+  /// No description provided for @photoScoreThrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Tiro'**
+  String get photoScoreThrow;
+
+  /// No description provided for @photoScoreReviewed.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisado'**
+  String get photoScoreReviewed;
+
+  /// No description provided for @photoScorePrintedTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Total del marcador (sin hándicap)'**
+  String get photoScorePrintedTotal;
+
+  /// No description provided for @photoScoreNumbers.
+  ///
+  /// In es, this message translates to:
+  /// **'Números leídos: elige el total correcto'**
+  String get photoScoreNumbers;
+
+  /// No description provided for @photoScoreCalculated.
+  ///
+  /// In es, this message translates to:
+  /// **'Total calculado'**
+  String get photoScoreCalculated;
+
+  /// No description provided for @photoScoreApply.
+  ///
+  /// In es, this message translates to:
+  /// **'Usar estos tiros'**
+  String get photoScoreApply;
+
+  /// No description provided for @photoScoreInvalidFrame.
+  ///
+  /// In es, this message translates to:
+  /// **'Hay frames incompletos o tiros incompatibles. Corrige los campos marcados.'**
+  String get photoScoreInvalidFrame;
+
+  /// No description provided for @photoScoreTotalMissing.
+  ///
+  /// In es, this message translates to:
+  /// **'Introduce el total del marcador: de 0 a 300, sin hándicap.'**
+  String get photoScoreTotalMissing;
+
+  /// No description provided for @photoScoreMismatch.
+  ///
+  /// In es, this message translates to:
+  /// **'Los tiros no coinciden con el total del marcador. Comprueba que has elegido el total SIN hándicap y revisa los tiros antes de continuar.'**
+  String get photoScoreMismatch;
+
+  /// No description provided for @photoScoreReviewMissing.
+  ///
+  /// In es, this message translates to:
+  /// **'Falta confirmar la revisión de los 10 frames y del total.'**
+  String get photoScoreReviewMissing;
+
+  /// No description provided for @photoScoreError.
+  ///
+  /// In es, this message translates to:
+  /// **'No se ha podido leer la foto. Prueba otra imagen o registra los tiros manualmente.'**
+  String get photoScoreError;
+
+  /// No description provided for @photoScoreSize.
+  ///
+  /// In es, this message translates to:
+  /// **'La imagen supera 20 MB o 16 megapíxeles. Recorta el marcador o selecciona una foto más pequeña.'**
+  String get photoScoreSize;
+
+  /// No description provided for @photoScorePlatform.
+  ///
+  /// In es, this message translates to:
+  /// **'La lectura de fotos está disponible en Android. Puedes seguir registrando la partida manualmente.'**
+  String get photoScorePlatform;
+
+  /// No description provided for @photoScoreReplaceTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Reemplazar los tiros del borrador?'**
+  String get photoScoreReplaceTitle;
+
+  /// No description provided for @photoScoreReplaceBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Se sustituirán los tiros actuales y se retirarán sus selecciones visuales de pines. Las bolas asignadas y las notas se conservan. No se guardará la partida hasta que pulses Guardar.'**
+  String get photoScoreReplaceBody;
+
+  /// No description provided for @photoScoreReplace.
+  ///
+  /// In es, this message translates to:
+  /// **'Reemplazar tiros'**
+  String get photoScoreReplace;
+
+  /// No description provided for @photoScoreCancel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar'**
+  String get photoScoreCancel;
+
+  /// No description provided for @photoScoreRaw.
+  ///
+  /// In es, this message translates to:
+  /// **'Lectura'**
+  String get photoScoreRaw;
+
+  /// No description provided for @photoScoreNoRegion.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona primero la fila de tiros sobre la imagen.'**
+  String get photoScoreNoRegion;
+
+  /// No description provided for @photoScoreCumulative.
+  ///
+  /// In es, this message translates to:
+  /// **'Acumulado calculado'**
+  String get photoScoreCumulative;
+
+  /// No description provided for @photoScoreMatchesThrows.
+  ///
+  /// In es, this message translates to:
+  /// **'coincide con los tiros; verificar en la foto'**
+  String get photoScoreMatchesThrows;
+
+  /// No description provided for @photoScoreHandicapHint.
+  ///
+  /// In es, this message translates to:
+  /// **'El marcador puede mostrar el total y el total + hándicap. Selecciona el total SIN hándicap. Que una cifra coincida con los tiros no confirma que la lectura sea correcta.'**
+  String get photoScoreHandicapHint;
+
+  /// No description provided for @photoScoreMoveZoom.
+  ///
+  /// In es, this message translates to:
+  /// **'Mover / zoom'**
+  String get photoScoreMoveZoom;
+
+  /// No description provided for @photoScoreZoomIn.
+  ///
+  /// In es, this message translates to:
+  /// **'Acercar'**
+  String get photoScoreZoomIn;
+
+  /// No description provided for @photoScoreZoomOut.
+  ///
+  /// In es, this message translates to:
+  /// **'Alejar'**
+  String get photoScoreZoomOut;
+
+  /// No description provided for @photoScoreResetView.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustar imagen'**
+  String get photoScoreResetView;
+
+  /// No description provided for @photoScoreSelectMode.
+  ///
+  /// In es, this message translates to:
+  /// **'Modo selección: arrastra la fila o una división. Para ampliar o desplazar, cambia a Mover / zoom.'**
+  String get photoScoreSelectMode;
+
+  /// No description provided for @photoScoreMoveMode.
+  ///
+  /// In es, this message translates to:
+  /// **'Modo vista: pellizca para ampliar y arrastra para mover. La selección no cambia.'**
+  String get photoScoreMoveMode;
+
+  /// No description provided for @photoScoreDivider.
+  ///
+  /// In es, this message translates to:
+  /// **'División entre frames'**
+  String get photoScoreDivider;
+
+  /// No description provided for @photoScoreDividerHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Pulsa Editar fila y divisiones para ajustar esta división con el deslizador o sobre la foto.'**
+  String get photoScoreDividerHelp;
+
+  /// No description provided for @photoScorePrevious.
+  ///
+  /// In es, this message translates to:
+  /// **'Anterior'**
+  String get photoScorePrevious;
+
+  /// No description provided for @photoScoreNext.
+  ///
+  /// In es, this message translates to:
+  /// **'Siguiente'**
+  String get photoScoreNext;
+
+  /// No description provided for @photoScoreConfirmNext.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar y siguiente'**
+  String get photoScoreConfirmNext;
+
+  /// No description provided for @photoScoreConfirmFrame.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar frame'**
+  String get photoScoreConfirmFrame;
+
+  /// No description provided for @photoScoreCellInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisar'**
+  String get photoScoreCellInvalid;
+
+  /// No description provided for @photoScoreMissingThrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Falta un tiro necesario para completar este frame.'**
+  String get photoScoreMissingThrow;
+
+  /// No description provided for @photoScoreUnknownSymbol.
+  ///
+  /// In es, this message translates to:
+  /// **'Símbolo desconocido. Usa X, /, - o un número de 0 a 9.'**
+  String get photoScoreUnknownSymbol;
+
+  /// No description provided for @photoScoreUnexpectedThrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Este tiro no está permitido con los tiros anteriores. Revisa los strikes y los bonus.'**
+  String get photoScoreUnexpectedThrow;
+
+  /// No description provided for @photoScoreInvalidSpare.
+  ///
+  /// In es, this message translates to:
+  /// **'El spare / no puede ocupar esta posición.'**
+  String get photoScoreInvalidSpare;
+
+  /// No description provided for @photoScorePinSum.
+  ///
+  /// In es, this message translates to:
+  /// **'La suma supera los diez pines del mismo juego de bolos.'**
+  String get photoScorePinSum;
+
+  /// No description provided for @photoScoreSpareExpected.
+  ///
+  /// In es, this message translates to:
+  /// **'Los dos tiros suman diez: marca / en el remate, tras comprobar la foto.'**
+  String get photoScoreSpareExpected;
+
+  /// No description provided for @photoScoreProgress.
+  ///
+  /// In es, this message translates to:
+  /// **'Frames revisados'**
+  String get photoScoreProgress;
+
+  /// No description provided for @photoScoreResumeTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Hay una revisión fotográfica guardada en este dispositivo.'**
+  String get photoScoreResumeTitle;
+
+  /// No description provided for @photoScoreResume.
+  ///
+  /// In es, this message translates to:
+  /// **'Retomar revisión'**
+  String get photoScoreResume;
+
+  /// No description provided for @photoScoreDiscard.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar revisión guardada'**
+  String get photoScoreDiscard;
+
+  /// No description provided for @photoScoreDiscardTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Borrar la copia local de esta revisión?'**
+  String get photoScoreDiscardTitle;
+
+  /// No description provided for @photoScoreDiscardBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Se borrarán la foto y el progreso guardados para esta cuenta. No se borrará la foto original de tu galería ni ninguna partida.'**
+  String get photoScoreDiscardBody;
+
+  /// No description provided for @photoScoreChangeTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cambiar la foto o la selección?'**
+  String get photoScoreChangeTitle;
+
+  /// No description provided for @photoScoreChangeBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Una nueva lectura sustituirá las correcciones y confirmaciones de esta revisión. Las partidas guardadas no cambian.'**
+  String get photoScoreChangeBody;
+
+  /// No description provided for @photoScoreContinue.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar'**
+  String get photoScoreContinue;
+
+  /// No description provided for @photoScoreDraftSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisión conservada en este dispositivo.'**
+  String get photoScoreDraftSaved;
+
+  /// No description provided for @photoScoreDraftSaving.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardando revisión local…'**
+  String get photoScoreDraftSaving;
+
+  /// No description provided for @photoScoreDraftError.
+  ///
+  /// In es, this message translates to:
+  /// **'No se ha podido conservar o recuperar la revisión local. No borres los datos de la app. Puedes seguir revisando e intentar guardarla de nuevo.'**
+  String get photoScoreDraftError;
+
+  /// No description provided for @photoScoreDraftRetry.
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentar guardado local'**
+  String get photoScoreDraftRetry;
+
+  /// No description provided for @photoScoreProposalTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Propuesta de partida'**
+  String get photoScoreProposalTitle;
+
+  /// No description provided for @photoScoreChooseRow.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige la fila del jugador que quieres registrar.'**
+  String get photoScoreChooseRow;
+
+  /// No description provided for @photoScoreRowLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Fila'**
+  String get photoScoreRowLabel;
+
+  /// No description provided for @photoScoreCorrectReading.
+  ///
+  /// In es, this message translates to:
+  /// **'Corregir lectura'**
+  String get photoScoreCorrectReading;
+
+  /// No description provided for @photoScoreAdjustSelection.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustar fila y columnas'**
+  String get photoScoreAdjustSelection;
+
+  /// No description provided for @photoScoreSingleConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Es correcto, usar esta partida'**
+  String get photoScoreSingleConfirm;
+
+  /// No description provided for @photoScoreProposalUnknown.
+  ///
+  /// In es, this message translates to:
+  /// **'Hay tiros incompletos o incompatibles. Corrige la lectura antes de continuar.'**
+  String get photoScoreProposalUnknown;
+
+  /// No description provided for @photoScoreProposalAmbiguous.
+  ///
+  /// In es, this message translates to:
+  /// **'La asignación de columnas es dudosa. Ajusta la selección o revisa los frames individualmente.'**
+  String get photoScoreProposalAmbiguous;
+
+  /// No description provided for @photoScoreProposalCoherent.
+  ///
+  /// In es, this message translates to:
+  /// **'Los tiros son válidos y suman el total mostrado. Comprueba que corresponden a la foto antes de confirmar.'**
+  String get photoScoreProposalCoherent;
+
+  /// No description provided for @photoScoreProposalCumulativeMismatch.
+  ///
+  /// In es, this message translates to:
+  /// **'Los acumulados leídos no coinciden con los calculados. Revisa la foto y los frames individualmente.'**
+  String get photoScoreProposalCumulativeMismatch;
+
+  /// No description provided for @photoScoreReturnSummary.
+  ///
+  /// In es, this message translates to:
+  /// **'Volver al resumen'**
+  String get photoScoreReturnSummary;
+
+  /// No description provided for @photoScoreFullPhoto.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver foto ampliada'**
+  String get photoScoreFullPhoto;
+
+  /// No description provided for @photoScoreNoProposals.
+  ///
+  /// In es, this message translates to:
+  /// **'No se han identificado diez columnas y una fila de tiros con suficiente claridad. Selecciona la fila manualmente para continuar.'**
+  String get photoScoreNoProposals;
+
+  /// No description provided for @photoScoreReviewOriginal.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisa los diez frames y el total SIN hándicap con la foto. Confirmar pasa los tiros al formulario; todavía debes guardar la partida y la sesión.'**
+  String get photoScoreReviewOriginal;
 }
 
 class _AppLocalizationsDelegate

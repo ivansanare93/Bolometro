@@ -9,11 +9,16 @@ import '../utils/pines_a_tiro_utils.dart';
 import '../utils/registro_tiros_utils.dart';
 import '../widgets/marcador_bolos.dart';
 import '../widgets/teclado_selector_pins.dart';
+import '../widgets/keyboard_mode_selector.dart';
+import '../widgets/game_entry_viewport.dart';
 import '../widgets/resumen_puntuacion.dart';
 import '../widgets/notas_field.dart';
 import '../widgets/score_sheet_pin_strip.dart';
-import '../widgets/seleccionar_bola_field.dart';
+import '../widgets/game_ball_assignments.dart';
+import '../repositories/data_repository.dart';
 import 'home.dart';
+import 'score_photo_screen.dart';
+import '../services/score_photo_review.dart';
 import '../utils/teclado_tiros_adaptativo.dart';
 import '../l10n/app_localizations.dart';
 
@@ -31,6 +36,8 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
   late List<List<String>> framesText;
   String? notas;
   String? _ballId;
+  Map<String, String?> _ballAssignments = {};
+  String? _draftUid;
   Map<int, Set<int>> erroresPorTiro = {};
 
   // Estructura visual de pines: [frame][tiro][pines]
@@ -44,6 +51,8 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
 
   // Scroll controller for the body
   final ScrollController _scrollController = ScrollController();
+  final GlobalKey _pinSelectorKey = GlobalKey();
+  int _focusRequest = 0;
 
   // Notifier para teclas deshabilitadas
   final ValueNotifier<Set<String>> teclasDeshabilitadas = ValueNotifier({});
@@ -51,6 +60,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
   @override
   void initState() {
     super.initState();
+    _draftUid = context.read<DataRepository?>()?.arsenalUserId;
     WidgetsBinding.instance.addObserver(this);
     framesText = List.generate(10, (_) => List.filled(3, ''));
     erroresPorTiro = _obtenerErroresPorTiro(framesText);
@@ -67,16 +77,21 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _restoreDraftIfAvailable();
-      final keyboardProvider =
-          Provider.of<KeyboardProvider>(context, listen: false);
+      final keyboardProvider = Provider.of<KeyboardProvider>(
+        context,
+        listen: false,
+      );
       keyboardProvider.initializationFuture.then((_) {
         if (mounted) {
           setState(() {
             _modoVisual = keyboardProvider.modoVisual;
             mostrarSelectorpines = _modoVisual;
           });
+          if (_modoVisual) _enfocarSelectorPines();
           _actualizarTeclasDeshabilitadas(
-              frame: _frameActivo, tiro: _tiroActivo);
+            frame: _frameActivo,
+            tiro: _tiroActivo,
+          );
         }
       });
       try {
@@ -105,13 +120,16 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
   void _saveDraft() {
     DraftService.savePartidaDraft(
       framesText: framesText,
+      ownerUid: _draftUid,
+      ballId: _ballId,
+      ballIdsByThrow: _ballAssignments,
       notas: notas,
       pinesPorTiro: pinesPorTiro,
     );
   }
 
   Future<void> _restoreDraftIfAvailable() async {
-    final draft = await DraftService.loadPartidaDraft();
+    final draft = await DraftService.loadPartidaDraft(ownerUid: _draftUid);
     if (draft == null) return;
 
     // Restore framesText
@@ -131,13 +149,18 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
     }
 
     // Check if the draft has any meaningful data
-    final hasData = normalizedFrames.any((f) => f.any((t) => t.isNotEmpty));
+    final hasData =
+        normalizedFrames.any((f) => f.any((t) => t.isNotEmpty)) ||
+        draft['ballId'] != null ||
+        (draft['ballIdsByThrow'] as Map? ?? {}).isNotEmpty;
     if (!hasData) return;
 
     // Restore pinesPorTiro
     final pinesRaw = draft['pinesPorTiro'] as List<dynamic>?;
-    List<List<List<int>?>> restoredPines =
-        List.generate(10, (_) => List.filled(3, null));
+    List<List<List<int>?>> restoredPines = List.generate(
+      10,
+      (_) => List.filled(3, null),
+    );
     if (pinesRaw != null) {
       for (int i = 0; i < pinesRaw.length && i < 10; i++) {
         final tiros = pinesRaw[i].toString().split(';');
@@ -145,8 +168,10 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
           if (tiros[j] == 'null' || tiros[j].isEmpty) {
             restoredPines[i][j] = null;
           } else {
-            restoredPines[i][j] =
-                tiros[j].split(',').map((p) => int.tryParse(p) ?? 0).toList();
+            restoredPines[i][j] = tiros[j]
+                .split(',')
+                .map((p) => int.tryParse(p) ?? 0)
+                .toList();
           }
         }
       }
@@ -156,6 +181,10 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
       setState(() {
         framesText = normalizedFrames;
         notas = draft['notas'] as String?;
+        _ballId = draft['ballId'] as String?;
+        _ballAssignments = Partida.parseBallAssignments(
+          draft['ballIdsByThrow'],
+        );
         pinesPorTiro = restoredPines;
         erroresPorTiro = _obtenerErroresPorTiro(framesText);
         final iFrame = framesText.indexWhere(
@@ -165,8 +194,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
         );
         _frameActivo = iFrame >= 0 ? iFrame : 0;
         _tiroActivo = 0;
-        _actualizarTeclasDeshabilitadas(
-            frame: _frameActivo, tiro: _tiroActivo);
+        _actualizarTeclasDeshabilitadas(frame: _frameActivo, tiro: _tiroActivo);
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -183,7 +211,10 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
       (frame) => frame.any((tiro) => tiro.isNotEmpty),
     );
     final notasConDatos = notas != null && notas!.trim().isNotEmpty;
-    return algunFrameConDatos || notasConDatos;
+    return algunFrameConDatos ||
+        notasConDatos ||
+        _ballId != null ||
+        _ballAssignments.isNotEmpty;
   }
 
   Future<bool> _confirmarSalirSinGuardar() async {
@@ -233,9 +264,87 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
     return errores;
   }
 
+  Future<void> _importarFoto() async {
+    final accountToken = context.read<DataRepository?>()?.seasonAccountToken;
+    final score = await Navigator.push<ReviewedPhotoScore>(
+      context,
+      MaterialPageRoute(builder: (_) => const ScorePhotoScreen()),
+    );
+    if (!mounted ||
+        score == null ||
+        _draftUid != context.read<DataRepository?>()?.arsenalUserId ||
+        accountToken != context.read<DataRepository?>()?.seasonAccountToken)
+      return;
+    if (framesText.any((f) => f.any((t) => t.trim().isNotEmpty)) ||
+        pinesPorTiro.any((f) => f.any((t) => t != null))) {
+      final l = AppLocalizations.of(context)!;
+      final replace = await showDialog<bool>(
+        context: context,
+        builder: (c) => AlertDialog(
+          title: Text(l.photoScoreReplaceTitle),
+          content: Text(l.photoScoreReplaceBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(c, false),
+              child: Text(l.photoScoreCancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(c, true),
+              child: Text(l.photoScoreReplace),
+            ),
+          ],
+        ),
+      );
+      if (!mounted ||
+          replace != true ||
+          _draftUid != context.read<DataRepository?>()?.arsenalUserId ||
+          accountToken != context.read<DataRepository?>()?.seasonAccountToken)
+        return;
+    }
+    setState(() {
+      framesText = score.frames
+          .map(
+            (f) => List.generate(
+              3,
+              (t) => t >= f.length
+                  ? ''
+                  : f[t] == '0'
+                  ? '-'
+                  : f[t],
+            ),
+          )
+          .toList();
+      // OCR scores do not identify the individual fallen pins.
+      pinesPorTiro = List.generate(10, (_) => List.filled(3, null));
+      erroresPorTiro = _obtenerErroresPorTiro(framesText);
+      _frameActivo = 0;
+      _tiroActivo = 0;
+    });
+    _actualizarTeclasDeshabilitadas(frame: 0, tiro: 0);
+    _saveDraft();
+  }
+
   Future<void> _guardar() async {
+    if (_draftUid != context.read<DataRepository?>()?.arsenalUserId) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.ballAccountChanged),
+        ),
+      );
+      return;
+    }
     final nuevosFrames = interpretarFrames(framesText);
     final errores = validarPartida(framesText);
+    // A complete gutter game is legitimate. The legacy validator treats an
+    // all-miss game as empty; only waive that error after strict validation.
+    final completeZero =
+        ScorePhotoCandidate(frames: framesText, printedTotal: '0')
+            .validate(
+              reviewedFrames: Set.of(List.generate(10, (i) => i)),
+              totalReviewed: true,
+            )
+            .canApply;
+    if (completeZero) errores.clear();
 
     if (errores.isNotEmpty) {
       marcadorKey.currentState?.enfocarPrimerError();
@@ -260,7 +369,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
     }
 
     final nuevoTotal = calcularPuntuacionPartida(nuevosFrames);
-    if (nuevoTotal == 0) {
+    if (nuevoTotal == 0 && !completeZero) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppLocalizations.of(context)!.gameInvalidScore)),
       );
@@ -275,12 +384,13 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
       total: nuevoTotal,
       pinesPorTiro: pinesPorTiro, // <-- Guardamos aquí el array de pines visual
       ballId: _ballId,
+      ballIdsByThrow: _ballAssignments,
     );
 
     try {
       final analytics = Provider.of<AnalyticsService>(context, listen: false);
       await analytics.logGameCreated(nuevoTotal);
-      if (_ballId != null) {
+      if (nuevaPartida.usedBallIds.isNotEmpty) {
         await analytics.logBallAssignedToGame();
       }
     } catch (e) {
@@ -288,7 +398,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
     }
 
     widget.onGuardar(nuevaPartida);
-    await DraftService.clearPartidaDraft();
+    await DraftService.clearPartidaDraft(ownerUid: _draftUid);
     Navigator.pop(context);
   }
 
@@ -299,7 +409,7 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
       _tiroActivo = tiro;
       mostrarSelectorpines = true;
     });
-    _scrollToBottom();
+    _enfocarSelectorPines();
   }
 
   void _onAceptarSeleccionPins(List<int> seleccionados) {
@@ -360,21 +470,23 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
       // setTiroActivo triggers _onCampoVisualActivo → updates _frameActivo,
       // _tiroActivo, and mostrarSelectorpines = true.
       marcadorKey.currentState?.setTiroActivo(nextFrame, nextTiro);
-      _scrollToBottom();
     }
 
     _saveDraft();
   }
 
-  void _scrollToBottom() {
+  void _enfocarSelectorPines() {
+    final request = ++_focusRequest;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 350),
-          curve: Curves.easeOut,
-        );
-      }
+      if (!mounted || !_modoVisual || request != _focusRequest) return;
+      final target = _pinSelectorKey.currentContext;
+      if (target == null) return;
+      Scrollable.ensureVisible(
+        target,
+        alignment: 0,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
     });
   }
 
@@ -390,6 +502,20 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (context.watch<DataRepository?>()?.arsenalUserId != _draftUid) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              AppLocalizations.of(context)!.ballAccountChanged,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
     final frames = interpretarFrames(framesText);
     final puntuacionActual = calcularPuntuacionPartida(frames);
     final puntuacionMaxima = calcularPuntuacionMaximaPosible(frames);
@@ -427,13 +553,17 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) {
-          DraftService.clearPartidaDraft();
+          if (_draftUid != context.read<DataRepository?>()?.arsenalUserId) {
+            _saveDraft();
+          } else {
+            DraftService.clearPartidaDraft(ownerUid: _draftUid);
+          }
           return;
         }
         Future.microtask(() async {
           final debesSalir = await _confirmarSalirSinGuardar();
           if (debesSalir && mounted) {
-            await DraftService.clearPartidaDraft();
+            await DraftService.clearPartidaDraft(ownerUid: _draftUid);
             if (mounted) Navigator.pop(context);
           }
         });
@@ -444,12 +574,18 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
           centerTitle: true,
           actions: [
             IconButton(
+              key: const ValueKey('import-score-photo'),
+              icon: const Icon(Icons.document_scanner_outlined),
+              tooltip: AppLocalizations.of(context)!.photoScoreTitle,
+              onPressed: _importarFoto,
+            ),
+            IconButton(
               icon: const Icon(Icons.home),
               tooltip: AppLocalizations.of(context)!.home,
               onPressed: () async {
                 final debesSalir = await _confirmarSalirSinGuardar();
                 if (!debesSalir || !mounted) return;
-                DraftService.clearPartidaDraft();
+                DraftService.clearPartidaDraft(ownerUid: _draftUid);
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -459,169 +595,182 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
             ),
           ],
         ),
-        body: SingleChildScrollView(
+        body: GameEntryViewport(
+          pinMode: _modoVisual,
           controller: _scrollController,
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Mode toggle
-              _ModoToggle(
-                modoVisual: _modoVisual,
-                onToggle: (newModoVisual) {
-                  setState(() {
-                    _modoVisual = newModoVisual;
-                    mostrarSelectorpines = newModoVisual;
-                    _actualizarTeclasDeshabilitadas(
-                      frame: _frameActivo,
-                      tiro: _tiroActivo,
-                    );
-                  });
-                  Provider.of<KeyboardProvider>(context, listen: false)
-                      .setModoVisual(newModoVisual);
-                  if (newModoVisual) _scrollToBottom();
-                },
+          header: [
+            // Mode toggle
+            KeyboardModeSelector(
+              modoVisual: _modoVisual,
+              onChanged: (newModoVisual) {
+                setState(() {
+                  _modoVisual = newModoVisual;
+                  mostrarSelectorpines = newModoVisual;
+                  _actualizarTeclasDeshabilitadas(
+                    frame: _frameActivo,
+                    tiro: _tiroActivo,
+                  );
+                });
+                Provider.of<KeyboardProvider>(
+                  context,
+                  listen: false,
+                ).setModoVisual(newModoVisual);
+                if (newModoVisual) _enfocarSelectorPines();
+              },
+            ),
+            const SizedBox(height: 12),
+            // Scoresheet
+            MarcadorBolos(
+              key: marcadorKey,
+              frames: framesText,
+              puntuaciones: calcularPuntuacionPorFrame(framesText),
+              frameActivo: framesText.indexWhere(
+                (f) =>
+                    tipoDeFrame(f, esUltimo: framesText.indexOf(f) == 9) ==
+                    TipoFrame.incompleto,
               ),
-              const SizedBox(height: 12),
-              // Scoresheet
-              MarcadorBolos(
-                key: marcadorKey,
-                frames: framesText,
-                puntuaciones: calcularPuntuacionPorFrame(framesText),
-                frameActivo: framesText.indexWhere(
-                  (f) =>
-                      tipoDeFrame(f, esUltimo: framesText.indexOf(f) == 9) ==
-                      TipoFrame.incompleto,
-                ),
-                erroresPorTiro: erroresPorTiro,
-                onChanged: (frame, tiro, valor) {
-                  setState(() {
-                    framesText[frame][tiro] = valor.trim().toUpperCase();
-                    // Si no es visual, resetea el visual:
-                    if (!_modoVisual) pinesPorTiro[frame][tiro] = null;
-                    erroresPorTiro = _obtenerErroresPorTiro(framesText);
-                  });
-                  if (!_modoVisual) {
-                    _frameActivo = frame;
-                    _tiroActivo = tiro;
-                    _actualizarTeclasDeshabilitadas(frame: frame, tiro: tiro);
+              erroresPorTiro: erroresPorTiro,
+              onChanged: (frame, tiro, valor) {
+                setState(() {
+                  framesText[frame][tiro] = valor.trim().toUpperCase();
+                  // Si no es visual, resetea el visual:
+                  if (!_modoVisual || valor.isEmpty) {
+                    pinesPorTiro[frame][tiro] = null;
                   }
-                  _saveDraft();
-                },
-                onCampoActivoCambio: _modoVisual
-                    ? (frame, tiro) => _onCampoVisualActivo(frame, tiro)
-                    : (frame, tiro) {
-                        _frameActivo = frame;
-                        _tiroActivo = tiro;
-                        _actualizarTeclasDeshabilitadas(
-                            frame: frame, tiro: tiro);
-                      },
-                autoFocusEnabled: !_modoVisual,
-                autoAdvanceFocus: true,
+                  erroresPorTiro = _obtenerErroresPorTiro(framesText);
+                });
+                if (!_modoVisual) {
+                  _frameActivo = frame;
+                  _tiroActivo = tiro;
+                  _actualizarTeclasDeshabilitadas(frame: frame, tiro: tiro);
+                }
+                _saveDraft();
+              },
+              onCampoActivoCambio: _modoVisual
+                  ? (frame, tiro) => _onCampoVisualActivo(frame, tiro)
+                  : (frame, tiro) {
+                      _frameActivo = frame;
+                      _tiroActivo = tiro;
+                      _actualizarTeclasDeshabilitadas(frame: frame, tiro: tiro);
+                    },
+              autoFocusEnabled: !_modoVisual,
+              autoAdvanceFocus: true,
+            ),
+          ],
+          children: [
+            // Pin strip: shown in visual mode once at least one throw has pin data
+            if (_modoVisual &&
+                pinesPorTiro.any((f) => f.any((t) => t != null))) ...[
+              const SizedBox(height: 6),
+              ScoreSheetPinStrip(
+                pinesPorTiro: pinesPorTiro,
+                frameActivo: _frameActivo,
               ),
+            ],
 
-              // Pin strip: shown in visual mode once at least one throw has pin data
-              if (_modoVisual &&
-                  pinesPorTiro.any((f) => f.any((t) => t != null))) ...[
-                const SizedBox(height: 6),
-                ScoreSheetPinStrip(
-                  pinesPorTiro: pinesPorTiro,
-                  frameActivo: _frameActivo,
-                ),
-              ],
+            ResumenPuntuacion(
+              puntuacionActual: puntuacionActual,
+              puntuacionMaxima: puntuacionMaxima,
+              buenaRacha: buenaRacha,
+            ),
 
-              ResumenPuntuacion(
-                puntuacionActual: puntuacionActual,
-                puntuacionMaxima: puntuacionMaxima,
-                buenaRacha: buenaRacha,
-              ),
+            // Selector visual o teclado, según el modo
+            if (_modoVisual &&
+                mostrarSelectorpines &&
+                _frameActivo != null &&
+                _tiroActivo != null &&
+                !(esStrikeEnPrimerTiro &&
+                    _tiroActivo == 1 &&
+                    _frameActivo! < 9))
+              Builder(
+                builder: (_) {
+                  List<int> pinesIniciales =
+                      pinesPorTiro[_frameActivo!][_tiroActivo!] ?? [];
 
-              // Selector visual o teclado, según el modo
-              if (_modoVisual &&
-                  mostrarSelectorpines &&
-                  _frameActivo != null &&
-                  _tiroActivo != null &&
-                  !(esStrikeEnPrimerTiro &&
-                      _tiroActivo == 1 &&
-                      _frameActivo! < 9))
-                Builder(
-                  builder: (_) {
-                    List<int> pinesIniciales =
-                        pinesPorTiro[_frameActivo!][_tiroActivo!] ?? [];
+                  if (_frameActivo == 9) {
+                    if (_tiroActivo == 1) {
+                      // Always start with an empty selection; the pins
+                      // knocked in tiro 1 are shown as disabled (greyed out)
+                      // via pinesDeshabilitados, which already provides the
+                      // visual feedback. Pre-selecting them caused those pin
+                      // numbers to be included in 'seleccionados', making
+                      // the recorded count for tiro 2 incorrectly high.
+                      pinesIniciales = [];
+                    } else if (_tiroActivo == 2) {
+                      final tiro1 = pinesPorTiro[9][0] ?? [];
+                      final tiro2 = pinesPorTiro[9][1] ?? [];
+                      final huboStrike1 = tiro1.length == 10;
+                      final huboSpare =
+                          !huboStrike1 && (tiro1.length + tiro2.length == 10);
 
-                    if (_frameActivo == 9) {
-                      if (_tiroActivo == 1) {
-                        // Always start with an empty selection; the pins
-                        // knocked in tiro 1 are shown as disabled (greyed out)
-                        // via pinesDeshabilitados, which already provides the
-                        // visual feedback. Pre-selecting them caused those pin
-                        // numbers to be included in 'seleccionados', making
-                        // the recorded count for tiro 2 incorrectly high.
+                      if (huboStrike1 || huboSpare) {
                         pinesIniciales = [];
-                      } else if (_tiroActivo == 2) {
-                        final tiro1 = pinesPorTiro[9][0] ?? [];
-                        final tiro2 = pinesPorTiro[9][1] ?? [];
-                        final huboStrike1 = tiro1.length == 10;
-                        final huboSpare =
-                            !huboStrike1 && (tiro1.length + tiro2.length == 10);
-
-                        if (huboStrike1 || huboSpare) {
-                          pinesIniciales = [];
-                        } else {
-                          pinesIniciales = [...tiro1, ...tiro2];
-                        }
+                      } else {
+                        pinesIniciales = [...tiro1, ...tiro2];
                       }
                     }
+                  }
 
-                    return SelectorpinesWidget(
+                  return KeyedSubtree(
+                    key: _pinSelectorKey,
+                    child: SelectorpinesWidget(
                       key: ValueKey((_frameActivo!, _tiroActivo!)),
                       pinesIniciales: pinesIniciales,
                       pinesDeshabilitados: pinesDeshabilitados,
                       onAceptar: _onAceptarSeleccionPins,
+                      onBorrar: () => marcadorKey.currentState?.borrarValor(),
                       isFrame10: _frameActivo == 9,
                       tiroActual: _tiroActivo!,
                       frames: framesText,
                       frameActual: _frameActivo!,
-                    );
-                  },
-                )
-              else if (!_modoVisual)
-                TecladoTiros(
-                  onKeyPress: (valor) {
-                    if (valor == '⌫') {
-                      marcadorKey.currentState?.borrarValor();
-                    } else if (valor == '→') {
-                      marcadorKey.currentState?.siguiente();
-                    } else {
-                      marcadorKey.currentState?.insertarValor(valor);
-                    }
-                    final frame = _frameActivo ?? 0;
-                    final tiro = _tiroActivo ?? 0;
-                    _actualizarTeclasDeshabilitadas(frame: frame, tiro: tiro);
-                  },
-                  deshabilitadosNotifier: teclasDeshabilitadas,
-                ),
-              const SizedBox(height: 16),
-              SeleccionarBolaField(
-                ballId: _ballId,
-                onChanged: (value) {
-                  setState(() => _ballId = value);
+                    ),
+                  );
+                },
+              )
+            else if (!_modoVisual)
+              TecladoTiros(
+                onKeyPress: (valor) {
+                  if (valor == '⌫') {
+                    marcadorKey.currentState?.borrarValor();
+                  } else if (valor == '→') {
+                    marcadorKey.currentState?.siguiente();
+                  } else {
+                    marcadorKey.currentState?.insertarValor(valor);
+                  }
+                  final frame = _frameActivo ?? 0;
+                  final tiro = _tiroActivo ?? 0;
+                  _actualizarTeclasDeshabilitadas(frame: frame, tiro: tiro);
+                },
+                deshabilitadosNotifier: teclasDeshabilitadas,
+              ),
+            const SizedBox(height: 16),
+            GameBallAssignments(
+              ballId: _ballId,
+              assignments: _ballAssignments,
+              activeFrame: () => _frameActivo ?? 0,
+              onChanged: (id, assignments) {
+                if (_draftUid != context.read<DataRepository?>()?.arsenalUserId)
+                  return;
+                setState(() {
+                  _ballId = id;
+                  _ballAssignments = Map.of(assignments);
+                });
+                _saveDraft();
+              },
+            ),
+            const SizedBox(height: 16),
+            if (!_modoVisual)
+              NotasField(
+                initialValue: notas,
+                onChanged: (v) {
+                  notas = v;
                   _saveDraft();
                 },
+                onFocusChange: (focused) {},
               ),
-              const SizedBox(height: 16),
-              if (!_modoVisual)
-                NotasField(
-                  initialValue: notas,
-                  onChanged: (v) {
-                    notas = v;
-                    _saveDraft();
-                  },
-                  onFocusChange: (focused) {},
-                ),
-              const SizedBox(height: 40),
-            ],
-          ),
+            const SizedBox(height: 40),
+          ],
         ),
         bottomNavigationBar: Container(
           decoration: BoxDecoration(
@@ -635,7 +784,11 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
             ],
           ),
           padding: EdgeInsets.fromLTRB(
-              16, 12, 16, 16 + MediaQuery.of(context).padding.bottom),
+            16,
+            12,
+            16,
+            16 + MediaQuery.of(context).padding.bottom,
+          ),
           child: ElevatedButton.icon(
             onPressed: _guardar,
             icon: const Icon(Icons.save),
@@ -645,105 +798,6 @@ class _RegistroSesionScreenState extends State<RegistroSesionScreen>
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// A compact, pill-shaped toggle that switches between classic keyboard mode
-/// and visual pin-selection mode.
-class _ModoToggle extends StatelessWidget {
-  final bool modoVisual;
-  final ValueChanged<bool> onToggle;
-
-  const _ModoToggle({required this.modoVisual, required this.onToggle});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final inactiveColor =
-        isDark ? Colors.white12 : theme.colorScheme.outline.withOpacity(0.2);
-    final activeColor = theme.colorScheme.primary;
-    final inactiveFg = theme.colorScheme.onSurface.withOpacity(0.55);
-    const activeFg = Colors.white;
-
-    return Container(
-      height: 44,
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1A1F2E) : Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.3),
-          width: 1,
-        ),
-        boxShadow: [
-          if (!isDark)
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Keyboard segment
-          Expanded(
-            child: Semantics(
-              button: true,
-              selected: !modoVisual,
-              label: l10n.switchToClassicKeyboard,
-              child: GestureDetector(
-                onTap: modoVisual ? () => onToggle(false) : null,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: !modoVisual ? activeColor : Colors.transparent,
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  child: Icon(
-                    Icons.keyboard_rounded,
-                    size: 20,
-                    color: !modoVisual ? activeFg : inactiveFg,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // Separator
-          Container(
-              width: 1,
-              height: 24,
-              color: inactiveColor),
-          // Visual segment
-          Expanded(
-            child: Semantics(
-              button: true,
-              selected: modoVisual,
-              label: l10n.registerPinsVisually,
-              child: GestureDetector(
-                onTap: !modoVisual ? () => onToggle(true) : null,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: modoVisual ? activeColor : Colors.transparent,
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  child: Icon(
-                    Icons.push_pin_rounded,
-                    size: 20,
-                    color: modoVisual ? activeFg : inactiveFg,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

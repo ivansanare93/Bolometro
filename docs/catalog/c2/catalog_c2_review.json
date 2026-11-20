@@ -1,0 +1,1087 @@
+{
+  "reviewVersion": 1,
+  "checkedAt": "2026-10-28T10:22:42Z",
+  "selectionSource": "docs/mds/BALL_CATALOG_PHASE_C1_RESEARCH.md",
+  "snapshotPath": "docs/catalog/c2/catalog_real_v2.review.json",
+  "activationApproved": false,
+  "distributionRightsVerified": false,
+  "photoCount": 0,
+  "counts": {
+    "ready": 3,
+    "incomplete": 25,
+    "blocked": 2
+  },
+  "candidates": [
+    {
+      "id": "brunswick.beyond-infinity",
+      "manufacturer": "Brunswick",
+      "model": "Beyond Infinity",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://brunswickbowling.com/products/balls/retired/beyond-infinity",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "coreName",
+        "coreType",
+        "weights.16.coreType",
+        "weights.15.coreType",
+        "weights.14.coreType",
+        "weights.13.coreName",
+        "weights.13.coreType",
+        "weights.12.coreName",
+        "weights.12.coreType"
+      ],
+      "notes": [
+        "RETIRED en ficha; fecha de retirada desconocida."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "brunswick.bvp-sidewinder",
+      "manufacturer": "Brunswick",
+      "model": "BVP Sidewinder",
+      "classification": "blocked",
+      "included": false,
+      "officialUrl": "https://brunswickbowling.com/uploads/downloads/Ball-Info-Sheets/Archive/BVP-Sidewinder-Info-Sheet.pdf",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_or_document",
+      "verifiedWeightsLbs": [],
+      "advertisedWeightsLbs": [],
+      "unknownFields": [],
+      "notes": [
+        "El mismo PDF indica Rough Buff en Factory Finish y High Gloss Polish en Out of the Box; sin segunda fuente que resuelva la discrepancia. Solo hay cifras explícitas a 16 lb."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "brunswick.combat-solid",
+      "manufacturer": "Brunswick",
+      "model": "Combat Solid",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://brunswickbowling.com/products/balls/current/combat-solid",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "coreName",
+        "coreType",
+        "weights.16.coreType",
+        "weights.15.coreType",
+        "weights.14.coreType",
+        "weights.13.coreName",
+        "weights.13.coreType",
+        "weights.12.coreName",
+        "weights.12.coreType"
+      ],
+      "notes": [
+        "Nombre Rampart documentado para 14–16 lb; no se asigna a núcleo ligero."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "brunswick.endeavor",
+      "manufacturer": "Brunswick",
+      "model": "Endeavor",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://brunswickbowling.com/products/balls/retired/endeavor",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "coreName",
+        "coreType",
+        "weights.16.coreType",
+        "weights.15.coreType",
+        "weights.14.coreType",
+        "weights.13.coreName",
+        "weights.13.coreType",
+        "weights.12.coreName",
+        "weights.12.coreType"
+      ],
+      "notes": [
+        "Intermedio no publicado, permanece null. Retirada 2024-11-25."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "brunswick.infinity-quest-pearl",
+      "manufacturer": "Brunswick",
+      "model": "Infinity Quest Pearl",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://brunswickbowling.com/products/balls/current/infinity-quest-pearl?slide=0",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "coreName",
+        "coreType",
+        "weights.16.coreType",
+        "weights.15.coreType",
+        "weights.14.coreType",
+        "weights.13.coreName",
+        "weights.13.coreType",
+        "weights.12.coreName",
+        "weights.12.coreType"
+      ],
+      "notes": [
+        "No se confunde con Beyond Infinity aunque compartan cifras de núcleo."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "brunswick.ultimate-defender",
+      "manufacturer": "Brunswick",
+      "model": "Ultimate Defender",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://brunswickbowling.com/products/balls/retired/ultimate-defender",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "coreName",
+        "coreType",
+        "weights.16.coreType",
+        "weights.15.coreType",
+        "weights.14.coreType",
+        "weights.13.coreName",
+        "weights.13.coreType",
+        "weights.12.coreName",
+        "weights.12.coreType"
+      ],
+      "notes": [
+        "Retirada explícita 2024-11-25."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "hammer.arctic-vibe",
+      "manufacturer": "Hammer",
+      "model": "Arctic Vibe",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://hammerbowling.com/products/arctic-vibe",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12,
+        11,
+        10
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12,
+        11,
+        10
+      ],
+      "unknownFields": [
+        "coreName",
+        "coreType",
+        "weights.16.coreType",
+        "weights.15.coreType",
+        "weights.14.coreType",
+        "weights.13.coreName",
+        "weights.13.coreType",
+        "weights.12.coreName",
+        "weights.12.coreType",
+        "weights.11.coreName",
+        "weights.11.coreType",
+        "weights.10.coreName",
+        "weights.10.coreType"
+      ],
+      "notes": [
+        "Se conservan las siete filas 10–16 lb. No se atribuye Vibe a 10–13 lb sin prueba."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "hammer.black-widow-3-0",
+      "manufacturer": "Hammer",
+      "model": "Black Widow 3.0",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://hammerbowling.com/products/black-widow-3-0",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "coreName",
+        "coreType",
+        "weights.16.coreType",
+        "weights.15.coreType",
+        "weights.14.coreType",
+        "weights.13.coreName",
+        "weights.13.coreType",
+        "weights.12.coreName",
+        "weights.12.coreType"
+      ],
+      "notes": [
+        "Nombre del núcleo documentado para 14–16 lb. Tipo y nombre del núcleo ligero sin afirmar."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "hammer.full-effect",
+      "manufacturer": "Hammer",
+      "model": "Full Effect",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://hammerbowling.com/products/full-effect",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "coreName",
+        "coreType",
+        "weights.16.coreType",
+        "weights.15.coreType",
+        "weights.14.coreType",
+        "weights.13.coreName",
+        "weights.13.coreType",
+        "weights.12.coreName",
+        "weights.12.coreType"
+      ],
+      "notes": [
+        "Tipo de cubierta según BALL SPECS; no se usa pearl de la descripción comercial.",
+        "Filas verificadas individualmente aunque coincidan con Effect."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "hammer.hammer-effect",
+      "manufacturer": "Hammer",
+      "model": "Hammer Effect",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://hammerbowling.com/products/hammer-effect",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "coreName",
+        "coreType",
+        "weights.16.coreType",
+        "weights.15.coreType",
+        "weights.14.coreType",
+        "weights.13.coreName",
+        "weights.13.coreType",
+        "weights.12.coreName",
+        "weights.12.coreType"
+      ],
+      "notes": [
+        "Retirada explícita: 2025-12-02. Núcleo ligero sin identificar; simetría no inferida de ASY."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "hammer.maximum-effect",
+      "manufacturer": "Hammer",
+      "model": "Maximum Effect",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://hammerbowling.com/products/maximum-effect",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "coreName",
+        "coreType",
+        "status",
+        "weights.16.coreType",
+        "weights.15.coreType",
+        "weights.14.coreType",
+        "weights.13.coreName",
+        "weights.13.coreType",
+        "weights.12.coreName",
+        "weights.12.coreType"
+      ],
+      "notes": [
+        "Sin evidencia suficiente para declarar current/discontinued. No se usa una reseña como estado."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "hammer.true-blood",
+      "manufacturer": "Hammer",
+      "model": "True Blood",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://hammerbowling.com/products/true-blood",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "advertisedWeightsLbs": [
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "unknownFields": [
+        "releaseYear",
+        "coreName",
+        "coreType",
+        "status",
+        "weights.12.coreName",
+        "weights.12.coreType",
+        "weights.13.coreName",
+        "weights.13.coreType",
+        "weights.14.coreType",
+        "weights.15.coreType",
+        "weights.16.coreType"
+      ],
+      "notes": [
+        "Año, estado, simetría e intermedio no verificados. Se conserva literalmente la secuencia 800-800 publicada."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "motiv.black-venom",
+      "manufacturer": "MOTIV",
+      "model": "Black Venom",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://www.motivbowling.com/products/balls/light-medium-oil/black-venom.html",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_product_page",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "releaseYear",
+        "status"
+      ],
+      "notes": [
+        "La tabla HTML cotejada ofrece 2.47 para 15 lb; no se usa ni corrige el .247 indexado del PDF.",
+        "Año 2023 pendiente de documento legible directo; se deja null. Estado sin confirmar."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "motiv.covert-revolt",
+      "manufacturer": "MOTIV",
+      "model": "Covert Revolt",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://www.motivbowling.com/products/balls/retired-balls/covert-revolt.html",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_search_index_direct_access_429",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "releaseYear",
+        "coreType",
+        "weights.16.coreType",
+        "weights.15.coreType",
+        "weights.14.coreType",
+        "weights.13.coreType",
+        "weights.12.coreType"
+      ],
+      "notes": [
+        "Declaración oficial de retirada; tipo solid explícito en High Friction Solid. No se completa simetría ni año por intuición."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "motiv.hyper-venom",
+      "manufacturer": "MOTIV",
+      "model": "Hyper Venom",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://www.motivbowling.com/userfiles/filemanager/dxx22yeosycufrut6yih",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_pdf_search_index_no_extractable_text",
+      "verifiedWeightsLbs": [
+        15
+      ],
+      "advertisedWeightsLbs": [
+        15
+      ],
+      "unknownFields": [
+        "releaseYear",
+        "coreType",
+        "status",
+        "weights.15.coreType"
+      ],
+      "notes": [
+        "Solo se verifican las cifras explícitas de 15 lb del sell sheet indexado.",
+        "No se interpreta el índice como confirmación de otros pesos ni año ni simetría."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "motiv.venom-recoil",
+      "manufacturer": "MOTIV",
+      "model": "Venom Recoil",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://www.motivbowling.com/products/balls/retired-balls/venom-recoil.html?page=1",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_search_index_direct_access_429",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "releaseYear",
+        "coverType"
+      ],
+      "notes": [
+        "Retirada 2021-10-28 según ficha indexada. No se deduce año de lanzamiento ni tipo solid/pearl/hybrid de MFS."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "motiv.venom-shock",
+      "manufacturer": "MOTIV",
+      "model": "Venom Shock",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://www.motivbowling.com/shop/venom-shock.html",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_search_index_direct_access_429",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "status"
+      ],
+      "notes": [
+        "Datos de tabla del resultado oficial indexado. Ignorado párrafo que nombra Hyper Venom.",
+        "Disponibilidad pendiente; la fecha de consulta no acredita actualización del fabricante."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "motiv.venom-shock-pearl",
+      "manufacturer": "MOTIV",
+      "model": "Venom Shock Pearl",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://www.motivbowling.com/products/balls/retired-balls/venom-shock-pearl.html",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_product_page",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "releaseYear",
+        "coreType",
+        "weights.16.coreType",
+        "weights.15.coreType",
+        "weights.14.coreType",
+        "weights.13.coreType",
+        "weights.12.coreType"
+      ],
+      "notes": [
+        "La tabla técnica indica .035 en 15 lb; reseña .034 excluida.",
+        "Tipo de núcleo, lanzamiento e intermedio desconocidos. Estado basado en archivo individual."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "roto-grip.attention-star",
+      "manufacturer": "Roto Grip",
+      "model": "Attention Star",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://www.stormbowling.com/roto-grip-attention-star-bowling-ball",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "coreName",
+        "coreType",
+        "status",
+        "weights.13.coreName",
+        "weights.13.coreType",
+        "weights.12.coreName",
+        "weights.12.coreType"
+      ],
+      "notes": [
+        "Año y métricas completados desde ficha y tech sheet actualizado. Disponibilidad actual no confirmada independientemente del atributo de pedidos."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "roto-grip.idol",
+      "manufacturer": "Roto Grip",
+      "model": "IDOL",
+      "classification": "blocked",
+      "included": false,
+      "officialUrl": "https://www.stormbowling.com/products/featured/bowling-balls-archive/bbmrid-idol",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_or_document",
+      "verifiedWeightsLbs": [],
+      "advertisedWeightsLbs": [],
+      "unknownFields": [],
+      "notes": [
+        "Acabado 2000-Grit Polished sin contraste oficial independiente suficiente; no se sustituye por Abralon por analogía con IDOL Helios."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "roto-grip.magic-gem",
+      "manufacturer": "Roto Grip",
+      "model": "Magic Gem",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://www.stormbowling.com/roto-grip-magic-gem-bowling-ball",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "coreName",
+        "coreType",
+        "status",
+        "weights.13.coreName",
+        "weights.13.coreType",
+        "weights.12.coreName",
+        "weights.12.coreType"
+      ],
+      "notes": [
+        "DIFF y acabado confirmados en PDF; estado comercial y núcleo ligero desconocidos."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "roto-grip.perfect-gem",
+      "manufacturer": "Roto Grip",
+      "model": "Perfect Gem",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://www.stormbowling.com/roto-grip-perfect-gem-bowling-ball",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "coreName",
+        "coreType",
+        "weights.13.coreName",
+        "weights.13.coreType",
+        "weights.12.coreName",
+        "weights.12.coreType"
+      ],
+      "notes": [
+        "E-R1 confirmado en tech sheet; no inferido del código R_ER1. Núcleo 12–13 lb desconocido."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "roto-grip.rst-hyperdrive-pearl",
+      "manufacturer": "Roto Grip",
+      "model": "RST Hyperdrive Pearl",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://www.stormbowling.com/roto-grip-rst-hyperdrive-pearl-bowling-ball",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "coreName",
+        "coreType",
+        "weights.13.coreName",
+        "weights.13.coreType",
+        "weights.12.coreName",
+        "weights.12.coreType"
+      ],
+      "notes": [
+        "Núcleo 12–13 lb sin identificar."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "roto-grip.transformer",
+      "manufacturer": "Roto Grip",
+      "model": "Transformer",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://www.stormbowling.com/roto-grip-transformer-bowling-ball",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "coreName",
+        "coreType",
+        "weights.13.coreName",
+        "weights.13.coreType",
+        "weights.12.coreName",
+        "weights.12.coreType"
+      ],
+      "notes": [
+        "Cifras comerciales anteriores al taladrado. Núcleo 12–13 lb sin identificar."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "storm.hy-road",
+      "manufacturer": "Storm",
+      "model": "Hy-Road",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://www.stormbowling.com/storm-hy-road-bowling-ball",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "coreName",
+        "coreType",
+        "weights.13.coreName",
+        "weights.13.coreType",
+        "weights.12.coreName",
+        "weights.12.coreType"
+      ],
+      "notes": [
+        "Acabado de ficha y PDF actuales: Power Edge. No describe todas las unidades fabricadas desde 2008.",
+        "Núcleo sin verificar para 12–13 lb; no se hereda Inverted Fe2."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "storm.iq-tour-edition",
+      "manufacturer": "Storm",
+      "model": "!Q Tour Edition",
+      "classification": "ready",
+      "included": true,
+      "officialUrl": "https://www.stormbowling.com/storm-iq-tour-edition-bowling-ball",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [],
+      "notes": [
+        "El tech sheet identifica C3 para 12–16 lb. No se copian cifras de variantes Emerald/Pearl."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "storm.phaze-ii",
+      "manufacturer": "Storm",
+      "model": "Phaze II",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://www.stormbowling.com/storm-phaze-ii-bowling-ball",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [
+        "coreName",
+        "coreType",
+        "weights.13.coreName",
+        "weights.13.coreType",
+        "weights.12.coreName",
+        "weights.12.coreType"
+      ],
+      "notes": [
+        "Núcleo 12–13 lb sin nombre/tipo verificado; sin fallback global."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "storm.phaze-iii",
+      "manufacturer": "Storm",
+      "model": "Phaze III",
+      "classification": "ready",
+      "included": true,
+      "officialUrl": "https://www.stormbowling.com/products/featured/bowling-balls-archive/bbmtzf-phaze-iii",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14
+      ],
+      "unknownFields": [],
+      "notes": [
+        "Cobertura limitada a los tres pesos 14–16 lb enumerados por esta ficha; no se afirma inexistencia de otras variantes."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "storm.phaze-v",
+      "manufacturer": "Storm",
+      "model": "Phaze V",
+      "classification": "incomplete",
+      "included": true,
+      "officialUrl": "https://www.stormbowling.com/storm-phaze-V-bowling-ball",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14
+      ],
+      "unknownFields": [
+        "factoryFinish",
+        "status"
+      ],
+      "notes": [
+        "El PDF indexado menciona Reacta Gloss, pero su URL devolvió 404; acabado null hasta confirmar un recurso accesible.",
+        "Solo tres pesos verificados; Out of Stock no acredita retirada."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    },
+    {
+      "id": "storm.pitch-black",
+      "manufacturer": "Storm",
+      "model": "Pitch Black",
+      "classification": "ready",
+      "included": true,
+      "officialUrl": "https://www.stormbowling.com/storm-pitch-black-bowling-ball",
+      "checkedAt": "2026-10-28T10:22:42Z",
+      "evidenceAccess": "official_page_and_linked_document",
+      "verifiedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "advertisedWeightsLbs": [
+        16,
+        15,
+        14,
+        13,
+        12
+      ],
+      "unknownFields": [],
+      "notes": [
+        "Tech sheet identifica Capacitor para 12–16 lb; simetría cotejada con ficha."
+      ],
+      "rightsStatus": "redistribution_not_verified",
+      "photoAuthorized": false
+    }
+  ]
+}

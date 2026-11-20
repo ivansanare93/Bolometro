@@ -7,6 +7,7 @@ class SelectorpinesWidget extends StatefulWidget {
   final List<int> pinesIniciales;
   final List<int> pinesDeshabilitados;
   final void Function(List<int>) onAceptar;
+  final VoidCallback onBorrar;
   final bool isFrame10;
   final int tiroActual; // 0 = primer tiro, 1 = segundo tiro, 2 = tercero
   final List<List<String>> frames; // lista completa de frames
@@ -17,6 +18,7 @@ class SelectorpinesWidget extends StatefulWidget {
     required this.pinesIniciales,
     required this.pinesDeshabilitados,
     required this.onAceptar,
+    required this.onBorrar,
     required this.isFrame10,
     required this.tiroActual,
     required this.frames,
@@ -34,6 +36,27 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
   late AnimationController _shakeController;
   late Animation<double> _shakeAnimation;
   Color? _falloOverlayColor;
+  int _accion = 0;
+
+  void _limpiarSeleccion() {
+    _accion++;
+    setState(() {
+      _shakeController.reset();
+      _pinesCaidos = List.filled(AppConstants.maxPinesBowling, false);
+      _scaleList = List.filled(AppConstants.maxPinesBowling, 1.0);
+      _falloOverlayColor = null;
+    });
+  }
+
+  void _aceptarDespues(List<int> pines, Duration delay) {
+    final accion = ++_accion;
+    Future.delayed(delay, () {
+      if (mounted && accion == _accion) {
+        setState(() => _falloOverlayColor = null);
+        widget.onAceptar(pines);
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -61,8 +84,10 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
 
   void _togglePino(int index) {
     if (widget.pinesDeshabilitados.contains(index + 1)) return;
+    _accion++;
     HapticFeedback.selectionClick();
     setState(() {
+      _falloOverlayColor = null;
       _pinesCaidos[index] = !_pinesCaidos[index];
       _scaleList[index] = 1.18;
     });
@@ -78,38 +103,37 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
   /// Returns the list of pin numbers available in the current shot
   /// (i.e., pins not already knocked down / not disabled).
   List<int> _pinesDisponibles() {
-    return List.generate(AppConstants.maxPinesBowling, (i) => i + 1)
-        .where((p) => !widget.pinesDeshabilitados.contains(p))
-        .toList();
+    return List.generate(
+      AppConstants.maxPinesBowling,
+      (i) => i + 1,
+    ).where((p) => !widget.pinesDeshabilitados.contains(p)).toList();
   }
 
   void _marcarPleno() {
     HapticFeedback.heavyImpact();
     final todosLosPines = _pinesDisponibles();
     setState(() {
+      _falloOverlayColor = null;
       _pinesCaidos = List.generate(
         AppConstants.maxPinesBowling,
         (i) => !widget.pinesDeshabilitados.contains(i + 1),
       );
     });
-    Future.delayed(const Duration(milliseconds: 150), () {
-      if (mounted) widget.onAceptar(todosLosPines);
-    });
+    _aceptarDespues(todosLosPines, const Duration(milliseconds: 150));
   }
 
   void _marcarRemate() {
     HapticFeedback.heavyImpact();
     final pinesRemate = _pinesDisponibles();
     setState(() {
+      _falloOverlayColor = null;
       for (int i = 0; i < 10; i++) {
         if (!widget.pinesDeshabilitados.contains(i + 1)) {
           _pinesCaidos[i] = true;
         }
       }
     });
-    Future.delayed(const Duration(milliseconds: 150), () {
-      if (mounted) widget.onAceptar(pinesRemate);
-    });
+    _aceptarDespues(pinesRemate, const Duration(milliseconds: 150));
   }
 
   void _marcarFallo() {
@@ -120,17 +144,13 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
     });
     _shakeController.forward(from: 0);
 
-    Future.delayed(const Duration(milliseconds: 220), () {
-      if (mounted) {
-        setState(() => _falloOverlayColor = null);
-        widget.onAceptar([]);
-      }
-    });
+    _aceptarDespues([], const Duration(milliseconds: 220));
   }
 
   int _parseTiro(String tiro, String previo) {
     if (tiro == AppConstants.simboloStrike) return AppConstants.maxPinesBowling;
-    if (tiro == AppConstants.simboloSpare) return AppConstants.maxPinesBowling - _parseTiro(previo, '');
+    if (tiro == AppConstants.simboloSpare)
+      return AppConstants.maxPinesBowling - _parseTiro(previo, '');
     if (tiro == AppConstants.simboloFallo) return 0;
     return int.tryParse(tiro) ?? 0;
   }
@@ -225,7 +245,8 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
           //  - X + '' (defensive: tiro2 not yet recorded)
           // Otherwise (X + N where N>0) only the remaining (10-N) pins stand
           // → show Spare button.
-          final todosLosPinesDisponibles = spareEnPrimerosDos ||
+          final todosLosPinesDisponibles =
+              spareEnPrimerosDos ||
               (primerTiroStrike &&
                   (tiro2 == AppConstants.simboloStrike || // X+X case
                       tiro2 == AppConstants.simboloFallo || // X+miss case
@@ -278,8 +299,8 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
 
     // Blocked when second-throw is active but first throw hasn't been recorded
     // yet — mirrors the numeric keyboard's behavior of disabling all keys.
-    final bool bloqueado = esSegundoTiro &&
-        !mostrarPleno && !mostrarRemate && !mostrarFallo;
+    final bool bloqueado =
+        esSegundoTiro && !mostrarPleno && !mostrarRemate && !mostrarFallo;
 
     return AnimatedBuilder(
       animation: _shakeController,
@@ -316,8 +337,9 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
                 ),
               ),
               const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                runSpacing: 4,
                 children: [
                   if (mostrarPleno)
                     Padding(
@@ -439,13 +461,8 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
                         foregroundColor: azul,
                         minimumSize: const Size.fromHeight(46),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _pinesCaidos = List.generate(10, (_) => false);
-                          _scaleList = List.filled(10, 1.0);
-                        });
-                      },
-                      label: Text(l10n.clear),
+                      onPressed: _limpiarSeleccion,
+                      label: Text(l10n.clearPinSelection),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -461,12 +478,25 @@ class _SelectorpinesWidgetState extends State<SelectorpinesWidget>
                             : Colors.white,
                         minimumSize: const Size.fromHeight(46),
                       ),
-                      onPressed:
-                          bloqueado ? null : () => widget.onAceptar(seleccionados),
+                      onPressed: bloqueado
+                          ? null
+                          : () {
+                              _accion++;
+                              widget.onAceptar(seleccionados);
+                            },
                       label: Text(l10n.accept),
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 8),
+              TextButton.icon(
+                icon: const Icon(Icons.backspace_rounded),
+                label: Text(l10n.deleteThrow),
+                onPressed: () {
+                  _limpiarSeleccion();
+                  widget.onBorrar();
+                },
               ),
             ],
           ),

@@ -29,6 +29,94 @@ class Partida extends HiveObject {
   @HiveField(6)
   final String? ballId;
 
+  /// Sparse zero-based "frame:throw" overrides. An explicit null means unknown;
+  /// an absent key inherits ballId. Added without changing Hive fields 0..6.
+  @HiveField(7)
+  final Map<String, String?> ballIdsByThrow;
+
+  static String throwKey(int frame, int throwIndex) {
+    if (frame < 0 ||
+        frame > 9 ||
+        throwIndex < 0 ||
+        throwIndex > (frame == 9 ? 2 : 1)) {
+      throw RangeError('Invalid bowling throw');
+    }
+    return '$frame:$throwIndex';
+  }
+
+  static Map<String, String?> parseBallAssignments(Object? raw) {
+    if (raw == null) return {};
+    if (raw is! Map) throw const FormatException('Invalid ball assignments');
+    final result = <String, String?>{};
+    for (final entry in raw.entries) {
+      final key = entry.key;
+      if (key is! String || !RegExp(r'^[0-9]:[0-2]$').hasMatch(key)) {
+        throw const FormatException('Invalid ball assignment position');
+      }
+      final pieces = key.split(':').map(int.parse).toList();
+      if (pieces[0] != 9 && pieces[1] > 1)
+        throw const FormatException('Invalid bonus throw');
+      if (entry.value != null && entry.value is! String)
+        throw const FormatException('Invalid ball ID');
+      result[key] = entry.value as String?;
+    }
+    return result;
+  }
+
+  String? ballForThrow(int frame, int throwIndex) {
+    final key = throwKey(frame, throwIndex);
+    final value = ballIdsByThrow.containsKey(key)
+        ? ballIdsByThrow[key]
+        : ballId;
+    return value == null || value.trim().isEmpty ? null : value;
+  }
+
+  Set<String> get referencedBallIds => {
+    if (ballId != null && ballId!.trim().isNotEmpty) ballId!,
+    ...ballIdsByThrow.values.whereType<String>().where(
+      (id) => id.trim().isNotEmpty,
+    ),
+  };
+
+  /// Only throws actually recorded in the score sheet, excluding unused slots.
+  Iterable<(int, int)> get recordedThrowPositions sync* {
+    for (var f = 0; f < frames.length && f < 10; f++) {
+      final tokens = frames[f];
+      if (tokens.isEmpty || tokens[0].trim().isEmpty) continue;
+      yield (f, 0);
+      if (f < 9 && tokens[0] == 'X') continue;
+      if (tokens.length > 1 && tokens[1].trim().isNotEmpty) yield (f, 1);
+      if (f == 9 &&
+          (tokens[0] == 'X' || (tokens.length > 1 && tokens[1] == '/')) &&
+          tokens.length > 2 &&
+          tokens[2].trim().isNotEmpty)
+        yield (f, 2);
+    }
+  }
+
+  Set<String> get usedBallIds {
+    final positions = recordedThrowPositions.toList();
+    if (positions.isEmpty && ballIdsByThrow.isEmpty)
+      return {if (ballId != null && ballId!.trim().isNotEmpty) ballId!};
+    return {
+      for (final (f, t) in positions)
+        if (ballForThrow(f, t) != null) ballForThrow(f, t)!,
+    };
+  }
+
+  bool get hasUnassignedThrows {
+    final positions = recordedThrowPositions.toList();
+    if (positions.isEmpty) return usedBallIds.isEmpty;
+    return positions.any((p) => ballForThrow(p.$1, p.$2) == null);
+  }
+
+  bool usesBall(String id) => usedBallIds.contains(id);
+  bool exclusivelyUsesBall(String? id) => id == null
+      ? usedBallIds.isEmpty
+      : usedBallIds.length == 1 &&
+            usedBallIds.contains(id) &&
+            !hasUnassignedThrows;
+
   Partida({
     this.fecha,
     this.lugar,
@@ -37,7 +125,9 @@ class Partida extends HiveObject {
     required this.total,
     List<List<List<int>?>>? pinesPorTiro,
     this.ballId,
-  }) : pinesPorTiro =
+    Map<String, String?>? ballIdsByThrow,
+  }) : ballIdsByThrow = Map.unmodifiable(parseBallAssignments(ballIdsByThrow)),
+       pinesPorTiro =
            pinesPorTiro ?? List.generate(10, (_) => List.filled(3, null));
 
   Partida copyWith({
@@ -48,6 +138,7 @@ class Partida extends HiveObject {
     int? total,
     List<List<List<int>?>>? pinesPorTiro,
     Object? ballId = _sentinel,
+    Map<String, String?>? ballIdsByThrow,
   }) {
     return Partida(
       fecha: fecha ?? this.fecha,
@@ -57,6 +148,7 @@ class Partida extends HiveObject {
       total: total ?? this.total,
       pinesPorTiro: pinesPorTiro ?? this.pinesPorTiro,
       ballId: ballId == _sentinel ? this.ballId : ballId as String?,
+      ballIdsByThrow: ballIdsByThrow ?? this.ballIdsByThrow,
     );
   }
 
@@ -71,12 +163,15 @@ class Partida extends HiveObject {
     // Each frame's data is serialized as a string where tiros are separated by ';'
     // and pins within a tiro are separated by ','
     'pinesPorTiro': pinesPorTiro.map((frame) {
-      return frame.map((tiro) {
-        if (tiro == null) return 'null';
-        return tiro.join(',');
-      }).join(';');
+      return frame
+          .map((tiro) {
+            if (tiro == null) return 'null';
+            return tiro.join(',');
+          })
+          .join(';');
     }).toList(),
     'ballId': ballId,
+    if (ballIdsByThrow.isNotEmpty) 'ballIdsByThrow': ballIdsByThrow,
   };
 
   factory Partida.fromJson(Map<String, dynamic> json) {
@@ -161,6 +256,7 @@ class Partida extends HiveObject {
       total: json['total'],
       pinesPorTiro: parsedPinesPorTiro,
       ballId: json['ballId'] as String?,
+      ballIdsByThrow: parseBallAssignments(json['ballIdsByThrow']),
     );
   }
 }

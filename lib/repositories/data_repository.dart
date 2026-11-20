@@ -1,3 +1,4 @@
+import '../utils/stats_selection.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
@@ -10,6 +11,8 @@ import '../models/user_progress.dart';
 import '../models/achievement.dart';
 import '../models/bowling_ball.dart';
 import '../services/firestore_service.dart';
+import '../services/season_assignment_store.dart';
+import '../services/temporada_service.dart';
 import '../services/arsenal_remote_store.dart';
 import '../services/arsenal_sync_service.dart';
 import '../utils/app_constants.dart';
@@ -21,17 +24,30 @@ class DataRepository extends ChangeNotifier {
   final FirestoreService _firestoreService;
   final ArsenalRemoteStore _arsenalRemote;
   final bool autoSyncArsenal;
-  final bool arsenalBackupEnabled;
+  final bool _arsenalBackupRequested;
+  final Set<String>? _arsenalBackupTestUids;
+  /// A local test build can restrict backup to explicitly chosen fictional UIDs.
+  /// A defined but empty list disables backup for every account (fail closed).
+  bool get arsenalBackupEnabled => _arsenalBackupRequested &&
+      (_arsenalBackupTestUids == null || _arsenalBackupTestUids.contains(_userId));
   ArsenalSyncService? _arsenal;
   int _accountGeneration = 0;
 
   DataRepository({FirestoreService? firestoreService,
     ArsenalRemoteStore? arsenalRemote, this.autoSyncArsenal = true,
-    bool? arsenalBackupEnabled})
+    bool? arsenalBackupEnabled, Set<String>? arsenalBackupTestUids})
       : _firestoreService = firestoreService ?? FirestoreService(),
         _arsenalRemote = arsenalRemote ?? FirestoreArsenalStore(),
-        arsenalBackupEnabled = arsenalBackupEnabled ??
-          const bool.fromEnvironment('ARSENAL_BACKUP_ENABLED');
+        _arsenalBackupRequested = arsenalBackupEnabled ??
+          const bool.fromEnvironment('ARSENAL_BACKUP_ENABLED', defaultValue: true),
+        _arsenalBackupTestUids = arsenalBackupTestUids != null
+          ? _normalizeTestUids(arsenalBackupTestUids)
+          : const bool.hasEnvironment('ARSENAL_BACKUP_TEST_UIDS')
+            ? _normalizeTestUids(const String.fromEnvironment('ARSENAL_BACKUP_TEST_UIDS').split(','))
+            : null;
+
+  static Set<String> _normalizeTestUids(Iterable<String> values) =>
+      Set<String>.unmodifiable(values.map((value) => value.trim()).where((value) => value.isNotEmpty));
 
   String? get arsenalUserId => _userId;
   ArsenalSyncService? get arsenalSync => _arsenal;
@@ -80,8 +96,8 @@ class DataRepository extends ChangeNotifier {
       final maintenance = sourceMaintenance.values
           .where((m) => ids.contains(m.ballId) && available('ball_maintenance/${m.id}')).toList();
       final sessions = sourceSessions.values.where((s) =>
-          s.partidas.any((p) => ids.contains(p.ballId)) &&
-          s.partidas.every((p) => p.ballId == null || ids.contains(p.ballId)) &&
+          s.partidas.any((p) => p.referencedBallIds.any(ids.contains)) &&
+          s.partidas.every((p) => p.referencedBallIds.every(ids.contains)) &&
           available('sessions/${s.fecha.toIso8601String()}')).toList();
       void check(Map<String, dynamic>? target, Map<String, dynamic> source) {
         if (target != null && jsonEncode(target) != jsonEncode(source)) {
@@ -339,7 +355,7 @@ class DataRepository extends ChangeNotifier {
         if (defaultSesionesBox.isNotEmpty) {
           // Games linked to guest balls require explicit ownership selection.
           await userSesionesBox.addAll(defaultSesionesBox.values
-              .where((s) => s.partidas.every((p) => p.ballId == null)).map((s) =>
+              .where((s) => s.partidas.every((p) => p.referencedBallIds.isEmpty)).map((s) =>
               s.copyWith(partidas: s.partidas.map((p) => p.copyWith()).toList())));
           debugPrint(
             '${defaultSesionesBox.length} sesiones offline migradas al box del usuario autenticado',
@@ -420,26 +436,35 @@ class DataRepository extends ChangeNotifier {
 
   /// Obtener todas las sesiones
   Future<List<Sesion>> obtenerSesiones() async {
+    final generation = _accountGeneration;
+    final uid = _userId;
+    final store = await _seasonStore();
+    await store.recover();
     try {
-      if (_isOnlineMode && _userId != null) {
-        // Modo online: obtener desde Firestore
-        return await _firestoreService.obtenerSesiones(_userId!);
-      } else {
-        // Modo offline: obtener desde Hive
-        final box = await _getSesionesBox();
-        return box.values.toList();
+      if (_isOnlineMode && uid != null) {
+        final remote = await _firestoreService.obtenerSesiones(uid);
+        if (generation != _accountGeneration) return [];
+        return store.overlay(remote);
       }
-    } catch (e) {
-      debugPrint('Error al obtener sesiones: $e');
-      // Fallback a datos locales si falla Firestore
-      try {
-        final box = await _getSesionesBox();
-        return box.values.toList();
-      } catch (e) {
-        debugPrint('Error al obtener sesiones desde Hive: $e');
-        return [];
-      }
+    } catch (error) {
+      if (generation != _accountGeneration) return [];
+      debugPrint('Sessions: remote unavailable; using local data: $error');
     }
+    if (generation != _accountGeneration) return [];
+    return store.sessions.values.toList();
+  }
+
+  /// Whole-season operations need a complete current server list. Falling back
+  /// silently to a partial local cache would leave unseen sessions under the old name.
+  Future<List<Sesion>> obtenerSesionesConfirmadasParaTemporadas() async {
+    final uid = _userId;
+    final generation = _accountGeneration;
+    if (uid == null) return obtenerSesiones();
+    final remote = await _firestoreService.obtenerSesionesDesdeServidor(uid);
+    if (generation != _accountGeneration) throw StateError('Season account changed');
+    final store = await _seasonStore();
+    await store.recover();
+    return store.overlay(remote);
   }
 
   /// Obtener sesiones con paginación (para lazy loading)
@@ -447,6 +472,11 @@ class DataRepository extends ChangeNotifier {
     int limite = 20,
     int offset = 0,
   }) async {
+    if ((await estadoCambiosTemporada()).pending > 0) {
+      final all = await obtenerSesiones();
+      all.sort((a, b) => b.fecha.compareTo(a.fecha));
+      return all.skip(offset).take(limite).toList();
+    }
     try {
       if (_isOnlineMode && _userId != null) {
         // Modo online: usar paginación de Firestore
@@ -479,6 +509,7 @@ class DataRepository extends ChangeNotifier {
 
   /// Guardar una nueva sesión
   Future<void> guardarSesion(Sesion sesion) async {
+    await _assertSessionSeasonSettled(sesion.fecha);
     try {
       // Guardar localmente primero
       final box = await _getSesionesBox();
@@ -498,6 +529,7 @@ class DataRepository extends ChangeNotifier {
 
   /// Actualizar una sesión existente (busca por fecha como identificador único)
   Future<void> actualizarSesion(Sesion sesion) async {
+    await _assertSessionSeasonSettled(sesion.fecha);
     try {
       final box = await _getSesionesBox();
       final sesionFecha = sesion.fecha.millisecondsSinceEpoch;
@@ -524,6 +556,7 @@ class DataRepository extends ChangeNotifier {
 
   /// Eliminar una sesión
   Future<void> eliminarSesion(Sesion sesion) async {
+    await _assertSessionSeasonSettled(sesion.fecha);
     try {
       // Eliminar localmente desde Hive usando fecha como identificador único
       final box = await _getSesionesBox();
@@ -548,45 +581,145 @@ class DataRepository extends ChangeNotifier {
     }
   }
 
-  /// Asigna [nuevaTemporada] a todas las [sesiones] indicadas (bulk).
-  /// Persiste cada sesión actualizada en Hive y, si está en modo online,
-  /// también en Firestore.  Notifica a los listeners una sola vez al final.
-  Future<int> actualizarTemporadaEnLote(
-    List<Sesion> sesiones,
-    String? nuevaTemporada,
-  ) async {
-    int updated = 0;
-    try {
-      final box = await _getSesionesBox();
-      final allSesiones = box.values.toList();
+  int get seasonAccountToken => _accountGeneration;
 
-      for (final sesion in sesiones) {
-        final millis = sesion.fecha.millisecondsSinceEpoch;
-        final idx = allSesiones.indexWhere(
-          (s) => s.fecha.millisecondsSinceEpoch == millis,
-        );
-        if (idx == -1) continue;
-
-        final updatedSesion = sesion.copyWith(
-          temporada: nuevaTemporada,
-          clearTemporada: nuevaTemporada == null,
-        );
-        await box.putAt(idx, updatedSesion);
-        allSesiones[idx] = updatedSesion;
-
-        if (_isOnlineMode && _userId != null) {
-          await _firestoreService.guardarSesion(_userId!, updatedSesion);
-        }
-        updated++;
-      }
-
-      if (updated > 0) notifyListeners();
-    } catch (e) {
-      debugPrint('Error al actualizar temporada en lote: $e');
-      rethrow;
-    }
-    return updated;
+  Future<List<Map<String, dynamic>>> pendientesTemporada() async {
+    final store = await _seasonStore();
+    return store.journal.keys.map((id) => {
+      'id': id, ...Map<String, dynamic>.from(store.journal.get(id) as Map),
+    }).toList();
   }
+
+  Future<SeasonAssignmentResult> respaldarSesionPendienteAusente(
+    String id, {required int accountToken}
+  ) => _seasonLocked(() async {
+    if (accountToken != _accountGeneration || _userId == null) throw StateError('Account changed');
+    final uid = _userId!;
+    final store = await _seasonStore();
+    final raw = store.journal.get(id);
+    if (raw == null) return store.summary();
+    final entry = raw as Map;
+    if (entry['localApplied'] != true || !(entry['error'] as String? ?? '').contains('remote_session_missing')) {
+      throw StateError('Review this pending operation again');
+    }
+    final matches = store.sessions.values.where((s) => s.fecha.millisecondsSinceEpoch.toString() == id).toList();
+    if (matches.length != 1 || normalizeSeason(matches.single.temporada) != entry['target']) {
+      throw StateError('Local session changed; review again');
+    }
+    await _firestoreService.respaldarSesionSiAusente(uid, matches.single);
+    if (accountToken != _accountGeneration) throw StateError('Account changed');
+    final result = await store.retry();
+    notifyListeners();
+    return result;
+  });
+
+  Future<List<Map<String, dynamic>>> conflictosTemporada() async {
+    final store = await _seasonStore();
+    return store.journal.keys.map((id) => {
+      'id': id, ...Map<String, dynamic>.from(store.journal.get(id) as Map),
+    }).where((entry) => entry['status'] == 'conflict').toList();
+  }
+
+  Future<String?> temporadaRemotaParaRevision(DateTime date) async {
+    final uid = _userId;
+    final generation = _accountGeneration;
+    if (uid == null) throw AuthenticationException();
+    final value = await _firestoreService.obtenerTemporadaRemota(uid, date);
+    if (generation != _accountGeneration) throw StateError('Account changed');
+    return value;
+  }
+
+  Future<SeasonAssignmentResult> resolverConflictoTemporada(
+    String id, String? reviewedValue, {required bool useLocal, required int accountToken}
+  ) => _seasonLocked(() async {
+    if (accountToken != _accountGeneration) throw StateError('Account changed');
+    final store = await _seasonStore();
+    final fresh = await temporadaRemotaParaRevision(DateTime.fromMillisecondsSinceEpoch(int.parse(id)));
+    if (normalizeSeason(fresh) != normalizeSeason(reviewedValue)) {
+      throw SeasonAssignmentConflict('Remote season changed; review again');
+    }
+    await store.resolve(id, reviewedValue, useLocal: useLocal);
+    notifyListeners();
+    return store.summary();
+  });
+
+  Future<void> _seasonTail = Future.value();
+
+  Future<T> _seasonLocked<T>(Future<T> Function() action) {
+    final next = _seasonTail.then((_) => action());
+    _seasonTail = next.then<void>((_) {}, onError: (Object _, StackTrace __) {});
+    return next;
+  }
+
+  Future<SeasonAssignmentStore> _seasonStore() async {
+    final uid = _userId;
+    final generation = _accountGeneration;
+    bool current() => uid == _userId && generation == _accountGeneration;
+    final sessions = await _getSesionesBox();
+    if (!current()) throw StateError('Season account changed');
+    final journal = await Hive.openBox<dynamic>('season_assignments_${uid ?? 'guest'}');
+    if (!current()) throw StateError('Season account changed');
+    return SeasonAssignmentStore(
+      sessions: sessions, journal: journal, isCurrent: current,
+      patchRemote: uid == null ? null : (date, expected, target) =>
+          _firestoreService.actualizarSoloTemporada(uid, date, expected, target),
+    );
+  }
+
+  Future<SeasonAssignmentResult> estadoCambiosTemporada() async {
+    final store = await _seasonStore();
+    await store.recover();
+    return store.summary();
+  }
+
+  Future<SeasonAssignmentResult> reintentarCambiosTemporada() {
+    final generation = _accountGeneration;
+    return _seasonLocked(() async {
+      if (generation != _accountGeneration) throw StateError('Season account changed');
+      final result = await (await _seasonStore()).retry();
+      notifyListeners();
+      return result;
+    });
+  }
+
+  Future<void> _assertSessionSeasonSettled(DateTime date) async {
+    final store = await _seasonStore();
+    if (store.journal.containsKey(date.millisecondsSinceEpoch.toString())) {
+      throw StateError('Review pending season changes before editing or deleting this session');
+    }
+  }
+
+  Future<void> _assertSeasonSettled() async {
+    if ((await estadoCambiosTemporada()).pending > 0) {
+      throw StateError('Pending season changes: retry or review them in Seasons before full synchronization');
+    }
+  }
+
+  /// Durable, field-only assignment. Never uploads an entire stale session.
+  Future<SeasonAssignmentResult> asignarTemporadaEnLote(
+    List<Sesion> sesiones, String? nuevaTemporada, {
+    bool allowArchived = false,
+  }) {
+    final generation = _accountGeneration;
+    return _seasonLocked(() async {
+      if (generation != _accountGeneration) throw StateError('Season account changed');
+      final target = normalizeSeason(nuevaTemporada);
+      if (!allowArchived && target != null && await TemporadaService.isArchived(target)) {
+        throw StateError('Restore the archived season before assigning sessions');
+      }
+      if (generation != _accountGeneration) throw StateError('Season account changed');
+      final store = await _seasonStore();
+      if (_isSyncing) throw StateError('Wait for full synchronization to finish');
+      final result = await store.assign(sesiones, target);
+      notifyListeners();
+      return result;
+    });
+  }
+
+  /// Compatibility wrapper for existing callers. Pending writes remain durable.
+  Future<int> actualizarTemporadaEnLote(
+    List<Sesion> sesiones, String? nuevaTemporada,
+  ) async => (await asignarTemporadaEnLote(sesiones, nuevaTemporada)).updated;
 
   // ===== Notas =====
 
@@ -840,7 +973,7 @@ class DataRepository extends ChangeNotifier {
       throw RangeError.index(indicePartida, sesion.partidas);
     }
     final partidas = List<Partida>.from(sesion.partidas);
-    partidas[indicePartida] = partidas[indicePartida].copyWith(ballId: ballId);
+    partidas[indicePartida] = partidas[indicePartida].copyWith(ballId: ballId, ballIdsByThrow: const {});
     sesion.partidas = partidas;
     await actualizarSesion(sesion);
   }
@@ -884,16 +1017,8 @@ class DataRepository extends ChangeNotifier {
   /// la bola indicada por [ballId]. Usado para calcular estadísticas por bola.
   Future<List<Partida>> obtenerPartidasPorBola(String ballId) async {
     final sesiones = await obtenerSesiones();
-    final partidas = <Partida>[];
-    for (final sesion in sesiones) {
-      partidas.addAll(sesion.partidas.where((p) => p.ballId == ballId));
-    }
-    partidas.sort((a, b) {
-      final fechaA = a.fecha ?? DateTime.fromMillisecondsSinceEpoch(0);
-      final fechaB = b.fecha ?? DateTime.fromMillisecondsSinceEpoch(0);
-      return fechaA.compareTo(fechaB);
-    });
-    return partidas;
+    return StatsSelection.games(sesiones).where((e)=>e.$2.usesBall(ballId))
+      .map((e)=>e.$2).toList();
   }
 
   /// Obtener perfil de usuario
@@ -1016,6 +1141,8 @@ class DataRepository extends ChangeNotifier {
         'Por favor, inicia sesión antes de sincronizar.'
       );
     }
+
+    await _assertSeasonSettled();
 
     // Evitar sincronizaciones simultáneas
     if (_isSyncing) {
@@ -1192,6 +1319,8 @@ class DataRepository extends ChangeNotifier {
       );
     }
 
+    await _assertSeasonSettled();
+
     // Evitar sincronizaciones simultáneas
     if (_isSyncing) {
       debugPrint('Sincronización ya en curso, ignorando nueva solicitud');
@@ -1312,6 +1441,8 @@ class DataRepository extends ChangeNotifier {
         'Por favor, inicia sesión antes de sincronizar.'
       );
     }
+
+    await _assertSeasonSettled();
 
     // Evitar sincronizaciones simultáneas
     if (_isSyncing) {

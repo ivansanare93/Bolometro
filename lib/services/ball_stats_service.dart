@@ -1,3 +1,4 @@
+import '../utils/ball_throw_usage.dart';
 import '../models/partida.dart';
 import '../utils/app_constants.dart';
 import '../utils/estadisticas_utils.dart';
@@ -6,13 +7,19 @@ import '../utils/estadisticas_utils.dart';
 /// partidas en las que fue utilizada ([Partida.ballId]).
 class EstadisticasBola {
   final int partidasJugadas;
-  final double promedio;
-  final int mejorPartida;
-  final double strikeRate;
-  final double tendencia; // diferencia entre el promedio reciente y el previo
+  final int partidasExclusivas;
+  final int partidasCompartidas;
+  final BallUsageStats? usage;
+  final double? promedio;
+  final int? mejorPartida;
+  final double? strikeRate;
+  final double? tendencia; // diferencia entre el promedio reciente y el previo
 
   const EstadisticasBola({
     required this.partidasJugadas,
+    this.partidasExclusivas = 0,
+    this.partidasCompartidas = 0,
+    this.usage,
     required this.promedio,
     required this.mejorPartida,
     required this.strikeRate,
@@ -20,19 +27,55 @@ class EstadisticasBola {
   });
 
   factory EstadisticasBola.vacia() => const EstadisticasBola(
-        partidasJugadas: 0,
-        promedio: 0,
-        mejorPartida: 0,
-        strikeRate: 0,
-        tendencia: 0,
-      );
+    partidasJugadas: 0,
+    promedio: 0,
+    mejorPartida: 0,
+    strikeRate: 0,
+    tendencia: 0,
+  );
 }
 
 /// Caso de uso: calcular estadísticas de rendimiento asociadas a una bola
 /// concreta ("GetStatsByBall"). Recibe las partidas ya filtradas por bola
 /// (ver [DataRepository.obtenerPartidasPorBola]), ordenadas cronológicamente.
 class BallStatsService {
-  static EstadisticasBola calcular(List<Partida> partidas) {
+  static EstadisticasBola calcular(List<Partida> partidas, {String? ballId}) {
+    if (ballId != null) {
+      final involved = partidas.where((p) => p.usesBall(ballId)).toList();
+      final exclusive = involved
+          .where((p) => p.exclusivelyUsesBall(ballId))
+          .toList();
+      final legacy = calcular(exclusive);
+      final usage = BallUsageStats(involved, ballId);
+      double? change;
+      const window = AppConstants.ventanaPromedioMovil;
+      if (exclusive.length >= window * 2) {
+        final current =
+            exclusive
+                .sublist(exclusive.length - window)
+                .fold<int>(0, (n, p) => n + p.total) /
+            window;
+        final previous =
+            exclusive
+                .sublist(
+                  exclusive.length - window * 2,
+                  exclusive.length - window,
+                )
+                .fold<int>(0, (n, p) => n + p.total) /
+            window;
+        change = current - previous;
+      }
+      return EstadisticasBola(
+        partidasJugadas: involved.length,
+        partidasExclusivas: exclusive.length,
+        partidasCompartidas: involved.length - exclusive.length,
+        usage: usage,
+        promedio: exclusive.isEmpty ? null : legacy.promedio,
+        mejorPartida: exclusive.isEmpty ? null : legacy.mejorPartida,
+        strikeRate: usage.strikeRate,
+        tendencia: change,
+      );
+    }
     if (partidas.isEmpty) return EstadisticasBola.vacia();
 
     final totales = partidas.map((p) => p.total).toList();

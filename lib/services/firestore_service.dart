@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:math';
 import '../models/sesion.dart';
+import 'season_assignment_store.dart';
 import '../models/nota.dart';
 import '../models/perfil_usuario.dart';
 import '../models/user_progress.dart';
@@ -144,6 +145,46 @@ class FirestoreService {
         rethrow;
       }
     }
+  }
+
+  Future<List<Sesion>> obtenerSesionesDesdeServidor(String uid) async {
+    final snapshot = await _getSesionesCollection(uid)
+        .get(const GetOptions(source: Source.server));
+    return snapshot.docs.map((document) =>
+      Sesion.fromJson(document.data() as Map<String, dynamic>)).toList();
+  }
+
+  /// Only invoked after explicit UI approval. Existing documents are untouched.
+  Future<void> respaldarSesionSiAusente(String uid, Sesion session) async {
+    final ref = _getSesionesCollection(uid).doc(session.fecha.millisecondsSinceEpoch.toString());
+    await _firestore.runTransaction((transaction) async {
+      final current = await transaction.get(ref);
+      if (!current.exists) transaction.set(ref, session.toJson());
+    });
+  }
+
+  Future<String?> obtenerTemporadaRemota(String uid, DateTime date) async {
+    final document = await _getSesionesCollection(uid)
+        .doc(date.millisecondsSinceEpoch.toString())
+        .get(const GetOptions(source: Source.server));
+    if (!document.exists) throw StateError('remote_session_missing');
+    return normalizeSeason((document.data() as Map<String, dynamic>)['temporada'] as String?);
+  }
+
+  /// Compare-and-set one field; preserve games, notes and concurrent edits.
+  /// An absent document is retained as pending, never recreated implicitly.
+  Future<void> actualizarSoloTemporada(
+    String uid, DateTime date, String? expected, String? target,
+  ) async {
+    final ref = _getSesionesCollection(uid).doc(date.millisecondsSinceEpoch.toString());
+    await _firestore.runTransaction((transaction) async {
+      final document = await transaction.get(ref);
+      if (!document.exists) throw StateError('remote_session_missing');
+      final data = document.data() as Map<String, dynamic>;
+      final current = normalizeSeason(data['temporada'] as String?);
+      if (!shouldPatchSeason(current, expected, target)) return;
+      transaction.update(ref, {'temporada': normalizeSeason(target)});
+    });
   }
 
   /// Obtener todas las sesiones del usuario desde Firestore

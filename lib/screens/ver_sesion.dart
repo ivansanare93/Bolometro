@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import '../models/sesion.dart';
+import '../services/temporada_service.dart';
+import '../services/season_assignment_store.dart';
+import '../widgets/season_selector.dart';
 import '../models/partida.dart';
 import '../models/nota.dart';
 import '../services/analytics_service.dart';
@@ -53,12 +56,17 @@ class _VerSesionState extends State<VerSesion> {
           partida: partidaOriginal,
           onGuardar: (partidaActualizada) async {
             try {
-              final dataRepository = Provider.of<DataRepository>(context, listen: false);
+              final dataRepository = Provider.of<DataRepository>(
+                context,
+                listen: false,
+              );
 
               final nuevasPartidas = List<Partida>.from(sesionActual.partidas);
               nuevasPartidas[index] = partidaActualizada;
 
-              final sesionActualizada = sesionActual.copyWith(partidas: nuevasPartidas);
+              final sesionActualizada = sesionActual.copyWith(
+                partidas: nuevasPartidas,
+              );
               await dataRepository.actualizarSesion(sesionActualizada);
 
               setState(() {
@@ -81,7 +89,9 @@ class _VerSesionState extends State<VerSesion> {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(AppLocalizations.of(context)!.gameUpdateError),
+                    content: Text(
+                      AppLocalizations.of(context)!.gameUpdateError,
+                    ),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -91,7 +101,9 @@ class _VerSesionState extends State<VerSesion> {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(AppLocalizations.of(context)!.gameUnexpectedUpdateError),
+                    content: Text(
+                      AppLocalizations.of(context)!.gameUnexpectedUpdateError,
+                    ),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -116,19 +128,27 @@ class _VerSesionState extends State<VerSesion> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(AppLocalizations.of(context)!.delete, style: const TextStyle(color: Colors.red)),
+            child: Text(
+              AppLocalizations.of(context)!.delete,
+              style: const TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),
     );
     if (confirm == true) {
       try {
-        final dataRepository = Provider.of<DataRepository>(context, listen: false);
+        final dataRepository = Provider.of<DataRepository>(
+          context,
+          listen: false,
+        );
 
         final nuevasPartidas = List<Partida>.from(sesionActual.partidas)
           ..removeAt(index);
 
-        final sesionActualizada = sesionActual.copyWith(partidas: nuevasPartidas);
+        final sesionActualizada = sesionActual.copyWith(
+          partidas: nuevasPartidas,
+        );
         await dataRepository.actualizarSesion(sesionActualizada);
 
         setState(() {
@@ -153,7 +173,9 @@ class _VerSesionState extends State<VerSesion> {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.gameDeleteErrorMessage),
+              content: Text(
+                AppLocalizations.of(context)!.gameDeleteErrorMessage,
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -163,7 +185,9 @@ class _VerSesionState extends State<VerSesion> {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.gameUnexpectedDeleteError),
+              content: Text(
+                AppLocalizations.of(context)!.gameUnexpectedDeleteError,
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -179,12 +203,17 @@ class _VerSesionState extends State<VerSesion> {
         builder: (_) => RegistroSesionScreen(
           onGuardar: (nuevaPartida) async {
             try {
-              final dataRepository = Provider.of<DataRepository>(context, listen: false);
+              final dataRepository = Provider.of<DataRepository>(
+                context,
+                listen: false,
+              );
 
               final nuevasPartidas = List<Partida>.from(sesionActual.partidas)
                 ..add(nuevaPartida);
 
-              final sesionActualizada = sesionActual.copyWith(partidas: nuevasPartidas);
+              final sesionActualizada = sesionActual.copyWith(
+                partidas: nuevasPartidas,
+              );
               await dataRepository.actualizarSesion(sesionActualizada);
 
               setState(() {
@@ -206,7 +235,9 @@ class _VerSesionState extends State<VerSesion> {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(AppLocalizations.of(context)!.gameUpdateError),
+                    content: Text(
+                      AppLocalizations.of(context)!.gameUpdateError,
+                    ),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -216,7 +247,9 @@ class _VerSesionState extends State<VerSesion> {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(AppLocalizations.of(context)!.gameUnexpectedUpdateError),
+                    content: Text(
+                      AppLocalizations.of(context)!.gameUnexpectedUpdateError,
+                    ),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -279,9 +312,9 @@ class _VerSesionState extends State<VerSesion> {
         sesionActual = sesionActualizada;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.saveSuccess)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.saveSuccess)));
     } catch (e) {
       debugPrint('Error al actualizar lugar de sesión: $e');
       if (!mounted) return;
@@ -296,53 +329,54 @@ class _VerSesionState extends State<VerSesion> {
 
   Future<void> _editarTemporadaSesion() async {
     final dataRepository = Provider.of<DataRepository>(context, listen: false);
-    var valorTemporada = sesionActual.temporada ?? '';
-    final nuevaTemporada = await showDialog<String>(
+    final accountToken = dataRepository.seasonAccountToken;
+    final seasons = await TemporadaService.getTemporadasConSesiones(
+      await dataRepository.obtenerSesiones(),
+    );
+    final archived = (await TemporadaService.getArchivedTemporadas()).toSet();
+    if (!mounted) return;
+    String? selection = normalizeSeason(sesionActual.temporada);
+    final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) {
-        final dialogL10n = AppLocalizations.of(dialogContext)!;
-        return AlertDialog(
-          title: const Text('Editar temporada'),
-          content: TextFormField(
-            initialValue: valorTemporada,
-            decoration: const InputDecoration(
-              labelText: 'Temporada',
-              border: OutlineInputBorder(),
-            ),
-            textInputAction: TextInputAction.done,
-            autofocus: true,
-            onChanged: (value) => valorTemporada = value,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(AppLocalizations.of(context)!.selectSeason),
+          content: SeasonSelector(
+            value: selection,
+            seasons: seasons,
+            archived: archived,
+            onChanged: (value) => setDialogState(() => selection = value),
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(dialogL10n.cancel),
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             TextButton(
-              onPressed: () => Navigator.pop(dialogContext, valorTemporada),
-              child: Text(dialogL10n.save),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: Text(AppLocalizations.of(context)!.save),
             ),
           ],
-        );
-      },
+        ),
+      ),
     );
-
-    if (nuevaTemporada == null) {
+    if (confirmed != true || accountToken != dataRepository.seasonAccountToken)
       return;
-    }
-    final temporadaNormalizada = nuevaTemporada.trim();
-    final temporadaActual = sesionActual.temporada?.trim();
+    final nuevaTemporada = selection;
+    final temporadaNormalizada = normalizeSeason(nuevaTemporada);
+    final temporadaActual = normalizeSeason(sesionActual.temporada);
     if (!mounted || temporadaNormalizada == temporadaActual) {
       return;
     }
     final l10n = AppLocalizations.of(context)!;
 
     try {
-      final sesionActualizada =
-          temporadaNormalizada.isEmpty
-              ? sesionActual.copyWith(clearTemporada: true)
-              : sesionActual.copyWith(temporada: temporadaNormalizada);
-      await dataRepository.actualizarSesion(sesionActualizada);
+      final sesionActualizada = temporadaNormalizada == null
+          ? sesionActual.copyWith(clearTemporada: true)
+          : sesionActual.copyWith(temporada: temporadaNormalizada);
+      final assignment = await dataRepository.asignarTemporadaEnLote([
+        sesionActual,
+      ], temporadaNormalizada);
 
       if (!mounted) return;
       setState(() {
@@ -350,7 +384,13 @@ class _VerSesionState extends State<VerSesion> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.saveSuccess)),
+        SnackBar(
+          content: Text(
+            assignment.pending > 0
+                ? l10n.seasonChangesPending(assignment.pending)
+                : l10n.saveSuccess,
+          ),
+        ),
       );
     } catch (e) {
       debugPrint('Error al actualizar temporada de sesión: $e');
@@ -377,9 +417,12 @@ class _VerSesionState extends State<VerSesion> {
   Future<List<Nota>> _obtenerNotasRelacionadas() async {
     final repo = Provider.of<DataRepository>(context, listen: false);
     final notas = await repo.obtenerNotas();
-    final relacionadas =
-        notas.where((n) => n.relatedSessionId == _sessionId).toList();
-    relacionadas.sort((a, b) => b.fechaModificacion.compareTo(a.fechaModificacion));
+    final relacionadas = notas
+        .where((n) => n.relatedSessionId == _sessionId)
+        .toList();
+    relacionadas.sort(
+      (a, b) => b.fechaModificacion.compareTo(a.fechaModificacion),
+    );
     return relacionadas;
   }
 
@@ -452,18 +495,10 @@ class _VerSesionState extends State<VerSesion> {
     final partida = sesionActual.partidas[index];
     return _mostrarOpcionesCompartir(
       title: l10n.shareGame,
-      onShareText: () => compartirPartidaComoTexto(
-        context,
-        sesionActual,
-        partida,
-        index + 1,
-      ),
-      onShareImage: () => compartirPartidaComoImagen(
-        context,
-        sesionActual,
-        partida,
-        index + 1,
-      ),
+      onShareText: () =>
+          compartirPartidaComoTexto(context, sesionActual, partida, index + 1),
+      onShareImage: () =>
+          compartirPartidaComoImagen(context, sesionActual, partida, index + 1),
     );
   }
 
@@ -538,8 +573,7 @@ class _VerSesionState extends State<VerSesion> {
             icon: const Icon(Icons.note_add_outlined),
             tooltip: AppLocalizations.of(context)!.newNote,
             onPressed: () async {
-              final relatedSessionId =
-                  _sessionId;
+              final relatedSessionId = _sessionId;
               final created = await Navigator.push<bool>(
                 context,
                 MaterialPageRoute(
@@ -699,9 +733,7 @@ class _VerSesionState extends State<VerSesion> {
                           Expanded(
                             child: Text(
                               l10n.sessionRelatedNotes(notas.length),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
+                              style: Theme.of(context).textTheme.titleMedium
                                   ?.copyWith(fontWeight: FontWeight.w700),
                             ),
                           ),
@@ -742,30 +774,34 @@ class _VerSesionState extends State<VerSesion> {
                         )
                       else ...[
                         const SizedBox(height: 8),
-                        ...notas.take(3).map(
-                          (nota) => ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            dense: true,
-                            title: Text(
-                              nota.titulo,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            subtitle: Text(_statusLabel(l10n, nota.estado)),
-                            trailing: const Icon(Icons.chevron_right_rounded),
-                            onTap: () async {
-                              final changed = await Navigator.push<bool>(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => VerNotaScreen(nota: nota),
+                        ...notas
+                            .take(3)
+                            .map(
+                              (nota) => ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                dense: true,
+                                title: Text(
+                                  nota.titulo,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              );
-                              if (changed == true && mounted) {
-                                _refreshRelatedNotes();
-                              }
-                            },
-                          ),
-                        ),
+                                subtitle: Text(_statusLabel(l10n, nota.estado)),
+                                trailing: const Icon(
+                                  Icons.chevron_right_rounded,
+                                ),
+                                onTap: () async {
+                                  final changed = await Navigator.push<bool>(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => VerNotaScreen(nota: nota),
+                                    ),
+                                  );
+                                  if (changed == true && mounted) {
+                                    _refreshRelatedNotes();
+                                  }
+                                },
+                              ),
+                            ),
                       ],
                     ],
                   ),
@@ -779,7 +815,9 @@ class _VerSesionState extends State<VerSesion> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                AppLocalizations.of(context)!.gamesListCount(sesionActual.partidas.length),
+                AppLocalizations.of(
+                  context,
+                )!.gamesListCount(sesionActual.partidas.length),
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -909,12 +947,12 @@ class _VerSesionState extends State<VerSesion> {
                                         color: isDark
                                             ? Colors.grey.shade800
                                             : Colors.white,
-                                       ),
-                                       child: Text(
-                                         formatearTiroParaMostrar(t),
-                                         style: TextStyle(
-                                           fontFamily: 'monospace',
-                                           fontWeight: FontWeight.w500,
+                                      ),
+                                      child: Text(
+                                        formatearTiroParaMostrar(t),
+                                        style: TextStyle(
+                                          fontFamily: 'monospace',
+                                          fontWeight: FontWeight.w500,
                                           color: isDark
                                               ? Colors.white
                                               : Colors.black,
@@ -951,9 +989,7 @@ class _VerSesionState extends State<VerSesion> {
                         ],
                       ),
                       const SizedBox(height: 4),
-                      ScoreSheetPinStrip(
-                        pinesPorTiro: partida.pinesPorTiro,
-                      ),
+                      ScoreSheetPinStrip(pinesPorTiro: partida.pinesPorTiro),
                     ],
                     if (partida.notas != null &&
                         partida.notas!.trim().isNotEmpty) ...[

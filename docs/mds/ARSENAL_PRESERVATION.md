@@ -1,9 +1,20 @@
 # Conservación del arsenal — fase A
 
+> Actualización del 28 de octubre de 2026: el usuario ha decidido probar con el
+> proyecto Firebase y applicationId actuales, sin flavor ni segundo proyecto.
+> La preparación vigente y sus condiciones de aprobación están en
+> [ARSENAL_CONTROLLED_ACTIVATION.md](ARSENAL_CONTROLLED_ACTIVATION.md).
+> Este documento conserva los resultados y decisiones históricas de la fase A.
+> Decisión posterior del mismo día: respaldo habilitado por defecto en el código
+> para próximas compilaciones; se conserva la desactivación explícita con
+> `ARSENAL_BACKUP_ENABLED=false`. Las referencias al antiguo valor `false` de
+> este informe describen la entrega histórica, no la configuración vigente.
+
 Estado: implementación local completa y probada. El usuario aprobó el diseño,
 la migración explícita y las pruebas locales, sin autorizar despliegues.
-El respaldo remoto está desactivado por defecto hasta autorizar reglas y
-activación. No existe protección real frente a reinstalaciones hasta entonces.
+El respaldo remoto está habilitado por defecto en el código tras la autorización
+posterior del usuario. Una instalación solo está protegida frente a pérdida de
+datos después de actualizarse y recibir confirmación remota de esos datos.
 Las pruebas usan dobles de servicio y un emulador local; no producción.
 
 ## Reproducción antes de corregir
