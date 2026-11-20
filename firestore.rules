@@ -86,7 +86,9 @@ service cloud.firestore {
         allow update: if request.auth != null && request.auth.uid == userId;
         // Permitir crear notificaciones desde otros usuarios (solicitudes de amistad)
         allow create: if request.auth != null &&
-                      request.resource.data.type in ['friend_request', 'friend_request_accepted', 'daily_engagement'];
+                      request.resource.data.keys().hasAll(['type', 'createdAt', 'read']) &&
+                      request.resource.data.type in ['friend_request', 'friend_request_accepted', 'daily_engagement'] &&
+                      request.resource.data.read == false;
         // Solo el propietario puede eliminar sus notificaciones
         allow delete: if request.auth != null && request.auth.uid == userId;
       }
