@@ -38,46 +38,65 @@ class ScorePhotoException implements Exception {
 class ScorePhotoReader {
   Future<ScorePhotoDocument> read(
     String path, {
-    void Function(String stage)? onStage,
+    void Function(String)? onStage,
   }) async {
     onStage?.call('start');
-    if (!Platform.isAndroid) {
-      throw const ScorePhotoException('platform');
-    }
+    if (!Platform.isAndroid) throw const ScorePhotoException('platform');
+    final source = await loadImage(path, onStage: onStage);
+    return readPrepared(source, onStage: onStage);
+  }
+
+  /// Decode once; preview and OCR share this exact oriented PNG.
+  Future<ScorePhotoDocument> loadImage(
+    String path, {
+    void Function(String)? onStage,
+  }) async {
     final file = File(path);
-    if (await file.length() > 20 * 1024 * 1024) {
+    if (await file.length() > 20 * 1024 * 1024)
       throw const ScorePhotoException('size');
-    }
     final buffer = await ui.ImmutableBuffer.fromUint8List(
       await file.readAsBytes(),
     );
     ui.ImageDescriptor? descriptor;
     ui.Codec? codec;
     ui.Image? image;
-    Directory? temporary;
-    TextRecognizer? recognizer;
     try {
       descriptor = await ui.ImageDescriptor.encoded(buffer);
       onStage?.call('metadata_decoded');
-      if (descriptor.width * descriptor.height > 16000000) {
+      if (descriptor.width * descriptor.height > 16000000)
         throw const ScorePhotoException('size');
-      }
       codec = await descriptor.instantiateCodec();
       image = (await codec.getNextFrame()).image;
       onStage?.call('image_decoded');
-      // Use the exact same decoded, oriented PNG for OCR and the review image.
-      // Do not downsample small score symbols or rely on two EXIF interpreters.
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
       if (data == null) throw const ScorePhotoException('image');
-      final png = data.buffer.asUint8List(
-        data.offsetInBytes,
-        data.lengthInBytes,
+      return ScorePhotoDocument(
+        image: data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+        size: ui.Size(image.width.toDouble(), image.height.toDouble()),
+        symbols: const [],
+        numberCandidates: const [],
       );
+    } finally {
+      image?.dispose();
+      codec?.dispose();
+      descriptor?.dispose();
+      buffer.dispose();
+    }
+  }
+
+  Future<ScorePhotoDocument> readPrepared(
+    ScorePhotoDocument source, {
+    void Function(String)? onStage,
+  }) async {
+    if (!Platform.isAndroid) throw const ScorePhotoException('platform');
+    Directory? temporary;
+    TextRecognizer? recognizer;
+    try {
       temporary = await Directory(
         (await getTemporaryDirectory()).path,
       ).createTemp('bolometro_score_');
       final normalized = File('${temporary.path}/score.png');
-      await normalized.writeAsBytes(png);
+      await normalized.writeAsBytes(source.image);
       onStage?.call('png_written');
       recognizer = TextRecognizer(script: TextRecognitionScript.latin);
       final text = await recognizer.processImage(
@@ -127,8 +146,8 @@ class ScorePhotoReader {
         }
       }
       return ScorePhotoDocument(
-        image: png,
-        size: ui.Size(image.width.toDouble(), image.height.toDouble()),
+        image: source.image,
+        size: source.size,
         symbols: symbols,
         elements: elements,
         numberCandidates: numbers.toList(),
@@ -137,14 +156,7 @@ class ScorePhotoReader {
       try {
         await recognizer?.close();
       } finally {
-        image?.dispose();
-        codec?.dispose();
-        descriptor?.dispose();
-        buffer.dispose();
-        if (temporary != null) {
-          // This is only the unique directory created above, never the input.
-          await temporary.delete(recursive: true);
-        }
+        if (temporary != null) await temporary.delete(recursive: true);
       }
     }
   }

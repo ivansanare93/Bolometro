@@ -1,0 +1,47 @@
+{
+  "reference_id": "scoreboard-chat-207-h40",
+  "image_sha256": "1bfccf05e19adc880d548106cb48ddf423ad5438d66130bc8ae7debfbe74061f",
+  "evidence": "synthetic",
+  "frames": [
+    [
+      "9",
+      "/"
+    ],
+    [
+      "X"
+    ],
+    [
+      "X"
+    ],
+    [
+      "9",
+      "/"
+    ],
+    [
+      "X"
+    ],
+    [
+      "9",
+      "/"
+    ],
+    [
+      "9",
+      "/"
+    ],
+    [
+      "X"
+    ],
+    [
+      "6",
+      "/"
+    ],
+    [
+      "9",
+      "/",
+      "X"
+    ]
+  ],
+  "printed_total": "207",
+  "preprocessing": "none",
+  "notes": "Synthetic demonstration of evaluation only; not ML Kit output."
+}

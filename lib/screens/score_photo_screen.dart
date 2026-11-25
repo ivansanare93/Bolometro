@@ -7,6 +7,8 @@ import '../widgets/score_photo_region_selector.dart';
 import 'package:image_picker/image_picker.dart';
 import '../l10n/app_localizations.dart';
 import '../services/score_photo_reader.dart';
+import '../services/score_photo_frame_reader.dart';
+import 'score_photo_prepare_screen.dart';
 import '../services/score_photo_review.dart';
 import '../services/score_photo_proposer.dart';
 import '../widgets/score_photo_summary.dart';
@@ -15,7 +17,18 @@ class ScorePhotoScreen extends StatefulWidget {
   /// Injection seam for tests; production uses the gallery and on-device OCR.
   final Future<ScorePhotoDocument?> Function()? loadPhoto;
   final ScorePhotoDraftStore? draftStore;
-  const ScorePhotoScreen({super.key, this.loadPhoto, this.draftStore});
+  final Future<ScorePhotoDocument?> Function()? loadSource;
+  final Future<ScorePhotoDocument> Function(ScorePhotoDocument)?
+  recognizePrepared;
+  final ScorePhotoFrameReader? frameReader;
+  const ScorePhotoScreen({
+    super.key,
+    this.loadPhoto,
+    this.draftStore,
+    this.frameReader,
+    this.loadSource,
+    this.recognizePrepared,
+  });
 
   @override
   State<ScorePhotoScreen> createState() => _ScorePhotoScreenState();
@@ -329,10 +342,29 @@ class _ScorePhotoScreenState extends State<ScorePhotoScreen>
       if (widget.loadPhoto != null) {
         document = await widget.loadPhoto!();
       } else {
-        final file = await ImagePicker().pickImage(source: ImageSource.gallery);
-        document = file == null
-            ? null
-            : await ScorePhotoReader().read(file.path);
+        final reader = ScorePhotoReader();
+        final ScorePhotoDocument? source;
+        if (widget.loadSource != null) {
+          source = await widget.loadSource!();
+        } else {
+          final file = await ImagePicker().pickImage(
+            source: ImageSource.gallery,
+          );
+          if (file == null || !_sameOwner) return;
+          source = await reader.loadImage(file.path);
+        }
+        if (source == null) return;
+        if (!_sameOwner) return;
+        final prepared = await Navigator.push<ScorePhotoDocument>(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ScorePhotoPrepareScreen(source: source!),
+          ),
+        );
+        if (!_sameOwner || prepared == null) return;
+        document = await (widget.recognizePrepared ?? reader.readPrepared)(
+          prepared,
+        );
       }
       if (!_sameOwner || document == null) return;
       setState(() {
@@ -568,6 +600,8 @@ class _ScorePhotoScreenState extends State<ScorePhotoScreen>
                       dividers: _dividers,
                       numberCandidates: document.numberCandidates,
                       initialProgress: _progress,
+                      frameReader: widget.frameReader,
+                      canReadFrame: () => _sameOwner && !_applying,
                       onProgress: (value) {
                         _progress = value;
                         _saveDraft();
@@ -595,12 +629,16 @@ class ScorePhotoReviewForm extends StatefulWidget {
   final List<double>? dividers;
   final ValueChanged<ReviewedPhotoScore> onApply;
   final Map<String, dynamic>? initialProgress;
+  final ScorePhotoFrameReader? frameReader;
+  final bool Function()? canReadFrame;
   final ValueChanged<Map<String, dynamic>>? onProgress;
   const ScorePhotoReviewForm({
     super.key,
     required this.candidate,
     required this.onApply,
     this.initialProgress,
+    this.frameReader,
+    this.canReadFrame,
     this.onProgress,
     this.document,
     this.selectedRow,
@@ -617,6 +655,8 @@ class _ScorePhotoReviewFormState extends State<ScorePhotoReviewForm> {
   late final List<List<TextEditingController>> _throws;
   late final TextEditingController _total;
   final Set<int> _reviewed = {};
+  bool _readingFrame = false;
+  bool _recognizingFrame = false;
   bool _totalReviewed = false;
   int _activeFrame = 0;
   final _frameKeys = List.generate(10, (_) => GlobalKey());
@@ -641,6 +681,111 @@ class _ScorePhotoReviewFormState extends State<ScorePhotoReviewForm> {
           alignment: .03,
         );
     });
+  }
+
+  Future<void> _readFrame(int frame) async {
+    if (_readingFrame || widget.canReadFrame?.call() == false) return;
+    final source = widget.document;
+    final row = widget.selectedRow;
+    final dividers = widget.dividers;
+    if (source == null || row == null || dividers == null) return;
+    final l = AppLocalizations.of(context)!;
+    final owner = context.read<DataRepository?>();
+    final uid = owner?.arsenalUserId;
+    final token = owner?.seasonAccountToken;
+    bool allowed() =>
+        mounted &&
+        widget.canReadFrame?.call() != false &&
+        owner?.arsenalUserId == uid &&
+        owner?.seasonAccountToken == token;
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _readingFrame = true;
+      _recognizingFrame = true;
+    });
+    try {
+      final result = await (widget.frameReader ?? const ScorePhotoFrameReader())
+          .read(
+            source,
+            Rect.fromLTRB(
+              row.left + row.width * dividers[frame],
+              row.top,
+              row.left + row.width * dividers[frame + 1],
+              row.bottom,
+            ),
+            frame,
+          );
+      if (!allowed()) return;
+      setState(() => _recognizingFrame = false);
+      final valid =
+          ScorePhotoCandidate.frameProblem(result.throws, index: frame) == null;
+      final accepted = await showDialog<bool>(
+        context: context,
+        builder: (c) {
+          final current = c.watch<DataRepository?>();
+          final same =
+              current?.arsenalUserId == uid &&
+              current?.seasonAccountToken == token;
+          return AlertDialog(
+            title: Text(l.photoScoreReread),
+            content: !same
+                ? Text(l.photoScoreRereadFailed)
+                : SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.memory(
+                          result.crop,
+                          key: const ValueKey('photo-reread-crop'),
+                          height: 140,
+                          fit: BoxFit.contain,
+                        ),
+                        Text(l.photoScoreRereadHint),
+                        Text(
+                          '${l.photoScoreFrame} ${frame + 1}: ${result.throws.where((v) => v.isNotEmpty).join(" ")}',
+                        ),
+                        Text('${l.photoScoreRaw}: ${result.raw}'),
+                        if (!valid) Text(l.photoScoreInvalidFrame),
+                      ],
+                    ),
+                  ),
+            actions: [
+              TextButton(
+                key: const ValueKey('photo-reread-cancel'),
+                onPressed: () => Navigator.pop(c, false),
+                child: Text(l.photoScoreRereadKeep),
+              ),
+              FilledButton(
+                key: const ValueKey('photo-reread-accept'),
+                onPressed: same && valid ? () => Navigator.pop(c, true) : null,
+                child: Text(l.photoScoreRereadUse),
+              ),
+            ],
+          );
+        },
+      );
+      if (accepted != true || !allowed()) return;
+      setState(() {
+        for (var t = 0; t < 3; t++) {
+          _throws[frame][t].text = result.throws[t];
+        }
+        _reviewed.remove(frame);
+        _totalReviewed = false;
+        _activeFrame = frame;
+      });
+      _emit();
+    } catch (_) {
+      if (allowed())
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l.photoScoreRereadFailed)));
+    } finally {
+      if (mounted)
+        setState(() {
+          _readingFrame = false;
+          _recognizingFrame = false;
+        });
+    }
   }
 
   String _problemText(AppLocalizations l, ScorePhotoFrameProblemCode code) =>
@@ -728,228 +873,245 @@ class _ScorePhotoReviewFormState extends State<ScorePhotoReviewForm> {
       ...numbers.where(matches),
       ...numbers.where((v) => !matches(v)),
     ];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const SizedBox(height: 16),
-        Text(l.photoScoreReviewHint),
-        Text('${l.photoScoreProgress}: ${_reviewed.length}/10'),
-        Wrap(
-          spacing: 6,
-          children: [
-            for (var f = 0; f < 10; f++)
-              ChoiceChip(
-                key: ValueKey('photo-frame-tab-$f'),
-                label: Text('${f + 1}'),
-                avatar: Icon(
-                  _reviewed.contains(f)
-                      ? Icons.check_circle_outline
-                      : problems[f] != null
-                      ? Icons.error_outline
-                      : Icons.circle_outlined,
-                  size: 16,
+    return AbsorbPointer(
+      absorbing: _readingFrame,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (_recognizingFrame) const LinearProgressIndicator(),
+          const SizedBox(height: 16),
+          Text(l.photoScoreReviewHint),
+          Text('${l.photoScoreProgress}: ${_reviewed.length}/10'),
+          Wrap(
+            spacing: 6,
+            children: [
+              for (var f = 0; f < 10; f++)
+                ChoiceChip(
+                  key: ValueKey('photo-frame-tab-$f'),
+                  label: Text('${f + 1}'),
+                  avatar: Icon(
+                    _reviewed.contains(f)
+                        ? Icons.check_circle_outline
+                        : problems[f] != null
+                        ? Icons.error_outline
+                        : Icons.circle_outlined,
+                    size: 16,
+                  ),
+                  selected: _activeFrame == f,
+                  onSelected: (_) => _go(f),
                 ),
-                selected: _activeFrame == f,
-                onSelected: (_) => _go(f),
-              ),
-          ],
-        ),
-        for (var f = 0; f < 10; f++)
-          Card(
-            key: _frameKeys[f],
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${l.photoScoreFrame} ${f + 1}',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  if (widget.document != null &&
-                      widget.selectedRow != null &&
-                      widget.dividers != null)
-                    _ScoreCellPreview(
-                      document: widget.document!,
-                      cell: Rect.fromLTRB(
-                        widget.selectedRow!.left +
-                            widget.selectedRow!.width * widget.dividers![f],
-                        widget.selectedRow!.top,
-                        widget.selectedRow!.left +
-                            widget.selectedRow!.width * widget.dividers![f + 1],
-                        widget.selectedRow!.bottom,
-                      ),
+            ],
+          ),
+          for (var f = 0; f < 10; f++)
+            Card(
+              key: _frameKeys[f],
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${l.photoScoreFrame} ${f + 1}',
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
-                  Text(
-                    '${l.photoScoreCumulative}: ${review.calculatedFrameTotals[f] ?? "\u2014"}',
-                    key: ValueKey('photo-cumulative-$f'),
-                  ),
-                  if (f < widget.rawCells.length)
-                    Text('${l.photoScoreRaw}: ${widget.rawCells[f]}'),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      for (
-                        var t = 0;
-                        t < (f == 9 || _throws[f][2].text.isNotEmpty ? 3 : 2);
-                        t++
-                      )
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: TextField(
-                              key: ValueKey('photo-throw-$f-$t'),
-                              controller: _throws[f][t],
-                              textCapitalization: TextCapitalization.characters,
-                              autocorrect: false,
-                              enableSuggestions: false,
-                              decoration: InputDecoration(
-                                labelText: '${l.photoScoreThrow} ${t + 1}',
-                                errorText: problems[f]?.throwIndex == t
-                                    ? l.photoScoreCellInvalid
-                                    : null,
-                                border: const OutlineInputBorder(),
+                    if (widget.document != null &&
+                        widget.selectedRow != null &&
+                        widget.dividers != null)
+                      _ScoreCellPreview(
+                        document: widget.document!,
+                        cell: Rect.fromLTRB(
+                          widget.selectedRow!.left +
+                              widget.selectedRow!.width * widget.dividers![f],
+                          widget.selectedRow!.top,
+                          widget.selectedRow!.left +
+                              widget.selectedRow!.width *
+                                  widget.dividers![f + 1],
+                          widget.selectedRow!.bottom,
+                        ),
+                      ),
+                    if (widget.document != null &&
+                        widget.selectedRow != null &&
+                        widget.dividers != null)
+                      OutlinedButton.icon(
+                        key: ValueKey('photo-reread-$f'),
+                        onPressed: () => _readFrame(f),
+                        icon: const Icon(Icons.document_scanner_outlined),
+                        label: Text(l.photoScoreReread),
+                      ),
+                    Text(
+                      '${l.photoScoreCumulative}: ${review.calculatedFrameTotals[f] ?? "\u2014"}',
+                      key: ValueKey('photo-cumulative-$f'),
+                    ),
+                    if (f < widget.rawCells.length)
+                      Text('${l.photoScoreRaw}: ${widget.rawCells[f]}'),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        for (
+                          var t = 0;
+                          t < (f == 9 || _throws[f][2].text.isNotEmpty ? 3 : 2);
+                          t++
+                        )
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: TextField(
+                                key: ValueKey('photo-throw-$f-$t'),
+                                controller: _throws[f][t],
+                                textCapitalization:
+                                    TextCapitalization.characters,
+                                autocorrect: false,
+                                enableSuggestions: false,
+                                decoration: InputDecoration(
+                                  labelText: '${l.photoScoreThrow} ${t + 1}',
+                                  errorText: problems[f]?.throwIndex == t
+                                      ? l.photoScoreCellInvalid
+                                      : null,
+                                  border: const OutlineInputBorder(),
+                                ),
+                                onChanged: (_) {
+                                  setState(() {
+                                    _reviewed.remove(f);
+                                    _activeFrame = f;
+                                    _totalReviewed = false;
+                                  });
+                                  _emit();
+                                },
                               ),
-                              onChanged: (_) {
-                                setState(() {
-                                  _reviewed.remove(f);
-                                  _activeFrame = f;
-                                  _totalReviewed = false;
-                                });
-                                _emit();
-                              },
                             ),
                           ),
-                        ),
-                    ],
-                  ),
-                  if (problems[f] != null)
-                    Text(
-                      '${l.photoScoreThrow} ${problems[f]!.throwIndex + 1}: ${_problemText(l, problems[f]!.code)}',
-                      key: ValueKey('photo-frame-error-$f'),
+                      ],
                     ),
-                  CheckboxListTile(
-                    key: ValueKey('photo-reviewed-$f'),
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(l.photoScoreReviewed),
-                    value: _reviewed.contains(f),
-                    onChanged: problems[f] != null
-                        ? null
-                        : (value) {
-                            setState(() {
-                              if (value == true) {
-                                _reviewed.add(f);
-                              } else {
-                                _reviewed.remove(f);
-                              }
-                            });
-                            _emit();
-                          },
-                  ),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    children: [
-                      OutlinedButton(
-                        key: ValueKey('photo-previous-$f'),
-                        onPressed: f == 0 ? null : () => _go(f - 1),
-                        child: Text(l.photoScorePrevious),
+                    if (problems[f] != null)
+                      Text(
+                        '${l.photoScoreThrow} ${problems[f]!.throwIndex + 1}: ${_problemText(l, problems[f]!.code)}',
+                        key: ValueKey('photo-frame-error-$f'),
                       ),
-                      OutlinedButton(
-                        key: ValueKey('photo-next-$f'),
-                        onPressed: f == 9 ? null : () => _go(f + 1),
-                        child: Text(l.photoScoreNext),
-                      ),
-                      FilledButton.tonal(
-                        key: ValueKey('photo-confirm-next-$f'),
-                        onPressed: problems[f] != null
-                            ? null
-                            : () {
-                                setState(() => _reviewed.add(f));
-                                _go(f == 9 ? 9 : f + 1);
-                              },
-                        child: Text(
-                          f == 9
-                              ? l.photoScoreConfirmFrame
-                              : l.photoScoreConfirmNext,
+                    CheckboxListTile(
+                      key: ValueKey('photo-reviewed-$f'),
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(l.photoScoreReviewed),
+                      value: _reviewed.contains(f),
+                      onChanged: problems[f] != null
+                          ? null
+                          : (value) {
+                              setState(() {
+                                if (value == true) {
+                                  _reviewed.add(f);
+                                } else {
+                                  _reviewed.remove(f);
+                                }
+                              });
+                              _emit();
+                            },
+                    ),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        OutlinedButton(
+                          key: ValueKey('photo-previous-$f'),
+                          onPressed: f == 0 ? null : () => _go(f - 1),
+                          child: Text(l.photoScorePrevious),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        OutlinedButton(
+                          key: ValueKey('photo-next-$f'),
+                          onPressed: f == 9 ? null : () => _go(f + 1),
+                          child: Text(l.photoScoreNext),
+                        ),
+                        FilledButton.tonal(
+                          key: ValueKey('photo-confirm-next-$f'),
+                          onPressed: problems[f] != null
+                              ? null
+                              : () {
+                                  setState(() => _reviewed.add(f));
+                                  _go(f == 9 ? 9 : f + 1);
+                                },
+                          child: Text(
+                            f == 9
+                                ? l.photoScoreConfirmFrame
+                                : l.photoScoreConfirmNext,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        if (widget.numberCandidates.isNotEmpty)
-          DropdownButtonFormField<String>(
-            key: const ValueKey('photo-total-candidates'),
-            value: orderedNumbers.contains(_total.text) ? _total.text : null,
-            isExpanded: true,
-            decoration: InputDecoration(labelText: l.photoScoreNumbers),
-            items: orderedNumbers
-                .map(
-                  (v) => DropdownMenuItem(
-                    value: v,
-                    child: Text(
-                      matches(v) ? '$v - ${l.photoScoreMatchesThrows}' : v,
-                      overflow: TextOverflow.ellipsis,
+          if (widget.numberCandidates.isNotEmpty)
+            DropdownButtonFormField<String>(
+              key: const ValueKey('photo-total-candidates'),
+              value: orderedNumbers.contains(_total.text) ? _total.text : null,
+              isExpanded: true,
+              decoration: InputDecoration(labelText: l.photoScoreNumbers),
+              items: orderedNumbers
+                  .map(
+                    (v) => DropdownMenuItem(
+                      value: v,
+                      child: Text(
+                        matches(v) ? '$v - ${l.photoScoreMatchesThrows}' : v,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                )
-                .toList(),
-            onChanged: (value) {
-              setState(() {
-                _total.text = value ?? '';
-                _totalReviewed = false;
-              });
+                  )
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  _total.text = value ?? '';
+                  _totalReviewed = false;
+                });
+                _emit();
+              },
+            ),
+          const SizedBox(height: 12),
+          Text(l.photoScoreHandicapHint),
+          const SizedBox(height: 12),
+          TextField(
+            key: const ValueKey('photo-total'),
+            controller: _total,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: l.photoScorePrintedTotal,
+              border: const OutlineInputBorder(),
+            ),
+            onChanged: (_) {
+              setState(() => _totalReviewed = false);
               _emit();
             },
           ),
-        const SizedBox(height: 12),
-        Text(l.photoScoreHandicapHint),
-        const SizedBox(height: 12),
-        TextField(
-          key: const ValueKey('photo-total'),
-          controller: _total,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            labelText: l.photoScorePrintedTotal,
-            border: const OutlineInputBorder(),
+          CheckboxListTile(
+            key: const ValueKey('photo-total-reviewed'),
+            title: Text(l.photoScoreReviewed),
+            value: _totalReviewed,
+            onChanged: (v) {
+              setState(() => _totalReviewed = v ?? false);
+              _emit();
+            },
           ),
-          onChanged: (_) {
-            setState(() => _totalReviewed = false);
-            _emit();
-          },
-        ),
-        CheckboxListTile(
-          key: const ValueKey('photo-total-reviewed'),
-          title: Text(l.photoScoreReviewed),
-          value: _totalReviewed,
-          onChanged: (v) {
-            setState(() => _totalReviewed = v ?? false);
-            _emit();
-          },
-        ),
-        Text('${l.photoScoreCalculated}: ${review.calculatedTotal ?? "—"}'),
-        if (invalidFrames.isNotEmpty) Text(l.photoScoreInvalidFrame),
-        if (codes.contains(ScorePhotoIssueCode.missingPrintedTotal) ||
-            codes.contains(ScorePhotoIssueCode.invalidPrintedTotal))
-          Text(l.photoScoreTotalMissing),
-        if (codes.contains(ScorePhotoIssueCode.totalMismatch))
-          Text(l.photoScoreMismatch),
-        if (codes.contains(ScorePhotoIssueCode.humanReviewRequired))
-          Text(l.photoScoreReviewMissing),
-        const SizedBox(height: 12),
-        FilledButton.icon(
-          key: const ValueKey('photo-apply'),
-          onPressed: review.canApply
-              ? () => widget.onApply(review.requireReviewedScore())
-              : null,
-          icon: const Icon(Icons.check),
-          label: Text(l.photoScoreApply),
-        ),
-        const SizedBox(height: 24),
-      ],
+          Text(
+            '${l.photoScoreCalculated}: ${review.calculatedTotal ?? "\u2014"}',
+          ),
+          if (invalidFrames.isNotEmpty) Text(l.photoScoreInvalidFrame),
+          if (codes.contains(ScorePhotoIssueCode.missingPrintedTotal) ||
+              codes.contains(ScorePhotoIssueCode.invalidPrintedTotal))
+            Text(l.photoScoreTotalMissing),
+          if (codes.contains(ScorePhotoIssueCode.totalMismatch))
+            Text(l.photoScoreMismatch),
+          if (codes.contains(ScorePhotoIssueCode.humanReviewRequired))
+            Text(l.photoScoreReviewMissing),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            key: const ValueKey('photo-apply'),
+            onPressed: review.canApply
+                ? () => widget.onApply(review.requireReviewedScore())
+                : null,
+            icon: const Icon(Icons.check),
+            label: Text(l.photoScoreApply),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
     );
   }
 }

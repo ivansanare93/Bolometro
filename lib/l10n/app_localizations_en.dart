@@ -2568,4 +2568,71 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get photoScoreReviewOriginal =>
       'Check all ten frames and the total WITHOUT handicap against the photo. Confirming transfers throws to the form; you still need to save the game and session.';
+
+  @override
+  String get photoScoreReread => 'Read this frame again';
+
+  @override
+  String get photoScoreRereadHint =>
+      'New reading proposal. Check the image before replacing this frame; all others stay unchanged.';
+
+  @override
+  String get photoScoreRereadKeep => 'Keep previous values';
+
+  @override
+  String get photoScoreRereadUse => 'Use this proposal';
+
+  @override
+  String get photoScoreRereadFailed =>
+      'Could not read the frame again. Your corrections are preserved.';
+
+  @override
+  String get photoScorePrepare => 'Prepare scoreboard photo';
+
+  @override
+  String get photoScorePrepareHint =>
+      'Read the photo as it is or straighten the board. Mark corners in order: top left, top right, bottom right, bottom left. Include headers 1–10, throws and cumulative scores; avoid handicap totals.';
+
+  @override
+  String get photoScoreCornerTL => 'Top left';
+
+  @override
+  String get photoScoreCornerTR => 'Top right';
+
+  @override
+  String get photoScoreCornerBR => 'Bottom right';
+
+  @override
+  String get photoScoreCornerBL => 'Bottom left';
+
+  @override
+  String get photoScoreCornersEdit => 'Mark corners';
+
+  @override
+  String get photoScoreCornersInvalid =>
+      'Invalid region. Check corner order and separation.';
+
+  @override
+  String get photoScoreCornersReset => 'Reset framing';
+
+  @override
+  String get photoScoreCornersPreview => 'Straighten and preview';
+
+  @override
+  String get photoScorePreparedPreview =>
+      'Check that all ten frames and their cumulative scores are visible.';
+
+  @override
+  String get photoScoreReadOriginal => 'Read original photo';
+
+  @override
+  String get photoScoreReadPrepared => 'Read this framing';
+
+  @override
+  String get photoScorePrepareFailed =>
+      'Could not prepare the image. Adjust the corners or use the original photo.';
+
+  @override
+  String get photoScorePreparePrivacy =>
+      'The original photo stays unchanged. The draft will store the image chosen for reading; preparation is not saved until you read it.';
 }

@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-20",
+  "real_photos_registered": 1,
+  "independently_human_confirmed_references": 0,
+  "native_ocr_comparisons_completed": 0,
+  "measured_throw_accuracy": null,
+  "measured_exact_game_rate": null,
+  "geometric_preview_generated": true,
+  "preview_corners_source": "manually_estimated_not_user_confirmed",
+  "synthetic_demo_is_accuracy_measurement": false,
+  "limitations": [
+    "Single photo is insufficient to generalize",
+    "No successful native OCR comparison on this task",
+    "Pending human reference confirmation"
+  ]
+}

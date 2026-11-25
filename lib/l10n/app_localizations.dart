@@ -4729,6 +4729,126 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Revisa los diez frames y el total SIN hándicap con la foto. Confirmar pasa los tiros al formulario; todavía debes guardar la partida y la sesión.'**
   String get photoScoreReviewOriginal;
+
+  /// No description provided for @photoScoreReread.
+  ///
+  /// In es, this message translates to:
+  /// **'Volver a leer este frame'**
+  String get photoScoreReread;
+
+  /// No description provided for @photoScoreRereadHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Propuesta de una nueva lectura. Revisa la imagen antes de sustituir este frame; los demás no cambiarán.'**
+  String get photoScoreRereadHint;
+
+  /// No description provided for @photoScoreRereadKeep.
+  ///
+  /// In es, this message translates to:
+  /// **'Conservar lo anterior'**
+  String get photoScoreRereadKeep;
+
+  /// No description provided for @photoScoreRereadUse.
+  ///
+  /// In es, this message translates to:
+  /// **'Usar esta propuesta'**
+  String get photoScoreRereadUse;
+
+  /// No description provided for @photoScoreRereadFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo releer el frame. Tus correcciones se conservan.'**
+  String get photoScoreRereadFailed;
+
+  /// No description provided for @photoScorePrepare.
+  ///
+  /// In es, this message translates to:
+  /// **'Preparar foto del marcador'**
+  String get photoScorePrepare;
+
+  /// No description provided for @photoScorePrepareHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Puedes leer la foto tal cual o enderezar el marcador. Marca sus esquinas en orden: superior izquierda, superior derecha, inferior derecha e inferior izquierda. Incluye las cabeceras 1–10, los tiros y los acumulados de los jugadores; evita el total con hándicap.'**
+  String get photoScorePrepareHint;
+
+  /// No description provided for @photoScoreCornerTL.
+  ///
+  /// In es, this message translates to:
+  /// **'Superior izquierda'**
+  String get photoScoreCornerTL;
+
+  /// No description provided for @photoScoreCornerTR.
+  ///
+  /// In es, this message translates to:
+  /// **'Superior derecha'**
+  String get photoScoreCornerTR;
+
+  /// No description provided for @photoScoreCornerBR.
+  ///
+  /// In es, this message translates to:
+  /// **'Inferior derecha'**
+  String get photoScoreCornerBR;
+
+  /// No description provided for @photoScoreCornerBL.
+  ///
+  /// In es, this message translates to:
+  /// **'Inferior izquierda'**
+  String get photoScoreCornerBL;
+
+  /// No description provided for @photoScoreCornersEdit.
+  ///
+  /// In es, this message translates to:
+  /// **'Marcar esquinas'**
+  String get photoScoreCornersEdit;
+
+  /// No description provided for @photoScoreCornersInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'Las esquinas no forman una región válida. Revisa su orden y separación.'**
+  String get photoScoreCornersInvalid;
+
+  /// No description provided for @photoScoreCornersReset.
+  ///
+  /// In es, this message translates to:
+  /// **'Restablecer encuadre'**
+  String get photoScoreCornersReset;
+
+  /// No description provided for @photoScoreCornersPreview.
+  ///
+  /// In es, this message translates to:
+  /// **'Enderezar y previsualizar'**
+  String get photoScoreCornersPreview;
+
+  /// No description provided for @photoScorePreparedPreview.
+  ///
+  /// In es, this message translates to:
+  /// **'Comprueba que aparecen los diez frames completos y sus acumulados.'**
+  String get photoScorePreparedPreview;
+
+  /// No description provided for @photoScoreReadOriginal.
+  ///
+  /// In es, this message translates to:
+  /// **'Leer foto sin corregir'**
+  String get photoScoreReadOriginal;
+
+  /// No description provided for @photoScoreReadPrepared.
+  ///
+  /// In es, this message translates to:
+  /// **'Leer este encuadre'**
+  String get photoScoreReadPrepared;
+
+  /// No description provided for @photoScorePrepareFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo preparar la imagen. Ajusta las esquinas o usa la foto original.'**
+  String get photoScorePrepareFailed;
+
+  /// No description provided for @photoScorePreparePrivacy.
+  ///
+  /// In es, this message translates to:
+  /// **'La foto original no se modifica. El borrador conservará la imagen elegida para la lectura; esta preparación no se guarda hasta leerla.'**
+  String get photoScorePreparePrivacy;
 }
 
 class _AppLocalizationsDelegate

@@ -7,6 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:bolometro/services/score_photo_reader.dart';
 import 'package:bolometro/services/score_photo_review.dart';
+import 'package:bolometro/services/score_photo_proposer.dart';
+import 'package:bolometro/services/score_photo_perspective.dart';
 
 /// Run only on an isolated emulator, never on a user's physical device.
 /// Image bytes are compiled only into the integration-test APK and removed
@@ -15,6 +17,9 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   const layout = String.fromEnvironment('SCORE_PHOTO_REVIEW_REGION');
   const expected = String.fromEnvironment('SCORE_PHOTO_EXPECTED_FRAMES');
+  const referenceId = String.fromEnvironment('SCORE_PHOTO_REFERENCE_ID');
+  const imageHash = String.fromEnvironment('SCORE_PHOTO_INPUT_SHA256');
+  const cornersJson = String.fromEnvironment('SCORE_PHOTO_PREPARE_CORNERS');
   testWidgets(
     'native OCR of a privately supplied score photo',
     (tester) async {
@@ -32,12 +37,48 @@ void main() {
         print(
           'PHOTO_OCR_INPUT_READY:${bytes.length};${Platform.operatingSystem}',
         );
-        final document = await ScorePhotoReader().read(
-          file.path,
+        final reader = ScorePhotoReader();
+        final source = await reader.loadImage(file.path);
+        final prepared = cornersJson.isEmpty
+            ? source
+            : await ScorePhotoPerspective(
+                source.size,
+                (jsonDecode(cornersJson) as List)
+                    .map(
+                      (p) => Offset(
+                        (p[0] as num) * source.size.width,
+                        (p[1] as num) * source.size.height,
+                      ),
+                    )
+                    .toList(),
+              ).rectify(source);
+        final document = await reader.readPrepared(
+          prepared,
           // ignore: avoid_print
           onStage: (stage) => print('PHOTO_OCR_STAGE:$stage'),
         );
-        expect(document.symbols, isNotEmpty);
+        if (referenceId.isNotEmpty) {
+          final proposals = ScorePhotoProposer().propose(document);
+          // Multiple player rows require manual selection, never selection by expected score.
+          final proposal = proposals.length == 1 ? proposals.single : null;
+          // ignore: avoid_print
+          print(
+            'PHOTO_OCR_PROPOSAL:${jsonEncode({
+              'reference_id': referenceId,
+              'image_sha256': imageHash,
+              'evidence': 'native_ocr',
+              'preprocessing': cornersJson.isEmpty ? 'original' : 'perspective',
+              'corners_normalized': cornersJson.isEmpty ? null : jsonDecode(cornersJson),
+              'prepared_size': [document.size.width, document.size.height],
+              'proposal_count': proposals.length,
+              'frames': proposal?.frames,
+              'printed_total': proposal?.printedTotal,
+              'ambiguous_columns': proposal?.ambiguousColumns,
+              'observed_cumulative': proposal?.observedCumulative,
+              'human_corrections_applied': false,
+            })}',
+          );
+        }
         final config = jsonDecode(layout) as Map<String, dynamic>;
         final row = Rect.fromLTRB(
           (config['left'] as num) * document.size.width,

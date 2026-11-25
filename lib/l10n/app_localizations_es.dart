@@ -2598,4 +2598,71 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get photoScoreReviewOriginal =>
       'Revisa los diez frames y el total SIN hándicap con la foto. Confirmar pasa los tiros al formulario; todavía debes guardar la partida y la sesión.';
+
+  @override
+  String get photoScoreReread => 'Volver a leer este frame';
+
+  @override
+  String get photoScoreRereadHint =>
+      'Propuesta de una nueva lectura. Revisa la imagen antes de sustituir este frame; los demás no cambiarán.';
+
+  @override
+  String get photoScoreRereadKeep => 'Conservar lo anterior';
+
+  @override
+  String get photoScoreRereadUse => 'Usar esta propuesta';
+
+  @override
+  String get photoScoreRereadFailed =>
+      'No se pudo releer el frame. Tus correcciones se conservan.';
+
+  @override
+  String get photoScorePrepare => 'Preparar foto del marcador';
+
+  @override
+  String get photoScorePrepareHint =>
+      'Puedes leer la foto tal cual o enderezar el marcador. Marca sus esquinas en orden: superior izquierda, superior derecha, inferior derecha e inferior izquierda. Incluye las cabeceras 1–10, los tiros y los acumulados de los jugadores; evita el total con hándicap.';
+
+  @override
+  String get photoScoreCornerTL => 'Superior izquierda';
+
+  @override
+  String get photoScoreCornerTR => 'Superior derecha';
+
+  @override
+  String get photoScoreCornerBR => 'Inferior derecha';
+
+  @override
+  String get photoScoreCornerBL => 'Inferior izquierda';
+
+  @override
+  String get photoScoreCornersEdit => 'Marcar esquinas';
+
+  @override
+  String get photoScoreCornersInvalid =>
+      'Las esquinas no forman una región válida. Revisa su orden y separación.';
+
+  @override
+  String get photoScoreCornersReset => 'Restablecer encuadre';
+
+  @override
+  String get photoScoreCornersPreview => 'Enderezar y previsualizar';
+
+  @override
+  String get photoScorePreparedPreview =>
+      'Comprueba que aparecen los diez frames completos y sus acumulados.';
+
+  @override
+  String get photoScoreReadOriginal => 'Leer foto sin corregir';
+
+  @override
+  String get photoScoreReadPrepared => 'Leer este encuadre';
+
+  @override
+  String get photoScorePrepareFailed =>
+      'No se pudo preparar la imagen. Ajusta las esquinas o usa la foto original.';
+
+  @override
+  String get photoScorePreparePrivacy =>
+      'La foto original no se modifica. El borrador conservará la imagen elegida para la lectura; esta preparación no se guarda hasta leerla.';
 }
